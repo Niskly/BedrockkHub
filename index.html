@@ -6,6 +6,7 @@
   <title>BedrockHub — Texture Packs</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
+    /* ====== FOUNDATION ====== */
     :root{
       --bg-0:#060910;--bg-1:#0a0f1a;--bg-2:#0e1524;--glass:rgba(255,255,255,.04);
       --muted:#a8b3cf;--text:#e8eefc;--border:rgba(255,255,255,.08);
@@ -17,7 +18,7 @@
     body{margin:0;background:radial-gradient(1200px 800px at 10% -10%,rgba(124,58,237,.18),transparent),radial-gradient(1200px 800px at 90% 10%,rgba(37,99,235,.18),transparent),linear-gradient(180deg,var(--bg-1),var(--bg-0) 40%,var(--bg-1));color:var(--text);font:500 15px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial}
     a{color:inherit;text-decoration:none}
 
-    /* HEADER / NAV */
+    /* ====== HEADER / NAV ====== */
     header{position:sticky;top:0;z-index:50;backdrop-filter:saturate(1.2) blur(10px);background:linear-gradient(90deg,rgba(255,255,255,.02),rgba(255,255,255,.01));border-bottom:1px solid var(--border)}
     .nav{max-width:1200px;margin:0 auto;padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
     .brand{display:flex;align-items:center;gap:.8rem;cursor:pointer}
@@ -28,10 +29,10 @@
     .btn{padding:.6rem 1rem;border-radius:12px;font-weight:700;display:inline-flex;align-items:center;gap:.55rem;cursor:pointer}
     .primary{background:linear-gradient(90deg,var(--brand-1),var(--brand-2));box-shadow:0 10px 30px rgba(124,58,237,.22)}
 
-    /* PAGES WRAPPER */
+    /* ====== PAGES WRAPPER ====== */
     .container{max-width:1200px;margin:0 auto;padding:28px 18px}
 
-    /* HOME */
+    /* ====== HOME (clean billionaire vibe) ====== */
     .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:28px;align-items:center}
     .card{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.02));border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow)}
     .hero-card{padding:34px}
@@ -47,7 +48,7 @@
     .mini:hover{transform:translateY(-3px);background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.03))}
     .mini .icon{height:56px;width:56px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,#3b82f6,#8b5cf6)}
 
-    /* PACKS PAGE */
+    /* ====== PACKS PAGE ====== */
     .layout{display:grid;grid-template-columns:280px 1fr;gap:20px}
     .sidebar{position:sticky;top:78px;height:fit-content}
     .panel{padding:18px}
@@ -69,18 +70,20 @@
     .packs{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
     .pack{overflow:hidden}
     .thumb{height:140px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#1f2937,#0f172a);display:flex;align-items:center;justify-content:center}
-    .thumb .glyph{height:68px;width:68px;border-radius:14px;display:grid;place-items:center;color:white}
+    .thumb .glyph{height:68px;width:68px;border-radius:14px;display:grid;place-items:center;color:white;font-size:24px}
     .content{padding:14px}
     .pack h4{margin:0 0 4px 0;font-size:18px}
     .meta{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}
     .badge{font-size:12px;padding:.25rem .55rem;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.02);color: white !important;}
     .actions{display:flex;gap:8px}
-    .btn.sm{padding:.45rem .7rem;border-radius:10px;font-weight:700;border:1px solid var(--border);background:rgba(255,255,255,.02);color: white !important;}
+    .btn.sm{padding:.45rem .7rem;border-radius:10px;font-weight:700;border:1px solid var(--border);background:rgba(255,255,255,.02);color: white !important;font-size:13px}
 
-    /* UPLOAD MODAL */
+    /* ====== UPLOAD MODAL ====== */
     .backdrop{position:fixed;inset:0;background:rgba(2,6,23,.6);display:none;align-items:center;justify-content:center;z-index:60}
-    .modal{width:100%;max-width:760px; background: var(--bg-2) !important; }
+    .modal{width:100%;max-width:760px; background: var(--bg-2) !important; border-radius:18px; overflow:hidden;}
     .modal .panel{padding:20px}
+    
+    /* File upload styles */
     .file-upload-area {
       display: flex;
       flex-direction: column;
@@ -99,33 +102,45 @@
       border-color: var(--brand-1);
       background: rgba(124,58,237,.05);
     }
-    .file-upload-area i { font-size: 32px; margin-bottom: 12px; color: var(--brand-1); }
-    .file-hint { margin-top: 6px; color: var(--muted); }
+    .file-upload-area i {
+      font-size: 32px;
+      margin-bottom: 12px;
+      color: var(--brand-1);
+    }
+    .file-hint {
+      margin-top: 6px;
+      color: var(--muted);
+    }
 
+    /* ====== RESPONSIVE ====== */
     @media (max-width:1024px){.layout{grid-template-columns:1fr}.sidebar{position:static}.packs{grid-template-columns:repeat(2,1fr)}.hero{grid-template-columns:1fr}.title{font-size:36px}}
-    @media (max-width:768px){ .packs{grid-template-columns:1fr} .nav-actions{display:none} .file-upload-area {padding: 16px;} }
+    @media (max-width:768px){
+      .packs{grid-template-columns:1fr}
+      .nav-actions{display:none}
+      .file-upload-area {padding: 16px;}
+    }
   </style>
 </head>
 <body>
-  <!-- NAVBAR -->
+  <!-- ====== NAVBAR ====== -->
   <header>
     <div class="nav">
-      <div class="brand" onclick="goto('home')">
+      <a class="brand" onclick="goto('home')">
         <div class="brand-badge"><i class="fa-solid fa-cube"></i></div>
         <div>
           <div class="brand-title">BEDROCKHUB</div>
           <div class="tiny">Minecraft Bedrock • community</div>
         </div>
-      </div>
+      </a>
       <div class="nav-actions">
         <button class="btn ghost" onclick="goto('home')">Home</button>
         <button class="btn ghost" onclick="goto('packs')"><i class="fa-solid fa-paint-roller"></i> Texture Packs</button>
-        <button class="btn primary"><i class="fa-brands fa-discord"></i> Join Discord</button>
+        <a class="btn primary" href="#"><i class="fa-brands fa-discord"></i> Join Discord</a>
       </div>
     </div>
   </header>
 
-  <!-- HOME -->
+  <!-- ====== HOME ====== -->
   <section id="page-home" class="container">
     <div class="hero">
       <div class="card hero-card">
@@ -158,9 +173,10 @@
     </div>
   </section>
 
-  <!-- PACKS PAGE -->
+  <!-- ====== PACKS PAGE ====== -->
   <section id="page-packs" class="container" style="display:none">
     <div class="layout">
+      <!-- Sidebar filters -->
       <aside class="sidebar card panel">
         <h3>Search</h3>
         <div class="search">
@@ -190,6 +206,7 @@
         </div>
       </aside>
 
+      <!-- Packs grid -->
       <div>
         <div class="card panel" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px">
           <div class="tiny">Showing <span id="count">0</span> packs</div>
@@ -202,7 +219,7 @@
     </div>
   </section>
 
-  <!-- UPLOAD MODAL -->
+  <!-- ====== UPLOAD MODAL ====== -->
   <div id="backdrop" class="backdrop">
     <div class="modal card">
       <div class="panel">
@@ -217,27 +234,28 @@
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
             <div>
               <label class="tiny">Pack name</label>
-              <input id="packName" required placeholder="e.g. Crystal HD" />
+              <input id="packName" required placeholder="e.g. Crystal PvP" style="width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--
+border:1px solid var(--border);background:rgba(255,255,255,.02);color:var(--text)">
             </div>
             <div>
-              <label class="tiny">Upload .mcpack</label>
-              <input type="file" id="packFile" accept=".mcpack" required />
+              <label class="tiny">File</label>
+              <input type="file" id="packFile" accept=".mcpack" required style="width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:var(--text)">
             </div>
           </div>
 
           <div style="margin-top:12px">
-            <label class="tiny">Choose colors</label>
-            <div id="uploadColors" class="swatches"></div>
+            <label class="tiny">Pick colors</label>
+            <div id="modalSwatches" class="swatches"></div>
           </div>
 
           <div style="margin-top:12px">
-            <label class="tiny">Tags (comma separated)</label>
-            <input id="uploadTags" placeholder="PvP,HD,Realistic" />
+            <label class="tiny">Add tags (comma separated)</label>
+            <input id="modalTags" placeholder="PvP,HD" style="width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:var(--text)">
           </div>
 
-          <div style="margin-top:18px;display:flex;gap:10px;justify-content:flex-end">
+          <div style="margin-top:18px;display:flex;gap:.7rem;justify-content:flex-end">
             <button type="button" class="btn ghost" onclick="closeModal()">Cancel</button>
-            <button type="submit" class="btn primary">Upload</button>
+            <button type="submit" class="btn primary">Save</button>
           </div>
         </form>
       </div>
@@ -245,82 +263,88 @@
   </div>
 
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabaseUrl = 'YOUR_SUPABASE_URL';
+    const supabaseUrl = 'https://whxmfpdmnsungcwlffdx.supabase.co';
     const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // SPA navigation
-    function goto(page) {
-      document.querySelectorAll('[id^="page-"]').forEach(p => p.style.display = 'none');
-      document.getElementById('page-' + page).style.display = 'block';
+    // ====== PAGES ======
+    const pages = {
+      home: document.getElementById('page-home'),
+      packs: document.getElementById('page-packs')
+    };
+    function goto(page){
+      Object.values(pages).forEach(p=>p.style.display='none');
+      pages[page].style.display='block';
     }
 
-    // modal open/close
+    // ====== MODAL ======
     const backdrop = document.getElementById('backdrop');
-    function openModal(){ backdrop.style.display='flex'; }
-    function closeModal(){ backdrop.style.display='none'; }
+    function openModal(){backdrop.style.display='flex'}
+    function closeModal(){backdrop.style.display='none'}
 
-    // handle upload
+    // ====== UPLOAD ======
+    const uploadForm = document.getElementById('uploadForm');
+    uploadForm.addEventListener('submit', handleUpload);
+
     async function handleUpload(e){
       e.preventDefault();
-      const fileInput = document.getElementById('packFile');
-      const file = fileInput.files[0];
-      if(!file) return alert('Select a .mcpack file');
       const name = document.getElementById('packName').value;
-      const tags = document.getElementById('uploadTags').value;
-      const colors = Array.from(document.querySelectorAll('#uploadColors .swatch.active')).map(s=>s.style.backgroundColor).join(',');
-      
-      // upload to supabase bucket
-      const { data, error: uploadError } = await supabase.storage.from('packs').upload(file.name, file, { cacheControl: '3600', upsert: true });
-      if(uploadError) return alert(uploadError.message);
+      const file = document.getElementById('packFile').files[0];
+      const colors = Array.from(document.querySelectorAll('#modalSwatches .swatch.active')).map(c=>c.style.background);
+      const tags = document.getElementById('modalTags').value;
 
-      // save record
-      const { data: insertData, error: insertError } = await supabase.from('packs').insert([{ name, tags, colors, filename: file.name }]);
-      if(insertError) return alert(insertError.message);
-      alert('Upload successful!');
+      if(!file) return alert('Select a file');
+
+      // upload file to Supabase storage
+      const { data, error: storageError } = await supabase.storage.from('packs').upload(file.name, file, {upsert:true});
+      if(storageError) return alert(storageError.message);
+
+      // insert metadata
+      const { data: dbData, error: dbError } = await supabase.from('packs').insert([{ name, colors:colors.join(','), tags, filename: file.name }]);
+      if(dbError) return alert(dbError.message);
+
+      alert('Pack uploaded!');
       closeModal();
       loadPacks();
     }
 
-    // load packs
+    // ====== LOAD PACKS ======
+    const grid = document.getElementById('grid');
     async function loadPacks(){
       const { data: packs, error } = await supabase.from('packs').select('*').order('created_at',{ascending:false});
       if(error) return console.error(error);
-      const grid = document.getElementById('grid');
+
       grid.innerHTML = '';
-      packs.forEach(pack => {
-        const el = document.createElement('div');
-        el.className='pack card';
-        el.innerHTML = `
+      document.getElementById('count').innerText = packs.length;
+
+      packs.forEach(pack=>{
+        const div = document.createElement('div');
+        div.className='pack card';
+        div.innerHTML=`
           <div class="thumb"><div class="glyph"><i class="fa-solid fa-cube"></i></div></div>
           <div class="content">
             <h4>${pack.name}</h4>
-            <div class="meta">${pack.tags.split(',').map(t=>`<span class="badge">${t}</span>`).join('')}</div>
-            <div class="actions">
-              <a href="https://${supabaseUrl}/storage/v1/object/public/packs/${pack.filename}" class="btn sm primary" download>Download</a>
+            <div class="meta">
+              ${pack.tags.split(',').map(t=>`<span class="badge">${t}</span>`).join(' ')}
             </div>
-          </div>
-        `;
-        grid.appendChild(el);
+            <div class="actions">
+              <a href="${supabase.storage.from('packs').getPublicUrl(pack.filename).data.publicUrl}" class="btn sm primary" download>Download</a>
+            </div>
+          </div>`;
+        grid.appendChild(div);
       });
-      document.getElementById('count').textContent = packs.length;
     }
 
-    // color selection for upload
-    const colors = ['#f87171','#fbbf24','#34d399','#60a5fa','#a78bfa','#ec4899','#f43f5e','#eab308'];
-    const uploadColors = document.getElementById('uploadColors');
-    colors.forEach(c=>{
-      const sw = document.createElement('div');
-      sw.className='swatch';
-      sw.style.backgroundColor = c;
-      sw.onclick = ()=>{ sw.classList.toggle('active'); };
-      uploadColors.appendChild(sw);
-    });
+    // ====== FILTERS ======
+    function applyFilters(){/* your search/filter code here */}
+    function clearSearch(){document.getElementById('q').value='';applyFilters()}
+    function clearColors(){/* remove selected colors */}
+    function clearTags(){/* remove selected tags */}
+    function resetAll(){clearSearch(); clearColors(); clearTags(); applyFilters()}
 
-    // initial load
-    goto('home');
+    // ====== INIT ======
     loadPacks();
   </script>
 </body>
