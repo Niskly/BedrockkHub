@@ -1,283 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BedrockHub — Texture Packs (IndexedDB + Edit)</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <style>
-    :root{
-      --bg-0:#060910;--bg-1:#0a0f1a;--bg-2:#0e1524;--muted:#a8b3cf;--text:#e8eefc;--border:rgba(255,255,255,.08);
-      --brand-1:#7c3aed;--brand-2:#2563eb;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{margin:0;background:radial-gradient(1200px 800px at 10% -10%,rgba(124,58,237,.18),transparent),radial-gradient(1200px 800px at 90% 10%,rgba(37,99,235,.18),transparent),linear-gradient(180deg,var(--bg-1),var(--bg-0) 40%,var(--bg-1));color:var(--text);font:500 15px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial}
-    a{color:inherit;text-decoration:none}
-
-    /* NAV */
-    header{position:sticky;top:0;z-index:50;backdrop-filter:saturate(1.2) blur(10px);background:linear-gradient(90deg,rgba(255,255,255,.02),rgba(255,255,255,.01));border-bottom:1px solid var(--border)}
-    .nav{max-width:1200px;margin:0 auto;padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
-    .brand{display:flex;align-items:center;gap:.8rem}
-    .brand-badge{height:44px;width:44px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,var(--brand-2),var(--brand-1));box-shadow:0 12px 30px rgba(124,58,237,.22)}
-    .brand-title{font-weight:800;letter-spacing:.6px}
-    .nav-actions{display:flex;gap:.6rem}
-    .ghost{border:1px solid var(--border);background:transparent;color:var(--text)}
-    .btn{padding:.6rem 1rem;border-radius:12px;font-weight:700;display:inline-flex;align-items:center;gap:.55rem;cursor:pointer}
-    .primary{background:linear-gradient(90deg,var(--brand-1),var(--brand-2));box-shadow:0 10px 30px rgba(124,58,237,.22)}
-
-    /* CONTAINER */
-    .container{max-width:1200px;margin:0 auto;padding:28px 18px}
-
-    /* HERO */
-    .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:28px;align-items:center}
-    .card{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.02));border:1px solid var(--border);border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.55)}
-    .hero-card{padding:34px}
-    .title{font-size:44px;line-height:1.05;font-weight:900;margin:0}
-    .title .grad{background:linear-gradient(90deg,var(--brand-1),var(--brand-2));-webkit-background-clip:text;background-clip:text;color:transparent}
-    .muted{color:var(--muted)}
-    .hero-cta{display:flex;gap:.8rem;margin-top:18px}
-
-    .preview{padding:16px}
-    .grid-mini{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-    .mini{display:flex;gap:.7rem;align-items:center;background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01));border:1px solid var(--border);padding:10px;border-radius:12px;transition:transform .2s}
-    .mini:hover{transform:translateY(-3px)}
-
-    /* LAYOUT / SIDEBAR */
-    .layout{display:grid;grid-template-columns:280px 1fr;gap:20px}
-    .sidebar{position:sticky;top:78px;height:fit-content}
-    .panel{padding:18px}
-    .panel h3{margin:0 0 10px 0;font-size:14px;letter-spacing:.4px;color:#cbd5e1;text-transform:uppercase}
-    .search{display:flex;gap:.6rem}
-    .search input{flex:1;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:var(--text)}
-
-    .swatches{display:flex;flex-wrap:wrap;gap:8px}
-    .swatch{width:34px;height:34px;border-radius:999px;border:2px solid rgba(255,255,255,.12);cursor:pointer;position:relative}
-    .swatch.active{outline:3px solid #eab308 !important}
-    .tags{display:flex;flex-wrap:wrap;gap:8px}
-    .tag{padding:.45rem .7rem;border-radius:999px;background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.22);cursor:pointer;color:white}
-    .tag.active{background:rgba(124,58,237,.3)}
-    .tiny{font-size:12px;color:var(--muted)}
-
-    /* PACKS GRID */
-    .packs{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-    .pack{overflow:hidden}
-    .thumb{height:140px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#1f2937,#0f172a);display:flex;align-items:center;justify-content:center}
-    .thumb .glyph{height:68px;width:68px;border-radius:14px;display:grid;place-items:center;color:white}
-    .content{padding:14px}
-    .meta{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}
-    .badge{font-size:12px;padding:.25rem .55rem;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:white}
-    .actions{display:flex;gap:6px;align-items:center}
-
-    /* SMALL BUTTONS: smaller padding & font so download isn't huge */
-    .btn.sm{padding:.25rem .5rem;border-radius:8px;font-weight:700;border:1px solid var(--border);background:rgba(255,255,255,.02);color:white;font-size:13px;display:inline-flex;align-items:center;gap:.4rem;min-width:auto}
-    .btn.sm i{font-size:13px}
-    a.btn.sm{display:inline-flex;align-items:center}
-
-    /* MODALS */
-    .backdrop{position:fixed;inset:0;background:rgba(2,6,23,.6);display:none;align-items:center;justify-content:center;z-index:60}
-    .modal{width:100%;max-width:760px;background:var(--bg-2);border-radius:12px;overflow:hidden}
-    .modal .panel{padding:20px}
-
-    /* EDIT modal tweaks */
-    .modal-footer{display:flex;justify-content:flex-end;gap:10px;padding:12px 20px 20px}
-
-    /* File upload styles */
-    .file-upload-area{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;border:2px dashed var(--border);border-radius:12px;background:rgba(255,255,255,.02);text-align:center;cursor:pointer;grid-column:span 2}
-    .file-upload-area:hover{border-color:var(--brand-1);background:rgba(124,58,237,.05)}
-    .file-upload-area i{font-size:32px;margin-bottom:12px;color:var(--brand-1)}
-    .file-hint{margin-top:6px;color:var(--muted)}
-
-    /* responsive */
-    @media (max-width:1024px){.layout{grid-template-columns:1fr}.sidebar{position:static}.packs{grid-template-columns:repeat(2,1fr)}.hero{grid-template-columns:1fr}.title{font-size:36px}}
-    @media (max-width:768px){.packs{grid-template-columns:1fr}.nav-actions{display:none}.file-upload-area{padding:16px}}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BedrockHub — Texture Packs</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<style>
+:root{
+  --bg-0:#060910;--bg-1:#0a0f1a;--bg-2:#0e1524;--glass:rgba(255,255,255,.04);
+  --muted:#a8b3cf;--text:#e8eefc;--border:rgba(255,255,255,.08);
+  --brand-1:#7c3aed;--brand-2:#2563eb;--brand-3:#22d3ee;
+  --shadow:0 24px 70px rgba(0,0,0,.55);
+}
+*{box-sizing:border-box;}
+html,body{height:100%;margin:0;font:500 15px/1.6 Inter, sans-serif;color:var(--text);}
+body{background:radial-gradient(1200px 800px at 10% -10%,rgba(124,58,237,.18),transparent),radial-gradient(1200px 800px at 90% 10%,rgba(37,99,235,.18),transparent),linear-gradient(180deg,var(--bg-1),var(--bg-0) 40%,var(--bg-1));}
+a{color:inherit;text-decoration:none;}
+header{position:sticky;top:0;z-index:50;backdrop-filter:saturate(1.2) blur(10px);background:linear-gradient(90deg,rgba(255,255,255,.02),rgba(255,255,255,.01));border-bottom:1px solid var(--border);}
+.nav{max-width:1200px;margin:0 auto;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;}
+.brand{display:flex;align-items:center;gap:.8rem;}
+.brand-badge{height:44px;width:44px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,var(--brand-2),var(--brand-1));box-shadow:0 12px 30px rgba(124,58,237,.22);}
+.brand-title{font-weight:800;letter-spacing:.6px;}
+.nav-actions{display:flex;gap:.6rem;}
+.ghost{border:1px solid var(--border);background:transparent;color:var(--text);}
+.btn{padding:.45rem .7rem;border-radius:10px;font-weight:700;display:inline-flex;align-items:center;gap:.55rem;cursor:pointer;}
+.primary{background:linear-gradient(90deg,var(--brand-1),var(--brand-2));box-shadow:0 10px 30px rgba(124,58,237,.22);}
+.container{max-width:1200px;margin:0 auto;padding:28px 18px;}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.02));border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);}
+.packs{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+.pack .thumb{height:140px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#1f2937,#0f172a);display:flex;align-items:center;justify-content:center;}
+.pack .glyph{height:68px;width:68px;border-radius:14px;display:grid;place-items:center;color:white;}
+.pack .content{padding:14px;}
+.pack h4{margin:0 0 4px 0;font-size:18px;}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px;}
+.actions{display:flex;gap:8px;}
+.modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.6);display:none;align-items:center;justify-content:center;z-index:60;}
+.modal{width:100%;max-width:760px; background: var(--bg-2); border-radius:18px;}
+.modal .panel{padding:20px;}
+.file-upload-area { display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;border:2px dashed var(--border);border-radius:12px;background:rgba(255,255,255,.02);cursor:pointer;transition:all .3s;}
+.file-upload-area:hover { border-color: var(--brand-1); background: rgba(124,58,237,.05);}
+.file-upload-area i {font-size:32px;margin-bottom:12px;color: var(--brand-1);}
+.file-hint { margin-top:6px; color: var(--muted); }
+input,textarea{width:100%;padding:.6rem;margin-bottom:8px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:white;}
+</style>
 </head>
 <body>
-  <header>
-    <div class="nav">
-      <a class="brand" href="#" onclick="goto('home')">
-        <div class="brand-badge"><i class="fa-solid fa-cube"></i></div>
-        <div>
-          <div class="brand-title">BEDROCKHUB</div>
-          <div class="tiny">Minecraft Bedrock • community</div>
-        </div>
-      </a>
-      <div class="nav-actions">
-        <button class="btn ghost" onclick="goto('home')">Home</button>
-        <button class="btn ghost" onclick="goto('packs')"><i class="fa-solid fa-paint-roller"></i> Texture Packs</button>
-        <a class="btn primary" href="#"><i class="fa-brands fa-discord"></i> Join Discord</a>
-      </div>
-    </div>
-  </header>
-
-  <section id="page-home" class="container">
-    <div class="hero">
-      <div class="card hero-card">
-        <h1 class="title">Discover & share elite <span class="grad">Bedrock texture packs</span></h1>
-        <p class="muted">A billionaire-grade experience: razor-clean UI, smart filters, instant uploads. Click Texture Packs to browse, filter by color & tags, and upload your own .mcpack.</p>
-        <div class="hero-cta">
-          <button class="btn primary" onclick="goto('packs')"><i class="fa-solid fa-paint-roller"></i> Get started</button>
-          <button class="btn ghost" onclick="goto('packs')">Browse gallery</button>
-        </div>
-      </div>
-      <aside class="card preview">
-        <div class="preview-head"><strong>Latest drops</strong><span class="tiny">just now</span></div>
-        <div class="grid-mini">
-          <div class="mini"><div class="icon"><i class="fa-solid fa-cubes"></i></div><div><div style="font-weight:800">Stellar HD</div><div class="tiny">HD • Realistic</div></div></div>
-          <div class="mini"><div class="icon" style="background:linear-gradient(135deg,#a855f7,#ec4899)"><i class="fa-solid fa-crown"></i></div><div><div style="font-weight:800">Royal PvP</div><div class="tiny">PvP • Purple</div></div></div>
-        </div>
-      </aside>
-    </div>
-  </section>
-
-  <section id="page-packs" class="container" style="display:none">
-    <div class="layout">
-      <aside class="sidebar card panel">
-        <h3>Search</h3>
-        <div class="search">
-          <input id="q" placeholder="Search by name..." oninput="applyFilters()" />
-          <button class="btn sm" onclick="clearSearch()"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="tiny" style="margin-top:6px">Results update instantly</div>
-
-        <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
-        <h3>Colors</h3>
-        <div id="colorSwatches" class="swatches"></div>
-        <div class="row" style="margin-top:8px"><button class="btn sm" onclick="clearColors()">Clear colors</button></div>
-
-        <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
-        <h3>Tags</h3>
-        <div id="tagCloud" class="tags"></div>
-        <div class="row" style="margin-top:8px"><button class="btn sm" onclick="clearTags()">Clear tags</button></div>
-
-        <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
-        <h3>Upload</h3>
-        <div class="row"><button class="btn primary" onclick="openModal()"><i class="fa-solid fa-cloud-upload-alt"></i> Upload pack</button></div>
-      </aside>
-
-      <div>
-        <div class="card panel" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px">
-          <div class="tiny">Showing <span id="count">0</span> packs</div>
-          <div class="row"><button class="btn sm ghost" onclick="resetAll()"><i class="fa-solid fa-rotate"></i> Reset filters</button></div>
-        </div>
-        <div id="grid" class="packs"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- UPLOAD MODAL -->
-  <div id="backdrop" class="backdrop" aria-hidden="true">
-    <div class="modal card" role="dialog" aria-modal="true">
-      <div class="panel">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <strong>Upload Texture Pack</strong>
-          <button class="btn sm" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="tiny">Select a .mcpack file, set a name, choose colors & tags.</div>
-        <form id="uploadForm" onsubmit="handleUpload(event)">
-          <input type="text" id="packName" placeholder="Pack name" required style="width:100%;padding:.6rem;margin:10px 0;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:white">
-          <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
-            <i class="fa-solid fa-file-arrow-up"></i>
-            <div>Click or drag your .mcpack file here</div>
-            <div class="file-hint">Max size 50MB</div>
-            <input type="file" id="fileInput" accept=".mcpack" style="display:none">
-          </div>
-          <div style="margin-top:14px">
-            <strong>Pick colors:</strong>
-            <div id="modalColors" class="swatches" style="margin-top:6px"></div>
-          </div>
-          <div style="margin-top:14px">
-            <strong>Pick tags:</strong>
-            <div id="modalTags" class="tags" style="margin-top:6px"></div>
-          </div>
-          <div class="modal-footer">
-            <button class="btn ghost" type="button" onclick="closeModal()">Cancel</button>
-            <button class="btn primary" type="submit"><i class="fa-solid fa-cloud-arrow-up"></i> Upload</button>
-          </div>
-        </form>
-      </div>
-    </div>
+<header>
+<div class="nav">
+  <a class="brand" href="#"><div class="brand-badge"><i class="fa-solid fa-cube"></i></div><div><div class="brand-title">BEDROCKHUB</div><div class="tiny">Minecraft Bedrock • community</div></div></a>
+  <div class="nav-actions">
+    <button class="btn ghost" onclick="fetchPacks()">Refresh</button>
+    <button class="btn primary" onclick="openModal()">Upload pack</button>
   </div>
+</div>
+</header>
 
-  <script>
-    let state = {modalColor:null, modalTags:[]};
-    let packs = [];
+<section class="container">
+<div class="packs" id="packGrid"></div>
+</section>
 
-    function goto(page){document.querySelectorAll('section').forEach(s=>s.style.display='none');document.getElementById('page-'+page).style.display='block'}
+<div id="modal" class="modal-backdrop">
+<div class="modal card">
+<div class="panel">
+<h3 id="modalTitle">Upload / Edit Pack</h3>
+<input id="packName" placeholder="Pack name"/>
+<input id="packTags" placeholder="Tags comma separated"/>
+<div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
+<i class="fa-solid fa-file-arrow-up"></i>
+<div>Click to upload .mcpack file</div>
+<div class="file-hint">Max 50MB</div>
+<input type="file" id="fileInput" style="display:none"/>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+<button class="btn ghost" onclick="closeModal()">Cancel</button>
+<button class="btn primary" onclick="handleUpload()">Save</button>
+</div>
+</div>
+</div>
+</div>
 
-    function openModal(){document.getElementById('backdrop').style.display='flex'}
-    function closeModal(){document.getElementById('backdrop').style.display='none'}
+<script>
+const modal=document.getElementById('modal');
+let editingId=null;
 
-    // ====== HANDLE UPLOAD ======
-    async function handleUpload(e){
-      e.preventDefault();
+function openModal(pack=null){
+  modal.style.display='flex';
+  if(pack){editingId=pack.id;document.getElementById('packName').value=pack.name;document.getElementById('packTags').value=pack.tags.join(',');} 
+  else {editingId=null;document.getElementById('packName').value='';document.getElementById('packTags').value='';}
+}
 
-      const name = document.getElementById('packName').value.trim();
-      const file = document.getElementById('fileInput').files[0];
+function closeModal(){modal.style.display='none';editingId=null;document.getElementById('fileInput').value='';}
 
-      if(!file || !file.name.endsWith('.mcpack')){
-        alert('Please select a valid .mcpack file');
-        return;
-      }
-      if(!state.modalColor){
-        alert('Pick a primary color');
-        return;
-      }
+async function fetchPacks(){
+  const res=await fetch('/api/getpacks');
+  const data=await res.json();
+  const grid=document.getElementById('packGrid');
+  grid.innerHTML='';
+  data.forEach(p=>{
+    const div=document.createElement('div');
+    div.className='pack card';
+    div.innerHTML=`
+      <div class="thumb"><div class="glyph" style="background:#7c3aed"><i class="fa-solid fa-cubes"></i></div></div>
+      <div class="content">
+        <h4>${p.name}</h4>
+        <div class="meta">${p.tags.map(t=>`<span class="badge">${t}</span>`).join('')}</div>
+        <div class="actions">
+          <a class="btn sm primary" href="${p.url}" download>Download</a>
+          <button class="btn sm ghost" onclick='openModal(${JSON.stringify(p)})'>Edit</button>
+        </div>
+      </div>`;
+    grid.appendChild(div);
+  });
+}
 
-      const tags = [...state.modalTags];
-      const color = state.modalColor;
+async function handleUpload(){
+  const name=document.getElementById('packName').value;
+  const tags=document.getElementById('packTags').value;
+  const file=document.getElementById('fileInput').files[0];
+  if(!name || !tags || (!file && !editingId)){alert('Fill all fields');return;}
+  const form=new FormData();
+  form.append('name',name);
+  form.append('tags',tags);
+  if(file) form.append('file',file);
+  if(editingId) form.append('id',editingId);
+  const res=await fetch('/api/addpacks', {method:'POST',body:form});
+  if(res.ok){closeModal();fetchPacks();}
+  else{alert('Upload failed');}
+}
 
-      // ===== 1. Save locally in IndexedDB (your existing flow) =====
-      const newPack = {
-        id: Date.now(),
-        name,
-        color,
-        tags,
-        fileName: file.name,
-        fileBlob: file
-      };
-      packs.push(newPack);
-      await putPackToIDB(newPack);
-      await render();
-      closeModal();
-
-      // ===== 2. Send metadata to backend (Supabase via Vercel API) =====
-      try {
-        const res = await fetch('/api/addPack', {
-          method: 'POST',
-          headers: { 'Content-Type':'application/json' },
-          body: JSON.stringify({
-            name,
-            color,
-            tags,
-            filename: file.name
-          })
-        });
-
-        const result = await res.json();
-        if(result.status === "success"){
-          console.log("✅ Saved to backend", result.data);
-        } else {
-          console.error("❌ Backend error:", result.error);
-          alert("Error saving pack to backend");
-        }
-      } catch(err){
-        console.error("❌ Network error", err);
-        alert("Failed to upload metadata");
-      }
-    }
-
-    function clearSearch(){document.getElementById('q').value='';applyFilters()}
-    function resetAll(){clearSearch();clearColors();clearTags()}
-    function applyFilters(){/* your existing filter logic */}
-    function clearColors(){state.modalColor=null;renderColors()}
-    function clearTags(){state.modalTags=[];renderTags()}
-
-    async function putPackToIDB(pack){/* your existing IndexedDB logic */}
-    async function render(){/* render packs in grid */}
-    function renderColors(){/* render color swatches */}
-    function renderTags(){/* render tags */}
-  </script>
+window.onload=fetchPacks;
+</script>
 </body>
 </html>
