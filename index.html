@@ -249,8 +249,10 @@
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
   // NEW: Supabase connection details
-  const SUPABASE_URL = 'YOUR_SUPABASE_URL'; // Replace with your Vercel env variable
-  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // Replace with your Vercel env variable
+  // IMPORTANT: Replace these with your actual Supabase URL and Key
+  // You should use Vercel Environment Variables for these in production
+  const SUPABASE_URL = 'YOUR_SUPABASE_URL'; 
+  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 
@@ -268,7 +270,7 @@
   const state = { q:'', colors:new Set(), tags:new Set(), modalColor:null, modalTags:new Set(), editColor:null, editTags:new Set() };
 
   /* ====== NAV ====== */
-  // Make goto function globally available
+  // FIXED: Make goto function globally available
   window.goto = function(which){
     document.getElementById('page-home').style.display = which==='home' ? 'block' : 'none';
     document.getElementById('page-packs').style.display = which==='packs' ? 'block' : 'none';
@@ -312,8 +314,6 @@
   buildTags(tagCloud, (key, el)=>{ toggleSet(state.tags, key); el.classList.toggle('active'); applyFilters(); }, state.tags);
   buildSwatches(modalSwatches, (key, el)=>{ state.modalColor = key; highlightOne(modalSwatches, el); }, new Set());
   buildTags(modalTags, (key, el)=>{ toggleSet(state.modalTags, key); el.classList.toggle('active'); }, state.modalTags);
-
-  /* edit modal swatches/tags init */
   buildSwatches(editModalSwatches, (key, el)=>{ state.editColor = key; highlightOne(editModalSwatches, el); }, new Set());
   buildTags(editModalTags, (key, el)=>{ toggleSet(state.editTags, key); el.classList.toggle('active'); }, state.editTags);
 
@@ -337,8 +337,6 @@
     const color = COLORS.find(c=>c.key===colorKey)?.hex || '#6b7280';
     const card = document.createElement('div');
     card.className = 'card pack';
-
-    // NEW: Get public URL for the download button from Supabase Storage
     const { data } = supabase.storage.from('packs').getPublicUrl(p.filename);
     const downloadUrl = data.publicUrl;
 
@@ -366,7 +364,6 @@
     const filtered = packs.filter(p=>{
       const qOk = !state.q || p.name.toLowerCase().includes(state.q);
       const cOk = state.colors.size === 0 || state.colors.has(p.color);
-      // Ensure p.tags is an array before using .includes()
       const pTags = Array.isArray(p.tags) ? p.tags : [];
       const tOk = state.tags.size === 0 || [...state.tags].every(t => pTags.includes(t));
       return qOk && cOk && tOk;
@@ -384,6 +381,7 @@
 
   /* ====== EDIT MODAL ====== */
   let currentEditId = null;
+  // FIXED: Expose function to global scope
   window.openEditModal = function(id){
     const p = packs.find(x=>x.id===id);
     if(!p) return alert('Pack not found');
@@ -399,6 +397,7 @@
     document.getElementById('editBackdrop').style.display = 'flex';
   }
 
+  // FIXED: Expose function to global scope
   window.closeEditModal = function(){
     currentEditId = null;
     document.getElementById('editBackdrop').style.display = 'none';
@@ -411,7 +410,7 @@
     buildTags(editModalTags, (k,el)=>{ toggleSet(state.editTags,k); el.classList.toggle('active'); }, state.editTags);
   }
 
-  /* NEW: Save edits to Supabase */
+  // FIXED: Expose function to global scope
   window.saveEdit = async function(e){
     e.preventDefault();
     if(!currentEditId) return alert('No pack selected');
@@ -419,17 +418,14 @@
     const name = document.getElementById('editPackName').value.trim();
     const color = state.editColor;
     const tags = [...state.editTags];
-
     const { error } = await supabase
       .from('packs')
-      .update({ name, color, tags: tags.join(',') }) // Store tags as comma-separated string
+      .update({ name, color, tags: tags.join(',') })
       .eq('id', id);
-
     if (error) {
       console.error('Save edit failed', error);
       alert('Save failed: ' + error.message);
     } else {
-      // Update local cache and re-render
       const pIndex = packs.findIndex(x=>x.id===id);
       if (pIndex !== -1) {
         packs[pIndex] = {...packs[pIndex], name, color, tags};
@@ -439,24 +435,18 @@
     }
   }
 
-  /* NEW: Delete pack from Supabase */
+  // FIXED: Expose function to global scope
   window.deleteCurrentPack = async function(){
     if(!currentEditId) return;
     if(!confirm('Delete this pack? This cannot be undone.')) return;
-    
     const packToDelete = packs.find(p => p.id === currentEditId);
     if (!packToDelete) return alert('Pack not found to delete.');
-
-    // 1. Delete file from Storage
     const { error: storageError } = await supabase.storage.from('packs').remove([packToDelete.filename]);
     if (storageError) {
         console.error('Failed to delete file from storage:', storageError);
-        alert('Could not delete the file, but will try to delete the record. Please check storage manually.');
+        alert('Could not delete the file, but will try to delete the record.');
     }
-    
-    // 2. Delete record from database
     const { error: dbError } = await supabase.from('packs').delete().eq('id', currentEditId);
-
     if (dbError) {
       console.error('Delete failed', dbError);
       alert('Delete failed: ' + dbError.message);
@@ -468,6 +458,7 @@
   }
 
   /* ====== UPLOAD FLOW (to Supabase) ====== */
+  // FIXED: Expose function to global scope
   window.openModal = function(){
     document.getElementById('backdrop').style.display = 'flex';
     if(!state.modalColor){
@@ -476,10 +467,12 @@
       if(first) first.classList.add('active');
     }
   }
+  // FIXED: Expose function to global scope
   window.closeModal = function(){
     document.getElementById('backdrop').style.display = 'none';
     resetModal();
   }
+  // FIXED: Expose function to global scope
   window.hintFile = function(){
     const f = document.getElementById('fileInput').files[0];
     if(f){
@@ -496,7 +489,7 @@
     document.querySelector('.file-upload-area').style.borderColor = 'var(--border)';
   }
 
-  /* NEW: Handle upload to Supabase */
+  // FIXED: Expose function to global scope
   window.handleUpload = async function(e){
     e.preventDefault();
     const submitBtn = document.getElementById('submitBtn');
@@ -510,15 +503,12 @@
     const tags = [...state.modalTags];
 
     try {
-      // 1. Upload file to Supabase Storage
       const fileName = `${Date.now()}-${file.name}`;
       const { error: uploadError } = await supabase.storage
-        .from('packs') // your bucket name
+        .from('packs')
         .upload(fileName, file);
-      
       if (uploadError) throw uploadError;
 
-      // 2. If file upload is successful, add metadata to the database via our serverless function
       const response = await fetch('/api/addpacks', {
           method: 'POST',
           body: JSON.stringify({
@@ -534,9 +524,8 @@
         throw new Error(errData.details || 'Failed to add pack metadata.');
       }
       
-      // Manually add new pack to the top of the local list and re-render
       const { pack: newPack } = await response.json();
-      newPack.tags = newPack.tags.split(','); // Convert string from DB back to array
+      newPack.tags = newPack.tags.split(',');
       packs.unshift(newPack);
       render();
       closeModal();
@@ -550,7 +539,7 @@
     }
   }
 
-  /* NEW: LOAD PACKS FROM SUPABASE ON START ====== */
+  /* ====== LOAD PACKS FROM SUPABASE ON START ====== */
   async function loadPacksOnStartup(){
     const { data, error } = await supabase
         .from('packs')
@@ -561,7 +550,6 @@
         console.error('Failed to load packs from Supabase', error);
         packs = [];
     } else {
-        // Convert the comma-separated tags string back into an array for each pack
         packs = data.map(pack => ({
             ...pack,
             tags: pack.tags ? pack.tags.split(',') : []
@@ -571,6 +559,7 @@
   }
 
   /* ====== FILTER HELPERS ====== */
+  // FIXED: Expose functions to global scope
   window.applyFilters = function(){ state.q = document.getElementById('q').value.trim().toLowerCase(); render(); }
   window.clearSearch = function(){ document.getElementById('q').value=''; applyFilters(); }
   window.clearColors = function(){ state.colors.clear(); buildSwatches(colorSwatches,(k,el)=>{toggleSet(state.colors,k); el.classList.toggle('active'); applyFilters();}, state.colors); render(); }
@@ -578,16 +567,6 @@
   window.resetAll = function(){ clearSearch(); clearColors(); clearTags(); }
 
   /* BOOT */
-  // Make all event handler functions global
-  const functionsToExpose = ['goto', 'applyFilters', 'clearSearch', 'clearColors', 'clearTags', 'resetAll', 'openModal', 'closeModal', 'hintFile', 'handleUpload', 'openEditModal', 'closeEditModal', 'saveEdit', 'deleteCurrentPack'];
-  functionsToExpose.forEach(fnName => {
-      if (window[fnName]) {
-          // already global from explicit `window.fnName = ...`
-      } else {
-          console.error(`Function ${fnName} is not defined on window and will not work with onclick`);
-      }
-  });
-  
   goto('home');
   loadPacksOnStartup();
 </script>
