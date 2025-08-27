@@ -12,7 +12,8 @@
     }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{margin:0;background:radial-gradient(1200px 800px at 10% -10%,rgba(124,58,2d7,.18),transparent),radial-gradient(1200px 800px at 90% 10%,rgba(37,99,235,.18),transparent),linear-gradient(180deg,var(--bg-1),var(--bg-0) 40%,var(--bg-1));color:var(--text);font:500 15px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial}
+    /* FIXED THE TYPO HERE (2d7 -> 237) */
+    body{margin:0;background:radial-gradient(1200px 800px at 10% -10%,rgba(124,58,237,.18),transparent),radial-gradient(1200px 800px at 90% 10%,rgba(37,99,235,.18),transparent),linear-gradient(180deg,var(--bg-1),var(--bg-0) 40%,var(--bg-1));color:var(--text);font:500 15px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial}
     a{color:inherit;text-decoration:none}
 
     /* NAV */
@@ -96,7 +97,7 @@
 <body>
   <header>
     <div class="nav">
-      <a class="brand" href="#" onclick="goto('home')">
+      <a class="brand" href="#" id="brand-link">
         <div class="brand-badge"><i class="fa-solid fa-cube"></i></div>
         <div>
           <div class="brand-title">BEDROCKHUB</div>
@@ -104,8 +105,8 @@
         </div>
       </a>
       <div class="nav-actions">
-        <button class="btn ghost" onclick="goto('home')">Home</button>
-        <button class="btn ghost" onclick="goto('packs')"><i class="fa-solid fa-paint-roller"></i> Texture Packs</button>
+        <button class="btn ghost" id="nav-home-btn">Home</button>
+        <button class="btn ghost" id="nav-packs-btn"><i class="fa-solid fa-paint-roller"></i> Texture Packs</button>
         <a class="btn primary" href="https://discord.gg/KtafawJZxM" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-discord"></i> Join Discord</a>
       </div>
     </div>
@@ -117,8 +118,8 @@
         <h1 class="title">Discover & share elite <span class="grad">Bedrock texture packs</span></h1>
         <p class="muted">A billionaire-grade experience: razor-clean UI, smart filters, instant uploads. Click Texture Packs to browse, filter by color & tags, and upload your own .mcpack.</p>
         <div class="hero-cta">
-          <button class="btn primary" onclick="goto('packs')"><i class="fa-solid fa-paint-roller"></i> Get started</button>
-          <button class="btn ghost" onclick="goto('packs')">Browse gallery</button>
+          <button class="btn primary" id="hero-get-started-btn"><i class="fa-solid fa-paint-roller"></i> Get started</button>
+          <button class="btn ghost" id="hero-browse-btn">Browse gallery</button>
         </div>
       </div>
       <aside class="card preview">
@@ -136,30 +137,30 @@
       <aside class="sidebar card panel">
         <h3>Search</h3>
         <div class="search">
-          <input id="q" placeholder="Search by name..." oninput="applyFilters()" />
-          <button class="btn sm" onclick="clearSearch()"><i class="fa-solid fa-xmark"></i></button>
+          <input id="q" placeholder="Search by name..." />
+          <button class="btn sm" id="clear-search-btn"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="tiny" style="margin-top:6px">Results update instantly</div>
 
         <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
         <h3>Colors</h3>
         <div id="colorSwatches" class="swatches"></div>
-        <div class="row" style="margin-top:8px"><button class="btn sm" onclick="clearColors()">Clear colors</button></div>
+        <div class="row" style="margin-top:8px"><button class="btn sm" id="clear-colors-btn">Clear colors</button></div>
 
         <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
         <h3>Tags</h3>
         <div id="tagCloud" class="tags"></div>
-        <div class="row" style="margin-top:8px"><button class="btn sm" onclick="clearTags()">Clear tags</button></div>
+        <div class="row" style="margin-top:8px"><button class="btn sm" id="clear-tags-btn">Clear tags</button></div>
 
         <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
         <h3>Upload</h3>
-        <div class="row"><button class="btn primary" onclick="openModal()"><i class="fa-solid fa-cloud-upload-alt"></i> Upload pack</button></div>
+        <div class="row"><button class="btn primary" id="upload-pack-btn"><i class="fa-solid fa-cloud-upload-alt"></i> Upload pack</button></div>
       </aside>
 
       <div>
         <div class="card panel" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px">
           <div class="tiny">Showing <span id="count">0</span> packs</div>
-          <div class="row"><button class="btn sm ghost" onclick="resetAll()"><i class="fa-solid fa-rotate"></i> Reset filters</button></div>
+          <div class="row"><button class="btn sm ghost" id="reset-filters-btn"><i class="fa-solid fa-rotate"></i> Reset filters</button></div>
         </div>
         <div id="grid" class="packs"></div>
       </div>
@@ -171,12 +172,12 @@
       <div class="panel">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
           <strong>Upload Texture Pack</strong>
-          <button class="btn sm" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+          <button class="btn sm" id="close-modal-btn"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="tiny">Select a .mcpack file, set a name, choose color & tags.</div>
       </div>
       <div class="panel" style="padding-top:0">
-        <form id="uploadForm" onsubmit="handleUpload(event)">
+        <form id="uploadForm">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
             <div>
               <label class="tiny">Pack name</label>
@@ -190,15 +191,15 @@
               <label class="tiny">Tags</label>
               <div id="modalTags" class="tags"></div>
             </div>
-            <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
+            <div class="file-upload-area" id="file-upload-area">
               <i class="fa-solid fa-file-arrow-up"></i>
               <div>Drag & drop or <span style="color:var(--brand-1)">browse files</span></div>
               <div class="file-hint" id="fileHint">.mcpack files only</div>
-              <input id="fileInput" type="file" accept=".mcpack" style="display:none" onchange="hintFile()" />
+              <input id="fileInput" type="file" accept=".mcpack" style="display:none" />
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn sm" onclick="closeModal()">Cancel</button>
+            <button type="button" class="btn sm" id="cancel-upload-btn">Cancel</button>
             <button id="submitBtn" class="btn primary" type="submit"><i class="fa-solid fa-upload"></i> Upload</button>
           </div>
         </form>
@@ -211,12 +212,12 @@
       <div class="panel">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
           <strong>Edit Texture Pack</strong>
-          <button class="btn sm" onclick="closeEditModal()"><i class="fa-solid fa-xmark"></i></button>
+          <button class="btn sm" id="close-edit-modal-btn"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="tiny">Change name, tags or color. You can also delete the pack.</div>
       </div>
       <div class="panel" style="padding-top:0">
-        <form id="editForm" onsubmit="saveEdit(event)">
+        <form id="editForm">
           <input type="hidden" id="editId" />
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
             <div>
@@ -234,9 +235,9 @@
             <div class="tiny" style="align-self:center">File stays the same — to replace file delete & re-upload.</div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn sm" onclick="deleteCurrentPack()"><i class="fa-solid fa-trash"></i> Delete</button>
+            <button type="button" class="btn sm" id="delete-pack-btn"><i class="fa-solid fa-trash"></i> Delete</button>
             <div style="flex:1"></div>
-            <button type="button" class="btn sm" onclick="closeEditModal()">Cancel</button>
+            <button type="button" class="btn sm" id="cancel-edit-btn">Cancel</button>
             <button class="btn primary" type="submit"><i class="fa-solid fa-save"></i> Save</button>
           </div>
         </form>
@@ -245,37 +246,25 @@
   </div>
 
 <script type="module">
-  // NEW: Import Supabase client
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-  // NEW: Supabase connection details
-  const SUPABASE_URL = 'YOUR_SUPABASE_URL'; // Replace with your Vercel env variable
-  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // Replace with your Vercel env variable
+  const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-
-  /* ====== DATA ====== */
+  /* ====== DATA & STATE ====== */
   const COLORS = [
     {key:'red',hex:'#ef4444'},{key:'blue',hex:'#3b82f6'},{key:'green',hex:'#22c55e'},{key:'yellow',hex:'#eab308'},
     {key:'purple',hex:'#a855f7'},{key:'pink',hex:'#ec4899'},{key:'orange',hex:'#f97316'},{key:'teal',hex:'#14b8a6'},{key:'gray',hex:'#6b7280'}
   ];
   const TAGS = ['pvp','natural','realistic','cartoon','medieval','modern','rpg','hd','adventure'];
-
-  /* ====== PACKS (from Supabase) ====== */
   let packs = [];
-
-  /* ====== STATE ====== */
   const state = { q:'', colors:new Set(), tags:new Set(), modalColor:null, modalTags:new Set(), editColor:null, editTags:new Set() };
+  let currentEditId = null;
 
-  /* ====== NAV ====== */
-  function goto(which){
-    document.getElementById('page-home').style.display = which==='home' ? 'block' : 'none';
-    document.getElementById('page-packs').style.display = which==='packs' ? 'block' : 'none';
-    if(which==='packs') render();
-    window.scrollTo({top:0,behavior:'smooth'});
-  }
-
-  /* ====== UI BUILD (swatches/tags) ====== */
+  /* ====== DOM ELEMENTS ====== */
+  const grid = document.getElementById('grid');
+  const count = document.getElementById('count');
   const colorSwatches = document.getElementById('colorSwatches');
   const tagCloud = document.getElementById('tagCloud');
   const modalSwatches = document.getElementById('modalSwatches');
@@ -283,50 +272,31 @@
   const editModalSwatches = document.getElementById('editModalSwatches');
   const editModalTags = document.getElementById('editModalTags');
 
-  function buildSwatches(container, clickHandler, activeSet){
-    container.innerHTML = '';
-    COLORS.forEach(c=>{
-      const b = document.createElement('button');
-      b.type='button';
-      b.className='swatch'+(activeSet?.has?.(c.key)?' active':'');
-      b.style.background = c.hex; b.title=c.key;
-      b.onclick = ()=> clickHandler(c.key, b);
-      container.appendChild(b);
-    })
-  }
-  function buildTags(container, clickHandler, activeSet){
-    container.innerHTML='';
-    TAGS.forEach(t=>{
-      const s = document.createElement('button');
-      s.type='button';
-      s.className='tag'+(activeSet?.has?.(t)?' active':'');
-      s.textContent = t.toUpperCase();
-      s.onclick = ()=> clickHandler(t, s);
-      container.appendChild(s);
-    })
+  /* ====== CORE FUNCTIONS ====== */
+  function goto(which){
+    document.getElementById('page-home').style.display = which === 'home' ? 'block' : 'none';
+    document.getElementById('page-packs').style.display = which === 'packs' ? 'block' : 'none';
+    if(which === 'packs') render();
+    window.scrollTo({top:0,behavior:'smooth'});
   }
 
-  /* initialize */
-  buildSwatches(colorSwatches, (key, el)=>{ toggleSet(state.colors, key); el.classList.toggle('active'); applyFilters(); }, state.colors);
-  buildTags(tagCloud, (key, el)=>{ toggleSet(state.tags, key); el.classList.toggle('active'); applyFilters(); }, state.tags);
-  buildSwatches(modalSwatches, (key, el)=>{ state.modalColor = key; highlightOne(modalSwatches, el); }, new Set());
-  buildTags(modalTags, (key, el)=>{ toggleSet(state.modalTags, key); el.classList.toggle('active'); }, state.modalTags);
-  buildSwatches(editModalSwatches, (key, el)=>{ state.editColor = key; highlightOne(editModalSwatches, el); }, new Set());
-  buildTags(editModalTags, (key, el)=>{ toggleSet(state.editTags, key); el.classList.toggle('active'); }, state.editTags);
-
-  function highlightOne(container, el){
-    [...container.children].forEach(c=>c.classList.remove('active'));
-    el.classList.add('active');
-  }
-  function toggleSet(set, key){ set.has(key)? set.delete(key): set.add(key); }
-
-  /* ====== RENDER ====== */
-  function escapeHtml(str){ return String(str||'').replace(/[&<>"]+/g, s=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[s])); }
-  function shade(hex, amt){
-    let col = hex.replace('#',''); if(col.length===3) col = col.split('').map(c=>c+c).join('');
-    let [r,g,b] = [0,0,0].map((_,i)=> parseInt(col.slice(i*2,i*2+2),16));
-    [r,g,b] = [r+amt,g+amt,b+amt].map(v=> Math.max(0,Math.min(255,v)));
-    return `#${[r,g,b].map(v=> v.toString(16).padStart(2,'0')).join('')}`;
+  async function render(){
+    const filtered = packs.filter(p=>{
+      const qOk = !state.q || p.name.toLowerCase().includes(state.q);
+      const cOk = state.colors.size === 0 || state.colors.has(p.color);
+      const pTags = Array.isArray(p.tags) ? p.tags : [];
+      const tOk = state.tags.size === 0 || [...state.tags].every(t => pTags.includes(t));
+      return qOk && cOk && tOk;
+    });
+    count.textContent = filtered.length;
+    grid.innerHTML = '';
+    filtered.forEach(p => {
+        const card = renderCard(p);
+        grid.appendChild(card);
+    });
+    if(filtered.length === 0){
+      grid.innerHTML = '<div class="card panel tiny">No packs match your filters.</div>';
+    }
   }
 
   function renderCard(p){
@@ -335,7 +305,6 @@
     const card = document.createElement('div');
     card.className = 'card pack';
 
-    // Get public URL for the download button from Supabase Storage
     const { data } = supabase.storage.from('packs').getPublicUrl(p.filename);
     const downloadUrl = data.publicUrl;
 
@@ -351,116 +320,13 @@
         </div>
         <div class="actions">
           <a class="btn sm" href="${downloadUrl}" download><i class="fa-solid fa-download"></i> Download</a>
-          <button class="btn sm" onclick="openEditModal(${p.id})"><i class="fa-regular fa-pen-to-square"></i> Edit</button>
+          <button class="btn sm edit-btn" data-id="${p.id}"><i class="fa-regular fa-pen-to-square"></i> Edit</button>
         </div>
       </div>`;
     return card;
   }
 
-  async function render(){
-    const grid = document.getElementById('grid');
-    const count = document.getElementById('count');
-    const filtered = packs.filter(p=>{
-      const qOk = !state.q || p.name.toLowerCase().includes(state.q);
-      const cOk = state.colors.size === 0 || state.colors.has(p.color);
-      const pTags = Array.isArray(p.tags) ? p.tags : [];
-      const tOk = state.tags.size === 0 || [...state.tags].every(t => pTags.includes(t));
-      return qOk && cOk && tOk;
-    });
-    count.textContent = filtered.length;
-    grid.innerHTML = '';
-    filtered.forEach(p=> grid.appendChild(renderCard(p)) );
-    if(filtered.length===0){
-      const empty = document.createElement('div');
-      empty.className='card panel';
-      empty.innerHTML = '<div class="tiny">No packs match your filters.</div>';
-      grid.appendChild(empty);
-    }
-  }
-
-  /* ====== EDIT MODAL ====== */
-  let currentEditId = null;
-  function openEditModal(id){
-    const p = packs.find(x=>x.id===id);
-    if(!p) return alert('Pack not found');
-    currentEditId = id;
-    document.getElementById('editId').value = id;
-    document.getElementById('editPackName').value = p.name || '';
-    state.editColor = p.color || null;
-    state.editTags = new Set(p.tags || []);
-    buildSwatches(editModalSwatches, (key, el)=>{
-      state.editColor = key; highlightOne(editModalSwatches, el);
-    }, new Set([state.editColor]));
-    buildTags(editModalTags, (key, el)=>{ toggleSet(state.editTags, key); el.classList.toggle('active'); }, state.editTags);
-    document.getElementById('editBackdrop').style.display = 'flex';
-  }
-
-  function closeEditModal(){
-    currentEditId = null;
-    document.getElementById('editBackdrop').style.display = 'none';
-    resetEditModal();
-  }
-  function resetEditModal(){
-    document.getElementById('editForm').reset();
-    state.editColor = null; state.editTags = new Set();
-    buildSwatches(editModalSwatches, (k,el)=>{ state.editColor=k; highlightOne(editModalSwatches, el); }, new Set());
-    buildTags(editModalTags, (k,el)=>{ toggleSet(state.editTags,k); el.classList.toggle('active'); }, state.editTags);
-  }
-
-  async function saveEdit(e){
-    e.preventDefault();
-    if(!currentEditId) return alert('No pack selected');
-    const id = Number(document.getElementById('editId').value);
-    const name = document.getElementById('editPackName').value.trim();
-    const color = state.editColor;
-    const tags = [...state.editTags];
-
-    const { error } = await supabase
-      .from('packs')
-      .update({ name, color, tags: tags.join(',') })
-      .eq('id', id);
-
-    if (error) {
-      console.error('Save edit failed', error);
-      alert('Save failed: ' + error.message);
-    } else {
-      const pIndex = packs.findIndex(x=>x.id===id);
-      if (pIndex !== -1) {
-        packs[pIndex] = {...packs[pIndex], name, color, tags};
-      }
-      render();
-      closeEditModal();
-    }
-  }
-
-  async function deleteCurrentPack(){
-    if(!currentEditId) return;
-    if(!confirm('Delete this pack? This cannot be undone.')) return;
-    
-    const packToDelete = packs.find(p => p.id === currentEditId);
-    if (!packToDelete) return alert('Pack not found to delete.');
-
-    // 1. Delete file from Storage
-    const { error: storageError } = await supabase.storage.from('packs').remove([packToDelete.filename]);
-    if (storageError) {
-        console.error('Failed to delete file from storage:', storageError);
-        alert('Could not delete the file, but will try to delete the record. Please check storage manually.');
-    }
-    
-    // 2. Delete record from database
-    const { error: dbError } = await supabase.from('packs').delete().eq('id', currentEditId);
-
-    if (dbError) {
-      console.error('Delete failed', dbError);
-      alert('Delete failed: ' + dbError.message);
-    } else {
-      packs = packs.filter(p=>p.id !== currentEditId);
-      render();
-      closeEditModal();
-    }
-  }
-
-  /* ====== UPLOAD FLOW (to Supabase) ====== */
+  /* ====== MODAL & FORM LOGIC ====== */
   function openModal(){
     document.getElementById('backdrop').style.display = 'flex';
     if(!state.modalColor){
@@ -473,13 +339,6 @@
     document.getElementById('backdrop').style.display = 'none';
     resetModal();
   }
-  function hintFile(){
-    const f = document.getElementById('fileInput').files[0];
-    if(f){
-      document.getElementById('fileHint').textContent = f.name;
-      document.querySelector('.file-upload-area').style.borderColor = 'var(--brand-1)';
-    }
-  }
   function resetModal(){
     document.getElementById('uploadForm').reset();
     state.modalColor = null; state.modalTags = new Set();
@@ -487,6 +346,35 @@
     buildTags(modalTags,(k,el)=>{ toggleSet(state.modalTags,k); el.classList.toggle('active'); }, state.modalTags);
     document.getElementById('fileHint').textContent = '.mcpack files only';
     document.querySelector('.file-upload-area').style.borderColor = 'var(--border)';
+  }
+
+  function openEditModal(id){
+    const p = packs.find(x=>x.id===id);
+    if(!p) return alert('Pack not found');
+    currentEditId = id;
+    document.getElementById('editId').value = id;
+    document.getElementById('editPackName').value = p.name || '';
+    state.editColor = p.color || null;
+    state.editTags = new Set(p.tags || []);
+    buildSwatches(editModalSwatches, (key, el)=>{ state.editColor = key; highlightOne(editModalSwatches, el);}, new Set([state.editColor]));
+    buildTags(editModalTags, (key, el)=>{ toggleSet(state.editTags, key); el.classList.toggle('active'); }, state.editTags);
+    document.getElementById('editBackdrop').style.display = 'flex';
+  }
+  function closeEditModal(){
+    currentEditId = null;
+    document.getElementById('editBackdrop').style.display = 'none';
+  }
+
+  /* ====== DATA HANDLING (Supabase) ====== */
+  async function loadPacksOnStartup(){
+    const { data, error } = await supabase.from('packs').select('*').order('created_at', { ascending: false });
+    if (error) {
+      console.error('Failed to load packs from Supabase', error);
+      packs = [];
+    } else {
+      packs = data.map(pack => ({...pack, tags: pack.tags ? pack.tags.split(',') : []}));
+    }
+    render();
   }
 
   async function handleUpload(e){
@@ -499,24 +387,18 @@
     const file = document.getElementById('fileInput').files[0];
     if(!file || !file.name.endsWith('.mcpack')){ alert('Select a valid .mcpack'); return; }
     if(!state.modalColor){ alert('Pick a primary color'); return; }
-    const tags = [...state.modalTags];
 
     try {
-      // 1. Upload file to Supabase Storage
       const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-      const { error: uploadError } = await supabase.storage
-        .from('packs')
-        .upload(fileName, file);
-      
+      const { error: uploadError } = await supabase.storage.from('packs').upload(fileName, file);
       if (uploadError) throw uploadError;
 
-      // 2. Add metadata to database via our serverless function
       const response = await fetch('/api/addpacks', {
           method: 'POST',
           body: JSON.stringify({
               name: name || file.name.replace(/\.mcpack$/i,''),
               color: state.modalColor,
-              tags: tags.length ? tags : ['hd'],
+              tags: [...state.modalTags].length ? [...state.modalTags] : ['hd'],
               filename: fileName,
           })
       });
@@ -531,7 +413,6 @@
       packs.unshift(newPack);
       render();
       closeModal();
-
     } catch(err) {
       console.error('Upload failed:', err);
       alert('Upload failed: ' + (err?.message || err));
@@ -541,51 +422,144 @@
     }
   }
 
-  /* LOAD PACKS FROM SUPABASE ON START */
-  async function loadPacksOnStartup(){
-    const { data, error } = await supabase
-        .from('packs')
-        .select('*')
-        .order('created_at', { ascending: false });
-    
+  async function saveEdit(e){
+    e.preventDefault();
+    if(!currentEditId) return alert('No pack selected');
+    const id = Number(document.getElementById('editId').value);
+    const name = document.getElementById('editPackName').value.trim();
+    const color = state.editColor;
+    const tags = [...state.editTags];
+
+    const { error } = await supabase.from('packs').update({ name, color, tags: tags.join(',') }).eq('id', id);
     if (error) {
-        console.error('Failed to load packs from Supabase', error);
-        packs = [];
+      alert('Save failed: ' + error.message);
     } else {
-        packs = data.map(pack => ({
-            ...pack,
-            tags: pack.tags ? pack.tags.split(',') : []
-        }));
+      const pIndex = packs.findIndex(x=>x.id===id);
+      if (pIndex !== -1) packs[pIndex] = {...packs[pIndex], name, color, tags};
+      render();
+      closeEditModal();
     }
-    render();
   }
 
-  /* ====== FILTER HELPERS ====== */
-  function applyFilters(){ state.q = document.getElementById('q').value.trim().toLowerCase(); render(); }
-  function clearSearch(){ document.getElementById('q').value=''; applyFilters(); }
-  function clearColors(){ state.colors.clear(); buildSwatches(colorSwatches,(k,el)=>{toggleSet(state.colors,k); el.classList.toggle('active'); applyFilters();}, state.colors); render(); }
-  function clearTags(){ state.tags.clear(); buildTags(tagCloud,(k,el)=>{toggleSet(state.tags,k); el.classList.toggle('active'); applyFilters();}, state.tags); render(); }
-  function resetAll(){ clearSearch(); clearColors(); clearTags(); }
+  async function deleteCurrentPack(){
+    if(!currentEditId || !confirm('Delete this pack? This cannot be undone.')) return;
+    
+    const packToDelete = packs.find(p => p.id === currentEditId);
+    if (!packToDelete) return alert('Pack not found to delete.');
 
-  // Expose functions to the global scope so onclick attributes can find them
-  window.goto = goto;
-  window.applyFilters = applyFilters;
-  window.clearSearch = clearSearch;
-  window.clearColors = clearColors;
-  window.clearTags = clearTags;
-  window.resetAll = resetAll;
-  window.openModal = openModal;
-  window.closeModal = closeModal;
-  window.hintFile = hintFile;
-  window.handleUpload = handleUpload;
-  window.openEditModal = openEditModal;
-  window.closeEditModal = closeEditModal;
-  window.saveEdit = saveEdit;
-  window.deleteCurrentPack = deleteCurrentPack;
+    const { error: storageError } = await supabase.storage.from('packs').remove([packToDelete.filename]);
+    if (storageError) alert('Could not delete file from storage.');
+    
+    const { error: dbError } = await supabase.from('packs').delete().eq('id', currentEditId);
+    if (dbError) {
+      alert('Delete failed: ' + dbError.message);
+    } else {
+      packs = packs.filter(p=>p.id !== currentEditId);
+      render();
+      closeEditModal();
+    }
+  }
 
-  /* BOOT */
-  goto('home');
+  /* ====== HELPERS & UI BUILD ====== */
+  function buildSwatches(container, clickHandler, activeSet){
+    container.innerHTML = '';
+    COLORS.forEach(c=>{
+      const b = document.createElement('button');
+      b.type='button';
+      b.className=`swatch ${activeSet?.has?.(c.key) ? 'active' : ''}`;
+      b.style.background = c.hex; b.title=c.key;
+      b.addEventListener('click', () => clickHandler(c.key, b));
+      container.appendChild(b);
+    })
+  }
+  function buildTags(container, clickHandler, activeSet){
+    container.innerHTML='';
+    TAGS.forEach(t=>{
+      const s = document.createElement('button');
+      s.type='button';
+      s.className=`tag ${activeSet?.has?.(t) ? 'active' : ''}`;
+      s.textContent = t.toUpperCase();
+      s.addEventListener('click', () => clickHandler(t, s));
+      container.appendChild(s);
+    })
+  }
+  function highlightOne(container, el){
+    [...container.children].forEach(c=>c.classList.remove('active'));
+    el.classList.add('active');
+  }
+  function toggleSet(set, key){ set.has(key)? set.delete(key): set.add(key); }
+  function escapeHtml(str){ return String(str||'').replace(/[&<>"]+/g, s=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[s])); }
+  function shade(hex, amt){
+    let col = hex.replace('#',''); if(col.length===3) col = col.split('').map(c=>c+c).join('');
+    let [r,g,b] = [0,0,0].map((_,i)=> parseInt(col.slice(i*2,i*2+2),16));
+    [r,g,b] = [r+amt,g+amt,b+amt].map(v=> Math.max(0,Math.min(255,v)));
+    return `#${[r,g,b].map(v=> v.toString(16).padStart(2,'0')).join('')}`;
+  }
+
+  /* ====== NEW: EVENT LISTENERS ====== */
+  function attachEventListeners() {
+    // Navigation
+    document.getElementById('brand-link').addEventListener('click', (e) => { e.preventDefault(); goto('home'); });
+    document.getElementById('nav-home-btn').addEventListener('click', () => goto('home'));
+    document.getElementById('nav-packs-btn').addEventListener('click', () => goto('packs'));
+    document.getElementById('hero-get-started-btn').addEventListener('click', () => goto('packs'));
+    document.getElementById('hero-browse-btn').addEventListener('click', () => goto('packs'));
+    
+    // Filtering
+    document.getElementById('q').addEventListener('input', (e) => { state.q = e.target.value.trim().toLowerCase(); render(); });
+    document.getElementById('clear-search-btn').addEventListener('click', () => { document.getElementById('q').value=''; state.q=''; render(); });
+    document.getElementById('clear-colors-btn').addEventListener('click', () => { state.colors.clear(); buildSwatches(colorSwatches,(k,el)=>{toggleSet(state.colors,k);el.classList.toggle('active');render();}, state.colors); render(); });
+    document.getElementById('clear-tags-btn').addEventListener('click', () => { state.tags.clear(); buildTags(tagCloud,(k,el)=>{toggleSet(state.tags,k);el.classList.toggle('active');render();}, state.tags); render(); });
+    document.getElementById('reset-filters-btn').addEventListener('click', () => { document.getElementById('q').value=''; state.q=''; state.colors.clear(); state.tags.clear(); buildSwatches(colorSwatches,(k,el)=>{toggleSet(state.colors,k);el.classList.toggle('active');render();}, state.colors); buildTags(tagCloud,(k,el)=>{toggleSet(state.tags,k);el.classList.toggle('active');render();}, state.tags); render(); });
+    
+    // Modals
+    document.getElementById('upload-pack-btn').addEventListener('click', openModal);
+    document.getElementById('close-modal-btn').addEventListener('click', closeModal);
+    document.getElementById('cancel-upload-btn').addEventListener('click', closeModal);
+    document.getElementById('close-edit-modal-btn').addEventListener('click', closeEditModal);
+    document.getElementById('cancel-edit-btn').addEventListener('click', closeEditModal);
+    
+    // Forms
+    document.getElementById('uploadForm').addEventListener('submit', handleUpload);
+    document.getElementById('editForm').addEventListener('submit', saveEdit);
+    document.getElementById('delete-pack-btn').addEventListener('click', deleteCurrentPack);
+    
+    // File Input
+    document.getElementById('file-upload-area').addEventListener('click', () => document.getElementById('fileInput').click());
+    document.getElementById('fileInput').addEventListener('change', () => {
+        const f = document.getElementById('fileInput').files[0];
+        if(f) {
+            document.getElementById('fileHint').textContent = f.name;
+            document.querySelector('.file-upload-area').style.borderColor = 'var(--brand-1)';
+        }
+    });
+
+    // Event Delegation for dynamically created Edit buttons
+    grid.addEventListener('click', (e) => {
+        const editButton = e.target.closest('.edit-btn');
+        if (editButton) {
+            const id = Number(editButton.dataset.id);
+            openEditModal(id);
+        }
+    });
+  }
+
+  /* ====== INITIALIZATION ====== */
+  // Build UI controls
+  buildSwatches(colorSwatches,(k,el)=>{ toggleSet(state.colors,k); el.classList.toggle('active'); render(); }, state.colors);
+  buildTags(tagCloud,(k,el)=>{ toggleSet(state.tags,k); el.classList.toggle('active'); render(); }, state.tags);
+  buildSwatches(modalSwatches,(k,el)=>{ state.modalColor=k; highlightOne(modalSwatches, el); }, new Set());
+  buildTags(modalTags,(k,el)=>{ toggleSet(state.modalTags,k); el.classList.toggle('active'); }, state.modalTags);
+  buildSwatches(editModalSwatches,(k,el)=>{ state.editColor=k; highlightOne(editModalSwatches, el); }, new Set());
+  buildTags(editModalTags,(k,el)=>{ toggleSet(state.editTags,k); el.classList.toggle('active'); }, state.editTags);
+  
+  // Attach all event listeners to the DOM
+  attachEventListeners();
+  
+  // Load initial data and set page
   loadPacksOnStartup();
+  goto('home');
+
 </script>
 </body>
 </html>
