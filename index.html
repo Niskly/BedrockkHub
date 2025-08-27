@@ -20,9 +20,11 @@
     .brand-badge{height:44px;width:44px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,var(--brand-2),var(--brand-1));box-shadow:0 12px 30px rgba(124,58,237,.22)}
     .brand-title{font-weight:800;letter-spacing:.6px}
     .nav-actions{display:flex;gap:.6rem}
-    .ghost{border:1px solid var(--border);background:transparent;color:var(--text)}
-    .btn{padding:.6rem 1rem;border-radius:12px;font-weight:700;display:inline-flex;align-items:center;gap:.55rem;cursor:pointer}
+    .btn{padding:.6rem 1rem;border-radius:12px;font-weight:700;display:inline-flex;align-items:center;gap:.55rem;cursor:pointer;border:1px solid transparent}
+    .ghost{border-color:var(--border);background:transparent;color:var(--text)}
     .primary{background:linear-gradient(90deg,var(--brand-1),var(--brand-2));box-shadow:0 10px 30px rgba(124,58,237,.22)}
+    /* NEW: Style for red danger button */
+    .btn.danger{background-color:#ef444420;border-color:#ef444490;color:#ef4444}
     .container{max-width:1200px;margin:0 auto;padding:28px 18px}
     .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:28px;align-items:center}
     .card{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.02));border:1px solid var(--border);border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.55)}
@@ -56,8 +58,7 @@
     .meta{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}
     .badge{font-size:12px;padding:.25rem .55rem;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:white}
     .actions{display:flex;gap:6px;align-items:center}
-    .btn.sm{padding:.25rem .5rem;border-radius:8px;font-weight:700;border:1px solid var(--border);background:rgba(255,255,255,.02);color:white;font-size:13px;display:inline-flex;align-items:center;gap:.4rem;min-width:auto}
-    a.btn.sm{display:inline-flex;align-items:center}
+    .btn.sm{padding:.25rem .5rem;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:.4rem;min-width:auto}
     .backdrop{position:fixed;inset:0;background:rgba(2,6,23,.6);display:none;align-items:center;justify-content:center;z-index:60}
     .modal{width:100%;max-width:760px;background:var(--bg-2);border-radius:12px;overflow:hidden}
     .modal .panel{padding:20px}
@@ -216,6 +217,20 @@
     </div>
   </div>
 
+  <div id="confirmDeleteBackdrop" class="backdrop">
+    <div class="modal card" style="max-width: 420px;">
+        <div class="panel">
+            <strong>Are you sure?</strong>
+            <p class="tiny" style="margin: 4px 0 12px;">This will permanently delete the texture pack. This action cannot be undone.</p>
+            <div style="display:flex;justify-content:flex-end;gap:10px;">
+                <button class="btn sm ghost" onclick="cancelDelete()">No, cancel</button>
+                <button class="btn sm danger" onclick="confirmDelete()"><i class="fa-solid fa-trash"></i> Yes, delete</button>
+            </div>
+        </div>
+    </div>
+  </div>
+
+
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -232,6 +247,7 @@
   let packs = [];
   const state = { q:'', colors:new Set(), tags:new Set(), modalColor:null, modalTags:new Set(), editColor:null, editTags:new Set() };
   let currentEditId = null;
+  let packIdToDelete = null; // NEW: Variable to hold the ID of the pack to be deleted
 
   /* ====== GLOBAL FUNCTIONS for onclick ====== */
   window.goto = function(which){
@@ -333,28 +349,43 @@
     }
   }
 
-  // NEW: Function to delete a pack directly by its ID
-  window.deletePack = async function(id) {
-    if (!confirm('Are you sure you want to delete this pack? This cannot be undone.')) return;
+  // NEW: Delete workflow with custom confirmation
+  window.promptDelete = function(id) {
+    packIdToDelete = id;
+    document.getElementById('confirmDeleteBackdrop').style.display = 'flex';
+  }
+
+  window.cancelDelete = function() {
+    packIdToDelete = null;
+    document.getElementById('confirmDeleteBackdrop').style.display = 'none';
+  }
+
+  window.confirmDelete = async function() {
+    if (!packIdToDelete) return;
     
+    const id = packIdToDelete;
     const packToDelete = packs.find(p => p.id === id);
     if (!packToDelete) {
         alert('Error: Pack not found.');
+        cancelDelete();
         return;
     }
 
     try {
         // Delete file from storage first
-        await supabase.storage.from('packs').remove([packToDelete.filename]);
+        const { error: storageError } = await supabase.storage.from('packs').remove([packToDelete.filename]);
+        if (storageError) throw storageError;
 
         // Then delete the record from the database
-        const { error } = await supabase.from('packs').delete().eq('id', id);
-        if (error) throw error;
+        const { error: dbError } = await supabase.from('packs').delete().eq('id', id);
+        if (dbError) throw dbError;
 
         // Refresh the pack list
         await loadPacksOnStartup();
     } catch (error) {
         alert('Delete failed: ' + error.message);
+    } finally {
+        cancelDelete(); // Close the modal whether it succeeds or fails
     }
   }
   
@@ -422,7 +453,7 @@
         <div class="actions">
           <a class="btn sm" href="${data.publicUrl}" download><i class="fa-solid fa-download"></i> Download</a>
           <button class="btn sm" onclick="openEditModal(${p.id})"><i class="fa-regular fa-pen-to-square"></i> Edit</button>
-          <button class="btn sm" style="color:#ef4444;border-color:#ef444440;" onclick="deletePack(${p.id})"><i class="fa-solid fa-trash"></i> Delete</button>
+          <button class="btn sm danger" onclick="promptDelete(${p.id})"><i class="fa-solid fa-trash"></i> Delete</button>
         </div>
       </div>`;
     return card;
