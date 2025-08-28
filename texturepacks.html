@@ -73,14 +73,14 @@
     .file-upload-area i{font-size:32px;margin-bottom:12px;color:var(--brand-1)}
     .file-hint{margin-top:6px;color:var(--muted)}
     .label-with-icon { display: flex; align-items: center; gap: 6px; }
-    @media (max-width:1024px){.layout{grid-template-columns:1fr}.sidebar{position:static}.packs{grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));}.hero{grid-template-columns:1fr}.title{font-size:36px}}
+    @media (max-width:1024px){.layout{grid-template-columns:1fr}.sidebar{position:static}.packs{grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));}}
     @media (max-width:768px){.packs{grid-template-columns:1fr;}.nav-actions{display:none}}
   </style>
 </head>
 <body>
   <header>
     <div class="nav">
-      <a class="brand" href="/home.html">
+      <a class="brand" href="/">
         <div class="brand-badge"><i class="fa-solid fa-cube"></i></div>
         <div>
           <div class="brand-title">BEDROCKHUB</div>
@@ -88,7 +88,7 @@
         </div>
       </a>
       <div class="nav-actions">
-        <a class="btn ghost" href="/home.html">Home</a>
+        <a class="btn ghost" href="/">Home</a>
         <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
         <a class="btn primary" href="https://discord.gg/KtafawJZxM" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-discord"></i> Join Discord</a>
       </div>
@@ -252,12 +252,8 @@
   let currentEditId = null;
 
   /* ====== GLOBAL FUNCTIONS for onclick ====== */
-  window.goto = function(which){
-    // This is now handled by regular links, but we keep the function in case it's used elsewhere
-    // A better approach is to remove it completely if not needed.
-    if (which === 'home') window.location.href = '/home.html';
-    if (which === 'packs') window.location.href = '/texturepacks.html';
-  }
+  // NOTE: The goto function is no longer needed as we are using standard <a> links
+  // window.goto = function(which){ ... } 
 
   window.openModal = function(){
     document.getElementById('backdrop').style.display = 'flex';
@@ -560,38 +556,32 @@
   }
 
   function init() {
-    // This is a list of functions that need to be globally available for your HTML's 'onclick' attributes.
-    window.goto = goto;
-    window.openModal = openModal;
-    window.closeModal = closeModal;
-    window.openEditModal = openEditModal;
-    window.closeEditModal = closeEditModal;
-    window.handleUpload = handleUpload;
-    window.saveEdit = saveEdit;
-    window.promptDelete = promptDelete;
-    window.cancelDelete = cancelDelete;
-    window.confirmDelete = confirmDelete;
     window.applyFilters = applyFilters;
     window.clearSearch = clearSearch;
     window.clearColors = clearColors;
     window.clearTags = clearTags;
     window.clearResolutions = clearResolutions;
     window.resetAll = resetAll;
+    window.promptDelete = promptDelete;
+    window.cancelDelete = cancelDelete;
+    window.confirmDelete = confirmDelete;
     window.hintFile = hintFile;
     window.toggleOptionsMenu = toggleOptionsMenu;
 
-    buildSwatches(document.getElementById('colorSwatches'), (k, el)=>{ toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
-    buildTags(document.getElementById('tagCloud'), (k, el)=>{ toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
-    buildResolutionBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions);
-    
-    window.addEventListener('click', () => {
-        document.querySelectorAll('.pack-options-menu').forEach(menu => {
-            menu.style.display = 'none';
+    // This code only runs on the texture packs page
+    if (document.getElementById('grid')) {
+        buildSwatches(document.getElementById('colorSwatches'), (k, el)=>{ toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
+        buildTags(document.getElementById('tagCloud'), (k, el)=>{ toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
+        buildResolutionBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions);
+        
+        window.addEventListener('click', () => {
+            document.querySelectorAll('.pack-options-menu').forEach(menu => {
+                menu.style.display = 'none';
+            });
         });
-    });
 
-    goto('home');
-    loadPacksOnStartup();
+        loadPacksOnStartup();
+    }
   }
 
   init();
