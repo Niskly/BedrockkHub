@@ -16,12 +16,14 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Pack ID is required.' });
     }
 
-    // Call the database function we created in Step 1
-    const { error } = await supabase.rpc('increment_downloads', { pack_id: id });
+    // CORRECTED: This now matches your SQL function name
+    const { error } = await supabase.rpc('increment_download_count', { pack_id: id });
 
-    if (error) { throw error; }
+    if (error) { 
+      throw error; 
+    }
 
-    res.status(200).json({ message: 'Download count incremented.' });
+    res.status(200).json({ message: 'Download count incremented successfully.' });
 
   } catch (error) {
     console.error('Error incrementing download count:', error);
