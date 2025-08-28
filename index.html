@@ -1,80 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BedrockHub — Home</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <style>
-    :root{
-      --bg-0:#060910;--bg-1:#0a0f1a;--bg-2:#0e1524;--muted:#a8b3cf;--text:#e8eefc;--border:rgba(255,255,255,.08);
-      --brand-1:#7c3aed;--brand-2:#2563eb;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{margin:0;background:radial-gradient(1200px 800px at 10% -10%,rgba(124,58,237,.18),transparent),radial-gradient(1200px 800px at 90% 10%,rgba(37,99,235,.18),transparent),linear-gradient(180deg,var(--bg-1),var(--bg-0) 40%,var(--bg-1));color:var(--text);font:500 15px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial}
-    a{color:inherit;text-decoration:none}
-    header{position:sticky;top:0;z-index:50;backdrop-filter:saturate(1.2) blur(10px);background:linear-gradient(90deg,rgba(255,255,255,.02),rgba(255,255,255,.01));border-bottom:1px solid var(--border)}
-    .nav{max-width:1200px;margin:0 auto;padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
-    .brand{display:flex;align-items:center;gap:.8rem}
-    .brand-badge{height:44px;width:44px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,var(--brand-2),var(--brand-1));box-shadow:0 12px 30px rgba(124,58,237,.22)}
-    .brand-title{font-weight:800;letter-spacing:.6px}
-    .nav-actions{display:flex;gap:.6rem}
-    .btn{padding:.6rem 1rem;border-radius:12px;font-weight:700;display:inline-flex;align-items:center;gap:.55rem;cursor:pointer;border:1px solid transparent}
-    .ghost{border-color:var(--border);background:transparent;color:var(--text)}
-    .primary{background:linear-gradient(90deg,var(--brand-1),var(--brand-2));box-shadow:0 10px 30px rgba(124,58,237,.22)}
-    .container{max-width:1200px;margin:0 auto;padding:28px 18px}
-    .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:28px;align-items:center}
-    .card{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.02));border:1px solid var(--border);border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.55)}
-    .hero-card{padding:34px}
-    .title{font-size:44px;line-height:1.05;font-weight:900;margin:0}
-    .title .grad{background:linear-gradient(90deg,var(--brand-1),var(--brand-2));-webkit-background-clip:text;background-clip:text;color:transparent}
-    .muted{color:var(--muted)}
-    .hero-cta{display:flex;gap:.8rem;margin-top:18px}
-    .preview{padding:16px}
-    .grid-mini{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-    .mini{display:flex;gap:.7rem;align-items:center;background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01));border:1px solid var(--border);padding:10px;border-radius:12px;transition:transform .2s}
-    .mini:hover{transform:translateY(-3px)}
-    @media (max-width:1024px){.hero{grid-template-columns:1fr}.title{font-size:36px}}
-    @media (max-width:768px){.nav-actions{display:none}}
-  </style>
-</head>
-<body>
-  <header>
-    <div class="nav">
-      <a class="brand" href="/">
-        <div class="brand-badge"><i class="fa-solid fa-cube"></i></div>
-        <div>
-          <div class="brand-title">BEDROCKHUB</div>
-          <div class="tiny">Minecraft Bedrock • community</div>
-        </div>
-      </a>
-      <div class="nav-actions">
-        <a class="btn ghost" href="/">Home</a>
-        <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
-        <a class="btn primary" href="https://discord.gg/KtafawJZxM" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-discord"></i> Join Discord</a>
-      </div>
-    </div>
-  </header>
 
-  <section class="container">
-    <div class="hero">
-      <div class="card hero-card">
-        <h1 class="title">Discover & share elite <span class="grad">Bedrock texture packs</span></h1>
-        <p class="muted">A billionaire-grade experience: razor-clean UI, smart filters, instant uploads. Click Texture Packs to browse, filter by color & tags, and upload your own .mcpack.</p>
-        <div class="hero-cta">
-          <a class="btn primary" href="/texturepacks.html"><i class="fa-solid fa-paint-roller"></i> Get started</a>
-          <a class="btn ghost" href="/texturepacks.html">Browse gallery</a>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BedrockHub — Home</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        :root {
+            --bg-0: #000000;
+            --bg-1: #1c1c1c;
+            --bg-2: #2c2c2c;
+            --muted: #a8b3cf;
+            --text: #e8eefc;
+            --border: rgba(255, 255, 255, .12);
+            --brand-1: #e74c3c;
+            --brand-2: #c0392b;
+        }
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            margin: 0;
+            background: var(--bg-0);
+            color: var(--text);
+            font: 500 15px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;
+        }
+        a { color: inherit; text-decoration: none; }
+        header {
+            position: sticky; top: 0; z-index: 50;
+            backdrop-filter: saturate(1.2) blur(10px);
+            background: rgba(12, 12, 12, 0.7);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav { max-width: 1200px; margin: 0 auto; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+        .brand { display: flex; align-items: center; gap: .8rem; }
+        .brand-badge {
+            height: 44px;
+            width: 44px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, var(--brand-2), var(--brand-1));
+            box-shadow: 0 12px 30px rgba(231, 76, 60, .22);
+        }
+        .brand-icon-custom {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 4px;
+            transform: translateY(-2px);
+        }
+        .brand-title { font-weight: 800; letter-spacing: .6px; }
+        .nav-actions { display: flex; gap: .6rem; }
+        .btn { padding: .6rem 1rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; }
+        .ghost { border-color: var(--border); background: transparent; color: var(--text); }
+        .primary {
+            background: linear-gradient(90deg, var(--brand-1), var(--brand-2));
+            box-shadow: 0 10px 30px rgba(231, 76, 60, .22);
+            color: white;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 28px 18px; }
+        .card { background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 24px 70px rgba(0, 0, 0, .55); }
+        
+        /* Styles specific to the Home page */
+        .hero { display: grid; grid-template-columns: 1.05fr .95fr; gap: 28px; align-items: center; }
+        .hero-card { padding: 34px; }
+        .title { font-size: 44px; line-height: 1.05; font-weight: 900; margin: 0; }
+        .title .grad {
+            background: linear-gradient(90deg, var(--brand-1), var(--brand-2));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .muted { color: var(--muted); }
+        .hero-cta { display: flex; gap: .8rem; margin-top: 18px; }
+        .preview { padding: 16px; }
+        .preview-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .grid-mini { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .mini { display: flex; gap: .7rem; align-items: center; background: var(--bg-2); border: 1px solid var(--border); padding: 10px; border-radius: 12px; transition: transform .2s, border-color .2s; }
+        .mini:hover { transform: translateY(-3px); border-color: rgba(255,255,255,.2); }
+        .mini .icon { height: 38px; width: 38px; border-radius: 8px; display: grid; place-items: center; background: var(--bg-0); }
+        
+        @media (max-width: 1024px) { .hero { grid-template-columns: 1fr; } .title { font-size: 36px; } }
+        @media (max-width: 768px) { .nav-actions { display: none; } }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="nav">
+            <a class="brand" href="/">
+                <div class="brand-badge">
+                    <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="BedrockHub Icon" class="brand-icon-custom">
+                </div>
+                <div>
+                    <div class="brand-title">BEDROCKHUB</div>
+                    <div class="tiny">Minecraft Bedrock • community</div>
+                </div>
+            </a>
+            <div class="nav-actions">
+                <a class="btn ghost" href="/">Home</a>
+                <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
+                <a class="btn primary" href="https://discord.gg/KtafawJZxM" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-discord"></i> Join Discord</a>
+            </div>
         </div>
-      </div>
-      <aside class="card preview">
-        <div class="preview-head"><strong>Latest drops</strong><span class="tiny">just now</span></div>
-        <div class="grid-mini">
-          <div class="mini"><div class="icon"><i class="fa-solid fa-cubes"></i></div><div><div style="font-weight:800">Stellar HD</div><div class="tiny">HD • Realistic</div></div></div>
-          <div class="mini"><div class="icon" style="background:linear-gradient(135deg,#a855f7,#ec4899)"><i class="fa-solid fa-crown"></i></div><div><div style="font-weight:800">Royal PvP</div><div class="tiny">PvP • Purple</div></div></div>
+    </header>
+
+    <section class="container">
+        <div class="hero">
+            <div class="card hero-card">
+                <h1 class="title">Discover & share elite <span class="grad">Bedrock texture packs</span></h1>
+                <p class="muted">A premium experience: razor-clean UI, smart filters, and instant uploads. Click "Texture Packs" to browse the gallery, filter by color and tags, or upload your own .mcpack file.</p>
+                <div class="hero-cta">
+                    <a class="btn primary" href="/texturepacks.html"><i class="fa-solid fa-arrow-right"></i> Browse Packs</a>
+                    <a class="btn ghost" href="https://discord.gg/KtafawJZxM" target="_blank" rel="noopener noreferrer">Join Discord</a>
+                </div>
+            </div>
+            <aside class="card preview">
+                <div class="preview-head"><strong>Latest Uploads</strong><span class="tiny">just now</span></div>
+                <div class="grid-mini">
+                    <div class="mini">
+                        <div class="icon" style="background: linear-gradient(135deg, #22c55e, #14b8a6);"><i class="fa-solid fa-tree"></i></div>
+                        <div>
+                            <div style="font-weight:800">Verdant HD</div>
+                            <div class="tiny">HD • Natural</div>
+                        </div>
+                    </div>
+                    <div class="mini">
+                        <div class="icon" style="background:linear-gradient(135deg,#a855f7,#ec4899)"><i class="fa-solid fa-khanda"></i></div>
+                        <div>
+                            <div style="font-weight:800">Nebula PvP</div>
+                            <div class="tiny">PvP • Purple</div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
         </div>
-      </aside>
-    </div>
-  </section>
+    </section>
 </body>
+
 </html>
