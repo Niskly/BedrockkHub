@@ -55,6 +55,25 @@
     .content{padding:14px}
     .meta{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}
     .badge{font-size:12px;padding:.25rem .55rem;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:white;font-weight: 700;}
+    
+    /* --- NEW CSS ADDED HERE --- */
+    .pack-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 12px;
+      margin-top: 12px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    /* --- END OF NEW CSS --- */
+    
     .pack-options-btn {position: absolute;top: 8px;right: 8px;z-index: 2;background: rgba(0,0,0,0.4);color: white;border: 1px solid rgba(255,255,255,0.1);border-radius: 8px;width: 30px;height: 30px;display: grid;place-items: center;cursor: pointer;padding: 0;}
     .pack-options-menu {display: none;position: absolute;top: 42px;right: 8px;z-index: 3;background: var(--bg-2);border: 1px solid var(--border);border-radius: 8px;overflow: hidden;box-shadow: 0 8px 20px rgba(0,0,0,0.4);}
     .pack-options-menu a {display: flex;align-items: center;gap: 10px;padding: 8px 14px;font-size: 14px;}
@@ -128,106 +147,11 @@
   </section>
 
   <div id="backdrop" class="backdrop">
-    <div class="modal card">
-      <div class="panel">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <strong>Upload Texture Pack</strong>
-          <button class="btn sm" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="tiny">Select a .mcpack file, set a name, choose color & tags.</div>
-      </div>
-      <div class="panel" style="padding-top:0">
-        <form id="uploadForm" onsubmit="handleUpload(event)">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-            <div>
-              <label class="tiny label-with-icon">
-                <span>Pack name</span>
-                <i class="fa-solid fa-pencil fa-xs"></i>
-              </label>
-              <input id="packName" required placeholder="e.g. Crystal PvP" style="width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:var(--text)">
-            </div>
-            <div>
-              <label class="tiny">Primary color</label>
-              <div id="modalSwatches" class="swatches"></div>
-            </div>
-            <div style="grid-column: span 2;">
-              <label class="tiny">Resolution</label>
-              <div id="modalResolutions" class="resolutions"></div>
-            </div>
-            <div style="grid-column: span 2;">
-              <label class="tiny">Tags</label>
-              <div id="modalTags" class="tags"></div>
-            </div>
-            <div class="file-upload-area" onclick="document.getElementById('fileInput').click()" style="grid-column: span 2;">
-              <i class="fa-solid fa-file-arrow-up"></i>
-              <div>Drag & drop or <span style="color:var(--brand-1)">browse files</span></div>
-              <div class="file-hint" id="fileHint">.mcpack files only</div>
-              <input id="fileInput" type="file" accept=".mcpack" style="display:none" onchange="hintFile()" />
-            </div>
-          </div>
-          <div class="modal-footer center-actions">
-            <button type="button" class="btn sm ghost" onclick="closeModal()">Cancel</button>
-            <button id="submitBtn" class="btn primary" type="submit"><i class="fa-solid fa-upload"></i> Upload</button>
-          </div>
-        </form>
-      </div>
     </div>
-  </div>
-
   <div id="editBackdrop" class="backdrop">
-    <div class="modal card">
-      <div class="panel">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <strong>Edit Texture Pack</strong>
-          <button class="btn sm" onclick="closeEditModal()"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="tiny">Change name, tags or color.</div>
       </div>
-      <div class="panel" style="padding-top:0">
-        <form id="editForm" onsubmit="saveEdit(event)">
-          <input type="hidden" id="editId" />
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-            <div>
-              <label class="tiny">Pack name</label>
-              <input id="editPackName" required placeholder="Pack name" style="width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:var(--text)">
-            </div>
-            <div>
-              <label class="tiny">Primary color</label>
-              <div id="editModalSwatches" class="swatches"></div>
-            </div>
-            <div style="grid-column: span 2;">
-                <label class="tiny">Resolution</label>
-                <div id="editModalResolutions" class="resolutions"></div>
-            </div>
-            <div style="grid-column: span 2;">
-              <label class="tiny">Tags</label>
-              <div id="editModalTags" class="tags"></div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <div></div>
-            <div class="right-actions">
-                <button type="button" class="btn sm danger" onclick="promptDelete()">Delete</button>
-                <button class="btn primary" type="submit"><i class="fa-solid fa-save"></i> Save</button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
   <div id="confirmDeleteBackdrop" class="backdrop">
-    <div class="modal card" style="max-width: 420px;">
-        <div class="panel">
-            <strong>Are you sure you want to delete it?</strong>
-            <p class="tiny" style="margin: 4px 0 12px;">This will permanently delete the texture pack.</p>
-            <div style="display:flex;justify-content:flex-end;gap:10px;">
-                <button class="btn sm danger" onclick="cancelDelete()">No</button>
-                <button class="btn sm success" onclick="confirmDelete()">Yes</button>
-            </div>
-        </div>
-    </div>
-  </div>
+      </div>
 
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -258,214 +182,57 @@
     buildTags(document.getElementById('modalTags'), (k, el) => { toggleSet(state.modalTags, k); el.classList.toggle('active'); }, new Set());
     buildResolutionBoxes(document.getElementById('modalResolutions'), (res, el) => { state.modalResolution = res; highlightOne(el.parentElement, el); }, null);
   }
-
-  window.closeModal = function(){
-    document.getElementById('backdrop').style.display = 'none';
-    document.getElementById('uploadForm').reset();
-    document.getElementById('fileHint').textContent = '.mcpack files only';
-  }
-
-  window.openEditModal = function(id){
-    const p = packs.find(x=>x.id===id);
-    if(!p) return alert('Pack not found');
-    currentEditId = id;
-    document.getElementById('editId').value = id;
-    document.getElementById('editPackName').value = p.name || '';
-    state.editColor = p.color || null;
-    state.editTags = new Set(p.tags || []);
-    state.editResolution = p.resolution || null;
-    buildSwatches(document.getElementById('editModalSwatches'), (k, el)=>{ state.editColor = k; highlightOne(el.parentElement, el); }, new Set([state.editColor]));
-    buildTags(document.getElementById('editModalTags'), (k, el)=>{ toggleSet(state.editTags, k); el.classList.toggle('active'); }, state.editTags);
-    buildResolutionBoxes(document.getElementById('editModalResolutions'), (res, el) => { state.editResolution = res; highlightOne(el.parentElement, el); }, state.editResolution);
-    document.getElementById('editBackdrop').style.display = 'flex';
-  }
-
-  window.closeEditModal = function(){
-    currentEditId = null;
-    document.getElementById('editBackdrop').style.display = 'none';
-  }
-  
-  window.handleUpload = async function(e){
-    e.preventDefault();
-    const submitBtn = document.getElementById('submitBtn');
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
-    
-    const name = document.getElementById('packName').value.trim();
-    const file = document.getElementById('fileInput').files[0];
-    if(!file || !file.name.endsWith('.mcpack')){ alert('Select a valid .mcpack'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; return; }
-    if(!state.modalColor){ alert('Pick a primary color'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; return; }
-    if(!state.modalResolution){ alert('Pick a resolution'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; return; }
-
-    try {
-      let iconUrl = null;
-      const zip = new JSZip();
-      const contents = await zip.loadAsync(file);
-      const iconFile = contents.file('pack_icon.png');
-
-      if (iconFile) {
-        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...';
-        const iconBlob = await iconFile.async('blob');
-        const iconFileName = `icons/${Date.now()}-pack_icon.png`;
-        const { error: iconError } = await supabase.storage.from('packs').upload(iconFileName, iconBlob);
-        if (iconError) throw iconError;
-        const { data } = supabase.storage.from('packs').getPublicUrl(iconFileName);
-        iconUrl = data.publicUrl;
-      }
-
-      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Pack...';
-      const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-      await supabase.storage.from('packs').upload(fileName, file);
-
-      const response = await fetch('/api/addpacks', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-              name: name || file.name.replace(/\.mcpack$/i,''),
-              color: state.modalColor,
-              tags: [...state.modalTags],
-              filename: fileName,
-              resolution: state.modalResolution,
-              icon_url: iconUrl 
-          })
-      });
-
-      if (!response.ok) throw new Error((await response.json()).details || 'Failed to add pack metadata.');
-      
-      await loadPacksOnStartup();
-      closeModal();
-    } catch(err) {
-      alert('Upload failed: ' + err.message);
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload';
-    }
-  }
-  
-  window.saveEdit = async function(e){
-    e.preventDefault();
-    if(!currentEditId) return;
-    const { error } = await supabase
-      .from('packs')
-      .update({
-        name: document.getElementById('editPackName').value.trim(),
-        color: state.editColor,
-        tags: [...state.editTags].join(','),
-        resolution: state.editResolution
-      })
-      .eq('id', currentEditId);
-
-    if (error) {
-      alert('Save failed: ' + error.message);
-    } else {
-      await loadPacksOnStartup();
-      closeEditModal();
-    }
-  }
-
-  window.promptDelete = function() {
-    if(!currentEditId) return;
-    document.getElementById('confirmDeleteBackdrop').style.display = 'flex';
-  }
-
-  window.cancelDelete = function() {
-    document.getElementById('confirmDeleteBackdrop').style.display = 'none';
-  }
-
-  window.confirmDelete = async function() {
-    if (!currentEditId) return;
-    const packToDelete = packs.find(p => p.id === currentEditId);
-    if (!packToDelete) {
-        cancelDelete();
-        return;
-    }
-    try {
-        await supabase.storage.from('packs').remove([packToDelete.filename]);
-        if (packToDelete.icon_url) {
-            const iconFileName = packToDelete.icon_url.split('/').pop();
-            await supabase.storage.from('packs').remove([`icons/${iconFileName}`]);
-        }
-        const { error } = await supabase.from('packs').delete().eq('id', currentEditId);
-        if (error) throw error;
-        await loadPacksOnStartup();
-    } catch (error) {
-        alert('Delete failed: ' + error.message);
-    } finally {
-        cancelDelete();
-        closeEditModal();
-    }
-  }
-  
-  window.applyFilters = function(){ state.q = document.getElementById('q').value.trim().toLowerCase(); render(); }
-  window.clearSearch = function(){ document.getElementById('q').value=''; applyFilters(); }
-  window.clearColors = function(){ state.colors.clear(); buildSwatches(document.getElementById('colorSwatches'),(k,el)=>{toggleSet(state.colors,k); el.classList.toggle('active'); render();}, state.colors); render(); }
-  window.clearTags = function(){ state.tags.clear(); buildTags(document.getElementById('tagCloud'),(k,el)=>{toggleSet(state.tags,k); el.classList.toggle('active'); render();}, state.tags); render(); }
-  window.clearResolutions = function(){ state.resolutions.clear(); buildResolutionBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions); render(); }
-  window.resetAll = function(){ clearSearch(); clearColors(); clearTags(); clearResolutions(); }
-  window.hintFile = function(){
-    const fileInput = document.getElementById('fileInput');
-    const file = fileInput.files[0];
-    if(file){ 
-      document.getElementById('fileHint').textContent = file.name;
-      const packNameInput = document.getElementById('packName');
-      packNameInput.value = file.name.replace(/\.mcpack$/i, '');
-    }
-  }
-
-  window.toggleOptionsMenu = function(event, id) {
-    event.stopPropagation();
-    const menu = document.getElementById(`options-menu-${id}`);
-    const isVisible = menu.style.display === 'block';
-    document.querySelectorAll('.pack-options-menu').forEach(m => m.style.display = 'none');
-    menu.style.display = isVisible ? 'none' : 'block';
-  }
+  // --- All your other window.xxx functions like closeModal, openEditModal, etc. remain the same ---
+  // ... (keeping them out for brevity, but they are in your original code and should remain)
 
   /* ====== INTERNAL FUNCTIONS ====== */
+
+  // --- NEW HELPER FUNCTIONS ADDED HERE ---
+  function formatDate(isoString) {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+  
+  window.handleDownload = async function(event, packId, downloadUrl) {
+    event.preventDefault(); 
+
+    try {
+      await fetch('/api/increment-download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: packId })
+      });
+
+      const countElement = document.getElementById(`downloads-${packId}`);
+      if (countElement) {
+        const currentCount = parseInt(countElement.textContent.replace(/,/g, ''), 10);
+        countElement.textContent = (currentCount + 1).toLocaleString();
+      }
+    } catch (err) {
+      console.error("Failed to update download count:", err);
+    } finally {
+      window.location.href = downloadUrl;
+    }
+  }
+  // --- END OF NEW HELPER FUNCTIONS ---
+
+
   function buildSwatches(container, clickHandler, activeSet){
-    container.innerHTML = '';
-    COLORS.forEach(c=>{
-      const b = document.createElement('button');
-      b.type='button';
-      b.className='swatch'+( (activeSet && activeSet.has(c.key)) ?' active':'');
-      b.style.background = c.hex; b.title=c.key;
-      b.onclick = ()=> clickHandler(c.key, b);
-      container.appendChild(b);
-    })
+    // ... your original code
   }
   function buildTags(container, clickHandler, activeSet){
-    container.innerHTML='';
-    TAGS.forEach(t=>{
-      const s = document.createElement('button');
-      s.type='button';
-      s.className='tag'+(activeSet?.has(t)?' active':'');
-      s.textContent = t.toUpperCase();
-      s.onclick = ()=> clickHandler(t, s);
-      container.appendChild(s);
-    })
+    // ... your original code
   }
-
   function buildResolutionBoxes(container, clickHandler, activeState) {
-    container.innerHTML = '';
-    const isMultiSelect = activeState instanceof Set;
-    RESOLUTIONS.forEach(res => {
-        const box = document.createElement('button');
-        box.type = 'button';
-        const isActive = isMultiSelect ? activeState.has(res) : (activeState === res);
-        box.className = 'res-box' + (isActive ? ' active' : '');
-        box.textContent = res;
-        box.onclick = () => clickHandler(res, box);
-        container.appendChild(box);
-    });
+    // ... your original code
   }
-
   function escapeHtml(str){ return String(str||'').replace(/[&<>"']/g, s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
   function shade(hex, amt){
-    let col = hex.replace('#',''); if(col.length===3) col=col.split('').map(c=>c+c).join('');
-    let [r,g,b] = [0,0,0].map((_,i)=> parseInt(col.slice(i*2,i*2+2),16));
-    [r,g,b] = [r+amt,g+amt,b+amt].map(v=> Math.max(0,Math.min(255,v)));
-    return `#${[r,g,b].map(v=> v.toString(16).padStart(2,'0')).join('')}`;
+    // ... your original code
   }
 
+  // --- MODIFIED renderCard FUNCTION ---
   function renderCard(p){
     const colorKey = p.color || 'gray';
     const color = COLORS.find(c=>c.key===colorKey)?.hex || '#6b7280';
@@ -494,11 +261,11 @@
           <i class="fa-solid fa-ellipsis-vertical"></i>
         </button>
         <div class="pack-options-menu" id="options-menu-${p.id}">
-            <a href="${data.publicUrl}" download>
-                <i class="fa-solid fa-download"></i> Download
+            <a href="${data.publicUrl}" onclick="handleDownload(event, ${p.id}, '${data.publicUrl}')">
+              <i class="fa-solid fa-download"></i> Download
             </a>
             <a href="#" onclick="openEditModal(${p.id}); event.preventDefault();">
-                <i class="fa-regular fa-pen-to-square"></i> Edit
+              <i class="fa-regular fa-pen-to-square"></i> Edit
             </a>
         </div>
       </div>
@@ -509,33 +276,26 @@
           ${p.resolution ? `<span class="badge">${p.resolution}</span>` : ''}
           ${(p.tags||[]).map(t=>`<span class="badge">${t.toUpperCase()}</span>`).join('')}
         </div>
+        <div class="pack-stats">
+          <div class="stat-item">
+            <span>⬇️</span>
+            <span id="downloads-${p.id}">${(p.download_count || 0).toLocaleString()}</span>
+          </div>
+          <div class="stat-item">
+            <span>📅</span>
+            <span>${formatDate(p.created_at)}</span>
+          </div>
+        </div>
       </div>`;
     return card;
   }
 
   async function render(){
-    const grid = document.getElementById('grid');
-    const count = document.getElementById('count');
-    const filtered = packs.filter(p=>{
-      const qOk = !state.q || p.name.toLowerCase().includes(state.q);
-      const cOk = state.colors.size === 0 || state.colors.has(p.color);
-      const tOk = state.tags.size === 0 || [...state.tags].every(t => (p.tags || []).includes(t));
-      const rOk = state.resolutions.size === 0 || state.resolutions.has(p.resolution);
-      return qOk && cOk && tOk && rOk;
-    });
-    count.textContent = filtered.length;
-    grid.innerHTML = '';
-    filtered.forEach(p => grid.appendChild(renderCard(p)));
-    if(filtered.length===0){
-      grid.innerHTML = '<div class="card panel tiny">No packs match your filters.</div>';
-    }
+    // ... your original render function
   }
-
   function highlightOne(container, el){
-    [...container.children].forEach(c=>c.classList.remove('active'));
-    el.classList.add('active');
+    // ... your original highlightOne function
   }
-
   function toggleSet(set, key){ set.has(key)? set.delete(key): set.add(key); }
   
   async function loadPacksOnStartup(){
@@ -550,39 +310,7 @@
   }
 
   function init() {
-    // This is a list of functions that need to be globally available for your HTML's 'onclick' attributes.
-    window.openModal = openModal;
-    window.closeModal = closeModal;
-    window.openEditModal = openEditModal;
-    window.closeEditModal = closeEditModal;
-    window.handleUpload = handleUpload;
-    window.saveEdit = saveEdit;
-    window.promptDelete = promptDelete;
-    window.cancelDelete = cancelDelete;
-    window.confirmDelete = confirmDelete;
-    window.applyFilters = applyFilters;
-    window.clearSearch = clearSearch;
-    window.clearColors = clearColors;
-    window.clearTags = clearTags;
-    window.clearResolutions = clearResolutions;
-    window.resetAll = resetAll;
-    window.hintFile = hintFile;
-    window.toggleOptionsMenu = toggleOptionsMenu;
-
-    // This code only runs on the texture packs page
-    if (document.getElementById('grid')) {
-        buildSwatches(document.getElementById('colorSwatches'), (k, el)=>{ toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
-        buildTags(document.getElementById('tagCloud'), (k, el)=>{ toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
-        buildResolutionBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions);
-        
-        window.addEventListener('click', () => {
-            document.querySelectorAll('.pack-options-menu').forEach(menu => {
-                menu.style.display = 'none';
-            });
-        });
-
-        loadPacksOnStartup();
-    }
+    // ... your original init function
   }
 
   init();
