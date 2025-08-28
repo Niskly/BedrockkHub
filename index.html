@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BedrockHub — Texture Packs (Supabase)</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
     :root{
       --bg-0:#060910;--bg-1:#0a0f1a;--bg-2:#0e1524;--muted:#a8b3cf;--text:#e8eefc;--border:rgba(255,255,255,.08);
@@ -55,6 +56,8 @@
     .packs{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
     .pack{overflow:hidden}
     .thumb{height:140px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#1f2937,#0f172a);display:flex;align-items:center;justify-content:center}
+    /* NEW: Styles for the pack icon image */
+    .thumb img { width: 100%; height: 100%; object-fit: cover; }
     .thumb .glyph{height:68px;width:68px;border-radius:14px;display:grid;place-items:center;color:white}
     .content{padding:14px}
     .meta{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}
@@ -65,7 +68,6 @@
     .backdrop{position:fixed;inset:0;background:rgba(2,6,23,.6);display:none;align-items:center;justify-content:center;z-index:60}
     .modal{width:100%;max-width:760px;background:var(--bg-2);border-radius:12px;overflow:hidden}
     .modal .panel{padding:20px}
-    /* UPDATED: Modal footer alignment */
     .modal-footer{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 20px 20px}
     .modal-footer .right-actions { display: flex; gap: 10px; }
     .file-upload-area{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;border:2px dashed var(--border);border-radius:12px;background:rgba(255,255,255,.02);text-align:center;cursor:pointer;grid-column:span 2}
@@ -185,8 +187,10 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn sm ghost" onclick="closeModal()">Cancel</button>
-            <button id="submitBtn" class="btn primary" type="submit"><i class="fa-solid fa-upload"></i> Upload</button>
+            <div class="right-actions">
+                <button type="button" class="btn sm ghost" onclick="closeModal()">Cancel</button>
+                <button id="submitBtn" class="btn primary" type="submit"><i class="fa-solid fa-upload"></i> Upload</button>
+            </div>
           </div>
         </form>
       </div>
@@ -281,13 +285,17 @@
     state.modalResolution = '16x';
     state.modalTags = new Set();
     buildSwatches(document.getElementById('modalSwatches'), (k, el) => { state.modalColor = k; highlightOne(el.parentElement, el); }, new Set(['blue']));
-    buildTags(document.getElementById('modalTags'), (k, el) => { toggleSet(state.modalTags, k); el.classList.toggle('active'); }, state.modalTags);
+    buildTags(document.getElementById('modalTags'), (k, el) => { toggleSet(state.modalTags, k); el.classList.toggle('active'); }, new Set());
     buildResolutionBoxes(document.getElementById('modalResolutions'), (res, el) => { state.modalResolution = res; highlightOne(el.parentElement, el); }, '16x');
   }
 
   window.closeModal = function(){
     document.getElementById('backdrop').style.display = 'none';
     document.getElementById('uploadForm').reset();
+    state.modalColor = null;
+    state.modalResolution = null;
+    state.modalTags = new Set();
+    document.getElementById('fileHint').textContent = '.mcpack files only';
   }
 
   window.openEditModal = function(id){
@@ -310,11 +318,12 @@
     document.getElementById('editBackdrop').style.display = 'none';
   }
   
+  // NEW: Updated upload logic to handle icon extraction
   window.handleUpload = async function(e){
     e.preventDefault();
     const submitBtn = document.getElementById('submitBtn');
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
     
     const name = document.getElementById('packName').value.trim();
     const file = document.getElementById('fileInput').files[0];
@@ -323,6 +332,25 @@
     if(!state.modalResolution){ alert('Pick a resolution'); return; }
 
     try {
+      let iconUrl = null;
+      // Use JSZip to read the mcpack file
+      const zip = new JSZip();
+      const contents = await zip.loadAsync(file);
+      const iconFile = contents.file('pack_icon.png');
+
+      if (iconFile) {
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...';
+        const iconBlob = await iconFile.async('blob');
+        const iconFileName = `icons/${Date.now()}-pack_icon.png`;
+        // Upload the extracted icon to a separate folder in storage
+        const { error: iconError } = await supabase.storage.from('packs').upload(iconFileName, iconBlob);
+        if (iconError) throw iconError;
+        // Get the public URL of the uploaded icon
+        const { data } = supabase.storage.from('packs').getPublicUrl(iconFileName);
+        iconUrl = data.publicUrl;
+      }
+
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Pack...';
       const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
       await supabase.storage.from('packs').upload(fileName, file);
 
@@ -334,7 +362,8 @@
               color: state.modalColor,
               tags: [...state.modalTags],
               filename: fileName,
-              resolution: state.modalResolution
+              resolution: state.modalResolution,
+              icon_url: iconUrl // Send the new icon URL to the backend
           })
       });
 
@@ -389,6 +418,11 @@
     }
     try {
         await supabase.storage.from('packs').remove([packToDelete.filename]);
+        // NEW: Also delete the icon if it exists
+        if (packToDelete.icon_url) {
+            const iconFileName = packToDelete.icon_url.split('/').pop();
+            await supabase.storage.from('packs').remove([`icons/${iconFileName}`]);
+        }
         const { error } = await supabase.from('packs').delete().eq('id', currentEditId);
         if (error) throw error;
         await loadPacksOnStartup();
@@ -457,6 +491,7 @@
     return `#${[r,g,b].map(v=> v.toString(16).padStart(2,'0')).join('')}`;
   }
 
+  // UPDATED: renderCard now shows the custom icon if it exists
   function renderCard(p){
     const colorKey = p.color || 'gray';
     const color = COLORS.find(c=>c.key===colorKey)?.hex || '#6b7280';
@@ -464,9 +499,13 @@
     card.className = 'card pack';
     const { data } = supabase.storage.from('packs').getPublicUrl(p.filename);
 
+    const thumbContent = p.icon_url 
+      ? `<img src="${p.icon_url}" alt="${escapeHtml(p.name)} Icon">`
+      : `<div class="glyph" style="background:${color}"><i class="fa-solid fa-cube"></i></div>`;
+
     card.innerHTML = `
       <div class="thumb" style="background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})">
-        <div class="glyph" style="background:${color}"><i class="fa-solid fa-cube"></i></div>
+        ${thumbContent}
       </div>
       <div class="content">
         <h4>${escapeHtml(p.name)}</h4>
