@@ -24,7 +24,6 @@
     .ghost{border-color:var(--border);background:transparent;color:var(--text)}
     .primary{background:linear-gradient(90deg,var(--brand-1),var(--brand-2));box-shadow:0 10px 30px rgba(124,58,237,.22)}
     .btn.danger{background-color:#ef444420;border-color:#ef444490;color:#ef4444}
-    /* NEW: Style for green success button */
     .btn.success{background-color:#22c55e20;border-color:#22c55e90;color:#22c55e}
     .container{max-width:1200px;margin:0 auto;padding:28px 18px}
     .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:28px;align-items:center}
@@ -44,14 +43,14 @@
     .panel h3{margin:0 0 10px 0;font-size:14px;letter-spacing:.4px;color:#cbd5e1;text-transform:uppercase}
     .search{display:flex;gap:.6rem;align-items:center;}
     .search input{flex:1;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:var(--text)}
-    /* FIX: Styles for the clear search button */
     .search .btn.sm.ghost{padding: .5rem; line-height: 1; height: 38px; width: 38px; display: grid; place-items: center;}
-    .swatches{display:flex;flex-wrap:wrap;gap:8px}
+    .swatches, .resolutions{display:flex;flex-wrap:wrap;gap:8px}
     .swatch{width:34px;height:34px;border-radius:999px;border:2px solid rgba(255,255,255,.12);cursor:pointer;position:relative}
-    .swatch.active{outline:3px solid #eab308 !important}
+    .swatch.active, .res-box.active{outline:3px solid #eab308 !important}
     .tags{display:flex;flex-wrap:wrap;gap:8px}
     .tag{padding:.45rem .7rem;border-radius:999px;background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.22);cursor:pointer;color:white}
     .tag.active{background:rgba(124,58,237,.3)}
+    .res-box{padding:.45rem .7rem;border-radius:8px;background:rgba(255,255,255,.02);border:1px solid var(--border);cursor:pointer}
     .tiny{font-size:12px;color:var(--muted)}
     .packs{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
     .pack{overflow:hidden}
@@ -126,6 +125,10 @@
         <div id="colorSwatches" class="swatches"></div>
         <div class="row" style="margin-top:8px"><button class="btn sm" onclick="clearColors()">Clear colors</button></div>
         <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+        <h3>Resolutions</h3>
+        <div id="resolutionBoxes" class="resolutions"></div>
+        <div class="row" style="margin-top:8px"><button class="btn sm" onclick="clearResolutions()">Clear resolutions</button></div>
+        <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
         <h3>Tags</h3>
         <div id="tagCloud" class="tags"></div>
         <div class="row" style="margin-top:8px"><button class="btn sm" onclick="clearTags()">Clear tags</button></div>
@@ -163,11 +166,15 @@
               <label class="tiny">Primary color</label>
               <div id="modalSwatches" class="swatches"></div>
             </div>
-            <div>
+            <div style="grid-column: span 2;">
+              <label class="tiny">Resolution</label>
+              <div id="modalResolutions" class="resolutions"></div>
+            </div>
+            <div style="grid-column: span 2;">
               <label class="tiny">Tags</label>
               <div id="modalTags" class="tags"></div>
             </div>
-            <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
+            <div class="file-upload-area" onclick="document.getElementById('fileInput').click()" style="grid-column: span 2;">
               <i class="fa-solid fa-file-arrow-up"></i>
               <div>Drag & drop or <span style="color:var(--brand-1)">browse files</span></div>
               <div class="file-hint" id="fileHint">.mcpack files only</div>
@@ -204,15 +211,18 @@
               <label class="tiny">Primary color</label>
               <div id="editModalSwatches" class="swatches"></div>
             </div>
-            <div>
+            <div style="grid-column: span 2;">
+                <label class="tiny">Resolution</label>
+                <div id="editModalResolutions" class="resolutions"></div>
+            </div>
+            <div style="grid-column: span 2;">
               <label class="tiny">Tags</label>
               <div id="editModalTags" class="tags"></div>
             </div>
-            <div class="tiny" style="align-self:center">File stays the same.</div>
           </div>
           <div class="modal-footer">
+            <button type="button" class="btn sm danger" onclick="promptDelete()">Delete</button>
             <div style="flex:1"></div>
-            <button type="button" class="btn sm danger" onclick="promptDelete()"><i class="fa-solid fa-trash"></i> Delete</button>
             <button class="btn primary" type="submit"><i class="fa-solid fa-save"></i> Save</button>
           </div>
         </form>
@@ -243,12 +253,17 @@
   /* ====== DATA & STATE ====== */
   const COLORS = [
     {key:'red',hex:'#ef4444'},{key:'blue',hex:'#3b82f6'},{key:'green',hex:'#22c55e'},{key:'yellow',hex:'#eab308'},
-    {key:'purple',hex:'#a855f7'},{key:'pink',hex:'#ec4899'},{key:'orange',hex:'#f97316'},{key:'teal',hex:'#14b8a6'},{key:'gray',hex:'#6b7280'}
+    {key:'purple',hex:'#a855f7'},{key:'pink',hex:'#ec4899'},{key:'orange',hex:'#f97316'},{key:'teal',hex:'#14b8a6'},{key:'gray',hex:'#6b7280'},
+    {key:'black', hex:'#1f2937'} // NEW: Black color added
   ];
   const TAGS = ['pvp','natural','realistic','cartoon','medieval','modern','rpg','hd','adventure'];
+  // NEW: Resolutions data
+  const RESOLUTIONS = ['8x', '16x', '32x', '64x'];
   let packs = [];
-  const state = { q:'', colors:new Set(), tags:new Set(), modalColor:null, modalTags:new Set(), editColor:null, editTags:new Set() };
+  // NEW: Added resolutions to state
+  const state = { q:'', colors:new Set(), tags:new Set(), resolutions: new Set(), modalColor:null, modalTags:new Set(), modalResolution: null, editColor:null, editTags:new Set(), editResolution: null };
   let currentEditId = null;
+  let packIdToDelete = null;
 
   /* ====== GLOBAL FUNCTIONS for onclick ====== */
   window.goto = function(which){
@@ -260,28 +275,31 @@
 
   window.openModal = function(){
     document.getElementById('backdrop').style.display = 'flex';
-    if(!state.modalColor){
-      state.modalColor = 'blue';
-      const first = document.getElementById('modalSwatches').querySelector('.swatch');
-      if(first) first.classList.add('active');
-    }
+    state.modalColor = 'blue';
+    state.modalResolution = '16x'; // Default resolution
+    state.modalTags = new Set();
+    buildSwatches(document.getElementById('modalSwatches'), (k, el) => { state.modalColor = k; highlightOne(el.parentElement, el); }, new Set(['blue']));
+    buildTags(document.getElementById('modalTags'), (k, el) => { toggleSet(state.modalTags, k); el.classList.toggle('active'); }, state.modalTags);
+    buildResolutionBoxes(document.getElementById('modalResolutions'), (res, el) => { state.modalResolution = res; highlightOne(el.parentElement, el); }, '16x');
   }
 
   window.closeModal = function(){
     document.getElementById('backdrop').style.display = 'none';
-    resetModal();
+    document.getElementById('uploadForm').reset();
   }
 
   window.openEditModal = function(id){
     const p = packs.find(x=>x.id===id);
     if(!p) return alert('Pack not found');
-    currentEditId = id; // IMPORTANT: We set the ID here for the delete function to use
+    currentEditId = id;
     document.getElementById('editId').value = id;
     document.getElementById('editPackName').value = p.name || '';
     state.editColor = p.color || null;
     state.editTags = new Set(p.tags || []);
-    buildSwatches(document.getElementById('editModalSwatches'), (key, el)=>{ state.editColor = key; highlightOne(document.getElementById('editModalSwatches'), el); }, new Set([state.editColor]));
-    buildTags(document.getElementById('editModalTags'), (key, el)=>{ toggleSet(state.editTags, key); el.classList.toggle('active'); }, state.editTags);
+    state.editResolution = p.resolution || null;
+    buildSwatches(document.getElementById('editModalSwatches'), (k, el)=>{ state.editColor = key; highlightOne(el.parentElement, el); }, new Set([state.editColor]));
+    buildTags(document.getElementById('editModalTags'), (k, el)=>{ toggleSet(state.editTags, k); el.classList.toggle('active'); }, state.editTags);
+    buildResolutionBoxes(document.getElementById('editModalResolutions'), (res, el) => { state.editResolution = res; highlightOne(el.parentElement, el); }, state.editResolution);
     document.getElementById('editBackdrop').style.display = 'flex';
   }
 
@@ -300,12 +318,11 @@
     const file = document.getElementById('fileInput').files[0];
     if(!file || !file.name.endsWith('.mcpack')){ alert('Select a valid .mcpack'); return; }
     if(!state.modalColor){ alert('Pick a primary color'); return; }
-    const tags = [...state.modalTags];
+    if(!state.modalResolution){ alert('Pick a resolution'); return; }
 
     try {
       const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-      const { error: uploadError } = await supabase.storage.from('packs').upload(fileName, file);
-      if (uploadError) throw uploadError;
+      await supabase.storage.from('packs').upload(fileName, file);
 
       const response = await fetch('/api/addpacks', {
           method: 'POST',
@@ -313,8 +330,9 @@
           body: JSON.stringify({
               name: name || file.name.replace(/\.mcpack$/i,''),
               color: state.modalColor,
-              tags: tags.length ? tags : ['hd'],
+              tags: [...state.modalTags],
               filename: fileName,
+              resolution: state.modalResolution // NEW: Send resolution to API
           })
       });
 
@@ -339,6 +357,7 @@
         name: document.getElementById('editPackName').value.trim(),
         color: state.editColor,
         tags: [...state.editTags].join(','),
+        resolution: state.editResolution // NEW: Update resolution
       })
       .eq('id', currentEditId);
 
@@ -350,36 +369,31 @@
     }
   }
 
-  // NEW: Delete workflow with custom confirmation from Edit modal
   window.promptDelete = function() {
-    if(!currentEditId) return; // Make sure we know which pack to delete
+    if(!currentEditId) return;
     document.getElementById('confirmDeleteBackdrop').style.display = 'flex';
   }
 
   window.cancelDelete = function() {
+    packIdToDelete = null;
     document.getElementById('confirmDeleteBackdrop').style.display = 'none';
   }
 
   window.confirmDelete = async function() {
     if (!currentEditId) return;
-    
     const packToDelete = packs.find(p => p.id === currentEditId);
     if (!packToDelete) {
-        alert('Error: Pack not found.');
         cancelDelete();
         return;
     }
-
     try {
         await supabase.storage.from('packs').remove([packToDelete.filename]);
         const { error } = await supabase.from('packs').delete().eq('id', currentEditId);
         if (error) throw error;
-
         await loadPacksOnStartup();
     } catch (error) {
         alert('Delete failed: ' + error.message);
     } finally {
-        // Close both modals
         cancelDelete();
         closeEditModal();
     }
@@ -387,14 +401,14 @@
   
   window.applyFilters = function(){ state.q = document.getElementById('q').value.trim().toLowerCase(); render(); }
   window.clearSearch = function(){ document.getElementById('q').value=''; applyFilters(); }
-  window.clearColors = function(){ state.colors.clear(); buildSwatches(document.getElementById('colorSwatches'),(k,el)=>{toggleSet(state.colors,k); el.classList.toggle('active'); applyFilters();}, state.colors); render(); }
-  window.clearTags = function(){ state.tags.clear(); buildTags(document.getElementById('tagCloud'),(k,el)=>{toggleSet(state.tags,k); el.classList.toggle('active'); applyFilters();}, state.tags); render(); }
-  window.resetAll = function(){ clearSearch(); clearColors(); clearTags(); }
+  window.clearColors = function(){ state.colors.clear(); buildSwatches(document.getElementById('colorSwatches'),(k,el)=>{toggleSet(state.colors,k); el.classList.toggle('active'); render();}, state.colors); render(); }
+  window.clearTags = function(){ state.tags.clear(); buildTags(document.getElementById('tagCloud'),(k,el)=>{toggleSet(state.tags,k); el.classList.toggle('active'); render();}, state.tags); render(); }
+  // NEW: Function to clear resolution filters
+  window.clearResolutions = function(){ state.resolutions.clear(); buildResolutionBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions); render(); }
+  window.resetAll = function(){ clearSearch(); clearColors(); clearTags(); clearResolutions(); }
   window.hintFile = function(){
     const f = document.getElementById('fileInput').files[0];
-    if(f){
-      document.getElementById('fileHint').textContent = f.name;
-    }
+    if(f){ document.getElementById('fileHint').textContent = f.name; }
   }
 
   /* ====== INTERNAL FUNCTIONS ====== */
@@ -421,6 +435,21 @@
     })
   }
 
+  // NEW: Function to build resolution filter boxes
+  function buildResolutionBoxes(container, clickHandler, activeState) {
+    container.innerHTML = '';
+    const isMultiSelect = activeState instanceof Set;
+    RESOLUTIONS.forEach(res => {
+        const box = document.createElement('button');
+        box.type = 'button';
+        const isActive = isMultiSelect ? activeState.has(res) : activeState === res;
+        box.className = 'res-box' + (isActive ? ' active' : '');
+        box.textContent = res;
+        box.onclick = () => clickHandler(res, box);
+        container.appendChild(box);
+    });
+  }
+
   function escapeHtml(str){ return String(str||'').replace(/[&<>"']/g, s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
   function shade(hex, amt){
     let col = hex.replace('#',''); if(col.length===3) col=col.split('').map(c=>c+c).join('');
@@ -444,6 +473,7 @@
         <h4>${escapeHtml(p.name)}</h4>
         <div class="meta">
           <span class="badge" style="border-color:${color}">${p.color?.toUpperCase()}</span>
+          ${p.resolution ? `<span class="badge">${p.resolution}</span>` : ''}
           ${(p.tags||[]).map(t=>`<span class="badge">${t.toUpperCase()}</span>`).join('')}
         </div>
         <div class="actions">
@@ -460,24 +490,17 @@
     const filtered = packs.filter(p=>{
       const qOk = !state.q || p.name.toLowerCase().includes(state.q);
       const cOk = state.colors.size === 0 || state.colors.has(p.color);
-      const pTags = Array.isArray(p.tags) ? p.tags : [];
-      const tOk = state.tags.size === 0 || [...state.tags].every(t => pTags.includes(t));
-      return qOk && cOk && tOk;
+      const tOk = state.tags.size === 0 || [...state.tags].every(t => (p.tags || []).includes(t));
+      // NEW: Filter by resolution
+      const rOk = state.resolutions.size === 0 || state.resolutions.has(p.resolution);
+      return qOk && cOk && tOk && rOk;
     });
     count.textContent = filtered.length;
     grid.innerHTML = '';
-    filtered.forEach(p=> grid.appendChild(renderCard(p)));
+    filtered.forEach(p=> grid.appendChild(p)));
     if(filtered.length===0){
       grid.innerHTML = '<div class="card panel tiny">No packs match your filters.</div>';
     }
-  }
-
-  function resetModal(){
-    document.getElementById('uploadForm').reset();
-    state.modalColor = null;
-    state.modalTags = new Set();
-    document.getElementById('fileHint').textContent = '.mcpack files only';
-    document.querySelector('.file-upload-area').style.borderColor = 'var(--border)';
   }
 
   function highlightOne(container, el){
@@ -499,13 +522,17 @@
   }
 
   /* ====== INITIALIZE APP ====== */
-  buildSwatches(document.getElementById('colorSwatches'), (key, el)=>{ toggleSet(state.colors, key); el.classList.toggle('active'); applyFilters(); }, state.colors);
-  buildTags(document.getElementById('tagCloud'), (key, el)=>{ toggleSet(state.tags, key); el.classList.toggle('active'); applyFilters(); }, state.tags);
-  buildSwatches(document.getElementById('modalSwatches'), (key, el)=>{ state.modalColor = key; highlightOne(el.parentElement, el); }, new Set());
-  buildTags(document.getElementById('modalTags'), (key, el)=>{ toggleSet(state.modalTags, key); el.classList.toggle('active'); }, state.modalTags);
-  
-  goto('home');
-  loadPacksOnStartup();
+  function init() {
+    buildSwatches(document.getElementById('colorSwatches'), (k, el)=>{ toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
+    buildTags(document.getElementById('tagCloud'), (k, el)=>{ toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
+    // NEW: Build resolution filters
+    buildResolutionBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions);
+    
+    goto('home');
+    loadPacksOnStartup();
+  }
+
+  init();
 </script>
 </body>
 </html>
