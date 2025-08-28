@@ -63,8 +63,51 @@
     .thumb .glyph{height:68px;width:68px;border-radius:14px;display:grid;place-items:center;color:white}
     .content{padding:14px}
     .meta{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}
-    .badge{font-size:12px;padding:.25rem .55rem;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:white}
-    .actions{display:flex;gap:6px;align-items:center}
+    /* UPDATED: Badges are now bold */
+    .badge{font-size:12px;padding:.25rem .55rem;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:white;font-weight: 700;}
+    /* NEW: Styles for the 3-dots options menu */
+    .pack-options-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      z-index: 2;
+      background: rgba(0,0,0,0.4);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      padding: 0;
+    }
+    .pack-options-menu {
+      display: none;
+      position: absolute;
+      top: 42px;
+      right: 8px;
+      z-index: 3;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    }
+    .pack-options-menu a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      font-size: 14px;
+    }
+    .pack-options-menu a:hover {
+      background: var(--brand-1);
+    }
+    .pack-options-menu a i {
+      width: 16px;
+      text-align: center;
+    }
     .btn.sm{padding:.25rem .5rem;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:.4rem;min-width:auto}
     .btn.sm.btn-clear{padding: .2rem .6rem;font-size: 12px;font-weight: 800;background: linear-gradient(90deg, var(--brand-1), var(--brand-2));color: var(--bg-0);border: none;}
     .backdrop{position:fixed;inset:0;background:rgba(2,6,23,.6);display:none;align-items:center;justify-content:center;z-index:60}
@@ -319,6 +362,19 @@
     currentEditId = null;
     document.getElementById('editBackdrop').style.display = 'none';
   }
+
+  // NEW: Function to show/hide the 3-dots menu
+  window.toggleOptionsMenu = function(event, id) {
+    event.stopPropagation(); // Prevents the global click listener from firing immediately
+    const menu = document.getElementById(`options-menu-${id}`);
+    const isVisible = menu.style.display === 'block';
+
+    // Hide all other open menus first
+    document.querySelectorAll('.pack-options-menu').forEach(m => m.style.display = 'none');
+    
+    // Toggle the current menu
+    menu.style.display = isVisible ? 'none' : 'block';
+  }
   
   window.handleUpload = async function(e){
     e.preventDefault();
@@ -488,7 +544,6 @@
     return `#${[r,g,b].map(v=> v.toString(16).padStart(2,'0')).join('')}`;
   }
 
-  // UPDATED: renderCard now shows the custom icon with a blurry background if it exists
   function renderCard(p){
     const colorKey = p.color || 'gray';
     const color = COLORS.find(c=>c.key===colorKey)?.hex || '#6b7280';
@@ -497,7 +552,6 @@
     const { data } = supabase.storage.from('packs').getPublicUrl(p.filename);
 
     let thumbContent;
-    // FIX: Conditionally set the background style
     let thumbBackgroundStyle;
 
     if (p.icon_url) {
@@ -505,17 +559,26 @@
         <div class="pack-icon-bg" style="background-image: url('${p.icon_url}');"></div>
         <img class="pack-icon" src="${p.icon_url}" alt="${escapeHtml(p.name)} Icon">
       `;
-      // Use a neutral background when a custom icon is present to prevent color bleed
       thumbBackgroundStyle = `background: linear-gradient(135deg,#1f2937,#0f172a);`;
     } else {
       thumbContent = `<div class="glyph" style="background:${color}"><i class="fa-solid fa-cube"></i></div>`;
-      // Use the dynamic color background only for the default glyph
       thumbBackgroundStyle = `background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})`;
     }
 
     card.innerHTML = `
       <div class="thumb" style="${thumbBackgroundStyle}">
         ${thumbContent}
+        <button class="pack-options-btn" onclick="toggleOptionsMenu(event, ${p.id})">
+          <i class="fa-solid fa-ellipsis-vertical"></i>
+        </button>
+        <div class="pack-options-menu" id="options-menu-${p.id}">
+            <a href="${data.publicUrl}" download>
+                <i class="fa-solid fa-download"></i> Download
+            </a>
+            <a href="#" onclick="openEditModal(${p.id}); event.preventDefault();">
+                <i class="fa-regular fa-pen-to-square"></i> Edit
+            </a>
+        </div>
       </div>
       <div class="content">
         <h4>${escapeHtml(p.name)}</h4>
@@ -523,10 +586,6 @@
           <span class="badge" style="border-color:${color}">${p.color?.toUpperCase()}</span>
           ${p.resolution ? `<span class="badge">${p.resolution}</span>` : ''}
           ${(p.tags||[]).map(t=>`<span class="badge">${t.toUpperCase()}</span>`).join('')}
-        </div>
-        <div class="actions">
-          <a class="btn sm" href="${data.publicUrl}" download><i class="fa-solid fa-download"></i> Download</a>
-          <button class="btn sm" onclick="openEditModal(${p.id})"><i class="fa-regular fa-pen-to-square"></i> Edit</button>
         </div>
       </div>`;
     return card;
@@ -579,11 +638,19 @@
     window.cancelDelete = cancelDelete;
     window.confirmDelete = confirmDelete;
     window.hintFile = hintFile;
+    window.toggleOptionsMenu = toggleOptionsMenu; // Make the new menu function global
 
     buildSwatches(document.getElementById('colorSwatches'), (k, el)=>{ toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
     buildTags(document.getElementById('tagCloud'), (k, el)=>{ toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
     buildResolutionBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions);
     
+    // NEW: Global click listener to close open menus
+    window.addEventListener('click', () => {
+        document.querySelectorAll('.pack-options-menu').forEach(menu => {
+            menu.style.display = 'none';
+        });
+    });
+
     goto('home');
     loadPacksOnStartup();
   }
