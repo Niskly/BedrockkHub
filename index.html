@@ -254,16 +254,13 @@
   const COLORS = [
     {key:'red',hex:'#ef4444'},{key:'blue',hex:'#3b82f6'},{key:'green',hex:'#22c55e'},{key:'yellow',hex:'#eab308'},
     {key:'purple',hex:'#a855f7'},{key:'pink',hex:'#ec4899'},{key:'orange',hex:'#f97316'},{key:'teal',hex:'#14b8a6'},{key:'gray',hex:'#6b7280'},
-    {key:'black', hex:'#1f2937'} // NEW: Black color added
+    {key:'black', hex:'#1f2937'}
   ];
   const TAGS = ['pvp','natural','realistic','cartoon','medieval','modern','rpg','hd','adventure'];
-  // NEW: Resolutions data
   const RESOLUTIONS = ['8x', '16x', '32x', '64x'];
   let packs = [];
-  // NEW: Added resolutions to state
   const state = { q:'', colors:new Set(), tags:new Set(), resolutions: new Set(), modalColor:null, modalTags:new Set(), modalResolution: null, editColor:null, editTags:new Set(), editResolution: null };
   let currentEditId = null;
-  let packIdToDelete = null;
 
   /* ====== GLOBAL FUNCTIONS for onclick ====== */
   window.goto = function(which){
@@ -276,7 +273,7 @@
   window.openModal = function(){
     document.getElementById('backdrop').style.display = 'flex';
     state.modalColor = 'blue';
-    state.modalResolution = '16x'; // Default resolution
+    state.modalResolution = '16x';
     state.modalTags = new Set();
     buildSwatches(document.getElementById('modalSwatches'), (k, el) => { state.modalColor = k; highlightOne(el.parentElement, el); }, new Set(['blue']));
     buildTags(document.getElementById('modalTags'), (k, el) => { toggleSet(state.modalTags, k); el.classList.toggle('active'); }, state.modalTags);
@@ -297,7 +294,7 @@
     state.editColor = p.color || null;
     state.editTags = new Set(p.tags || []);
     state.editResolution = p.resolution || null;
-    buildSwatches(document.getElementById('editModalSwatches'), (k, el)=>{ state.editColor = key; highlightOne(el.parentElement, el); }, new Set([state.editColor]));
+    buildSwatches(document.getElementById('editModalSwatches'), (k, el)=>{ state.editColor = k; highlightOne(el.parentElement, el); }, new Set([state.editColor]));
     buildTags(document.getElementById('editModalTags'), (k, el)=>{ toggleSet(state.editTags, k); el.classList.toggle('active'); }, state.editTags);
     buildResolutionBoxes(document.getElementById('editModalResolutions'), (res, el) => { state.editResolution = res; highlightOne(el.parentElement, el); }, state.editResolution);
     document.getElementById('editBackdrop').style.display = 'flex';
@@ -332,7 +329,7 @@
               color: state.modalColor,
               tags: [...state.modalTags],
               filename: fileName,
-              resolution: state.modalResolution // NEW: Send resolution to API
+              resolution: state.modalResolution
           })
       });
 
@@ -357,7 +354,7 @@
         name: document.getElementById('editPackName').value.trim(),
         color: state.editColor,
         tags: [...state.editTags].join(','),
-        resolution: state.editResolution // NEW: Update resolution
+        resolution: state.editResolution
       })
       .eq('id', currentEditId);
 
@@ -375,7 +372,6 @@
   }
 
   window.cancelDelete = function() {
-    packIdToDelete = null;
     document.getElementById('confirmDeleteBackdrop').style.display = 'none';
   }
 
@@ -403,7 +399,6 @@
   window.clearSearch = function(){ document.getElementById('q').value=''; applyFilters(); }
   window.clearColors = function(){ state.colors.clear(); buildSwatches(document.getElementById('colorSwatches'),(k,el)=>{toggleSet(state.colors,k); el.classList.toggle('active'); render();}, state.colors); render(); }
   window.clearTags = function(){ state.tags.clear(); buildTags(document.getElementById('tagCloud'),(k,el)=>{toggleSet(state.tags,k); el.classList.toggle('active'); render();}, state.tags); render(); }
-  // NEW: Function to clear resolution filters
   window.clearResolutions = function(){ state.resolutions.clear(); buildResolutionBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions); render(); }
   window.resetAll = function(){ clearSearch(); clearColors(); clearTags(); clearResolutions(); }
   window.hintFile = function(){
@@ -435,7 +430,6 @@
     })
   }
 
-  // NEW: Function to build resolution filter boxes
   function buildResolutionBoxes(container, clickHandler, activeState) {
     container.innerHTML = '';
     const isMultiSelect = activeState instanceof Set;
@@ -491,13 +485,13 @@
       const qOk = !state.q || p.name.toLowerCase().includes(state.q);
       const cOk = state.colors.size === 0 || state.colors.has(p.color);
       const tOk = state.tags.size === 0 || [...state.tags].every(t => (p.tags || []).includes(t));
-      // NEW: Filter by resolution
       const rOk = state.resolutions.size === 0 || state.resolutions.has(p.resolution);
       return qOk && cOk && tOk && rOk;
     });
     count.textContent = filtered.length;
     grid.innerHTML = '';
-    filtered.forEach(p=> grid.appendChild(p)));
+    // FIX: Corrected a syntax error on the line below
+    filtered.forEach(p => grid.appendChild(renderCard(p)));
     if(filtered.length===0){
       grid.innerHTML = '<div class="card panel tiny">No packs match your filters.</div>';
     }
@@ -521,11 +515,21 @@
     render();
   }
 
-  /* ====== INITIALIZE APP ====== */
   function init() {
+    // Make functions global
+    window.applyFilters = applyFilters;
+    window.clearSearch = clearSearch;
+    window.clearColors = clearColors;
+    window.clearTags = clearTags;
+    window.clearResolutions = clearResolutions;
+    window.resetAll = resetAll;
+    window.promptDelete = promptDelete;
+    window.cancelDelete = cancelDelete;
+    window.confirmDelete = confirmDelete;
+
+    // Build filter controls
     buildSwatches(document.getElementById('colorSwatches'), (k, el)=>{ toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
     buildTags(document.getElementById('tagCloud'), (k, el)=>{ toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
-    // NEW: Build resolution filters
     buildResolutionBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions);
     
     goto('home');
