@@ -41,17 +41,25 @@
     .sidebar{position:sticky;top:78px;height:fit-content}
     .panel{padding:18px}
     .panel h3{margin:0 0 10px 0;font-size:14px;letter-spacing:.4px;color:#cbd5e1;text-transform:uppercase}
-    .search{display:flex;gap:.6rem;align-items:center;}
-    .search input{flex:1;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:var(--text)}
-    .search .btn.sm.ghost{padding: .5rem; line-height: 1; height: 38px; width: 38px; display: grid; place-items: center;}
+    /* UPDATED: Search input and button alignment */
+    .search{display:flex;align-items:center;position:relative;}
+    .search input{flex:1;padding:.7rem 1rem;padding-right: 2.5rem; /* Make space for the button */ border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:var(--text)}
+    .search .btn.sm.ghost{
+      position: absolute;
+      right: 8px; /* Position it inside the input */
+      top: 50%;
+      transform: translateY(-50%);
+      padding: .5rem; line-height: 1; height: 32px; width: 32px; display: grid; place-items: center;
+      background: transparent; /* Ensure button background is transparent */
+      border: none; /* Remove border from inner button */
+      color: var(--muted); /* Make the X clearer */
+    }
     .swatches, .resolutions{display:flex;flex-wrap:wrap;gap:8px}
     .swatch{width:34px;height:34px;border-radius:999px;border:2px solid rgba(255,255,255,.12);cursor:pointer;position:relative}
     .swatch.active, .res-box.active{outline:3px solid #eab308 !important}
     .tags{display:flex;flex-wrap:wrap;gap:8px}
-    /* UPDATED: Added bold text */
     .tag{padding:.45rem .7rem;border-radius:999px;background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.22);cursor:pointer;color:white;font-weight:700;}
     .tag.active{background:rgba(124,58,237,.3)}
-    /* UPDATED: Added bold, white text */
     .res-box{padding:.45rem .7rem;border-radius:8px;background:rgba(255,255,255,.02);border:1px solid var(--border);cursor:pointer;font-weight:700;color:white;}
     .tiny{font-size:12px;color:var(--muted)}
     .packs{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
@@ -63,7 +71,6 @@
     .badge{font-size:12px;padding:.25rem .55rem;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:white}
     .actions{display:flex;gap:6px;align-items:center}
     .btn.sm{padding:.25rem .5rem;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:.4rem;min-width:auto}
-    /* NEW: Styles for the small clear buttons */
     .btn.sm.btn-clear{
       padding: .2rem .6rem;
       font-size: 12px;
@@ -75,7 +82,9 @@
     .backdrop{position:fixed;inset:0;background:rgba(2,6,23,.6);display:none;align-items:center;justify-content:center;z-index:60}
     .modal{width:100%;max-width:760px;background:var(--bg-2);border-radius:12px;overflow:hidden}
     .modal .panel{padding:20px}
-    .modal-footer{display:flex;justify-content:flex-end;gap:10px;padding:12px 20px 20px}
+    /* UPDATED: Modal footer for delete and save buttons */
+    .modal-footer{display:flex;justify-content:space-between;gap:10px;padding:12px 20px 20px}
+    .modal-footer .right-actions { display: flex; gap: 10px; }
     .file-upload-area{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;border:2px dashed var(--border);border-radius:12px;background:rgba(255,255,255,.02);text-align:center;cursor:pointer;grid-column:span 2}
     .file-upload-area:hover{border-color:var(--brand-1);background:rgba(124,58,237,.05)}
     .file-upload-area i{font-size:32px;margin-bottom:12px;color:var(--brand-1)}
@@ -232,9 +241,10 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn sm danger" onclick="promptDelete()">Delete</button>
-            <div style="flex:1"></div>
-            <button class="btn primary" type="submit"><i class="fa-solid fa-save"></i> Save</button>
+            <div class="right-actions">
+                <button type="button" class="btn sm danger" onclick="promptDelete()">Delete</button>
+                <button class="btn primary" type="submit"><i class="fa-solid fa-save"></i> Save</button>
+            </div>
           </div>
         </form>
       </div>
@@ -548,4 +558,4 @@
   init();
 </script>
 </body>
-</html>
+</html>  
