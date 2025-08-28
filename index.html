@@ -65,7 +65,6 @@
     .backdrop{position:fixed;inset:0;background:rgba(2,6,23,.6);display:none;align-items:center;justify-content:center;z-index:60}
     .modal{width:100%;max-width:760px;background:var(--bg-2);border-radius:12px;overflow:hidden}
     .modal .panel{padding:20px}
-    /* UPDATED: Modal footer alignment */
     .modal-footer{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 20px 20px}
     .modal-footer .right-actions { display: flex; gap: 10px; }
     .file-upload-area{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;border:2px dashed var(--border);border-radius:12px;background:rgba(255,255,255,.02);text-align:center;cursor:pointer;grid-column:span 2}
@@ -185,8 +184,10 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn sm ghost" onclick="closeModal()">Cancel</button>
-            <button id="submitBtn" class="btn primary" type="submit"><i class="fa-solid fa-upload"></i> Upload</button>
+            <div class="right-actions">
+                <button type="button" class="btn sm ghost" onclick="closeModal()">Cancel</button>
+                <button id="submitBtn" class="btn primary" type="submit"><i class="fa-solid fa-upload"></i> Upload</button>
+            </div>
           </div>
         </form>
       </div>
@@ -251,6 +252,18 @@
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
+  /*
+  ================================================================================
+  === URGENT SECURITY WARNING ====================================================
+  ================================================================================
+  The keys below are PUBLIC and meant to be in your code.
+  However, it is best practice to use placeholders here and store the real keys
+  in your hosting provider's (Vercel's) Environment Variables.
+  
+  Most importantly, if you ever reset your 'anon' key in Supabase,
+  you MUST update it here and in Vercel for your site to continue working.
+  ================================================================================
+  */
   const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -277,17 +290,24 @@
 
   window.openModal = function(){
     document.getElementById('backdrop').style.display = 'flex';
+    // Set defaults for a new upload
     state.modalColor = 'blue';
     state.modalResolution = '16x';
     state.modalTags = new Set();
+    // Rebuild the UI with these defaults
     buildSwatches(document.getElementById('modalSwatches'), (k, el) => { state.modalColor = k; highlightOne(el.parentElement, el); }, new Set(['blue']));
-    buildTags(document.getElementById('modalTags'), (k, el) => { toggleSet(state.modalTags, k); el.classList.toggle('active'); }, state.modalTags);
+    buildTags(document.getElementById('modalTags'), (k, el) => { toggleSet(state.modalTags, k); el.classList.toggle('active'); }, new Set());
     buildResolutionBoxes(document.getElementById('modalResolutions'), (res, el) => { state.modalResolution = res; highlightOne(el.parentElement, el); }, '16x');
   }
 
   window.closeModal = function(){
     document.getElementById('backdrop').style.display = 'none';
     document.getElementById('uploadForm').reset();
+    // FIX: Explicitly reset state when modal is closed
+    state.modalColor = null;
+    state.modalResolution = null;
+    state.modalTags = new Set();
+    document.getElementById('fileHint').textContent = '.mcpack files only';
   }
 
   window.openEditModal = function(id){
@@ -318,9 +338,9 @@
     
     const name = document.getElementById('packName').value.trim();
     const file = document.getElementById('fileInput').files[0];
-    if(!file || !file.name.endsWith('.mcpack')){ alert('Select a valid .mcpack'); return; }
-    if(!state.modalColor){ alert('Pick a primary color'); return; }
-    if(!state.modalResolution){ alert('Pick a resolution'); return; }
+    if(!file || !file.name.endsWith('.mcpack')){ alert('Select a valid .mcpack'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; return; }
+    if(!state.modalColor){ alert('Pick a primary color'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; return; }
+    if(!state.modalResolution){ alert('Pick a resolution'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; return; }
 
     try {
       const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
