@@ -14,7 +14,8 @@ export default async function handler(req, res) {
 
   try {
     // Vercel automatically parses the body, so we just use req.body directly
-    const { name, color, tags, filename } = req.body;
+    // NEW: Added 'resolution' to the list
+    const { name, color, tags, filename, resolution } = req.body;
 
     if (!name || !filename) {
       return res.status(400).json({ error: 'Name and filename are required.' });
@@ -25,9 +26,10 @@ export default async function handler(req, res) {
 
     const { data, error } = await supabase
       .from('packs')
-      .insert([{ name, color, tags: tagsString, filename }])
+      // NEW: Added 'resolution' to the insert data
+      .insert([{ name, color, tags: tagsString, filename, resolution }])
       .select()
-      .single(); // Use .single() to get the newly created pack back
+      .single();
 
     if (error) {
       // If there's a database error, throw it to the catch block
