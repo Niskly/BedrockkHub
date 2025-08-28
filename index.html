@@ -63,51 +63,12 @@
     .thumb .glyph{height:68px;width:68px;border-radius:14px;display:grid;place-items:center;color:white}
     .content{padding:14px}
     .meta{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}
-    /* UPDATED: Badges are now bold */
     .badge{font-size:12px;padding:.25rem .55rem;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:white;font-weight: 700;}
-    /* NEW: Styles for the 3-dots options menu */
-    .pack-options-btn {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      z-index: 2;
-      background: rgba(0,0,0,0.4);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      width: 30px;
-      height: 30px;
-      display: grid;
-      place-items: center;
-      cursor: pointer;
-      padding: 0;
-    }
-    .pack-options-menu {
-      display: none;
-      position: absolute;
-      top: 42px;
-      right: 8px;
-      z-index: 3;
-      background: var(--bg-2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-    }
-    .pack-options-menu a {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 14px;
-      font-size: 14px;
-    }
-    .pack-options-menu a:hover {
-      background: var(--brand-1);
-    }
-    .pack-options-menu a i {
-      width: 16px;
-      text-align: center;
-    }
+    .pack-options-btn {position: absolute;top: 8px;right: 8px;z-index: 2;background: rgba(0,0,0,0.4);color: white;border: 1px solid rgba(255,255,255,0.1);border-radius: 8px;width: 30px;height: 30px;display: grid;place-items: center;cursor: pointer;padding: 0;}
+    .pack-options-menu {display: none;position: absolute;top: 42px;right: 8px;z-index: 3;background: var(--bg-2);border: 1px solid var(--border);border-radius: 8px;overflow: hidden;box-shadow: 0 8px 20px rgba(0,0,0,0.4);}
+    .pack-options-menu a {display: flex;align-items: center;gap: 10px;padding: 8px 14px;font-size: 14px;}
+    .pack-options-menu a:hover {background: var(--brand-1);}
+    .pack-options-menu a i {width: 16px;text-align: center;}
     .btn.sm{padding:.25rem .5rem;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:.4rem;min-width:auto}
     .btn.sm.btn-clear{padding: .2rem .6rem;font-size: 12px;font-weight: 800;background: linear-gradient(90deg, var(--brand-1), var(--brand-2));color: var(--bg-0);border: none;}
     .backdrop{position:fixed;inset:0;background:rgba(2,6,23,.6);display:none;align-items:center;justify-content:center;z-index:60}
@@ -115,10 +76,13 @@
     .modal .panel{padding:20px}
     .modal-footer{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 20px 20px}
     .modal-footer .right-actions { display: flex; gap: 10px; }
+    /* NEW: Style to center buttons in a modal footer */
+    .modal-footer.center-actions { justify-content: center; }
     .file-upload-area{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;border:2px dashed var(--border);border-radius:12px;background:rgba(255,255,255,.02);text-align:center;cursor:pointer;grid-column:span 2}
     .file-upload-area:hover{border-color:var(--brand-1);background:rgba(124,58,237,.05)}
     .file-upload-area i{font-size:32px;margin-bottom:12px;color:var(--brand-1)}
     .file-hint{margin-top:6px;color:var(--muted)}
+    .label-with-icon { display: flex; align-items: center; gap: 6px; }
     @media (max-width:1024px){.layout{grid-template-columns:1fr}.sidebar{position:static}.packs{grid-template-columns:repeat(2,1fr)}.hero{grid-template-columns:1fr}.title{font-size:36px}}
     @media (max-width:768px){.packs{grid-template-columns:1fr}.nav-actions{display:none}}
   </style>
@@ -209,7 +173,10 @@
         <form id="uploadForm" onsubmit="handleUpload(event)">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
             <div>
-              <label class="tiny">Pack name</label>
+              <label class="tiny label-with-icon">
+                <span>Pack name</span>
+                <i class="fa-solid fa-pencil"></i>
+              </label>
               <input id="packName" required placeholder="e.g. Crystal PvP" style="width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:var(--text)">
             </div>
             <div>
@@ -231,11 +198,9 @@
               <input id="fileInput" type="file" accept=".mcpack" style="display:none" onchange="hintFile()" />
             </div>
           </div>
-          <div class="modal-footer">
-            <div class="right-actions">
-                <button type="button" class="btn sm ghost" onclick="closeModal()">Cancel</button>
-                <button id="submitBtn" class="btn primary" type="submit"><i class="fa-solid fa-upload"></i> Upload</button>
-            </div>
+          <div class="modal-footer center-actions">
+            <button type="button" class="btn sm ghost" onclick="closeModal()">Cancel</button>
+            <button id="submitBtn" class="btn primary" type="submit"><i class="fa-solid fa-upload"></i> Upload</button>
           </div>
         </form>
       </div>
@@ -324,22 +289,20 @@
     window.scrollTo({top:0,behavior:'smooth'});
   }
 
+  // UPDATED: No defaults selected on open
   window.openModal = function(){
     document.getElementById('backdrop').style.display = 'flex';
-    state.modalColor = 'blue';
-    state.modalResolution = '16x';
+    state.modalColor = null;
+    state.modalResolution = null;
     state.modalTags = new Set();
-    buildSwatches(document.getElementById('modalSwatches'), (k, el) => { state.modalColor = k; highlightOne(el.parentElement, el); }, new Set(['blue']));
+    buildSwatches(document.getElementById('modalSwatches'), (k, el) => { state.modalColor = k; highlightOne(el.parentElement, el); }, null);
     buildTags(document.getElementById('modalTags'), (k, el) => { toggleSet(state.modalTags, k); el.classList.toggle('active'); }, new Set());
-    buildResolutionBoxes(document.getElementById('modalResolutions'), (res, el) => { state.modalResolution = res; highlightOne(el.parentElement, el); }, '16x');
+    buildResolutionBoxes(document.getElementById('modalResolutions'), (res, el) => { state.modalResolution = res; highlightOne(el.parentElement, el); }, null);
   }
 
   window.closeModal = function(){
     document.getElementById('backdrop').style.display = 'none';
     document.getElementById('uploadForm').reset();
-    state.modalColor = null;
-    state.modalResolution = null;
-    state.modalTags = new Set();
     document.getElementById('fileHint').textContent = '.mcpack files only';
   }
 
@@ -361,19 +324,6 @@
   window.closeEditModal = function(){
     currentEditId = null;
     document.getElementById('editBackdrop').style.display = 'none';
-  }
-
-  // NEW: Function to show/hide the 3-dots menu
-  window.toggleOptionsMenu = function(event, id) {
-    event.stopPropagation(); // Prevents the global click listener from firing immediately
-    const menu = document.getElementById(`options-menu-${id}`);
-    const isVisible = menu.style.display === 'block';
-
-    // Hide all other open menus first
-    document.querySelectorAll('.pack-options-menu').forEach(m => m.style.display = 'none');
-    
-    // Toggle the current menu
-    menu.style.display = isVisible ? 'none' : 'block';
   }
   
   window.handleUpload = async function(e){
@@ -493,9 +443,17 @@
   window.clearTags = function(){ state.tags.clear(); buildTags(document.getElementById('tagCloud'),(k,el)=>{toggleSet(state.tags,k); el.classList.toggle('active'); render();}, state.tags); render(); }
   window.clearResolutions = function(){ state.resolutions.clear(); buildResolutionBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions); render(); }
   window.resetAll = function(){ clearSearch(); clearColors(); clearTags(); clearResolutions(); }
+  
+  // UPDATED: Now auto-fills the pack name input
   window.hintFile = function(){
-    const f = document.getElementById('fileInput').files[0];
-    if(f){ document.getElementById('fileHint').textContent = f.name; }
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+    if(file){ 
+      document.getElementById('fileHint').textContent = file.name;
+      // Auto-fill pack name, removing the extension
+      const packNameInput = document.getElementById('packName');
+      packNameInput.value = file.name.replace(/\.mcpack$/i, '');
+    }
   }
 
   /* ====== INTERNAL FUNCTIONS ====== */
@@ -638,13 +596,12 @@
     window.cancelDelete = cancelDelete;
     window.confirmDelete = confirmDelete;
     window.hintFile = hintFile;
-    window.toggleOptionsMenu = toggleOptionsMenu; // Make the new menu function global
+    window.toggleOptionsMenu = toggleOptionsMenu;
 
     buildSwatches(document.getElementById('colorSwatches'), (k, el)=>{ toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
     buildTags(document.getElementById('tagCloud'), (k, el)=>{ toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
     buildResolutionBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions);
     
-    // NEW: Global click listener to close open menus
     window.addEventListener('click', () => {
         document.querySelectorAll('.pack-options-menu').forEach(menu => {
             menu.style.display = 'none';
