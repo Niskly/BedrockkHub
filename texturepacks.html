@@ -120,7 +120,7 @@
             <input id="q" placeholder="Search by name..." oninput="applyFilters()" />
             <button class="btn sm ghost" onclick="clearSearch()"><i class="fa-solid fa-xmark"></i></button>
           </div>
-          <div class="row"><button class="btn sm ghost" onclick="resetAll()"><i class="fa-solid fa-rotate"></i> Reset filters</button></div>
+          <div class="row"><button class="btn sm ghost" onclick="resetAll()">Reset filters</button></div>
         </div>
         <div id="grid" class="packs"></div>
       </div>
@@ -550,15 +550,22 @@
   }
 
   function init() {
+    // This is a list of functions that need to be globally available for your HTML's 'onclick' attributes.
+    window.openModal = openModal;
+    window.closeModal = closeModal;
+    window.openEditModal = openEditModal;
+    window.closeEditModal = closeEditModal;
+    window.handleUpload = handleUpload;
+    window.saveEdit = saveEdit;
+    window.promptDelete = promptDelete;
+    window.cancelDelete = cancelDelete;
+    window.confirmDelete = confirmDelete;
     window.applyFilters = applyFilters;
     window.clearSearch = clearSearch;
     window.clearColors = clearColors;
     window.clearTags = clearTags;
     window.clearResolutions = clearResolutions;
     window.resetAll = resetAll;
-    window.promptDelete = promptDelete;
-    window.cancelDelete = cancelDelete;
-    window.confirmDelete = confirmDelete;
     window.hintFile = hintFile;
     window.toggleOptionsMenu = toggleOptionsMenu;
 
