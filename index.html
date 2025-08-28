@@ -62,10 +62,14 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      position: relative; /* Added for positioning icon */
-      overflow: hidden; /* Ensure blurry background doesn't overflow */
+      position: relative;
+      overflow: hidden;
     }
-    .thumb .pack-icon-bg { /* New: Blurry background image */
+    /* FIX: Remove the blue focus outline from thumbnails */
+    .thumb:focus, .thumb:focus-within {
+      outline: none;
+    }
+    .thumb .pack-icon-bg {
       position: absolute;
       top: 0;
       left: 0;
@@ -73,17 +77,17 @@
       height: 100%;
       background-size: cover;
       background-position: center;
-      filter: blur(8px) brightness(0.7); /* Adjust blur and brightness as needed */
-      transform: scale(1.1); /* To hide blur edges */
+      filter: blur(8px) brightness(0.7);
+      transform: scale(1.1);
     }
-    .thumb .pack-icon { /* New: Main square icon */
-      position: relative; /* Bring icon to front */
-      width: 90px; /* Adjust size as desired */
-      height: 90px; /* Adjust size as desired */
-      border-radius: 8px; /* Slightly rounded corners for the icon */
+    .thumb .pack-icon {
+      position: relative;
+      width: 90px;
+      height: 90px;
+      border-radius: 8px;
       object-fit: cover;
-      z-index: 1; /* Ensure it's above the blurry background */
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4); /* Optional: subtle shadow */
+      z-index: 1;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     }
     .thumb .glyph{height:68px;width:68px;border-radius:14px;display:grid;place-items:center;color:white}
     .content{padding:14px}
@@ -513,7 +517,6 @@
     return `#${[r,g,b].map(v=> v.toString(16).padStart(2,'0')).join('')}`;
   }
 
-  // UPDATED: renderCard now shows the custom icon with a blurry background
   function renderCard(p){
     const colorKey = p.color || 'gray';
     const color = COLORS.find(c=>c.key===colorKey)?.hex || '#6b7280';
