@@ -173,7 +173,8 @@
   let currentEditId = null;
 
   /* ====== GLOBAL FUNCTIONS for onclick ====== */
-  window.openModal = function(){
+  // NOTE: These functions were missing before, now they are restored.
+  function openModal(){
     document.getElementById('backdrop').style.display = 'flex';
     state.modalColor = null;
     state.modalResolution = null;
@@ -182,28 +183,175 @@
     buildTags(document.getElementById('modalTags'), (k, el) => { toggleSet(state.modalTags, k); el.classList.toggle('active'); }, new Set());
     buildResolutionBoxes(document.getElementById('modalResolutions'), (res, el) => { state.modalResolution = res; highlightOne(el.parentElement, el); }, null);
   }
-  // --- All your other window.xxx functions like closeModal, openEditModal, etc. remain the same ---
-  // ... (keeping them out for brevity, but they are in your original code and should remain)
+  function closeModal(){
+    document.getElementById('backdrop').style.display = 'none';
+    document.getElementById('uploadForm').reset();
+    document.getElementById('fileHint').textContent = '.mcpack files only';
+  }
+  function openEditModal(id){
+    const p = packs.find(x=>x.id===id);
+    if(!p) return alert('Pack not found');
+    currentEditId = id;
+    document.getElementById('editId').value = id;
+    document.getElementById('editPackName').value = p.name || '';
+    state.editColor = p.color || null;
+    state.editTags = new Set(p.tags || []);
+    state.editResolution = p.resolution || null;
+    buildSwatches(document.getElementById('editModalSwatches'), (k, el)=>{ state.editColor = k; highlightOne(el.parentElement, el); }, new Set([state.editColor]));
+    buildTags(document.getElementById('editModalTags'), (k, el)=>{ toggleSet(state.editTags, k); el.classList.toggle('active'); }, state.editTags);
+    buildResolutionBoxes(document.getElementById('editModalResolutions'), (res, el) => { state.editResolution = res; highlightOne(el.parentElement, el); }, state.editResolution);
+    document.getElementById('editBackdrop').style.display = 'flex';
+  }
+  function closeEditModal(){
+    currentEditId = null;
+    document.getElementById('editBackdrop').style.display = 'none';
+  }
+  async function handleUpload(e){
+    e.preventDefault();
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+    
+    const name = document.getElementById('packName').value.trim();
+    const file = document.getElementById('fileInput').files[0];
+    if(!file || !file.name.endsWith('.mcpack')){ alert('Select a valid .mcpack'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; return; }
+    if(!state.modalColor){ alert('Pick a primary color'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; return; }
+    if(!state.modalResolution){ alert('Pick a resolution'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; return; }
+
+    try {
+      let iconUrl = null;
+      const zip = new JSZip();
+      const contents = await zip.loadAsync(file);
+      const iconFile = contents.file('pack_icon.png');
+
+      if (iconFile) {
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...';
+        const iconBlob = await iconFile.async('blob');
+        const iconFileName = `icons/${Date.now()}-pack_icon.png`;
+        const { error: iconError } = await supabase.storage.from('packs').upload(iconFileName, iconBlob);
+        if (iconError) throw iconError;
+        const { data } = supabase.storage.from('packs').getPublicUrl(iconFileName);
+        iconUrl = data.publicUrl;
+      }
+
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Pack...';
+      const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+      await supabase.storage.from('packs').upload(fileName, file);
+
+      const response = await fetch('/api/addpacks', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+              name: name || file.name.replace(/\.mcpack$/i,''),
+              color: state.modalColor,
+              tags: [...state.modalTags],
+              filename: fileName,
+              resolution: state.modalResolution,
+              icon_url: iconUrl 
+          })
+      });
+
+      if (!response.ok) throw new Error((await response.json()).details || 'Failed to add pack metadata.');
+      
+      await loadPacksOnStartup();
+      closeModal();
+    } catch(err) {
+      alert('Upload failed: ' + err.message);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload';
+    }
+  }
+  async function saveEdit(e){
+    e.preventDefault();
+    if(!currentEditId) return;
+    const { error } = await supabase
+      .from('packs')
+      .update({
+        name: document.getElementById('editPackName').value.trim(),
+        color: state.editColor,
+        tags: [...state.editTags].join(','),
+        resolution: state.editResolution
+      })
+      .eq('id', currentEditId);
+
+    if (error) {
+      alert('Save failed: ' + error.message);
+    } else {
+      await loadPacksOnStartup();
+      closeEditModal();
+    }
+  }
+  function promptDelete() {
+    if(!currentEditId) return;
+    document.getElementById('confirmDeleteBackdrop').style.display = 'flex';
+  }
+  function cancelDelete() {
+    document.getElementById('confirmDeleteBackdrop').style.display = 'none';
+  }
+  async function confirmDelete() {
+    if (!currentEditId) return;
+    const packToDelete = packs.find(p => p.id === currentEditId);
+    if (!packToDelete) {
+        cancelDelete();
+        return;
+    }
+    try {
+        await supabase.storage.from('packs').remove([packToDelete.filename]);
+        if (packToDelete.icon_url) {
+            const iconFileName = packToDelete.icon_url.split('/').pop();
+            await supabase.storage.from('packs').remove([`icons/${iconFileName}`]);
+        }
+        const { error } = await supabase.from('packs').delete().eq('id', currentEditId);
+        if (error) throw error;
+        await loadPacksOnStartup();
+    } catch (error) {
+        alert('Delete failed: ' + error.message);
+    } finally {
+        cancelDelete();
+        closeEditModal();
+    }
+  }
+  function applyFilters(){ state.q = document.getElementById('q').value.trim().toLowerCase(); render(); }
+  function clearSearch(){ document.getElementById('q').value=''; applyFilters(); }
+  function clearColors(){ state.colors.clear(); buildSwatches(document.getElementById('colorSwatches'),(k,el)=>{toggleSet(state.colors,k); el.classList.toggle('active'); render();}, state.colors); render(); }
+  function clearTags(){ state.tags.clear(); buildTags(document.getElementById('tagCloud'),(k,el)=>{toggleSet(state.tags,k); el.classList.toggle('active'); render();}, state.tags); render(); }
+  function clearResolutions(){ state.resolutions.clear(); buildResolutionBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions); render(); }
+  function resetAll(){ clearSearch(); clearColors(); clearTags(); clearResolutions(); }
+  function hintFile(){
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+    if(file){ 
+      document.getElementById('fileHint').textContent = file.name;
+      const packNameInput = document.getElementById('packName');
+      packNameInput.value = file.name.replace(/\.mcpack$/i, '');
+    }
+  }
+  function toggleOptionsMenu(event, id) {
+    event.stopPropagation();
+    const menu = document.getElementById(`options-menu-${id}`);
+    const isVisible = menu.style.display === 'block';
+    document.querySelectorAll('.pack-options-menu').forEach(m => m.style.display = 'none');
+    menu.style.display = isVisible ? 'none' : 'block';
+  }
 
   /* ====== INTERNAL FUNCTIONS ====== */
 
-  // --- NEW HELPER FUNCTIONS ADDED HERE ---
+  // --- NEW HELPER FUNCTIONS FOR STATS ---
   function formatDate(isoString) {
     if (!isoString) return '';
     const date = new Date(isoString);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
   
-  window.handleDownload = async function(event, packId, downloadUrl) {
+  async function handleDownload(event, packId, downloadUrl) {
     event.preventDefault(); 
-
     try {
       await fetch('/api/increment-download', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: packId })
       });
-
       const countElement = document.getElementById(`downloads-${packId}`);
       if (countElement) {
         const currentCount = parseInt(countElement.textContent.replace(/,/g, ''), 10);
@@ -215,24 +363,50 @@
       window.location.href = downloadUrl;
     }
   }
-  // --- END OF NEW HELPER FUNCTIONS ---
-
-
+  
   function buildSwatches(container, clickHandler, activeSet){
-    // ... your original code
+    container.innerHTML = '';
+    COLORS.forEach(c=>{
+      const b = document.createElement('button');
+      b.type='button';
+      b.className='swatch'+( (activeSet && activeSet.has(c.key)) ?' active':'');
+      b.style.background = c.hex; b.title=c.key;
+      b.onclick = ()=> clickHandler(c.key, b);
+      container.appendChild(b);
+    })
   }
   function buildTags(container, clickHandler, activeSet){
-    // ... your original code
+    container.innerHTML='';
+    TAGS.forEach(t=>{
+      const s = document.createElement('button');
+      s.type='button';
+      s.className='tag'+(activeSet?.has(t)?' active':'');
+      s.textContent = t.toUpperCase();
+      s.onclick = ()=> clickHandler(t, s);
+      container.appendChild(s);
+    })
   }
   function buildResolutionBoxes(container, clickHandler, activeState) {
-    // ... your original code
+    container.innerHTML = '';
+    const isMultiSelect = activeState instanceof Set;
+    RESOLUTIONS.forEach(res => {
+        const box = document.createElement('button');
+        box.type = 'button';
+        const isActive = isMultiSelect ? activeState.has(res) : (activeState === res);
+        box.className = 'res-box' + (isActive ? ' active' : '');
+        box.textContent = res;
+        box.onclick = () => clickHandler(res, box);
+        container.appendChild(box);
+    });
   }
   function escapeHtml(str){ return String(str||'').replace(/[&<>"']/g, s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
   function shade(hex, amt){
-    // ... your original code
+    let col = hex.replace('#',''); if(col.length===3) col=col.split('').map(c=>c+c).join('');
+    let [r,g,b] = [0,0,0].map((_,i)=> parseInt(col.slice(i*2,i*2+2),16));
+    [r,g,b] = [r+amt,g+amt,b+amt].map(v=> Math.max(0,Math.min(255,v)));
+    return `#${[r,g,b].map(v=> v.toString(16).padStart(2,'0')).join('')}`;
   }
 
-  // --- MODIFIED renderCard FUNCTION ---
   function renderCard(p){
     const colorKey = p.color || 'gray';
     const color = COLORS.find(c=>c.key===colorKey)?.hex || '#6b7280';
@@ -291,11 +465,28 @@
   }
 
   async function render(){
-    // ... your original render function
+    const grid = document.getElementById('grid');
+    const count = document.getElementById('count');
+    const filtered = packs.filter(p=>{
+      const qOk = !state.q || p.name.toLowerCase().includes(state.q);
+      const cOk = state.colors.size === 0 || state.colors.has(p.color);
+      const tOk = state.tags.size === 0 || [...state.tags].every(t => (p.tags || []).includes(t));
+      const rOk = state.resolutions.size === 0 || state.resolutions.has(p.resolution);
+      return qOk && cOk && tOk && rOk;
+    });
+    count.textContent = filtered.length;
+    grid.innerHTML = '';
+    filtered.forEach(p => grid.appendChild(renderCard(p)));
+    if(filtered.length===0){
+      grid.innerHTML = '<div class="card panel tiny">No packs match your filters.</div>';
+    }
   }
+
   function highlightOne(container, el){
-    // ... your original highlightOne function
+    [...container.children].forEach(c=>c.classList.remove('active'));
+    el.classList.add('active');
   }
+
   function toggleSet(set, key){ set.has(key)? set.delete(key): set.add(key); }
   
   async function loadPacksOnStartup(){
@@ -309,11 +500,48 @@
     render();
   }
 
+  // --- THIS IS THE FULLY RESTORED INIT FUNCTION ---
   function init() {
-    // ... your original init function
+    // This makes the HTML onclick="..." attributes work
+    window.openModal = openModal;
+    window.closeModal = closeModal;
+    window.openEditModal = openEditModal;
+    window.closeEditModal = closeEditModal;
+    window.handleUpload = handleUpload;
+    window.saveEdit = saveEdit;
+    window.promptDelete = promptDelete;
+    window.cancelDelete = cancelDelete;
+    window.confirmDelete = confirmDelete;
+    window.applyFilters = applyFilters;
+    window.clearSearch = clearSearch;
+    window.clearColors = clearColors;
+    window.clearTags = clearTags;
+    window.clearResolutions = clearResolutions;
+    window.resetAll = resetAll;
+    window.hintFile = hintFile;
+    window.toggleOptionsMenu = toggleOptionsMenu;
+    window.handleDownload = handleDownload; // Also make the new function global
+
+    // This code only runs on the texture packs page
+    if (document.getElementById('grid')) {
+        // This builds the sidebar filters
+        buildSwatches(document.getElementById('colorSwatches'), (k, el)=>{ toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
+        buildTags(document.getElementById('tagCloud'), (k, el)=>{ toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
+        buildResolutionBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions);
+        
+        // This adds a listener to close the options menu when clicking anywhere else
+        window.addEventListener('click', () => {
+            document.querySelectorAll('.pack-options-menu').forEach(menu => {
+                menu.style.display = 'none';
+            });
+        });
+
+        // This loads the packs from Supabase
+        loadPacksOnStartup();
+    }
   }
 
-  init();
+  init(); // Run the startup function
 </script>
 </body>
 </html>
