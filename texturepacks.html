@@ -553,28 +553,19 @@
   }
 
   function init() {
-    // This is a list of functions that need to be globally available for your HTML's 'onclick' attributes.
-    window.goto = goto; // This is now unused, but we'll keep it for now.
-    window.openModal = openModal;
-    window.closeModal = closeModal;
-    window.openEditModal = openEditModal;
-    window.closeEditModal = closeEditModal;
-    window.handleUpload = handleUpload;
-    window.saveEdit = saveEdit;
-    window.promptDelete = promptDelete;
-    window.cancelDelete = cancelDelete;
-    window.confirmDelete = confirmDelete;
     window.applyFilters = applyFilters;
     window.clearSearch = clearSearch;
     window.clearColors = clearColors;
     window.clearTags = clearTags;
     window.clearResolutions = clearResolutions;
     window.resetAll = resetAll;
+    window.promptDelete = promptDelete;
+    window.cancelDelete = cancelDelete;
+    window.confirmDelete = confirmDelete;
     window.hintFile = hintFile;
     window.toggleOptionsMenu = toggleOptionsMenu;
 
-    // This code only runs on the texture packs page
-    if (document.getElementById('grid')) {
+    if (document.getElementById('grid')) { // This code only runs on the texture packs page
         buildSwatches(document.getElementById('colorSwatches'), (k, el)=>{ toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
         buildTags(document.getElementById('tagCloud'), (k, el)=>{ toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
         buildResolutionBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions);
