@@ -35,7 +35,6 @@
     .grid-mini{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
     .mini{display:flex;gap:.7rem;align-items:center;background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01));border:1px solid var(--border);padding:10px;border-radius:12px;transition:transform .2s}
     .mini:hover{transform:translateY(-3px)}
-    .tiny{font-size:12px;color:var(--muted)}
     @media (max-width:1024px){.hero{grid-template-columns:1fr}.title{font-size:36px}}
     @media (max-width:768px){.nav-actions{display:none}}
   </style>
@@ -43,7 +42,7 @@
 <body>
   <header>
     <div class="nav">
-      <a class="brand" href="/">
+      <a class="brand" href="/home.html">
         <div class="brand-badge"><i class="fa-solid fa-cube"></i></div>
         <div>
           <div class="brand-title">BEDROCKHUB</div>
@@ -51,69 +50,31 @@
         </div>
       </a>
       <div class="nav-actions">
-        <a class="btn ghost" href="/">Home</a>
-        <a class="btn ghost" href="/texturepacks"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
+        <a class="btn ghost" href="/home.html">Home</a>
+        <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
         <a class="btn primary" href="https://discord.gg/KtafawJZxM" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-discord"></i> Join Discord</a>
       </div>
     </div>
   </header>
 
-  <section class="container">
+  <section id="page-home" class="container">
     <div class="hero">
       <div class="card hero-card">
         <h1 class="title">Discover & share elite <span class="grad">Bedrock texture packs</span></h1>
         <p class="muted">A billionaire-grade experience: razor-clean UI, smart filters, instant uploads. Click Texture Packs to browse, filter by color & tags, and upload your own .mcpack.</p>
         <div class="hero-cta">
-          <a class="btn primary" href="/texturepacks"><i class="fa-solid fa-paint-roller"></i> Get started</a>
-          <a class="btn ghost" href="/texturepacks">Browse gallery</a>
+          <a class="btn primary" href="/texturepacks.html"><i class="fa-solid fa-paint-roller"></i> Get started</a>
+          <a class="btn ghost" href="/texturepacks.html">Browse gallery</a>
         </div>
       </div>
       <aside class="card preview">
         <div class="preview-head"><strong>Latest drops</strong><span class="tiny">just now</span></div>
-        <div class="grid-mini" id="latest-packs-grid">
-          </div>
+        <div class="grid-mini">
+          <div class="mini"><div class="icon"><i class="fa-solid fa-cubes"></i></div><div><div style="font-weight:800">Stellar HD</div><div class="tiny">HD • Realistic</div></div></div>
+          <div class="mini"><div class="icon" style="background:linear-gradient(135deg,#a855f7,#ec4899)"><i class="fa-solid fa-crown"></i></div><div><div style="font-weight:800">Royal PvP</div><div class="tiny">PvP • Purple</div></div></div>
+        </div>
       </aside>
     </div>
   </section>
-
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-  
-  const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-  function escapeHtml(str){ return String(str||'').replace(/[&<>"']/g, s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
-
-  async function loadLatestPacks() {
-    const grid = document.getElementById('latest-packs-grid');
-    const { data, error } = await supabase
-      .from('packs')
-      .select('name, color, tags, icon_url')
-      .order('created_at', { ascending: false })
-      .limit(2);
-
-    if (error || !data || data.length === 0) {
-      grid.innerHTML = '<div class="tiny">No packs uploaded yet.</div>';
-      return;
-    }
-
-    grid.innerHTML = '';
-    data.forEach(pack => {
-      const mini = document.createElement('div');
-      mini.className = 'mini';
-      
-      const icon = pack.icon_url 
-        ? `<img src="${pack.icon_url}" style="width: 38px; height: 38px; border-radius: 8px; object-fit: cover;">` 
-        : `<div class="brand-badge" style="height:38px;width:38px;background:linear-gradient(135deg, #2563eb, #7c3aed);"><i class="fa-solid fa-cube"></i></div>`;
-
-      const tags = (pack.tags || []).join(' • ');
-      mini.innerHTML = `${icon}<div><div style="font-weight:800">${escapeHtml(pack.name)}</div><div class="tiny">${escapeHtml(tags)}</div></div>`;
-      grid.appendChild(mini);
-    });
-  }
-
-  loadLatestPacks();
-</script>
 </body>
 </html>
