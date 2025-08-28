@@ -9,12 +9,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root {
-            --bg-0: #000000; /* Pure black */
-            --bg-1: #282828; /* Lighter gray for main UI elements */
-            --bg-2: #383838; /* Even lighter gray for cards/modals */
+            --bg-0: #000000; /* Pure black background */
+            --bg-1: #1c1c1c; /* A dark gray for cards and UI elements */
+            --bg-2: #2c2c2c; /* A slightly lighter gray for modals and inputs */
             --muted: #a8b3cf;
             --text: #e8eefc;
-            --border: rgba(255, 255, 255, .08);
+            --border: rgba(255, 255, 255, .12); /* Slightly more visible border */
             --brand-1: #e74c3c;
             --brand-2: #c0392b;
         }
@@ -22,7 +22,7 @@
         html, body { height: 100%; }
         body {
             margin: 0;
-            background: var(--bg-0); /* Solid black background */
+            background: var(--bg-0);
             color: var(--text);
             font: 500 15px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;
         }
@@ -30,7 +30,7 @@
         header {
             position: sticky; top: 0; z-index: 50;
             backdrop-filter: saturate(1.2) blur(10px);
-            background: linear-gradient(90deg, rgba(255, 255, 255, .02), rgba(255, 255, 255, .01));
+            background: rgba(12, 12, 12, 0.7); /* Dark semi-transparent header */
             border-bottom: 1px solid var(--border);
         }
         .nav { max-width: 1200px; margin: 0 auto; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
@@ -41,10 +41,8 @@
             border-radius: 12px; 
             display: grid; 
             place-items: center; 
-            background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); 
-            box-shadow: 0 12px 30px rgba(231, 76, 60, .22); 
-            /* Added background to fill space behind icon */
             background-color: #555; /* A neutral dark gray to fill the transparent badge area */
+            box-shadow: 0 12px 30px rgba(0,0,0, .22); 
         }
         .brand-title { font-weight: 800; letter-spacing: .6px; }
         .nav-actions { display: flex; gap: .6rem; }
@@ -56,12 +54,11 @@
         .container { max-width: 1200px; margin: 0 auto; padding: 28px 18px; }
         .layout { display: grid; grid-template-columns: 280px 1fr; gap: 20px; }
         .sidebar { position: sticky; top: 78px; height: fit-content; }
-        /* Cards now use the slightly lighter gray background */
-        .card { background: linear-gradient(180deg, rgba(255, 255, 255, .03), rgba(255, 255, 255, .02)); border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 24px 70px rgba(0, 0, 0, .55); }
+        .card { background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 24px 70px rgba(0, 0, 0, .55); }
         .panel { padding: 18px; }
         .panel h3 { margin: 0 0 10px 0; font-size: 14px; letter-spacing: .4px; color: #cbd5e1; text-transform: uppercase; }
         .search { display: flex; align-items: center; position: relative; }
-        .search input { flex: 1; padding: .7rem 1rem; padding-right: 2.5rem; border-radius: 10px; border: 1px solid var(--border); background: rgba(255, 255, 255, .02); color: var(--text); min-width: 0; }
+        .search input { flex: 1; padding: .7rem 1rem; padding-right: 2.5rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text); min-width: 0; }
         .search .btn.sm.ghost { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); padding: .5rem; line-height: 1; height: 32px; width: 32px; display: grid; place-items: center; background: transparent; border: none; color: var(--muted); }
         .swatches, .resolutions { display: flex; flex-wrap: wrap; gap: 8px; }
         .swatch { width: 34px; height: 34px; border-radius: 999px; border: 2px solid rgba(255, 255, 255, .12); cursor: pointer; position: relative; }
@@ -69,12 +66,12 @@
         .tags { display: flex; flex-wrap: wrap; gap: 8px; }
         .tag { padding: .45rem .7rem; border-radius: 999px; background: rgba(231, 76, 60, .12); border: 1px solid rgba(231, 76, 60, .22); cursor: pointer; color: white; font-weight: 700; }
         .tag.active { background: rgba(231, 76, 60, .3); }
-        .res-box { padding: .45rem .7rem; border-radius: 8px; background: rgba(255, 255, 255, .02); border: 1px solid var(--border); cursor: pointer; font-weight: 700; color: white; }
+        .res-box { padding: .45rem .7rem; border-radius: 8px; background: var(--bg-2); border: 1px solid var(--border); cursor: pointer; font-weight: 700; color: white; }
         .tiny { font-size: 12px; color: var(--muted); }
         .packs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
         .pack { overflow: hidden; }
-        .pack.card { box-shadow: 0 24px 70px rgba(0, 0, 0, .55); transition: box-shadow .2s, transform .2s; }
-        .pack.card:hover { transform: translateY(-4px); box-shadow: 0 28px 75px rgba(0, 0, 0, .65); }
+        .pack.card { box-shadow: 0 24px 70px rgba(0, 0, 0, .55); transition: box-shadow .2s, transform .2s, border-color .2s; }
+        .pack.card:hover { transform: translateY(-4px); box-shadow: 0 28px 75px rgba(0, 0, 0, .65); border-color: rgba(255,255,255,.2); }
         .thumb { height: 140px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
         .pack .thumb { border-bottom-color: var(--border) !important; }
         .thumb .pack-icon-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; filter: blur(8px) brightness(0.7); transform: scale(1.1); }
@@ -82,7 +79,7 @@
         .thumb .glyph { height: 68px; width: 68px; border-radius: 14px; display: grid; place-items: center; color: white; }
         .content { padding: 14px; }
         .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
-        .badge { font-size: 12px; padding: .25rem .55rem; border-radius: 999px; border: 1px solid var(--border); background: rgba(255, 255, 255, .02); color: white; font-weight: 700; }
+        .badge { font-size: 12px; padding: .25rem .55rem; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-2); color: white; font-weight: 700; }
         .pack-stats-top { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--muted); }
         .stat-item { display: flex; align-items: center; gap: 6px; }
         .pack-options-btn { position: absolute; top: 8px; right: 8px; z-index: 2; background: rgba(0, 0, 0, 0.4); color: white; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; width: 30px; height: 30px; display: grid; place-items: center; cursor: pointer; padding: 0; }
@@ -93,13 +90,12 @@
         .btn.sm { padding: .25rem .5rem; border-radius: 8px; font-weight: 700; display: inline-flex; align-items: center; gap: .4rem; min-width: auto; }
         .btn.sm.btn-clear { padding: .2rem .6rem; font-size: 12px; font-weight: 800; background: linear-gradient(90deg, var(--brand-1), var(--brand-2)); color: white; border: none; }
         .backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, .6); display: none; align-items: center; justify-content: center; z-index: 60; }
-        /* Modal background also uses the lighter gray */
         .modal { width: 100%; max-width: 760px; background: var(--bg-2); border-radius: 12px; overflow: hidden; }
         .modal .panel { padding: 20px; }
         .modal-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 20px 20px; }
         .modal-footer .right-actions { display: flex; gap: 10px; }
         .modal-footer.center-actions { justify-content: center; }
-        .file-upload-area { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; border: 2px dashed var(--border); border-radius: 12px; background: rgba(255, 255, 255, .02); text-align: center; cursor: pointer; grid-column: span 2; }
+        .file-upload-area { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; border: 2px dashed var(--border); border-radius: 12px; background: var(--bg-0); text-align: center; cursor: pointer; grid-column: span 2; }
         .file-upload-area:hover { border-color: var(--brand-1); background: rgba(231, 76, 60, .05); }
         .file-upload-area i { font-size: 32px; margin-bottom: 12px; color: var(--brand-1); }
         .file-hint { margin-top: 6px; color: var(--muted); }
@@ -109,22 +105,16 @@
         .sort-btn #currentSort { color: var(--text); }
         .sort-btn .fa-chevron-down { font-size: 10px; transition: transform .2s; }
         .sort-container.open .fa-chevron-down { transform: rotate(180deg); }
-        /* Sort menu now uses the lighter gray background */
         .sort-menu { display: none; position: absolute; top: 100%; left: 0; margin-top: 6px; z-index: 10; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.4); min-width: 160px; }
         .sort-menu a { display: block; padding: 8px 14px; font-size: 14px; }
         .sort-menu a:hover { background: var(--brand-1); }
         .sort-menu a.active { font-weight: 800; color: var(--text); }
-        
-        /* Updated custom icon style */
         .brand-icon-custom { 
-            width: 100%; /* Make image fill the badge */
-            height: 100%; /* Make image fill the badge */
-            object-fit: contain; /* Ensure the icon fits within the square, preserving aspect ratio */
-            border-radius: 8px; /* Maintain rounded corners */
-            padding: 2px; /* Add a little padding inside the badge so the image doesn't touch the edge */
-            background-color: transparent; /* Ensure the image background is transparent */
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain;
+            padding: 4px;
         }
-
         @media (max-width:1024px) { .layout { grid-template-columns: 1fr; } .sidebar { position: static; } .packs { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width:768px) { .packs { grid-template-columns: 1fr; } .nav-actions { display: none; } }
     </style>
