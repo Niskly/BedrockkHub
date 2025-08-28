@@ -48,7 +48,7 @@
             height: 100%;
             object-fit: contain;
             padding: 4px;
-            transform: translateY(-2px);
+            transform: translateY(-13px);
         }
         .brand-title { font-weight: 800; letter-spacing: .6px; }
         .nav-actions { display: flex; gap: .6rem; }
@@ -61,8 +61,6 @@
         }
         .container { max-width: 1200px; margin: 0 auto; padding: 28px 18px; }
         .card { background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 24px 70px rgba(0, 0, 0, .55); }
-        
-        /* UPDATED LAYOUT: Single column, centered */
         .hero {
             display: flex;
             flex-direction: column;
@@ -71,8 +69,8 @@
         }
         .hero-card {
             padding: 34px;
-            text-align: center; /* Center text content */
-            max-width: 800px; /* Constrain width */
+            text-align: center;
+            max-width: 800px;
         }
         .title { font-size: 44px; line-height: 1.05; font-weight: 900; margin: 0; }
         .title .grad {
@@ -86,7 +84,7 @@
             display: flex; 
             gap: .8rem; 
             margin-top: 18px;
-            justify-content: center; /* Center the button(s) */
+            justify-content: center;
         }
         .preview {
             padding: 16px;
@@ -97,12 +95,19 @@
         .grid-mini { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         .mini { display: flex; gap: .7rem; align-items: center; background: var(--bg-2); border: 1px solid var(--border); padding: 10px; border-radius: 12px; transition: transform .2s, border-color .2s; }
         .mini:hover { transform: translateY(-3px); border-color: rgba(255,255,255,.2); }
-        .mini .icon { height: 38px; width: 38px; border-radius: 8px; display: grid; place-items: center; background: var(--bg-0); }
-        
+        .mini .icon { height: 42px; width: 42px; border-radius: 8px; display: grid; place-items: center; background: var(--bg-0); flex-shrink: 0; }
+        .tiny { font-size: 12px; color: var(--muted); }
+
+        /* Styles for the new content in the mini cards */
+        .mini-content { display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+        .mini-content-title { font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .mini-stats { display: flex; flex-wrap: wrap; gap: 12px; font-size: 11px; color: var(--muted); margin-top: 4px; }
+        .mini-stats span { display: inline-flex; align-items: center; gap: 4px; }
+
         @media (max-width: 1024px) { .title { font-size: 36px; } }
         @media (max-width: 768px) { 
             .nav-actions { display: none; }
-            .grid-mini { grid-template-columns: 1fr; } /* Stack latest packs on mobile */
+            .grid-mini { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -120,7 +125,7 @@
                 </div>
             </a>
             <div class="nav-actions">
-                <a class="btn ghost" href="/">Home</a>
+                <a class="btn ghost" href="/"><i class="fa-solid fa-house"></i> Home</a>
                 <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
                 <a class="btn primary" href="https://discord.gg/KtafawJZxM" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-discord"></i> Join Discord</a>
             </div>
@@ -139,7 +144,7 @@
             <aside class="card preview">
                 <div class="preview-head"><strong>Latest Uploads</strong></div>
                 <div class="grid-mini" id="latest-packs-grid">
-                    <div class="mini"><div style="font-weight:800">Loading...</div></div>
+                    <div class="mini"><div class="tiny">Loading...</div></div>
                 </div>
             </aside>
         </div>
@@ -156,6 +161,15 @@
 
         function escapeHtml(str) { return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); }
         
+        function formatDate(isoString) {
+            if (!isoString) return '';
+            const date = new Date(isoString);
+            const day = date.getDate();
+            const month = date.getMonth() + 1;
+            const year = String(date.getFullYear()).slice(-2);
+            return `${day}/${month}/${year}`;
+        }
+
         async function loadLatestPacks() {
             const grid = document.getElementById('latest-packs-grid');
             if (!grid) return;
@@ -164,7 +178,7 @@
                 .from('packs')
                 .select('*')
                 .order('created_at', { ascending: false })
-                .limit(2); // Fetch only the 2 latest packs
+                .limit(2);
 
             if (error) {
                 console.error("Failed to load latest packs", error);
@@ -173,12 +187,9 @@
             }
 
             if (data && data.length > 0) {
-                grid.innerHTML = ''; // Clear the "Loading..." placeholder
+                grid.innerHTML = '';
                 data.forEach(pack => {
                     const color = COLORS.find(c => c.key === pack.color)?.hex || '#6b7280';
-                    const tags = pack.tags ? pack.tags.split(',') : [];
-                    const firstTag = tags.length > 0 ? escapeHtml(tags[0].toUpperCase()) : '';
-                    
                     const packElement = document.createElement('a');
                     packElement.href = '/texturepacks.html';
                     packElement.className = 'mini';
@@ -189,9 +200,12 @@
                                 : '<i class="fa-solid fa-cube"></i>'
                             }
                         </div>
-                        <div>
-                            <div style="font-weight:800">${escapeHtml(pack.name)}</div>
-                            <div class="tiny">${escapeHtml(pack.resolution)} • ${firstTag}</div>
+                        <div class="mini-content">
+                            <div class="mini-content-title">${escapeHtml(pack.name)}</div>
+                            <div class="mini-stats">
+                                <span><i class="fa-solid fa-download"></i> ${pack.download_count.toLocaleString()}</span>
+                                <span><i class="fa-solid fa-calendar-day"></i> ${formatDate(pack.created_at)}</span>
+                            </div>
                         </div>
                     `;
                     grid.appendChild(packElement);
@@ -201,9 +215,9 @@
             }
         }
 
-        // Run the function when the page loads
         loadLatestPacks();
 
     </script>
 </body>
+
 </html>
