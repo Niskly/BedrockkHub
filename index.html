@@ -48,7 +48,7 @@
             height: 100%;
             object-fit: contain;
             padding: 4px;
-            transform: translateY(-13px);
+            transform: translateY(-2px);
         }
         .brand-title { font-weight: 800; letter-spacing: .6px; }
         .nav-actions { display: flex; gap: .6rem; }
@@ -62,9 +62,18 @@
         .container { max-width: 1200px; margin: 0 auto; padding: 28px 18px; }
         .card { background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 24px 70px rgba(0, 0, 0, .55); }
         
-        /* Styles specific to the Home page */
-        .hero { display: grid; grid-template-columns: 1.05fr .95fr; gap: 28px; align-items: center; }
-        .hero-card { padding: 34px; }
+        /* UPDATED LAYOUT: Single column, centered */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 28px;
+        }
+        .hero-card {
+            padding: 34px;
+            text-align: center; /* Center text content */
+            max-width: 800px; /* Constrain width */
+        }
         .title { font-size: 44px; line-height: 1.05; font-weight: 900; margin: 0; }
         .title .grad {
             background: linear-gradient(90deg, var(--brand-1), var(--brand-2));
@@ -73,16 +82,28 @@
             color: transparent;
         }
         .muted { color: var(--muted); }
-        .hero-cta { display: flex; gap: .8rem; margin-top: 18px; }
-        .preview { padding: 16px; }
+        .hero-cta { 
+            display: flex; 
+            gap: .8rem; 
+            margin-top: 18px;
+            justify-content: center; /* Center the button(s) */
+        }
+        .preview {
+            padding: 16px;
+            width: 100%;
+            max-width: 800px;
+        }
         .preview-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .grid-mini { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         .mini { display: flex; gap: .7rem; align-items: center; background: var(--bg-2); border: 1px solid var(--border); padding: 10px; border-radius: 12px; transition: transform .2s, border-color .2s; }
         .mini:hover { transform: translateY(-3px); border-color: rgba(255,255,255,.2); }
         .mini .icon { height: 38px; width: 38px; border-radius: 8px; display: grid; place-items: center; background: var(--bg-0); }
         
-        @media (max-width: 1024px) { .hero { grid-template-columns: 1fr; } .title { font-size: 36px; } }
-        @media (max-width: 768px) { .nav-actions { display: none; } }
+        @media (max-width: 1024px) { .title { font-size: 36px; } }
+        @media (max-width: 768px) { 
+            .nav-actions { display: none; }
+            .grid-mini { grid-template-columns: 1fr; } /* Stack latest packs on mobile */
+        }
     </style>
 </head>
 
@@ -110,33 +131,79 @@
         <div class="hero">
             <div class="card hero-card">
                 <h1 class="title">Discover & share elite <span class="grad">Bedrock texture packs</span></h1>
-                <p class="muted">A premium experience: razor-clean UI, smart filters, and instant uploads. Click "Texture Packs" to browse the gallery, filter by color and tags, or upload your own .mcpack file.</p>
+                <p class="muted">A premium experience: razor-clean UI, smart filters, and instant uploads. Click "Browse Packs" to explore the gallery, filter by color and tags, or upload your own .mcpack file.</p>
                 <div class="hero-cta">
                     <a class="btn primary" href="/texturepacks.html"><i class="fa-solid fa-arrow-right"></i> Browse Packs</a>
-                    <a class="btn ghost" href="https://discord.gg/KtafawJZxM" target="_blank" rel="noopener noreferrer">Join Discord</a>
                 </div>
             </div>
             <aside class="card preview">
-                <div class="preview-head"><strong>Latest Uploads</strong><span class="tiny">just now</span></div>
-                <div class="grid-mini">
-                    <div class="mini">
-                        <div class="icon" style="background: linear-gradient(135deg, #22c55e, #14b8a6);"><i class="fa-solid fa-tree"></i></div>
-                        <div>
-                            <div style="font-weight:800">Verdant HD</div>
-                            <div class="tiny">HD • Natural</div>
-                        </div>
-                    </div>
-                    <div class="mini">
-                        <div class="icon" style="background:linear-gradient(135deg,#a855f7,#ec4899)"><i class="fa-solid fa-khanda"></i></div>
-                        <div>
-                            <div style="font-weight:800">Nebula PvP</div>
-                            <div class="tiny">PvP • Purple</div>
-                        </div>
-                    </div>
+                <div class="preview-head"><strong>Latest Uploads</strong></div>
+                <div class="grid-mini" id="latest-packs-grid">
+                    <div class="mini"><div style="font-weight:800">Loading...</div></div>
                 </div>
             </aside>
         </div>
     </section>
-</body>
 
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const COLORS = [{key: 'red',hex: '#ef4444'}, {key: 'blue',hex: '#3b82f6'}, {key: 'green',hex: '#22c55e'}, {key: 'yellow',hex: '#eab308'}, {key: 'purple',hex: '#a855f7'}, {key: 'pink',hex: '#ec4899'}, {key: 'orange',hex: '#f97316'}, {key: 'teal',hex: '#14b8a6'}, {key: 'gray',hex: '#6b7280'}, {key: 'black',hex: '#1f2937'}];
+
+        function escapeHtml(str) { return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); }
+        
+        async function loadLatestPacks() {
+            const grid = document.getElementById('latest-packs-grid');
+            if (!grid) return;
+
+            const { data, error } = await supabase
+                .from('packs')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(2); // Fetch only the 2 latest packs
+
+            if (error) {
+                console.error("Failed to load latest packs", error);
+                grid.innerHTML = '<div class="mini"><div class="tiny">Could not load packs.</div></div>';
+                return;
+            }
+
+            if (data && data.length > 0) {
+                grid.innerHTML = ''; // Clear the "Loading..." placeholder
+                data.forEach(pack => {
+                    const color = COLORS.find(c => c.key === pack.color)?.hex || '#6b7280';
+                    const tags = pack.tags ? pack.tags.split(',') : [];
+                    const firstTag = tags.length > 0 ? escapeHtml(tags[0].toUpperCase()) : '';
+                    
+                    const packElement = document.createElement('a');
+                    packElement.href = '/texturepacks.html';
+                    packElement.className = 'mini';
+                    packElement.innerHTML = `
+                        <div class="icon" style="background:${pack.icon_url ? 'transparent' : color}">
+                            ${pack.icon_url 
+                                ? `<img src="${pack.icon_url}" style="width:100%; height:100%; object-fit:cover; border-radius: 8px;" />` 
+                                : '<i class="fa-solid fa-cube"></i>'
+                            }
+                        </div>
+                        <div>
+                            <div style="font-weight:800">${escapeHtml(pack.name)}</div>
+                            <div class="tiny">${escapeHtml(pack.resolution)} • ${firstTag}</div>
+                        </div>
+                    `;
+                    grid.appendChild(packElement);
+                });
+            } else {
+                grid.innerHTML = '<div class="mini"><div class="tiny">No packs uploaded yet.</div></div>';
+            }
+        }
+
+        // Run the function when the page loads
+        loadLatestPacks();
+
+    </script>
+</body>
 </html>
