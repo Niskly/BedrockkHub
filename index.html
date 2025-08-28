@@ -55,16 +55,9 @@
     .tiny{font-size:12px;color:var(--muted)}
     .packs{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
     .pack{overflow:hidden}
-    /* FIX: Explicitly controlling the box-shadow to prevent browser overrides */
-    .pack.card {
-      box-shadow: 0 24px 70px rgba(0,0,0,.55);
-      transition: box-shadow .2s, transform .2s;
-    }
-    .pack.card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 28px 75px rgba(0,0,0,.65);
-    }
-    .thumb{height:140px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#1f2937,#0f172a);display:flex;align-items:center;justify-content:center;position: relative;overflow: hidden;}
+    .pack.card{box-shadow: 0 24px 70px rgba(0,0,0,.55);transition: box-shadow .2s, transform .2s;}
+    .pack.card:hover{transform: translateY(-4px);box-shadow: 0 28px 75px rgba(0,0,0,.65);}
+    .thumb{height:140px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center;position: relative;overflow: hidden;}
     .thumb .pack-icon-bg {position: absolute;top: 0;left: 0;width: 100%;height: 100%;background-size: cover;background-position: center;filter: blur(8px) brightness(0.7);transform: scale(1.1);}
     .thumb .pack-icon {position: relative;width: 90px;height: 90px;border-radius: 8px;object-fit: cover;z-index: 1;box-shadow: 0 4px 12px rgba(0,0,0,0.4);}
     .thumb .glyph{height:68px;width:68px;border-radius:14px;display:grid;place-items:center;color:white}
@@ -495,6 +488,7 @@
     return `#${[r,g,b].map(v=> v.toString(16).padStart(2,'0')).join('')}`;
   }
 
+  // UPDATED: renderCard now shows the custom icon with a blurry background if it exists
   function renderCard(p){
     const colorKey = p.color || 'gray';
     const color = COLORS.find(c=>c.key===colorKey)?.hex || '#6b7280';
@@ -503,17 +497,24 @@
     const { data } = supabase.storage.from('packs').getPublicUrl(p.filename);
 
     let thumbContent;
+    // FIX: Conditionally set the background style
+    let thumbBackgroundStyle;
+
     if (p.icon_url) {
       thumbContent = `
         <div class="pack-icon-bg" style="background-image: url('${p.icon_url}');"></div>
         <img class="pack-icon" src="${p.icon_url}" alt="${escapeHtml(p.name)} Icon">
       `;
+      // Use a neutral background when a custom icon is present to prevent color bleed
+      thumbBackgroundStyle = `background: linear-gradient(135deg,#1f2937,#0f172a);`;
     } else {
       thumbContent = `<div class="glyph" style="background:${color}"><i class="fa-solid fa-cube"></i></div>`;
+      // Use the dynamic color background only for the default glyph
+      thumbBackgroundStyle = `background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})`;
     }
 
     card.innerHTML = `
-      <div class="thumb" style="background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})">
+      <div class="thumb" style="${thumbBackgroundStyle}">
         ${thumbContent}
       </div>
       <div class="content">
