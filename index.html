@@ -48,9 +48,11 @@
     .swatch{width:34px;height:34px;border-radius:999px;border:2px solid rgba(255,255,255,.12);cursor:pointer;position:relative}
     .swatch.active, .res-box.active{outline:3px solid #eab308 !important}
     .tags{display:flex;flex-wrap:wrap;gap:8px}
-    .tag{padding:.45rem .7rem;border-radius:999px;background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.22);cursor:pointer;color:white}
+    /* UPDATED: Added bold text */
+    .tag{padding:.45rem .7rem;border-radius:999px;background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.22);cursor:pointer;color:white;font-weight:700;}
     .tag.active{background:rgba(124,58,237,.3)}
-    .res-box{padding:.45rem .7rem;border-radius:8px;background:rgba(255,255,255,.02);border:1px solid var(--border);cursor:pointer}
+    /* UPDATED: Added bold, white text */
+    .res-box{padding:.45rem .7rem;border-radius:8px;background:rgba(255,255,255,.02);border:1px solid var(--border);cursor:pointer;font-weight:700;color:white;}
     .tiny{font-size:12px;color:var(--muted)}
     .packs{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
     .pack{overflow:hidden}
@@ -61,6 +63,15 @@
     .badge{font-size:12px;padding:.25rem .55rem;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:white}
     .actions{display:flex;gap:6px;align-items:center}
     .btn.sm{padding:.25rem .5rem;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:.4rem;min-width:auto}
+    /* NEW: Styles for the small clear buttons */
+    .btn.sm.btn-clear{
+      padding: .2rem .6rem;
+      font-size: 12px;
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--brand-1), var(--brand-2));
+      color: var(--bg-0);
+      border: none;
+    }
     .backdrop{position:fixed;inset:0;background:rgba(2,6,23,.6);display:none;align-items:center;justify-content:center;z-index:60}
     .modal{width:100%;max-width:760px;background:var(--bg-2);border-radius:12px;overflow:hidden}
     .modal .panel{padding:20px}
@@ -123,15 +134,15 @@
         <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
         <h3>Colors</h3>
         <div id="colorSwatches" class="swatches"></div>
-        <div class="row" style="margin-top:8px"><button class="btn sm" onclick="clearColors()">Clear colors</button></div>
+        <div class="row" style="margin-top:8px"><button class="btn sm btn-clear" onclick="clearColors()">Clear colors</button></div>
         <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
         <h3>Resolutions</h3>
         <div id="resolutionBoxes" class="resolutions"></div>
-        <div class="row" style="margin-top:8px"><button class="btn sm" onclick="clearResolutions()">Clear resolutions</button></div>
+        <div class="row" style="margin-top:8px"><button class="btn sm btn-clear" onclick="clearResolutions()">Clear resolutions</button></div>
         <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
         <h3>Tags</h3>
         <div id="tagCloud" class="tags"></div>
-        <div class="row" style="margin-top:8px"><button class="btn sm" onclick="clearTags()">Clear tags</button></div>
+        <div class="row" style="margin-top:8px"><button class="btn sm btn-clear" onclick="clearTags()">Clear tags</button></div>
         <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
         <h3>Upload</h3>
         <div class="row"><button class="btn primary" onclick="openModal()"><i class="fa-solid fa-cloud-upload-alt"></i> Upload pack</button></div>
@@ -490,7 +501,6 @@
     });
     count.textContent = filtered.length;
     grid.innerHTML = '';
-    // FIX: Corrected a syntax error on the line below
     filtered.forEach(p => grid.appendChild(renderCard(p)));
     if(filtered.length===0){
       grid.innerHTML = '<div class="card panel tiny">No packs match your filters.</div>';
@@ -516,7 +526,6 @@
   }
 
   function init() {
-    // Make functions global
     window.applyFilters = applyFilters;
     window.clearSearch = clearSearch;
     window.clearColors = clearColors;
@@ -526,8 +535,8 @@
     window.promptDelete = promptDelete;
     window.cancelDelete = cancelDelete;
     window.confirmDelete = confirmDelete;
+    window.hintFile = hintFile;
 
-    // Build filter controls
     buildSwatches(document.getElementById('colorSwatches'), (k, el)=>{ toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
     buildTags(document.getElementById('tagCloud'), (k, el)=>{ toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
     buildResolutionBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions);
