@@ -10,8 +10,8 @@
     <style>
         :root {
             --bg-0: #000000; /* Pure black */
-            --bg-1: #1a1a1a;
-            --bg-2: #2a2a2a;
+            --bg-1: #282828; /* Lighter gray for main UI elements */
+            --bg-2: #383838; /* Even lighter gray for cards/modals */
             --muted: #a8b3cf;
             --text: #e8eefc;
             --border: rgba(255, 255, 255, .08);
@@ -35,7 +35,17 @@
         }
         .nav { max-width: 1200px; margin: 0 auto; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
         .brand { display: flex; align-items: center; gap: .8rem; }
-        .brand-badge { height: 44px; width: 44px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: 0 12px 30px rgba(231, 76, 60, .22); }
+        .brand-badge { 
+            height: 44px; 
+            width: 44px; 
+            border-radius: 12px; 
+            display: grid; 
+            place-items: center; 
+            background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); 
+            box-shadow: 0 12px 30px rgba(231, 76, 60, .22); 
+            /* Added background to fill space behind icon */
+            background-color: #555; /* A neutral dark gray to fill the transparent badge area */
+        }
         .brand-title { font-weight: 800; letter-spacing: .6px; }
         .nav-actions { display: flex; gap: .6rem; }
         .btn { padding: .6rem 1rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; }
@@ -46,6 +56,7 @@
         .container { max-width: 1200px; margin: 0 auto; padding: 28px 18px; }
         .layout { display: grid; grid-template-columns: 280px 1fr; gap: 20px; }
         .sidebar { position: sticky; top: 78px; height: fit-content; }
+        /* Cards now use the slightly lighter gray background */
         .card { background: linear-gradient(180deg, rgba(255, 255, 255, .03), rgba(255, 255, 255, .02)); border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 24px 70px rgba(0, 0, 0, .55); }
         .panel { padding: 18px; }
         .panel h3 { margin: 0 0 10px 0; font-size: 14px; letter-spacing: .4px; color: #cbd5e1; text-transform: uppercase; }
@@ -82,6 +93,7 @@
         .btn.sm { padding: .25rem .5rem; border-radius: 8px; font-weight: 700; display: inline-flex; align-items: center; gap: .4rem; min-width: auto; }
         .btn.sm.btn-clear { padding: .2rem .6rem; font-size: 12px; font-weight: 800; background: linear-gradient(90deg, var(--brand-1), var(--brand-2)); color: white; border: none; }
         .backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, .6); display: none; align-items: center; justify-content: center; z-index: 60; }
+        /* Modal background also uses the lighter gray */
         .modal { width: 100%; max-width: 760px; background: var(--bg-2); border-radius: 12px; overflow: hidden; }
         .modal .panel { padding: 20px; }
         .modal-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 20px 20px; }
@@ -97,11 +109,22 @@
         .sort-btn #currentSort { color: var(--text); }
         .sort-btn .fa-chevron-down { font-size: 10px; transition: transform .2s; }
         .sort-container.open .fa-chevron-down { transform: rotate(180deg); }
+        /* Sort menu now uses the lighter gray background */
         .sort-menu { display: none; position: absolute; top: 100%; left: 0; margin-top: 6px; z-index: 10; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.4); min-width: 160px; }
         .sort-menu a { display: block; padding: 8px 14px; font-size: 14px; }
         .sort-menu a:hover { background: var(--brand-1); }
         .sort-menu a.active { font-weight: 800; color: var(--text); }
-        .brand-icon-custom { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+        
+        /* Updated custom icon style */
+        .brand-icon-custom { 
+            width: 100%; /* Make image fill the badge */
+            height: 100%; /* Make image fill the badge */
+            object-fit: contain; /* Ensure the icon fits within the square, preserving aspect ratio */
+            border-radius: 8px; /* Maintain rounded corners */
+            padding: 2px; /* Add a little padding inside the badge so the image doesn't touch the edge */
+            background-color: transparent; /* Ensure the image background is transparent */
+        }
+
         @media (max-width:1024px) { .layout { grid-template-columns: 1fr; } .sidebar { position: static; } .packs { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width:768px) { .packs { grid-template-columns: 1fr; } .nav-actions { display: none; } }
     </style>
