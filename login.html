@@ -60,7 +60,7 @@
                 <h1>Login / Sign Up</h1>
                 <p>Continue to BedrockHub</p>
                 <div style="margin-top: 2rem;">
-                    <a class="btn xbox-btn" onclick="login()" href="#"><i class="fa-brands fa-xbox"></i> Continue with Microsoft</a>
+                    <a class="btn xbox-btn" onclick="login()" href="#"><i class="fa-brands fa-xbox"></i> Continue with Xbox</a>
                 </div>
             </div>
         </div>
@@ -76,7 +76,7 @@
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'azure',
                 options: { 
-                    scopes: 'openid profile email offline_access',
+                    scopes: 'Xboxlive.signin offline_access', // Asking for the correct Xbox scope
                     redirectTo: 'https://bedrockk-hub.vercel.app'
                 },
             });
