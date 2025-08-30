@@ -155,7 +155,50 @@
     </header>
 
     <section class="container">
-        </section>
+        <div class="layout">
+            <aside class="sidebar card panel">
+                <h3>Actions</h3>
+                <div class="row"><button class="btn primary" onclick="openModal()" style="width: 100%;"><i class="fa-solid fa-cloud-upload-alt"></i> Upload Pack</button></div>
+                <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+                <h3>Colors</h3>
+                <div id="colorSwatches" class="swatches"></div>
+                <div class="row" style="margin-top:8px"><button class="btn sm btn-clear" onclick="clearColors()">Clear colors</button></div>
+                <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+                <h3>Resolutions</h3>
+                <div id="resolutionBoxes" class="resolutions"></div>
+                <div class="row" style="margin-top:8px"><button class="btn sm btn-clear" onclick="clearResolutions()">Clear resolutions</button></div>
+                <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+                <h3>Tags</h3>
+                <div id="tagCloud" class="tags"></div>
+                <div class="row" style="margin-top:8px"><button class="btn sm btn-clear" onclick="clearTags()">Clear tags</button></div>
+            </aside>
+            <div>
+                <div class="card panel" style="display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:14px">
+                    <div class="sort-container" id="sortContainer">
+                        <button class="btn sm ghost sort-btn" onclick="toggleSortMenu()">
+                            <span class="tiny">Sort by:</span>
+                            <span id="currentSort">Latest Upload</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <div class="sort-menu" id="sortMenu">
+                            <a href="#" class="active" onclick="setSort('latest', this)">Latest Upload</a>
+                            <a href="#" onclick="setSort('downloads', this)">Downloads</a>
+                        </div>
+                    </div>
+                    <div class="search" style="flex-grow: 1;">
+                        <input id="q" placeholder="Search by name..." oninput="applyFilters()" />
+                        <button class="btn sm ghost" onclick="clearSearch()"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div class="row"><button class="btn sm ghost" onclick="resetAll()">Reset filters</button></div>
+                </div>
+                <div id="grid" class="packs"></div>
+            </div>
+        </div>
+    </section>
+
+    <div id="backdrop" class="backdrop"></div>
+    <div id="editBackdrop" class="backdrop"></div>
+    <div id="confirmDeleteBackdrop" class="backdrop"></div>
 
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -175,35 +218,18 @@
         const userProfile = document.getElementById('user-profile');
         const userGamertag = document.getElementById('user-gamertag');
         const userMenu = document.getElementById('userMenu');
-
-        async function logout() {
-            const { error } = await supabase.auth.signOut();
-            if (error) console.error('Error logging out:', error);
-        }
-
-        function toggleUserMenu() {
-            const isVisible = userMenu.style.display === 'block';
-            userMenu.style.display = isVisible ? 'none' : 'block';
-            userProfile.classList.toggle('open', !isVisible);
-        }
-
-        function updateUserUI(user) {
-            if (user) {
-                loginBtn.style.display = 'none';
-                userProfile.style.display = 'inline-flex';
-                userGamertag.textContent = user.user_metadata?.name || 'Player';
-            } else {
-                loginBtn.style.display = 'inline-flex';
-                userProfile.style.display = 'none';
-            }
-        }
+        async function logout() { const { error } = await supabase.auth.signOut(); if (error) console.error('Error logging out:', error); }
+        function toggleUserMenu() { const isVisible = userMenu.style.display === 'block'; userMenu.style.display = isVisible ? 'none' : 'block'; userProfile.classList.toggle('open', !isVisible); }
+        function updateUserUI(user) { if (user) { loginBtn.style.display = 'none'; userProfile.style.display = 'inline-flex'; userGamertag.textContent = user.user_metadata?.name || 'Player'; } else { loginBtn.style.display = 'inline-flex'; userProfile.style.display = 'none'; } }
         
-        /* ====== ALL OTHER FUNCTIONS (API, UI, EVENT HANDLERS) ====== */
+        /* ====== API & DATA FUNCTIONS ====== */
         async function loadPacksOnStartup() { let query = supabase.from('packs').select('*'); if (state.sortBy === 'downloads') { query = query.order('download_count', { ascending: false }); } else { query = query.order('created_at', { ascending: false }); } const { data, error } = await query; if (error) { console.error('Failed to load packs from Supabase', error); packs = []; } else { packs = data.map(pack => ({ ...pack, tags: pack.tags ? pack.tags.split(',') : [] })); } render(); }
         async function handleUpload(e) { e.preventDefault(); const submitBtn = document.getElementById('submitBtn'); submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...'; const name = document.getElementById('packName').value.trim(); const file = document.getElementById('fileInput').files[0]; if (!file || !file.name.endsWith('.mcpack')) { alert('Select a valid .mcpack'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; return; } if (!state.modalColor) { alert('Pick a primary color'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; return; } if (!state.modalResolution) { alert('Pick a resolution'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; return; } try { let iconUrl = null; const zip = new JSZip(); const contents = await zip.loadAsync(file); const iconFile = contents.file('pack_icon.png'); if (iconFile) { submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...'; const iconBlob = await iconFile.async('blob'); const iconFileName = `icons/${Date.now()}-pack_icon.png`; const { error: iconError } = await supabase.storage.from('packs').upload(iconFileName, iconBlob); if (iconError) throw iconError; const { data } = supabase.storage.from('packs').getPublicUrl(iconFileName); iconUrl = data.publicUrl; } submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Pack...'; const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`; await supabase.storage.from('packs').upload(fileName, file); const response = await fetch('/api/addpacks', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name: name || file.name.replace(/\.mcpack$/i, ''), color: state.modalColor, tags: [...state.modalTags], filename: fileName, resolution: state.modalResolution, icon_url: iconUrl }) }); if (!response.ok) { throw new Error((await response.json()).details || 'Failed to add pack metadata.'); } await loadPacksOnStartup(); closeModal(); } catch (err) { alert('Upload failed: ' + err.message); } finally { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; } }
         async function saveEdit(e) { e.preventDefault(); if (!currentEditId) return; const { error } = await supabase.from('packs').update({ name: document.getElementById('editPackName').value.trim(), color: state.editColor, tags: [...state.editTags].join(','), resolution: state.editResolution }).eq('id', currentEditId); if (error) { alert('Save failed: ' + error.message); } else { await loadPacksOnStartup(); closeEditModal(); } }
         async function confirmDelete() { if (!currentEditId) return; const packToDelete = packs.find(p => p.id === currentEditId); if (!packToDelete) { cancelDelete(); return; } try { await supabase.storage.from('packs').remove([packToDelete.filename]); if (packToDelete.icon_url) { const iconFileName = packToDelete.icon_url.split('/').pop(); await supabase.storage.from('packs').remove([`icons/${iconFileName}`]); } const { error } = await supabase.from('packs').delete().eq('id', currentEditId); if (error) throw error; await loadPacksOnStartup(); } catch (error) { alert('Delete failed: ' + error.message); } finally { cancelDelete(); closeEditModal(); } }
         async function handleDownload(event, packId, downloadUrl) { event.preventDefault(); try { await fetch('/api/increment-download', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: packId }) }); const countElement = document.getElementById(`downloads-${packId}`); if (countElement) { const currentCount = parseInt(countElement.textContent.replace(/,/g, ''), 10); countElement.textContent = (currentCount + 1).toLocaleString(); } } catch (err) { console.error("Failed to update download count:", err); } finally { window.location.href = downloadUrl; } }
+        
+        /* ====== UI RENDERING FUNCTIONS ====== */
         function render() { const grid = document.getElementById('grid'); const filtered = packs.filter(p => { const qOk = !state.q || p.name.toLowerCase().includes(state.q); const cOk = state.colors.size === 0 || state.colors.has(p.color); const tOk = state.tags.size === 0 || [...state.tags].every(t => (p.tags || []).includes(t)); const rOk = state.resolutions.size === 0 || state.resolutions.has(p.resolution); return qOk && cOk && tOk && rOk; }); grid.innerHTML = ''; if (filtered.length === 0) { grid.innerHTML = '<div class="card panel tiny">No packs match your filters.</div>'; } else { filtered.forEach(p => grid.appendChild(renderCard(p))); } }
         function renderCard(p) { const colorKey = p.color || 'gray'; const color = COLORS.find(c => c.key === colorKey)?.hex || '#6b7280'; const card = document.createElement('div'); card.className = 'card pack'; const { data } = supabase.storage.from('packs').getPublicUrl(p.filename); let thumbContent; let thumbBackgroundStyle; if (p.icon_url) { thumbContent = `<div class="pack-icon-bg" style="background-image: url('${p.icon_url}');"></div><img class="pack-icon" src="${p.icon_url}" alt="${escapeHtml(p.name)} Icon">`; thumbBackgroundStyle = `background: linear-gradient(135deg,#1f2937,#0f172a);`; } else { thumbContent = `<div class="glyph" style="background:${color}"><i class="fa-solid fa-cube"></i></div>`; thumbBackgroundStyle = `background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})`; } card.innerHTML = ` <div class="thumb" style="${thumbBackgroundStyle}"> ${thumbContent} <button class="pack-options-btn" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button> <div class="pack-options-menu" id="options-menu-${p.id}"> <a href="${data.publicUrl}" onclick="handleDownload(event, ${p.id}, '${data.publicUrl}')"><i class="fa-solid fa-download"></i> Download</a> <a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a> </div> </div> <div class="content"> <div class="pack-stats-top"> <div class="stat-item"><i class="fa-solid fa-download"></i><span id="downloads-${p.id}">${(p.download_count || 0).toLocaleString()}</span></div> <div class="stat-item"><i class="fa-solid fa-calendar-day"></i><span>${formatDate(p.created_at)}</span></div> </div> <h4>${escapeHtml(p.name)}</h4> <div class="meta"> <span class="badge" style="border-color:${color}">${p.color?.toUpperCase()}</span> ${p.resolution ? `<span class="badge">${p.resolution}</span>` : ''} ${(p.tags||[]).map(t=>`<span class="badge">${t.toUpperCase()}</span>`).join('')} </div> </div>`; return card; }
         function buildSwatches(container, clickHandler, activeSet) { container.innerHTML = ''; COLORS.forEach(c => { const b = document.createElement('button'); b.type = 'button'; b.className = 'swatch' + ((activeSet && activeSet.has(c.key)) ? ' active' : ''); b.style.background = c.hex; b.title = c.key; b.onclick = () => clickHandler(c.key, b); container.appendChild(b); }); }
@@ -254,4 +280,5 @@
         init();
     </script>
 </body>
+
 </html>
