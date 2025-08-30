@@ -160,11 +160,15 @@
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         
-        // --- All of your existing constants, state, and functions are here ---
-        const SUPABASE_URL = '...'; // Your Supabase URL
-        const SUPABASE_ANON_KEY = '...'; // Your Supabase Key
+        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        // ... (COLORS, TAGS, etc.)
+        const COLORS = [{key: 'red',hex: '#ef4444'}, {key: 'blue',hex: '#3b82f6'}, {key: 'green',hex: '#22c55e'}, {key: 'yellow',hex: '#eab308'}, {key: 'purple',hex: '#a855f7'}, {key: 'pink',hex: '#ec4899'}, {key: 'orange',hex: '#f97316'}, {key: 'teal',hex: '#14b8a6'}, {key: 'gray',hex: '#6b7280'}, {key: 'black',hex: '#1f2937'}];
+        const TAGS = ['pvp', 'bedwars', 'skywars', 'anime', 'crystal pvp'];
+        const RESOLUTIONS = ['8x', '16x', '32x', '64x'];
+        let packs = [];
+        const state = { q: '', colors: new Set(), tags: new Set(), resolutions: new Set(), modalColor: null, modalTags: new Set(), modalResolution: null, editColor: null, editTags: new Set(), editResolution: null, sortBy: 'latest' };
+        let currentEditId = null;
 
         /* ====== AUTHENTICATION ====== */
         const loginBtn = document.getElementById('login-btn');
@@ -186,34 +190,67 @@
         function updateUserUI(user) {
             if (user) {
                 loginBtn.style.display = 'none';
-                userProfile.style.display = 'inline-flex'; // Correct display style
+                userProfile.style.display = 'inline-flex';
                 userGamertag.textContent = user.user_metadata?.name || 'Player';
             } else {
-                loginBtn.style.display = 'inline-flex'; // Correct display style
+                loginBtn.style.display = 'inline-flex';
                 userProfile.style.display = 'none';
             }
         }
         
-        // --- All of your other working functions (loadPacksOnStartup, renderCard, etc.) must be here ---
-
+        /* ====== ALL OTHER FUNCTIONS (API, UI, EVENT HANDLERS) ====== */
+        async function loadPacksOnStartup() { let query = supabase.from('packs').select('*'); if (state.sortBy === 'downloads') { query = query.order('download_count', { ascending: false }); } else { query = query.order('created_at', { ascending: false }); } const { data, error } = await query; if (error) { console.error('Failed to load packs from Supabase', error); packs = []; } else { packs = data.map(pack => ({ ...pack, tags: pack.tags ? pack.tags.split(',') : [] })); } render(); }
+        async function handleUpload(e) { e.preventDefault(); const submitBtn = document.getElementById('submitBtn'); submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...'; const name = document.getElementById('packName').value.trim(); const file = document.getElementById('fileInput').files[0]; if (!file || !file.name.endsWith('.mcpack')) { alert('Select a valid .mcpack'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; return; } if (!state.modalColor) { alert('Pick a primary color'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; return; } if (!state.modalResolution) { alert('Pick a resolution'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; return; } try { let iconUrl = null; const zip = new JSZip(); const contents = await zip.loadAsync(file); const iconFile = contents.file('pack_icon.png'); if (iconFile) { submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...'; const iconBlob = await iconFile.async('blob'); const iconFileName = `icons/${Date.now()}-pack_icon.png`; const { error: iconError } = await supabase.storage.from('packs').upload(iconFileName, iconBlob); if (iconError) throw iconError; const { data } = supabase.storage.from('packs').getPublicUrl(iconFileName); iconUrl = data.publicUrl; } submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Pack...'; const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`; await supabase.storage.from('packs').upload(fileName, file); const response = await fetch('/api/addpacks', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name: name || file.name.replace(/\.mcpack$/i, ''), color: state.modalColor, tags: [...state.modalTags], filename: fileName, resolution: state.modalResolution, icon_url: iconUrl }) }); if (!response.ok) { throw new Error((await response.json()).details || 'Failed to add pack metadata.'); } await loadPacksOnStartup(); closeModal(); } catch (err) { alert('Upload failed: ' + err.message); } finally { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; } }
+        async function saveEdit(e) { e.preventDefault(); if (!currentEditId) return; const { error } = await supabase.from('packs').update({ name: document.getElementById('editPackName').value.trim(), color: state.editColor, tags: [...state.editTags].join(','), resolution: state.editResolution }).eq('id', currentEditId); if (error) { alert('Save failed: ' + error.message); } else { await loadPacksOnStartup(); closeEditModal(); } }
+        async function confirmDelete() { if (!currentEditId) return; const packToDelete = packs.find(p => p.id === currentEditId); if (!packToDelete) { cancelDelete(); return; } try { await supabase.storage.from('packs').remove([packToDelete.filename]); if (packToDelete.icon_url) { const iconFileName = packToDelete.icon_url.split('/').pop(); await supabase.storage.from('packs').remove([`icons/${iconFileName}`]); } const { error } = await supabase.from('packs').delete().eq('id', currentEditId); if (error) throw error; await loadPacksOnStartup(); } catch (error) { alert('Delete failed: ' + error.message); } finally { cancelDelete(); closeEditModal(); } }
+        async function handleDownload(event, packId, downloadUrl) { event.preventDefault(); try { await fetch('/api/increment-download', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: packId }) }); const countElement = document.getElementById(`downloads-${packId}`); if (countElement) { const currentCount = parseInt(countElement.textContent.replace(/,/g, ''), 10); countElement.textContent = (currentCount + 1).toLocaleString(); } } catch (err) { console.error("Failed to update download count:", err); } finally { window.location.href = downloadUrl; } }
+        function render() { const grid = document.getElementById('grid'); const filtered = packs.filter(p => { const qOk = !state.q || p.name.toLowerCase().includes(state.q); const cOk = state.colors.size === 0 || state.colors.has(p.color); const tOk = state.tags.size === 0 || [...state.tags].every(t => (p.tags || []).includes(t)); const rOk = state.resolutions.size === 0 || state.resolutions.has(p.resolution); return qOk && cOk && tOk && rOk; }); grid.innerHTML = ''; if (filtered.length === 0) { grid.innerHTML = '<div class="card panel tiny">No packs match your filters.</div>'; } else { filtered.forEach(p => grid.appendChild(renderCard(p))); } }
+        function renderCard(p) { const colorKey = p.color || 'gray'; const color = COLORS.find(c => c.key === colorKey)?.hex || '#6b7280'; const card = document.createElement('div'); card.className = 'card pack'; const { data } = supabase.storage.from('packs').getPublicUrl(p.filename); let thumbContent; let thumbBackgroundStyle; if (p.icon_url) { thumbContent = `<div class="pack-icon-bg" style="background-image: url('${p.icon_url}');"></div><img class="pack-icon" src="${p.icon_url}" alt="${escapeHtml(p.name)} Icon">`; thumbBackgroundStyle = `background: linear-gradient(135deg,#1f2937,#0f172a);`; } else { thumbContent = `<div class="glyph" style="background:${color}"><i class="fa-solid fa-cube"></i></div>`; thumbBackgroundStyle = `background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})`; } card.innerHTML = ` <div class="thumb" style="${thumbBackgroundStyle}"> ${thumbContent} <button class="pack-options-btn" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button> <div class="pack-options-menu" id="options-menu-${p.id}"> <a href="${data.publicUrl}" onclick="handleDownload(event, ${p.id}, '${data.publicUrl}')"><i class="fa-solid fa-download"></i> Download</a> <a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a> </div> </div> <div class="content"> <div class="pack-stats-top"> <div class="stat-item"><i class="fa-solid fa-download"></i><span id="downloads-${p.id}">${(p.download_count || 0).toLocaleString()}</span></div> <div class="stat-item"><i class="fa-solid fa-calendar-day"></i><span>${formatDate(p.created_at)}</span></div> </div> <h4>${escapeHtml(p.name)}</h4> <div class="meta"> <span class="badge" style="border-color:${color}">${p.color?.toUpperCase()}</span> ${p.resolution ? `<span class="badge">${p.resolution}</span>` : ''} ${(p.tags||[]).map(t=>`<span class="badge">${t.toUpperCase()}</span>`).join('')} </div> </div>`; return card; }
+        function buildSwatches(container, clickHandler, activeSet) { container.innerHTML = ''; COLORS.forEach(c => { const b = document.createElement('button'); b.type = 'button'; b.className = 'swatch' + ((activeSet && activeSet.has(c.key)) ? ' active' : ''); b.style.background = c.hex; b.title = c.key; b.onclick = () => clickHandler(c.key, b); container.appendChild(b); }); }
+        function buildTags(container, clickHandler, activeSet) { container.innerHTML = ''; TAGS.forEach(t => { const s = document.createElement('button'); s.type = 'button'; s.className = 'tag' + (activeSet?.has(t) ? ' active' : ''); s.textContent = t.toUpperCase(); s.onclick = () => clickHandler(t, s); container.appendChild(s); }); }
+        function buildResolutionBoxes(container, clickHandler, activeState) { container.innerHTML = ''; const isMultiSelect = activeState instanceof Set; RESOLUTIONS.forEach(res => { const box = document.createElement('button'); box.type = 'button'; const isActive = isMultiSelect ? activeState.has(res) : (activeState === res); box.className = 'res-box' + (isActive ? ' active' : ''); box.textContent = res; box.onclick = () => clickHandler(res, box); container.appendChild(box); }); }
+        function openModal() { document.getElementById('backdrop').style.display = 'flex'; state.modalColor = null; state.modalResolution = null; state.modalTags = new Set(); buildSwatches(document.getElementById('modalSwatches'), (k, el) => { state.modalColor = k; highlightOne(el.parentElement, el); }, null); buildTags(document.getElementById('modalTags'), (k, el) => { toggleSet(state.modalTags, k); el.classList.toggle('active'); }, new Set()); buildResolutionBoxes(document.getElementById('modalResolutions'), (res, el) => { state.modalResolution = res; highlightOne(el.parentElement, el); }, null); }
+        function closeModal() { document.getElementById('backdrop').style.display = 'none'; document.getElementById('uploadForm').reset(); document.getElementById('fileHint').textContent = '.mcpack files only'; }
+        function openEditModal(id) { const p = packs.find(x => x.id === id); if (!p) return alert('Pack not found'); currentEditId = id; document.getElementById('editId').value = id; document.getElementById('editPackName').value = p.name || ''; state.editColor = p.color || null; state.editTags = new Set(p.tags || []); state.editResolution = p.resolution || null; buildSwatches(document.getElementById('editModalSwatches'), (k, el) => { state.editColor = k; highlightOne(el.parentElement, el); }, new Set([state.editColor])); buildTags(document.getElementById('editModalTags'), (k, el) => { toggleSet(state.editTags, k); el.classList.toggle('active'); }, state.editTags); buildResolutionBoxes(document.getElementById('editModalResolutions'), (res, el) => { state.editResolution = res; highlightOne(el.parentElement, el); }, state.editResolution); document.getElementById('editBackdrop').style.display = 'flex'; }
+        function closeEditModal() { currentEditId = null; document.getElementById('editBackdrop').style.display = 'none'; }
+        function promptDelete() { if (!currentEditId) return; document.getElementById('confirmDeleteBackdrop').style.display = 'flex'; }
+        function cancelDelete() { document.getElementById('confirmDeleteBackdrop').style.display = 'none'; }
+        function applyFilters() { state.q = document.getElementById('q').value.trim().toLowerCase(); render(); }
+        function clearSearch() { document.getElementById('q').value = ''; applyFilters(); }
+        function clearColors() { state.colors.clear(); buildSwatches(document.getElementById('colorSwatches'), (k, el) => { toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors); render(); }
+        function clearTags() { state.tags.clear(); buildTags(document.getElementById('tagCloud'), (k, el) => { toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags); render(); }
+        function clearResolutions() { state.resolutions.clear(); buildResolutionBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions); render(); }
+        function resetAll() { clearSearch(); clearColors(); clearTags(); clearResolutions(); }
+        function hintFile() { const fileInput = document.getElementById('fileInput'); const file = fileInput.files[0]; if (file) { document.getElementById('fileHint').textContent = file.name; const packNameInput = document.getElementById('packName'); if (!packNameInput.value) { packNameInput.value = file.name.replace(/\.mcpack$/i, ''); } } }
+        function toggleOptionsMenu(event, id) { event.stopPropagation(); const menu = document.getElementById(`options-menu-${id}`); const isVisible = menu.style.display === 'block'; document.querySelectorAll('.pack-options-menu').forEach(m => m.style.display = 'none'); if (!isVisible) { menu.style.display = 'block'; } }
+        function toggleSortMenu() { const menu = document.getElementById('sortMenu'); const container = document.getElementById('sortContainer'); const isVisible = menu.style.display === 'block'; menu.style.display = isVisible ? 'none' : 'block'; container.classList.toggle('open', !isVisible); }
+        function setSort(sortType, element) { event.preventDefault(); state.sortBy = sortType; const buttonText = document.getElementById('currentSort'); buttonText.textContent = element.textContent; document.querySelectorAll('#sortMenu a').forEach(a => a.classList.remove('active')); element.classList.add('active'); toggleSortMenu(); loadPacksOnStartup(); }
+        function formatDate(isoString) { if (!isoString) return ''; const date = new Date(isoString); const day = date.getDate(); const month = date.getMonth() + 1; const year = String(date.getFullYear()).slice(-2); return `${day}/${month}/${year}`; }
+        function escapeHtml(str) { return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); }
+        function shade(hex, amt) { let col = hex.replace('#', ''); if (col.length === 3) col = col.split('').map(c => c + c).join(''); let [r, g, b] = [0, 0, 0].map((_, i) => parseInt(col.slice(i * 2, i * 2 + 2), 16));[r, g, b] = [r + amt, g + amt, b + amt].map(v => Math.max(0, Math.min(255, v))); return `#${[r,g,b].map(v=> v.toString(16).padStart(2,'0')).join('')}`; }
+        function highlightOne(container, el) { [...container.children].forEach(c => c.classList.remove('active')); el.classList.add('active'); }
+        function toggleSet(set, key) { set.has(key) ? set.delete(key) : set.add(key); }
+        
         /* ====== INITIALIZATION ====== */
         function init() {
-            // Assign all your functions to the window object
-            window.logout = logout;
-            window.toggleUserMenu = toggleUserMenu;
-            // ... (window.openModal, etc.)
-
-            // Set up Auth listeners
-            supabase.auth.onAuthStateChange((event, session) => {
-                updateUserUI(session?.user ?? null);
-            });
-            supabase.auth.getSession().then(({ data: { session } }) => {
-                updateUserUI(session?.user ?? null);
-            });
+            window.openModal = openModal; window.closeModal = closeModal; window.openEditModal = openEditModal; window.closeEditModal = closeEditModal; window.handleUpload = handleUpload; window.saveEdit = saveEdit; window.promptDelete = promptDelete; window.cancelDelete = cancelDelete; window.confirmDelete = confirmDelete; window.applyFilters = applyFilters; window.clearSearch = clearSearch; window.clearColors = clearColors; window.clearTags = clearTags; window.clearResolutions = clearResolutions; window.resetAll = resetAll; window.hintFile = hintFile; window.toggleOptionsMenu = toggleOptionsMenu; window.handleDownload = handleDownload; window.toggleSortMenu = toggleSortMenu; window.setSort = setSort;
+            window.logout = logout; window.toggleUserMenu = toggleUserMenu;
             
-            // ... (rest of your init function)
+            supabase.auth.onAuthStateChange((event, session) => { updateUserUI(session?.user ?? null); });
+            supabase.auth.getSession().then(({ data: { session } }) => { updateUserUI(session?.user ?? null); });
+            
+            if (document.getElementById('grid')) {
+                buildSwatches(document.getElementById('colorSwatches'), (k, el) => { toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
+                buildTags(document.getElementById('tagCloud'), (k, el) => { toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
+                buildResolutionBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions);
+                window.addEventListener('click', (e) => {
+                    if (!e.target.closest('.pack-options-btn')) { document.querySelectorAll('.pack-options-menu').forEach(menu => menu.style.display = 'none'); }
+                    if (!e.target.closest('.sort-container')) { document.getElementById('sortMenu').style.display = 'none'; document.getElementById('sortContainer').classList.remove('open'); }
+                    if (!e.target.closest('.user-profile')) { document.getElementById('userMenu').style.display = 'none'; document.getElementById('user-profile').classList.remove('open'); }
+                });
+                loadPacksOnStartup();
+            }
         }
-
         init();
     </script>
 </body>
