@@ -381,7 +381,7 @@
             render();
         }
         
-        async function handleUpload(e) {
+async function handleUpload(e) {
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
             const fieldset = document.getElementById('uploadFormFieldset');
@@ -405,9 +405,13 @@
                 let iconUrl = null;
                 const zip = new JSZip();
                 const contents = await zip.loadAsync(file);
-                let iconFile = contents.file('pack_icon.png'); // Bedrock icon
-                if (!iconFile) {
-                    iconFile = contents.file('pack.png'); // Java icon
+                
+                // NEW: Flexible icon searching logic
+                let iconFile = null;
+                const potentialIcons = contents.file(/(pack_icon|pack)\.png$/i);
+                if (potentialIcons.length > 0) {
+                    // Prioritize pack_icon.png if found, otherwise use the first match.
+                    iconFile = potentialIcons.find(f => /pack_icon\.png$/i.test(f.name)) || potentialIcons[0];
                 }
 
                 if (iconFile) {
