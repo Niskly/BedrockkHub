@@ -241,9 +241,6 @@
                         <div style="grid-column: span 2;"><label class="tiny">Tags</label>
                             <div id="modalTags" class="tags"></div>
                         </div>
-                         <div style="grid-column: span 2;"><label class="tiny">Description (optional)</label>
-                            <textarea id="packDescription" placeholder="A short description of the pack..."></textarea>
-                        </div>
                         <div class="file-upload-area" onclick="document.getElementById('fileInput').click()" style="grid-column: span 2;">
                             <i class="fa-solid fa-file-arrow-up"></i>
                             <div>Drag & drop or <span style="color:var(--brand-1)">browse files</span></div>
@@ -354,13 +351,13 @@
             }
             render();
         }
-
+        
+        // UPDATED: handleUpload now only sends fields present in the upload modal
         async function handleUpload(e) {
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
             const file = document.getElementById('fileInput').files[0];
             const name = document.getElementById('packName').value.trim();
-            const description = document.getElementById('packDescription').value.trim();
 
             // Validation
             if (!file || !file.name.endsWith('.mcpack')) { showToast('Please select a valid .mcpack file'); return; }
@@ -398,7 +395,6 @@
                         filename: fileName,
                         resolution: state.modalResolution,
                         version: state.modalVersion,
-                        description: description,
                         icon_url: iconUrl
                     })
                 });
@@ -551,7 +547,17 @@
         function clearResolutions() { state.resolutions.clear(); buildSelectorBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions, RESOLUTIONS); render(); }
         function clearVersions() { state.versions.clear(); buildSelectorBoxes(document.getElementById('versionBoxes'), (v, el) => { toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS); render(); }
         function resetAll() { clearSearch(); clearColors(); clearTags(); clearResolutions(); clearVersions(); }
-        function hintFile() { const fileInput = document.getElementById('fileInput'); const file = fileInput.files[0]; if (file) { document.getElementById('fileHint').textContent = file.name; const packNameInput = document.getElementById('packName'); if (!packNameInput.value) { packNameInput.value = file.name.replace(/\.mcpack$/i, ''); } } }
+        
+        // UPDATED: hintFile now always updates the pack name input on file change
+        function hintFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (file) {
+                document.getElementById('fileHint').textContent = file.name;
+                const packNameInput = document.getElementById('packName');
+                packNameInput.value = file.name.replace(/\.mcpack$/i, '');
+            }
+        }
         function toggleOptionsMenu(event, id) { event.stopPropagation(); const menu = document.getElementById(`options-menu-${id}`); const isVisible = menu.style.display === 'block'; document.querySelectorAll('.pack-options-menu').forEach(m => m.style.display = 'none'); if (!isVisible) { menu.style.display = 'block'; } }
         function toggleSortMenu() { const menu = document.getElementById('sortMenu'); const container = document.getElementById('sortContainer'); const isVisible = menu.style.display === 'block'; menu.style.display = isVisible ? 'none' : 'block'; container.classList.toggle('open', !isVisible); }
         function setSort(sortType, element) { event.preventDefault(); state.sortBy = sortType; const buttonText = document.getElementById('currentSort'); buttonText.textContent = element.textContent; document.querySelectorAll('#sortMenu a').forEach(a => a.classList.remove('active')); element.classList.add('active'); toggleSortMenu(); loadPacksOnStartup(); }
