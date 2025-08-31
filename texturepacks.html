@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BedrockHub -- Texture Packs</title>
+    <title>BedrockHub — Texture Packs</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
@@ -158,25 +158,6 @@
         
         @media (max-width:1024px) { .layout { grid-template-columns: 1fr; } .sidebar { position: static; } .packs { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width:768px) { .packs { grid-template-columns: 1fr; } .nav-actions { display: none; } }
-
-        /* ----- Small adjustments for upload preview ----- */
-        /* Make the icon in the file upload area smaller and ensure it's above text */
-        .file-upload-area .fa-file-arrow-up {
-            font-size: 26px; /* slightly smaller than 32 */
-            margin-bottom: 10px;
-        }
-        /* In case the icon is an <img> or <svg>, add a class target */
-        .file-upload-area .upload-preview-icon {
-            width: 36px;
-            height: 36px;
-            object-fit: contain;
-            margin-bottom: 10px;
-        }
-
-        /* Optional: make the file hint sit below the icon + text more clearly */
-        .file-upload-area > .file-hint {
-            margin-top: 8px;
-        }
     </style>
 </head>
 
@@ -278,7 +259,10 @@
                                     <label class="tiny">Resolution</label>
                                     <div id="modalResolutions" class="resolutions"></div>
                                 </div>
-                                <!-- Version selector removed (automatic detection will be used) -->
+                                <div style="margin-top: 14px;">
+                                    <label class="tiny">Version</label>
+                                    <div id="modalVersions" class="resolutions"></div>
+                                </div>
                             </div>
 
                             <div style="grid-column: span 2;">
@@ -286,9 +270,8 @@
                                 <div id="modalTags" class="tags"></div>
                             </div>
                             <div class="file-upload-area" onclick="document.getElementById('fileInput').click()" style="grid-column: span 2;">
-                                <!-- Icon moved above and slightly smaller -->
-                                <i class="fa-solid fa-file-arrow-up upload-preview-icon"></i>
-                                <div style="margin-bottom:6px">Drag & drop or <span style="color:var(--brand-1)">browse files</span></div>
+                                <i class="fa-solid fa-file-arrow-up"></i>
+                                <div>Drag & drop or <span style="color:var(--brand-1)">browse files</span></div>
                                 <div class="file-hint" id="fileHint">.mcpack or .zip files only</div>
                                 <!-- ACCEPT both mcpack and zip -->
                                 <input id="fileInput" type="file" accept=".mcpack,.zip" style="display:none" onchange="hintFile()" />
@@ -664,7 +647,7 @@
         function buildSelectorBoxes(container, clickHandler, activeState, options) { container.innerHTML = ''; const isMultiSelect = activeState instanceof Set; options.forEach(opt => { const box = document.createElement('button'); box.type = 'button'; const isActive = isMultiSelect ? activeState.has(opt) : (activeState === opt); box.className = 'res-box' + (isActive ? ' active' : ''); box.textContent = opt; box.onclick = () => clickHandler(opt, box); container.appendChild(box); }); }
 
         /* ====== EVENT HANDLERS & MODAL CONTROLS ====== */
-        function openModal() { document.getElementById('backdrop').style.display = 'flex'; state.modalColor = null; state.modalResolution = null; state.modalVersion = null; state.modalTags = new Set(); buildSwatches(document.getElementById('modalSwatches'), (k, el) => { state.modalColor = k; highlightOne(el.parentElement, el); }, null); buildTags(document.getElementById('modalTags'), (k, el) => { toggleSet(state.modalTags, k); el.classList.toggle('active'); }, new Set()); buildSelectorBoxes(document.getElementById('modalResolutions'), (res, el) => { state.modalResolution = res; highlightOne(el.parentElement, el); }, null, RESOLUTIONS); /* version selector removed from modal */ }
+        function openModal() { document.getElementById('backdrop').style.display = 'flex'; state.modalColor = null; state.modalResolution = null; state.modalVersion = null; state.modalTags = new Set(); buildSwatches(document.getElementById('modalSwatches'), (k, el) => { state.modalColor = k; highlightOne(el.parentElement, el); }, null); buildTags(document.getElementById('modalTags'), (k, el) => { toggleSet(state.modalTags, k); el.classList.toggle('active'); }, new Set()); buildSelectorBoxes(document.getElementById('modalResolutions'), (res, el) => { state.modalResolution = res; highlightOne(el.parentElement, el); }, null, RESOLUTIONS); buildSelectorBoxes(document.getElementById('modalVersions'), (v, el) => { state.modalVersion = v; highlightOne(el.parentElement, el); }, null, VERSIONS); }
         function closeModal() { document.getElementById('backdrop').style.display = 'none'; document.getElementById('uploadForm').reset(); document.getElementById('fileHint').textContent = '.mcpack or .zip files only'; }
         function openEditModal(id) { const p = packs.find(x => x.id === id); if (!p) return showToast('Pack not found'); currentEditId = id; document.getElementById('editId').value = id; document.getElementById('editPackName').value = p.name || ''; document.getElementById('editPackDescription').value = p.description || ''; state.editColor = p.color || null; state.editTags = new Set(p.tags || []); state.editResolution = p.resolution || null; state.editVersion = p.version || null; buildSwatches(document.getElementById('editModalSwatches'), (k, el) => { state.editColor = k; highlightOne(el.parentElement, el); }, new Set([state.editColor])); buildTags(document.getElementById('editModalTags'), (k, el) => { toggleSet(state.editTags, k); el.classList.toggle('active'); }, state.editTags); buildSelectorBoxes(document.getElementById('editModalResolutions'), (res, el) => { state.editResolution = res; highlightOne(el.parentElement, el); }, state.editResolution, RESOLUTIONS); buildSelectorBoxes(document.getElementById('editModalVersions'), (v, el) => { state.editVersion = v; highlightOne(el.parentElement, el); }, state.editVersion, VERSIONS); document.getElementById('editBackdrop').style.display = 'flex'; }
         function closeEditModal() { currentEditId = null; document.getElementById('editBackdrop').style.display = 'none'; }
