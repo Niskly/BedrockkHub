@@ -234,7 +234,7 @@
                     <strong>Upload Texture Pack</strong>
                     <button class="btn sm" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
                 </div>
-                <div class="tiny">Select a .mcpack or .zip file, set a name, choose color & tags.</div>
+                <div class="tiny">Select a .mcpack file, set a name, choose color & tags.</div>
             </div>
             <div class="panel" style="padding-top:0">
                 <form id="uploadForm" onsubmit="handleUpload(event)">
@@ -271,8 +271,8 @@
                             <div class="file-upload-area" onclick="document.getElementById('fileInput').click()" style="grid-column: span 2;">
                                 <i class="fa-solid fa-file-arrow-up"></i>
                                 <div>Drag & drop or <span style="color:var(--brand-1)">browse files</span></div>
-                                <div class="file-hint" id="fileHint">.mcpack or .zip files only</div>
-                                <input id="fileInput" type="file" accept=".mcpack,.zip" style="display:none" onchange="hintFile()" />
+                                <div class="file-hint" id="fileHint">.mcpack files only</div>
+                                <input id="fileInput" type="file" accept=".mcpack" style="display:none" onchange="hintFile()" />
                             </div>
                         </div>
                     </fieldset>
@@ -381,106 +381,67 @@
             render();
         }
         
-// Replace your existing handleUpload & helper with this version
-async function handleUpload(e) {
-    e.preventDefault();
-    const submitBtn = document.getElementById('submitBtn');
-    const fieldset = document.getElementById('uploadFormFieldset');
-    const file = document.getElementById('fileInput').files[0];
-    const name = document.getElementById('packName').value.trim();
-    const description = document.getElementById('packDescription').value.trim();
+        async function handleUpload(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            const fieldset = document.getElementById('uploadFormFieldset');
+            const file = document.getElementById('fileInput').files[0];
+            const name = document.getElementById('packName').value.trim();
+            const description = document.getElementById('packDescription').value.trim();
 
-    if (!file || (!file.name.endsWith('.mcpack') && !file.name.endsWith('.zip'))) {
-        showToast('Please select a valid .mcpack or .zip file');
-        return;
-    }
-    if (!state.modalColor) { showToast('You forgot to select a primary color.'); return; }
-    if (!state.modalResolution) { showToast('You forgot to select a resolution.'); return; }
-    if (!state.modalVersion) { showToast('You forgot to select a version.'); return; }
+            if (!file || !file.name.endsWith('.mcpack')) { showToast('Please select a valid .mcpack file'); return; }
+            if (!state.modalColor) { showToast('You forgot to select a primary color.'); return; }
+            if (!state.modalResolution) { showToast('You forgot to select a resolution.'); return; }
+            if (!state.modalVersion) { showToast('You forgot to select a version.'); return; }
 
-    submitBtn.disabled = true;
-    fieldset.disabled = true;
-    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+            submitBtn.disabled = true;
+            fieldset.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+            
+            try {
+                let iconUrl = null;
+                const zip = new JSZip();
+                const contents = await zip.loadAsync(file);
+                const iconFile = contents.file('pack_icon.png');
 
-    try {
-        let iconUrl = null;
-        const zip = new JSZip();
-        const contents = await zip.loadAsync(file);
+                if (iconFile) {
+                    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...';
+                    const iconBlob = await iconFile.async('blob');
+                    const iconFileName = `icons/${Date.now()}-pack_icon.png`;
+                    const { error: iconError } = await supabase.storage.from('packs').upload(iconFileName, iconBlob);
+                    if (iconError) throw iconError;
+                    const { data } = supabase.storage.from('packs').getPublicUrl(iconFileName);
+                    iconUrl = data.publicUrl;
+                }
 
-        // debug: list files when needed (remove/comment out in production)
-        // console.log('zip files:', Object.keys(contents.files));
-
-        const iconEntry = findIconInZip(contents);
-        if (iconEntry) {
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...';
-            const arrayBuff = await iconEntry.async('arraybuffer');
-            const iconBlob = new Blob([arrayBuff], { type: 'image/png' });
-            const iconFileName = `icons/${Date.now()}-icon.png`;
-
-            const { error: iconError } = await supabase.storage.from('packs').upload(iconFileName, iconBlob, { contentType: 'image/png', upsert: true });
-            if (iconError) throw iconError;
-
-            const { data: urlData } = supabase.storage.from('packs').getPublicUrl(iconFileName);
-            iconUrl = urlData.publicUrl;
-        } else {
-            // helpful debug log if icon wasn't found - paste this output here if you want me to refine finder
-            console.warn('No icon found in zip. Files list:', Object.keys(contents.files));
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Pack...';
+                const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+                await supabase.storage.from('packs').upload(fileName, file);
+                const response = await fetch('/api/addpacks', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        name: name || file.name.replace(/\.mcpack$/i, ''),
+                        color: state.modalColor,
+                        tags: [...state.modalTags],
+                        filename: fileName,
+                        resolution: state.modalResolution,
+                        version: state.modalVersion,
+                        description: description,
+                        icon_url: iconUrl
+                    })
+                });
+                if (!response.ok) { throw new Error((await response.json()).details || 'Failed to add pack metadata.'); }
+                await loadPacksOnStartup();
+                closeModal();
+            } catch (err) {
+                showToast('Upload failed: ' + err.message);
+            } finally {
+                submitBtn.disabled = false;
+                fieldset.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload';
+            }
         }
-
-        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Pack...';
-        const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-        const { error: packError } = await supabase.storage.from('packs').upload(fileName, file, { contentType: file.type || 'application/zip', upsert: true });
-        if (packError) throw packError;
-
-        const response = await fetch('/api/addpacks', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                name: name || file.name.replace(/\.(mcpack|zip)$/i, ''),
-                color: state.modalColor,
-                tags: [...state.modalTags],
-                filename: fileName,
-                resolution: state.modalResolution,
-                version: state.modalVersion,
-                description: description,
-                icon_url: iconUrl
-            })
-        });
-
-        if (!response.ok) {
-            const errJson = await response.json().catch(()=>({}));
-            throw new Error(errJson.details || 'Failed to add pack metadata.');
-        }
-
-        await loadPacksOnStartup();
-        closeModal();
-    } catch (err) {
-        console.error('Upload error:', err);
-        showToast('Upload failed: ' + (err.message || err));
-    } finally {
-        submitBtn.disabled = false;
-        fieldset.disabled = false;
-        submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload';
-    }
-}
-
-// Robust icon finder for JSZip instance
-function findIconInZip(zipInstance) {
-    const files = Object.values(zipInstance.files).filter(f => !f.dir);
-    // prefer explicit pack_icon.png
-    let found = files.find(f => /(?:^|\/)pack_icon\.png$/i.test(f.name));
-    if (found) return found;
-    // then pack.png (common in java resource packs)
-    found = files.find(f => /(?:^|\/)pack\.png$/i.test(f.name));
-    if (found) return found;
-    // fallback: first .png near root (<= 3 path segments)
-    found = files.find(f => /\.png$/i.test(f.name) && f.name.split('/').length <= 3);
-    if (found) return found;
-    // last resort: any png
-    return files.find(f => /\.png$/i.test(f.name)) || null;
-}
-
-
 
         async function saveEdit(e) {
             e.preventDefault();
@@ -606,7 +567,7 @@ function findIconInZip(zipInstance) {
             const contentPosition = mainContent.offsetTop;
             
             window.scrollTo({
-                top: contentPosition - headerHeight - 14,
+                top: contentPosition - headerHeight - 14, // Scroll to top of content, minus header height and a 14px margin
                 behavior: 'smooth'
             });
         }
@@ -668,7 +629,7 @@ function findIconInZip(zipInstance) {
 
         /* ====== EVENT HANDLERS & MODAL CONTROLS ====== */
         function openModal() { document.getElementById('backdrop').style.display = 'flex'; state.modalColor = null; state.modalResolution = null; state.modalVersion = null; state.modalTags = new Set(); buildSwatches(document.getElementById('modalSwatches'), (k, el) => { state.modalColor = k; highlightOne(el.parentElement, el); }, null); buildTags(document.getElementById('modalTags'), (k, el) => { toggleSet(state.modalTags, k); el.classList.toggle('active'); }, new Set()); buildSelectorBoxes(document.getElementById('modalResolutions'), (res, el) => { state.modalResolution = res; highlightOne(el.parentElement, el); }, null, RESOLUTIONS); buildSelectorBoxes(document.getElementById('modalVersions'), (v, el) => { state.modalVersion = v; highlightOne(el.parentElement, el); }, null, VERSIONS); }
-        function closeModal() { document.getElementById('backdrop').style.display = 'none'; document.getElementById('uploadForm').reset(); document.getElementById('fileHint').textContent = '.mcpack or .zip files only'; }
+        function closeModal() { document.getElementById('backdrop').style.display = 'none'; document.getElementById('uploadForm').reset(); document.getElementById('fileHint').textContent = '.mcpack files only'; }
         function openEditModal(id) { const p = packs.find(x => x.id === id); if (!p) return showToast('Pack not found'); currentEditId = id; document.getElementById('editId').value = id; document.getElementById('editPackName').value = p.name || ''; document.getElementById('editPackDescription').value = p.description || ''; state.editColor = p.color || null; state.editTags = new Set(p.tags || []); state.editResolution = p.resolution || null; state.editVersion = p.version || null; buildSwatches(document.getElementById('editModalSwatches'), (k, el) => { state.editColor = k; highlightOne(el.parentElement, el); }, new Set([state.editColor])); buildTags(document.getElementById('editModalTags'), (k, el) => { toggleSet(state.editTags, k); el.classList.toggle('active'); }, state.editTags); buildSelectorBoxes(document.getElementById('editModalResolutions'), (res, el) => { state.editResolution = res; highlightOne(el.parentElement, el); }, state.editResolution, RESOLUTIONS); buildSelectorBoxes(document.getElementById('editModalVersions'), (v, el) => { state.editVersion = v; highlightOne(el.parentElement, el); }, state.editVersion, VERSIONS); document.getElementById('editBackdrop').style.display = 'flex'; }
         function closeEditModal() { currentEditId = null; document.getElementById('editBackdrop').style.display = 'none'; }
         function promptDelete() { if (!currentEditId) return; document.getElementById('confirmDeleteBackdrop').style.display = 'flex'; }
@@ -682,7 +643,7 @@ function findIconInZip(zipInstance) {
         function clearVersions() { state.currentPage = 1; state.versions.clear(); buildSelectorBoxes(document.getElementById('versionBoxes'), (v, el) => { state.currentPage = 1; toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS); render(); }
         function resetAll() { state.currentPage = 1; clearSearch(); clearColors(); clearTags(); clearResolutions(); clearVersions(); }
         
-        function hintFile() { const fileInput = document.getElementById('fileInput'); const file = fileInput.files[0]; if (file) { document.getElementById('fileHint').textContent = file.name; const packNameInput = document.getElementById('packName'); packNameInput.value = file.name.replace(/\.(mcpack|zip)$/i, ''); } }
+        function hintFile() { const fileInput = document.getElementById('fileInput'); const file = fileInput.files[0]; if (file) { document.getElementById('fileHint').textContent = file.name; const packNameInput = document.getElementById('packName'); packNameInput.value = file.name.replace(/\.mcpack$/i, ''); } }
         function toggleOptionsMenu(event, id) { event.stopPropagation(); const menu = document.getElementById(`options-menu-${id}`); const isVisible = menu.style.display === 'block'; document.querySelectorAll('.pack-options-menu').forEach(m => m.style.display = 'none'); if (!isVisible) { menu.style.display = 'block'; } }
         function toggleSortMenu() { const menu = document.getElementById('sortMenu'); const container = document.getElementById('sortContainer'); const isVisible = menu.style.display === 'block'; menu.style.display = isVisible ? 'none' : 'block'; container.classList.toggle('open', !isVisible); }
         function setSort(sortType, element) { event.preventDefault(); state.sortBy = sortType; state.currentPage = 1; const buttonText = document.getElementById('currentSort'); buttonText.textContent = element.textContent; document.querySelectorAll('#sortMenu a').forEach(a => a.classList.remove('active')); element.classList.add('active'); toggleSortMenu(); loadPacksOnStartup(); }
