@@ -21,7 +21,7 @@
             --success: #22c55e;
         }
         * { box-sizing: border-box; }
-        html, body { height: 100%; }
+        html, body { height: 100%; scroll-behavior: smooth; }
         body {
             margin: 0;
             background-color: var(--bg-0);
@@ -88,7 +88,7 @@
             background: rgba(222, 33, 42, .12);
             border: 1px solid rgba(222, 33, 42, .22);
             cursor: pointer; color: white; font-weight: 700;
-            text-transform: capitalize;
+            text-transform: capitalize; 
         }
         .tag.active { background: rgba(222, 33, 42, .3); }
         .res-box { padding: .45rem .7rem; border-radius: 8px; background: var(--bg-2); border: 1px solid var(--border); cursor: pointer; font-weight: 700; color: white; text-transform: capitalize; }
@@ -134,7 +134,7 @@
         .file-hint { margin-top: 6px; color: var(--muted); }
         .label-with-icon { display: flex; align-items: center; gap: 6px; }
         input[type="text"], textarea { width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-2);color:var(--text); font-family: inherit; font-size: inherit; }
-        textarea { resize: vertical; height: 60px; }
+        textarea { resize: vertical; height: 120px; }
         .sort-container { position: relative; }
         .sort-btn { padding: .25rem .5rem; gap: .5rem; }
         .sort-btn #currentSort { color: var(--text); }
@@ -180,7 +180,7 @@
         </div>
     </header>
 
-    <section class="container">
+    <section class="container" id="main-content">
         <div class="layout">
             <aside class="sidebar card panel">
                 <h3>Actions</h3>
@@ -248,18 +248,22 @@
                                 <label class="tiny">Primary color</label>
                                 <div id="modalSwatches" class="swatches"></div>
                             </div>
-                             <div style="grid-column: span 2;">
+
+                            <div>
                                <label class="tiny">Description (optional)</label>
                                <textarea id="packDescription" placeholder="A short description of the pack..."></textarea>
                             </div>
                             <div>
-                                <label class="tiny">Resolution</label>
-                                <div id="modalResolutions" class="resolutions"></div>
+                                <div>
+                                    <label class="tiny">Resolution</label>
+                                    <div id="modalResolutions" class="resolutions"></div>
+                                </div>
+                                <div style="margin-top: 14px;">
+                                    <label class="tiny">Version</label>
+                                    <div id="modalVersions" class="resolutions"></div>
+                                </div>
                             </div>
-                            <div>
-                                <label class="tiny">Version</label>
-                                <div id="modalVersions" class="resolutions"></div>
-                            </div>
+
                             <div style="grid-column: span 2;">
                                 <label class="tiny">Tags</label>
                                 <div id="modalTags" class="tags"></div>
@@ -554,8 +558,16 @@
             }
         }
         
-        function nextPage() { state.currentPage++; render(); }
-        function prevPage() { state.currentPage--; render(); }
+        function nextPage() {
+            state.currentPage++;
+            document.getElementById('main-content')?.scrollIntoView();
+            render();
+        }
+        function prevPage() {
+            state.currentPage--;
+            document.getElementById('main-content')?.scrollIntoView();
+            render();
+        }
 
         function renderCard(p) {
             const colorKey = p.color || 'gray';
