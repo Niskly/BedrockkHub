@@ -558,14 +558,28 @@
             }
         }
         
+        function scrollToContentTop() {
+            const header = document.querySelector('header');
+            const mainContent = document.getElementById('main-content');
+            if (!header || !mainContent) return;
+
+            const headerHeight = header.offsetHeight;
+            const contentPosition = mainContent.offsetTop;
+            
+            window.scrollTo({
+                top: contentPosition - headerHeight - 14, // Scroll to top of content, minus header height and a 14px margin
+                behavior: 'smooth'
+            });
+        }
+        
         function nextPage() {
             state.currentPage++;
-            document.getElementById('main-content')?.scrollIntoView();
+            scrollToContentTop();
             render();
         }
         function prevPage() {
             state.currentPage--;
-            document.getElementById('main-content')?.scrollIntoView();
+            scrollToContentTop();
             render();
         }
 
