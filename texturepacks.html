@@ -381,7 +381,7 @@
             render();
         }
         
-async function handleUpload(e) {
+        async function handleUpload(e) {
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
             const fieldset = document.getElementById('uploadFormFieldset');
@@ -406,7 +406,6 @@ async function handleUpload(e) {
                 const zip = new JSZip();
                 const contents = await zip.loadAsync(file);
                 
-                // NEW: More robust two-step icon search
                 let iconFile = null;
                 const bedrockIconMatches = contents.file(/pack_icon\.png$/i);
                 if (bedrockIconMatches.length > 0) {
@@ -456,7 +455,7 @@ async function handleUpload(e) {
                 submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload';
             }
         }
-        
+
         async function saveEdit(e) {
             e.preventDefault();
             if (!currentEditId) return;
@@ -581,7 +580,7 @@ async function handleUpload(e) {
             const contentPosition = mainContent.offsetTop;
             
             window.scrollTo({
-                top: contentPosition - headerHeight - 14, // Scroll to top of content, minus header height and a 14px margin
+                top: contentPosition - headerHeight - 14,
                 behavior: 'smooth'
             });
         }
