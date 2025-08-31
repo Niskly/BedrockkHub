@@ -381,7 +381,7 @@
             render();
         }
         
-// replace your existing handleUpload with this function
+// Replace your existing handleUpload & helper with this version
 async function handleUpload(e) {
     e.preventDefault();
     const submitBtn = document.getElementById('submitBtn');
@@ -407,21 +407,24 @@ async function handleUpload(e) {
         const zip = new JSZip();
         const contents = await zip.loadAsync(file);
 
-        // find icon entry robustly
+        // debug: list files when needed (remove/comment out in production)
+        // console.log('zip files:', Object.keys(contents.files));
+
         const iconEntry = findIconInZip(contents);
         if (iconEntry) {
             submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...';
-            // read as arrayBuffer then build a proper PNG blob
             const arrayBuff = await iconEntry.async('arraybuffer');
             const iconBlob = new Blob([arrayBuff], { type: 'image/png' });
             const iconFileName = `icons/${Date.now()}-icon.png`;
 
-            // upload icon with explicit contentType; allow upsert to avoid duplicate-path failures
             const { error: iconError } = await supabase.storage.from('packs').upload(iconFileName, iconBlob, { contentType: 'image/png', upsert: true });
             if (iconError) throw iconError;
 
             const { data: urlData } = supabase.storage.from('packs').getPublicUrl(iconFileName);
             iconUrl = urlData.publicUrl;
+        } else {
+            // helpful debug log if icon wasn't found - paste this output here if you want me to refine finder
+            console.warn('No icon found in zip. Files list:', Object.keys(contents.files));
         }
 
         submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Pack...';
@@ -429,7 +432,6 @@ async function handleUpload(e) {
         const { error: packError } = await supabase.storage.from('packs').upload(fileName, file, { contentType: file.type || 'application/zip', upsert: true });
         if (packError) throw packError;
 
-        // call backend to add metadata (same as before)
         const response = await fetch('/api/addpacks', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -445,7 +447,11 @@ async function handleUpload(e) {
             })
         });
 
-        if (!response.ok) { throw new Error((await response.json()).details || 'Failed to add pack metadata.'); }
+        if (!response.ok) {
+            const errJson = await response.json().catch(()=>({}));
+            throw new Error(errJson.details || 'Failed to add pack metadata.');
+        }
+
         await loadPacksOnStartup();
         closeModal();
     } catch (err) {
@@ -458,21 +464,22 @@ async function handleUpload(e) {
     }
 }
 
-// helper: find pack icon inside a JSZip instance (robust fallback)
+// Robust icon finder for JSZip instance
 function findIconInZip(zipInstance) {
-    // zipInstance.files is an object: keys = file paths, values = ZipObject
-    const files = Object.values(zipInstance.files).filter(f => !f.dir); // only files
-    // prefer pack_icon.png or pack.png (case-insensitive) anywhere in archive
+    const files = Object.values(zipInstance.files).filter(f => !f.dir);
+    // prefer explicit pack_icon.png
     let found = files.find(f => /(?:^|\/)pack_icon\.png$/i.test(f.name));
     if (found) return found;
+    // then pack.png (common in java resource packs)
     found = files.find(f => /(?:^|\/)pack\.png$/i.test(f.name));
     if (found) return found;
-    // fallback: first reasonably small png image at root or near-root
+    // fallback: first .png near root (<= 3 path segments)
     found = files.find(f => /\.png$/i.test(f.name) && f.name.split('/').length <= 3);
     if (found) return found;
     // last resort: any png
     return files.find(f => /\.png$/i.test(f.name)) || null;
 }
+
 
 
         async function saveEdit(e) {
