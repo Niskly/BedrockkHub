@@ -224,21 +224,28 @@
             <div class="panel" style="padding-top:0">
                 <form id="uploadForm" onsubmit="handleUpload(event)">
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-                        <div>
+                        <div style="grid-column: span 2;">
                             <label class="tiny label-with-icon"><span>Pack name</span><i class="fa-solid fa-pencil fa-xs"></i></label>
                             <input id="packName" required placeholder="e.g. Crystal PvP" type="text">
+                        </div>
+                        <div style="grid-column: span 2;">
+                           <label class="tiny">Description (optional)</label>
+                           <textarea id="packDescription" placeholder="A short description of the pack..."></textarea>
                         </div>
                         <div>
                             <label class="tiny">Primary color</label>
                             <div id="modalSwatches" class="swatches"></div>
                         </div>
-                        <div style="grid-column: span 1;"><label class="tiny">Resolution</label>
+                         <div>
+                            <label class="tiny">Resolution</label>
                             <div id="modalResolutions" class="resolutions"></div>
                         </div>
-                         <div style="grid-column: span 1;"><label class="tiny">Version</label>
+                         <div style="grid-column: span 2;">
+                            <label class="tiny">Version</label>
                             <div id="modalVersions" class="resolutions"></div>
                         </div>
-                        <div style="grid-column: span 2;"><label class="tiny">Tags</label>
+                        <div style="grid-column: span 2;">
+                            <label class="tiny">Tags</label>
                             <div id="modalTags" class="tags"></div>
                         </div>
                         <div class="file-upload-area" onclick="document.getElementById('fileInput').click()" style="grid-column: span 2;">
@@ -352,12 +359,12 @@
             render();
         }
         
-        // UPDATED: handleUpload now only sends fields present in the upload modal
         async function handleUpload(e) {
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
             const file = document.getElementById('fileInput').files[0];
             const name = document.getElementById('packName').value.trim();
+            const description = document.getElementById('packDescription').value.trim();
 
             // Validation
             if (!file || !file.name.endsWith('.mcpack')) { showToast('Please select a valid .mcpack file'); return; }
@@ -395,6 +402,7 @@
                         filename: fileName,
                         resolution: state.modalResolution,
                         version: state.modalVersion,
+                        description: description,
                         icon_url: iconUrl
                     })
                 });
@@ -518,7 +526,6 @@
                         <div class="stat-item"><i class="fa-solid fa-calendar-day"></i><span>${formatDate(p.created_at)}</span></div>
                     </div>
                     <h4>${escapeHtml(p.name)}</h4>
-                    ${p.description ? `<p class="tiny" style="margin: 4px 0 0 0;">${escapeHtml(p.description)}</p>` : ''}
                     <div class="meta">
                         ${(p.color && p.color !== 'none') ? `<span class="badge" style="border-color:${color}; text-transform: uppercase;">${p.color}</span>` : ''}
                         ${p.resolution ? `<span class="badge">${p.resolution}</span>` : ''}
@@ -548,7 +555,6 @@
         function clearVersions() { state.versions.clear(); buildSelectorBoxes(document.getElementById('versionBoxes'), (v, el) => { toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS); render(); }
         function resetAll() { clearSearch(); clearColors(); clearTags(); clearResolutions(); clearVersions(); }
         
-        // UPDATED: hintFile now always updates the pack name input on file change
         function hintFile() {
             const fileInput = document.getElementById('fileInput');
             const file = fileInput.files[0];
