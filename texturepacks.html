@@ -17,6 +17,8 @@
             --border: rgba(255, 255, 255, .12); /* Slightly more visible border */
             --brand-1: #e74c3c; /* Red color for primary elements */
             --brand-2: #c0392b; /* Darker red for gradients */
+            --danger: #ef4444;
+            --success: #22c55e;
         }
         * { box-sizing: border-box; }
         html, body { height: 100%; }
@@ -53,8 +55,8 @@
             box-shadow: 0 10px 30px rgba(231, 76, 60, .22); /* Red shadow */
             color: white;
         }
-        .btn.danger { background-color: #ef444420; border-color: #ef444490; color: #ef4444; }
-        .btn.success { background-color: #22c55e20; border-color: #22c55e90; color: #22c55e; }
+        .btn.danger { background-color: #ef444420; border-color: #ef444490; color: var(--danger); }
+        .btn.success { background-color: #22c55e20; border-color: #22c55e90; color: var(--success); }
         .container { max-width: 1200px; margin: 0 auto; padding: 28px 18px; }
         .layout { display: grid; grid-template-columns: 280px 1fr; gap: 20px; }
         .sidebar { position: sticky; top: 78px; height: fit-content; }
@@ -65,7 +67,7 @@
         .search input { flex: 1; padding: .7rem 1rem; padding-right: 2.5rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text); min-width: 0; }
         .search .btn.sm.ghost { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); padding: .5rem; line-height: 1; height: 32px; width: 32px; display: grid; place-items: center; background: transparent; border: none; color: var(--muted); }
         .swatches, .resolutions { display: flex; flex-wrap: wrap; gap: 8px; }
-        .swatch { width: 34px; height: 34px; border-radius: 999px; border: 2px solid rgba(255, 255, 255, .12); cursor: pointer; position: relative; }
+        .swatch { width: 34px; height: 34px; border-radius: 999px; border: 2px solid rgba(255, 255, 255, .12); cursor: pointer; position: relative; display: grid; place-items: center; font-size: 16px; color: white; }
         .swatch.active, .res-box.active { outline: 3px solid white !important; }
         .tags { display: flex; flex-wrap: wrap; gap: 8px; }
         .tag {
@@ -116,6 +118,8 @@
         .file-upload-area i { font-size: 32px; margin-bottom: 12px; color: var(--brand-1); }
         .file-hint { margin-top: 6px; color: var(--muted); }
         .label-with-icon { display: flex; align-items: center; gap: 6px; }
+        input[type="text"], textarea { width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-2);color:var(--text); font-family: inherit; font-size: inherit; }
+        textarea { resize: vertical; min-height: 80px; }
         .sort-container { position: relative; }
         .sort-btn { padding: .25rem .5rem; gap: .5rem; }
         .sort-btn #currentSort { color: var(--text); }
@@ -132,6 +136,11 @@
             padding: 4px; /* Padding to adjust size */
             transform: translateY(-13px); /* Move icon slightly up */
         }
+        #toast-container { position: fixed; top: 80px; right: 20px; z-index: 100; display: flex; flex-direction: column; gap: 10px; }
+        .toast { padding: 12px 18px; border-radius: 8px; color: white; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; }
+        .toast.error { background: var(--danger); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
         @media (max-width:1024px) { .layout { grid-template-columns: 1fr; } .sidebar { position: static; } .packs { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width:768px) { .packs { grid-template-columns: 1fr; } .nav-actions { display: none; } }
     </style>
@@ -217,7 +226,7 @@
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
                         <div>
                             <label class="tiny label-with-icon"><span>Pack name</span><i class="fa-solid fa-pencil fa-xs"></i></label>
-                            <input id="packName" required placeholder="e.g. Crystal PvP" style="width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-2);color:var(--text)">
+                            <input id="packName" required placeholder="e.g. Crystal PvP" type="text">
                         </div>
                         <div>
                             <label class="tiny">Primary color</label>
@@ -231,6 +240,9 @@
                         </div>
                         <div style="grid-column: span 2;"><label class="tiny">Tags</label>
                             <div id="modalTags" class="tags"></div>
+                        </div>
+                         <div style="grid-column: span 2;"><label class="tiny">Description (optional)</label>
+                            <textarea id="packDescription" placeholder="A short description of the pack..."></textarea>
                         </div>
                         <div class="file-upload-area" onclick="document.getElementById('fileInput').click()" style="grid-column: span 2;">
                             <i class="fa-solid fa-file-arrow-up"></i>
@@ -254,7 +266,7 @@
                     <strong>Edit Texture Pack</strong>
                     <button class="btn sm" onclick="closeEditModal()"><i class="fa-solid fa-xmark"></i></button>
                 </div>
-                <div class="tiny">Change name, tags or color.</div>
+                <div class="tiny">Change name, tags, description or color.</div>
             </div>
             <div class="panel" style="padding-top:0">
                 <form id="editForm" onsubmit="saveEdit(event)">
@@ -262,7 +274,7 @@
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
                         <div>
                             <label class="tiny">Pack name</label>
-                            <input id="editPackName" required placeholder="Pack name" style="width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-2);color:var(--text)">
+                            <input id="editPackName" required placeholder="Pack name" type="text">
                         </div>
                         <div>
                             <label class="tiny">Primary color</label>
@@ -279,6 +291,9 @@
                         <div style="grid-column: span 2;">
                             <label class="tiny">Tags</label>
                             <div id="editModalTags" class="tags"></div>
+                        </div>
+                        <div style="grid-column: span 2;"><label class="tiny">Description (optional)</label>
+                            <textarea id="editPackDescription" placeholder="A short description of the pack..."></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -305,6 +320,8 @@
         </div>
     </div>
 
+    <div id="toast-container"></div>
+
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -312,8 +329,8 @@
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        const COLORS = [{key: 'red',hex: '#ef4444'}, {key: 'blue',hex: '#3b82f6'}, {key: 'green',hex: '#22c55e'}, {key: 'yellow',hex: '#eab308'}, {key: 'purple',hex: '#a855f7'}, {key: 'pink',hex: '#ec4899'}, {key: 'orange',hex: '#f97316'}, {key: 'teal',hex: '#14b8a6'}, {key: 'gray',hex: '#6b7280'}, {key: 'black',hex: '#1f2937'}];
-        const TAGS = ['pvp', 'bedwars', 'skywars', 'anime', 'crystal pvp'];
+        const COLORS = [{key: 'none', hex: '#4b5563', icon: 'fa-solid fa-ban'}, {key: 'red',hex: '#ef4444'}, {key: 'blue',hex: '#3b82f6'}, {key: 'green',hex: '#22c55e'}, {key: 'yellow',hex: '#eab308'}, {key: 'purple',hex: '#a855f7'}, {key: 'pink',hex: '#ec4899'}, {key: 'orange',hex: '#f97316'}, {key: 'teal',hex: '#14b8a6'}, {key: 'gray',hex: '#6b7280'}, {key: 'black',hex: '#1f2937'}];
+        const TAGS = ['pvp', 'bedwars', 'skywars', 'anime', 'crystal pvp', 'survival'];
         const RESOLUTIONS = ['8x', '16x', '32x', '64x'];
         const VERSIONS = ['bedrock', 'java'];
         let packs = [];
@@ -341,14 +358,19 @@
         async function handleUpload(e) {
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
+            const file = document.getElementById('fileInput').files[0];
+            const name = document.getElementById('packName').value.trim();
+            const description = document.getElementById('packDescription').value.trim();
+
+            // Validation
+            if (!file || !file.name.endsWith('.mcpack')) { showToast('Please select a valid .mcpack file'); return; }
+            if (!state.modalColor) { showToast('You forgot to select a primary color.'); return; }
+            if (!state.modalResolution) { showToast('You forgot to select a resolution.'); return; }
+            if (!state.modalVersion) { showToast('You forgot to select a version.'); return; }
+
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
-            const name = document.getElementById('packName').value.trim();
-            const file = document.getElementById('fileInput').files[0];
-            if (!file || !file.name.endsWith('.mcpack')) { alert('Select a valid .mcpack'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; return; }
-            if (!state.modalColor) { alert('Pick a primary color'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; return; }
-            if (!state.modalResolution) { alert('Pick a resolution'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; return; }
-            if (!state.modalVersion) { alert('Pick a version'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; return; }
+            
             try {
                 let iconUrl = null;
                 const zip = new JSZip();
@@ -376,6 +398,7 @@
                         filename: fileName,
                         resolution: state.modalResolution,
                         version: state.modalVersion,
+                        description: description,
                         icon_url: iconUrl
                     })
                 });
@@ -383,7 +406,7 @@
                 await loadPacksOnStartup();
                 closeModal();
             } catch (err) {
-                alert('Upload failed: ' + err.message);
+                showToast('Upload failed: ' + err.message);
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload';
@@ -395,13 +418,14 @@
             if (!currentEditId) return;
             const { error } = await supabase.from('packs').update({
                 name: document.getElementById('editPackName').value.trim(),
+                description: document.getElementById('editPackDescription').value.trim(),
                 color: state.editColor,
                 tags: [...state.editTags].join(','),
                 resolution: state.editResolution,
                 version: state.editVersion
             }).eq('id', currentEditId);
             if (error) {
-                alert('Save failed: ' + error.message);
+                showToast('Save failed: ' + error.message);
             } else {
                 await loadPacksOnStartup();
                 closeEditModal();
@@ -422,7 +446,7 @@
                 if (error) throw error;
                 await loadPacksOnStartup();
             } catch (error) {
-                alert('Delete failed: ' + error.message);
+                showToast('Delete failed: ' + error.message);
             } finally {
                 cancelDelete();
                 closeEditModal();
@@ -498,8 +522,9 @@
                         <div class="stat-item"><i class="fa-solid fa-calendar-day"></i><span>${formatDate(p.created_at)}</span></div>
                     </div>
                     <h4>${escapeHtml(p.name)}</h4>
+                    ${p.description ? `<p class="tiny" style="margin: 4px 0 0 0;">${escapeHtml(p.description)}</p>` : ''}
                     <div class="meta">
-                        <span class="badge" style="border-color:${color}; text-transform: uppercase;">${p.color}</span>
+                        ${(p.color && p.color !== 'none') ? `<span class="badge" style="border-color:${color}; text-transform: uppercase;">${p.color}</span>` : ''}
                         ${p.resolution ? `<span class="badge">${p.resolution}</span>` : ''}
                         ${p.version ? `<span class="badge">${p.version}</span>` : ''}
                         ${(p.tags||[]).map(t=>`<span class="badge">${t.toUpperCase()}</span>`).join('')}
@@ -508,14 +533,14 @@
             return card;
         }
 
-        function buildSwatches(container, clickHandler, activeSet) { container.innerHTML = ''; COLORS.forEach(c => { const b = document.createElement('button'); b.type = 'button'; b.className = 'swatch' + ((activeSet && activeSet.has(c.key)) ? ' active' : ''); b.style.background = c.hex; b.title = c.key; b.onclick = () => clickHandler(c.key, b); container.appendChild(b); }); }
+        function buildSwatches(container, clickHandler, activeSet) { container.innerHTML = ''; COLORS.forEach(c => { const b = document.createElement('button'); b.type = 'button'; b.className = 'swatch' + ((activeSet && activeSet.has(c.key)) ? ' active' : ''); b.style.background = c.hex; b.title = c.key; if (c.icon) { b.innerHTML = `<i class="${c.icon}"></i>`; } b.onclick = () => clickHandler(c.key, b); container.appendChild(b); }); }
         function buildTags(container, clickHandler, activeSet) { container.innerHTML = ''; TAGS.forEach(t => { const s = document.createElement('button'); s.type = 'button'; s.className = 'tag' + (activeSet?.has(t) ? ' active' : ''); s.textContent = t.toUpperCase(); s.onclick = () => clickHandler(t, s); container.appendChild(s); }); }
         function buildSelectorBoxes(container, clickHandler, activeState, options) { container.innerHTML = ''; const isMultiSelect = activeState instanceof Set; options.forEach(opt => { const box = document.createElement('button'); box.type = 'button'; const isActive = isMultiSelect ? activeState.has(opt) : (activeState === opt); box.className = 'res-box' + (isActive ? ' active' : ''); box.textContent = opt; box.onclick = () => clickHandler(opt, box); container.appendChild(box); }); }
 
         /* ====== EVENT HANDLERS & MODAL CONTROLS ====== */
         function openModal() { document.getElementById('backdrop').style.display = 'flex'; state.modalColor = null; state.modalResolution = null; state.modalVersion = null; state.modalTags = new Set(); buildSwatches(document.getElementById('modalSwatches'), (k, el) => { state.modalColor = k; highlightOne(el.parentElement, el); }, null); buildTags(document.getElementById('modalTags'), (k, el) => { toggleSet(state.modalTags, k); el.classList.toggle('active'); }, new Set()); buildSelectorBoxes(document.getElementById('modalResolutions'), (res, el) => { state.modalResolution = res; highlightOne(el.parentElement, el); }, null, RESOLUTIONS); buildSelectorBoxes(document.getElementById('modalVersions'), (v, el) => { state.modalVersion = v; highlightOne(el.parentElement, el); }, null, VERSIONS); }
         function closeModal() { document.getElementById('backdrop').style.display = 'none'; document.getElementById('uploadForm').reset(); document.getElementById('fileHint').textContent = '.mcpack files only'; }
-        function openEditModal(id) { const p = packs.find(x => x.id === id); if (!p) return alert('Pack not found'); currentEditId = id; document.getElementById('editId').value = id; document.getElementById('editPackName').value = p.name || ''; state.editColor = p.color || null; state.editTags = new Set(p.tags || []); state.editResolution = p.resolution || null; state.editVersion = p.version || null; buildSwatches(document.getElementById('editModalSwatches'), (k, el) => { state.editColor = k; highlightOne(el.parentElement, el); }, new Set([state.editColor])); buildTags(document.getElementById('editModalTags'), (k, el) => { toggleSet(state.editTags, k); el.classList.toggle('active'); }, state.editTags); buildSelectorBoxes(document.getElementById('editModalResolutions'), (res, el) => { state.editResolution = res; highlightOne(el.parentElement, el); }, state.editResolution, RESOLUTIONS); buildSelectorBoxes(document.getElementById('editModalVersions'), (v, el) => { state.editVersion = v; highlightOne(el.parentElement, el); }, state.editVersion, VERSIONS); document.getElementById('editBackdrop').style.display = 'flex'; }
+        function openEditModal(id) { const p = packs.find(x => x.id === id); if (!p) return showToast('Pack not found'); currentEditId = id; document.getElementById('editId').value = id; document.getElementById('editPackName').value = p.name || ''; document.getElementById('editPackDescription').value = p.description || ''; state.editColor = p.color || null; state.editTags = new Set(p.tags || []); state.editResolution = p.resolution || null; state.editVersion = p.version || null; buildSwatches(document.getElementById('editModalSwatches'), (k, el) => { state.editColor = k; highlightOne(el.parentElement, el); }, new Set([state.editColor])); buildTags(document.getElementById('editModalTags'), (k, el) => { toggleSet(state.editTags, k); el.classList.toggle('active'); }, state.editTags); buildSelectorBoxes(document.getElementById('editModalResolutions'), (res, el) => { state.editResolution = res; highlightOne(el.parentElement, el); }, state.editResolution, RESOLUTIONS); buildSelectorBoxes(document.getElementById('editModalVersions'), (v, el) => { state.editVersion = v; highlightOne(el.parentElement, el); }, state.editVersion, VERSIONS); document.getElementById('editBackdrop').style.display = 'flex'; }
         function closeEditModal() { currentEditId = null; document.getElementById('editBackdrop').style.display = 'none'; }
         function promptDelete() { if (!currentEditId) return; document.getElementById('confirmDeleteBackdrop').style.display = 'flex'; }
         function cancelDelete() { document.getElementById('confirmDeleteBackdrop').style.display = 'none'; }
@@ -530,8 +555,16 @@
         function toggleOptionsMenu(event, id) { event.stopPropagation(); const menu = document.getElementById(`options-menu-${id}`); const isVisible = menu.style.display === 'block'; document.querySelectorAll('.pack-options-menu').forEach(m => m.style.display = 'none'); if (!isVisible) { menu.style.display = 'block'; } }
         function toggleSortMenu() { const menu = document.getElementById('sortMenu'); const container = document.getElementById('sortContainer'); const isVisible = menu.style.display === 'block'; menu.style.display = isVisible ? 'none' : 'block'; container.classList.toggle('open', !isVisible); }
         function setSort(sortType, element) { event.preventDefault(); state.sortBy = sortType; const buttonText = document.getElementById('currentSort'); buttonText.textContent = element.textContent; document.querySelectorAll('#sortMenu a').forEach(a => a.classList.remove('active')); element.classList.add('active'); toggleSortMenu(); loadPacksOnStartup(); }
-
+        
         /* ====== UTILITY FUNCTIONS ====== */
+        function showToast(message, type = 'error') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${escapeHtml(message)}`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 4000);
+        }
         function formatDate(isoString) { if (!isoString) return ''; const date = new Date(isoString); const day = date.getDate(); const month = date.getMonth() + 1; const year = String(date.getFullYear()).slice(-2); return `${day}/${month}/${year}`; }
         function escapeHtml(str) { return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); }
         function shade(hex, amt) { let col = hex.replace('#', ''); if (col.length === 3) col = col.split('').map(c => c + c).join(''); let [r, g, b] = [0, 0, 0].map((_, i) => parseInt(col.slice(i * 2, i * 2 + 2), 16));[r, g, b] = [r + amt, g + amt, b + amt].map(v => Math.max(0, Math.min(255, v))); return `#${[r,g,b].map(v=> v.toString(16).padStart(2,'0')).join('')}`; }
