@@ -406,12 +406,16 @@ async function handleUpload(e) {
                 const zip = new JSZip();
                 const contents = await zip.loadAsync(file);
                 
-                // NEW: Flexible icon searching logic
+                // NEW: More robust two-step icon search
                 let iconFile = null;
-                const potentialIcons = contents.file(/(pack_icon|pack)\.png$/i);
-                if (potentialIcons.length > 0) {
-                    // Prioritize pack_icon.png if found, otherwise use the first match.
-                    iconFile = potentialIcons.find(f => /pack_icon\.png$/i.test(f.name)) || potentialIcons[0];
+                const bedrockIconMatches = contents.file(/pack_icon\.png$/i);
+                if (bedrockIconMatches.length > 0) {
+                    iconFile = bedrockIconMatches[0];
+                } else {
+                    const javaIconMatches = contents.file(/pack\.png$/i);
+                    if (javaIconMatches.length > 0) {
+                        iconFile = javaIconMatches[0];
+                    }
                 }
 
                 if (iconFile) {
@@ -452,7 +456,7 @@ async function handleUpload(e) {
                 submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload';
             }
         }
-
+        
         async function saveEdit(e) {
             e.preventDefault();
             if (!currentEditId) return;
