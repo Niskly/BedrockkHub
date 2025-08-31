@@ -15,8 +15,8 @@
             --muted: #a8b3cf;
             --text: #e8eefc;
             --border: rgba(255, 255, 255, .12);
-            --brand-1: #de212a; /* UPDATED */
-            --brand-2: #b21a22; /* UPDATED */
+            --brand-1: #de212a;
+            --brand-2: #b21a22;
             --danger: #ef4444;
             --success: #22c55e;
         }
@@ -88,7 +88,7 @@
             background: rgba(222, 33, 42, .12);
             border: 1px solid rgba(222, 33, 42, .22);
             cursor: pointer; color: white; font-weight: 700;
-            text-transform: capitalize; 
+            text-transform: capitalize;
         }
         .tag.active { background: rgba(222, 33, 42, .3); }
         .res-box { padding: .45rem .7rem; border-radius: 8px; background: var(--bg-2); border: 1px solid var(--border); cursor: pointer; font-weight: 700; color: white; text-transform: capitalize; }
@@ -240,23 +240,23 @@
                 <form id="uploadForm" onsubmit="handleUpload(event)">
                     <fieldset id="uploadFormFieldset">
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px; align-items: start;">
-                            <div style="grid-column: span 2;">
+                            <div>
                                 <label class="tiny label-with-icon"><span>Pack name</span></label>
                                 <input id="packName" required placeholder="e.g. Crystal PvP" type="text">
                             </div>
-                            <div style="grid-column: span 2;">
-                               <label class="tiny">Description (optional)</label>
-                               <textarea id="packDescription" placeholder="A short description of the pack..."></textarea>
-                            </div>
-                            <div style="grid-column: span 2;">
+                            <div>
                                 <label class="tiny">Primary color</label>
                                 <div id="modalSwatches" class="swatches"></div>
                             </div>
-                             <div>
+                             <div style="grid-column: span 2;">
+                               <label class="tiny">Description (optional)</label>
+                               <textarea id="packDescription" placeholder="A short description of the pack..."></textarea>
+                            </div>
+                            <div>
                                 <label class="tiny">Resolution</label>
                                 <div id="modalResolutions" class="resolutions"></div>
                             </div>
-                             <div>
+                            <div>
                                 <label class="tiny">Version</label>
                                 <div id="modalVersions" class="resolutions"></div>
                             </div>
@@ -354,7 +354,7 @@
         const TAGS = ['pvp', 'bedwars', 'skywars', 'anime', 'crystal pvp', 'survival'];
         const RESOLUTIONS = ['8x', '16x', '32x', '64x'];
         const VERSIONS = ['bedrock', 'java'];
-        const packsPerPage = 9; // UPDATED
+        const packsPerPage = 9;
         let packs = [];
         const state = { q: '', colors: new Set(), tags: new Set(), resolutions: new Set(), versions: new Set(), currentPage: 1, modalColor: null, modalTags: new Set(), modalResolution: null, modalVersion: null, editColor: null, editTags: new Set(), editResolution: null, editVersion: null, sortBy: 'latest' };
         let currentEditId = null;
