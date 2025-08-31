@@ -77,7 +77,11 @@
         .res-box { padding: .45rem .7rem; border-radius: 8px; background: var(--bg-2); border: 1px solid var(--border); cursor: pointer; font-weight: 700; color: white; text-transform: capitalize; }
         .tiny { font-size: 12px; color: var(--muted); }
         .packs-container { height: 75vh; overflow-y: auto; padding-right: 12px; }
-        .packs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+        .packs {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* <-- THE FIX IS HERE */
+            gap: 18px;
+        }
         .pack { overflow: hidden; }
         .pack.card { box-shadow: 0 24px 70px rgba(0, 0, 0, .55); transition: box-shadow .2s, transform .2s, border-color .2s; }
         .pack.card:hover { transform: translateY(-4px); box-shadow: 0 28px 75px rgba(0, 0, 0, .65); border-color: rgba(255,255,255,.2); }
@@ -137,7 +141,7 @@
         .packs-container::-webkit-scrollbar-thumb:hover { background-color: var(--muted); }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         
-        @media (max-width:1024px) { .layout { grid-template-columns: 1fr; } .sidebar { position: static; } .packs-container { height: auto; overflow-y: visible; } .packs { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width:1024px) { .layout { grid-template-columns: 1fr; } .sidebar { position: static; } .packs-container { height: auto; overflow-y: visible; } .packs { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); } }
         @media (max-width:768px) { .packs { grid-template-columns: 1fr; } .nav-actions { display: none; } }
     </style>
 </head>
