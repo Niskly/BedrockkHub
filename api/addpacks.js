@@ -11,17 +11,17 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { name, color, tags, filename, resolution, icon_url } = req.body;
+    const { name, color, tags, filename, resolution, version, description, icon_url } = req.body;
 
     if (!name || !filename) {
       return res.status(400).json({ error: 'Name and filename are required.' });
     }
 
-    const tagsString = tags.join(',');
+    const tagsString = Array.isArray(tags) ? tags.join(',') : '';
 
     const { data, error } = await supabase
       .from('packs')
-      .insert([{ name, color, tags: tagsString, filename, resolution, icon_url }])
+      .insert([{ name, color, tags: tagsString, filename, resolution, version, description, icon_url }])
       .select()
       .single();
 
