@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
+        /* (your existing CSS untouched) */
         :root {
             --bg-0: #000000;
             --bg-1: #1c1c1c;
@@ -258,34 +259,19 @@
                                     <label class="tiny">Resolution</label>
                                     <div id="modalResolutions" class="resolutions"></div>
                                 </div>
-                                <!-- Version removed from upload modal (auto-detected) -->
+                                <div style="margin-top: 14px;">
+                                    <label class="tiny">Version</label>
+                                    <div id="modalVersions" class="resolutions"></div>
+                                </div>
                             </div>
 
                             <div style="grid-column: span 2;">
                                 <label class="tiny">Tags</label>
                                 <div id="modalTags" class="tags"></div>
                             </div>
-
-                            <!-- small preview header placed above the upload area (icon + pack name) -->
-                            <div style="grid-column: span 2; margin-top:4px;">
-                                <div id="packPreviewHeader" style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-                                    <img id="smallIconPreview" alt="Small pack icon preview" style="width:56px;height:56px;border-radius:8px;display:none;object-fit:cover;border:1px solid var(--border);" />
-                                    <div id="smallPackName" class="tiny" style="font-weight:800;color:var(--text);"></div>
-                                </div>
-                            </div>
-
-                            <!-- file upload area with preview -->
                             <div class="file-upload-area" onclick="document.getElementById('fileInput').click()" style="grid-column: span 2;">
                                 <i class="fa-solid fa-file-arrow-up"></i>
                                 <div>Drag & drop or <span style="color:var(--brand-1)">browse files</span></div>
-
-                                <!-- ICON PREVIEW (hidden until icon found) -->
-                                <div style="margin-top:10px">
-                                    <img id="iconPreviewImg"
-                                         alt="Pack icon preview"
-                                         style="width:90px;height:90px;border-radius:8px;display:none;margin:8px auto 0;object-fit:cover;border:1px solid var(--border);" />
-                                </div>
-
                                 <div class="file-hint" id="fileHint">.mcpack or .zip files only</div>
                                 <!-- ACCEPT both mcpack and zip -->
                                 <input id="fileInput" type="file" accept=".mcpack,.zip" style="display:none" onchange="hintFile()" />
@@ -378,7 +364,6 @@
         let packs = [];
         const state = { q: '', colors: new Set(), tags: new Set(), resolutions: new Set(), versions: new Set(), currentPage: 1, modalColor: null, modalTags: new Set(), modalResolution: null, modalVersion: null, editColor: null, editTags: new Set(), editResolution: null, editVersion: null, sortBy: 'latest' };
         let currentEditId = null;
-        let currentPreviewUrl = null; // store preview object URL so we can revoke it
 
         /* ====== API & DATA FUNCTIONS ====== */
         async function loadPacksOnStartup() {
@@ -398,25 +383,6 @@
             render();
         }
         
-        // Extract an icon (pack_icon.png or pack.png) from a zip/mcpack File and return an object URL (or null)
-        async function extractIconPreview(file) {
-            try {
-                const zip = new JSZip();
-                const contents = await zip.loadAsync(file);
-                // match pack_icon.png or pack.png at root or in any subfolder
-                const matches = contents.file(/(?:^|\/) (pack_icon|pack) \.png$/i);
-                // Note: the regex above intentionally mirrors the original behavior; if extraction fails we return null
-                const found = contents.file(/(?:^|\/)(pack_icon|pack)\.png$/i);
-                if (found && found.length > 0) {
-                    const blob = await found[0].async('blob');
-                    return URL.createObjectURL(blob);
-                }
-            } catch (err) {
-                console.warn('extractIconPreview failed:', err);
-            }
-            return null;
-        }
-
         async function handleUpload(e) {
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
@@ -453,6 +419,7 @@
                 const contents = await zip.loadAsync(file);
 
                 // Search for pack_icon.png or pack.png anywhere in the archive (root or subfolders)
+                // JSZip supports regex; file(regex) returns an array of matching file objects
                 const matches = contents.file(/(?:^|\/)(pack_icon|pack)\.png$/i);
                 if (matches && matches.length > 0) {
                     submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...';
@@ -462,6 +429,8 @@
                     if (iconError) throw iconError;
                     const { data } = supabase.storage.from('packs').getPublicUrl(iconFileName);
                     iconUrl = data.publicUrl;
+                } else {
+                    // no icon found, keep iconUrl = null
                 }
 
                 submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Pack...';
@@ -482,8 +451,6 @@
                     })
                 });
                 if (!response.ok) { throw new Error((await response.json()).details || 'Failed to add pack metadata.'); }
-                // revoke preview URL if present (we uploaded the real icon to storage)
-                if (currentPreviewUrl) { try { URL.revokeObjectURL(currentPreviewUrl); } catch {} currentPreviewUrl = null; }
                 await loadPacksOnStartup();
                 closeModal();
             } catch (err) {
@@ -680,49 +647,8 @@
         function buildSelectorBoxes(container, clickHandler, activeState, options) { container.innerHTML = ''; const isMultiSelect = activeState instanceof Set; options.forEach(opt => { const box = document.createElement('button'); box.type = 'button'; const isActive = isMultiSelect ? activeState.has(opt) : (activeState === opt); box.className = 'res-box' + (isActive ? ' active' : ''); box.textContent = opt; box.onclick = () => clickHandler(opt, box); container.appendChild(box); }); }
 
         /* ====== EVENT HANDLERS & MODAL CONTROLS ====== */
-        function openModal() {
-            document.getElementById('backdrop').style.display = 'flex';
-            state.modalColor = null;
-            state.modalResolution = null;
-            state.modalVersion = null;
-            state.modalTags = new Set();
-
-            // clear preview if any leftover
-            const previewImg = document.getElementById('iconPreviewImg');
-            const smallPreview = document.getElementById('smallIconPreview');
-            const smallName = document.getElementById('smallPackName');
-            if (currentPreviewUrl) { try { URL.revokeObjectURL(currentPreviewUrl); } catch {} currentPreviewUrl = null; }
-            if (previewImg) { previewImg.style.display = 'none'; previewImg.src = ''; }
-            if (smallPreview) { smallPreview.style.display = 'none'; smallPreview.src = ''; }
-            if (smallName) { smallName.textContent = ''; }
-
-            buildSwatches(document.getElementById('modalSwatches'), (k, el) => { state.modalColor = k; highlightOne(el.parentElement, el); }, null);
-            buildTags(document.getElementById('modalTags'), (k, el) => { toggleSet(state.modalTags, k); el.classList.toggle('active'); }, new Set());
-            buildSelectorBoxes(document.getElementById('modalResolutions'), (res, el) => { state.modalResolution = res; highlightOne(el.parentElement, el); }, null, RESOLUTIONS);
-
-            // keep pack name preview in sync
-            const packNameInput = document.getElementById('packName');
-            packNameInput.value = packNameInput.value || '';
-            document.getElementById('smallPackName').textContent = packNameInput.value;
-            packNameInput.oninput = function() { document.getElementById('smallPackName').textContent = this.value; };
-        }
-        function closeModal() {
-            document.getElementById('backdrop').style.display = 'none';
-            document.getElementById('uploadForm').reset();
-            document.getElementById('fileHint').textContent = '.mcpack or .zip files only';
-
-            // revoke and clear preview
-            if (currentPreviewUrl) {
-                try { URL.revokeObjectURL(currentPreviewUrl); } catch {}
-                currentPreviewUrl = null;
-            }
-            const previewImg = document.getElementById('iconPreviewImg');
-            const smallPreview = document.getElementById('smallIconPreview');
-            const smallName = document.getElementById('smallPackName');
-            if (previewImg) { previewImg.style.display = 'none'; previewImg.src = ''; }
-            if (smallPreview) { smallPreview.style.display = 'none'; smallPreview.src = ''; }
-            if (smallName) { smallName.textContent = ''; }
-        }
+        function openModal() { document.getElementById('backdrop').style.display = 'flex'; state.modalColor = null; state.modalResolution = null; state.modalVersion = null; state.modalTags = new Set(); buildSwatches(document.getElementById('modalSwatches'), (k, el) => { state.modalColor = k; highlightOne(el.parentElement, el); }, null); buildTags(document.getElementById('modalTags'), (k, el) => { toggleSet(state.modalTags, k); el.classList.toggle('active'); }, new Set()); buildSelectorBoxes(document.getElementById('modalResolutions'), (res, el) => { state.modalResolution = res; highlightOne(el.parentElement, el); }, null, RESOLUTIONS); buildSelectorBoxes(document.getElementById('modalVersions'), (v, el) => { state.modalVersion = v; highlightOne(el.parentElement, el); }, null, VERSIONS); }
+        function closeModal() { document.getElementById('backdrop').style.display = 'none'; document.getElementById('uploadForm').reset(); document.getElementById('fileHint').textContent = '.mcpack or .zip files only'; }
         function openEditModal(id) { const p = packs.find(x => x.id === id); if (!p) return showToast('Pack not found'); currentEditId = id; document.getElementById('editId').value = id; document.getElementById('editPackName').value = p.name || ''; document.getElementById('editPackDescription').value = p.description || ''; state.editColor = p.color || null; state.editTags = new Set(p.tags || []); state.editResolution = p.resolution || null; state.editVersion = p.version || null; buildSwatches(document.getElementById('editModalSwatches'), (k, el) => { state.editColor = k; highlightOne(el.parentElement, el); }, new Set([state.editColor])); buildTags(document.getElementById('editModalTags'), (k, el) => { toggleSet(state.editTags, k); el.classList.toggle('active'); }, state.editTags); buildSelectorBoxes(document.getElementById('editModalResolutions'), (res, el) => { state.editResolution = res; highlightOne(el.parentElement, el); }, state.editResolution, RESOLUTIONS); buildSelectorBoxes(document.getElementById('editModalVersions'), (v, el) => { state.editVersion = v; highlightOne(el.parentElement, el); }, state.editVersion, VERSIONS); document.getElementById('editBackdrop').style.display = 'flex'; }
         function closeEditModal() { currentEditId = null; document.getElementById('editBackdrop').style.display = 'none'; }
         function promptDelete() { if (!currentEditId) return; document.getElementById('confirmDeleteBackdrop').style.display = 'flex'; }
@@ -736,60 +662,7 @@
         function clearVersions() { state.currentPage = 1; state.versions.clear(); buildSelectorBoxes(document.getElementById('versionBoxes'), (v, el) => { state.currentPage = 1; toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS); render(); }
         function resetAll() { state.currentPage = 1; clearSearch(); clearColors(); clearTags(); clearResolutions(); clearVersions(); }
         
-        // Updated hintFile to extract and display preview immediately
-        async function hintFile() {
-            const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
-            const hint = document.getElementById('fileHint');
-            const packNameInput = document.getElementById('packName');
-            const previewImg = document.getElementById('iconPreviewImg');
-            const smallPreview = document.getElementById('smallIconPreview');
-            const smallName = document.getElementById('smallPackName');
-
-            // cleanup previous preview if present
-            if (currentPreviewUrl) {
-                try { URL.revokeObjectURL(currentPreviewUrl); } catch {}
-                currentPreviewUrl = null;
-            }
-            previewImg.style.display = 'none';
-            previewImg.src = '';
-            if (smallPreview) { smallPreview.style.display = 'none'; smallPreview.src = ''; }
-            if (smallName) { smallName.textContent = ''; }
-
-            if (!file) {
-                hint.textContent = '.mcpack or .zip files only';
-                return;
-            }
-
-            hint.textContent = file.name;
-            packNameInput.value = file.name.replace(/\.(mcpack|zip)$/i, '');
-
-            // keep small name in sync (if preview header present)
-            if (smallName) smallName.textContent = packNameInput.value;
-
-            // Try to extract icon preview for both .mcpack and .zip
-            if (file.name.toLowerCase().endsWith('.mcpack') || file.name.toLowerCase().endsWith('.zip')) {
-                previewImg.style.display = 'none';
-                // show a small spinner in the hint while extracting (non-intrusive)
-                const prevHint = hint.textContent;
-                hint.textContent = 'Looking for pack icon...';
-
-                const url = await extractIconPreview(file);
-                if (url) {
-                    currentPreviewUrl = url;
-                    previewImg.src = url;
-                    previewImg.style.display = 'block';
-
-                    // also set the small preview above upload area
-                    if (smallPreview) { smallPreview.src = url; smallPreview.style.display = 'block'; }
-                    hint.textContent = prevHint;
-                } else {
-                    // no icon found — keep preview hidden
-                    hint.textContent = prevHint;
-                }
-            }
-        }
-
+        function hintFile() { const fileInput = document.getElementById('fileInput'); const file = fileInput.files[0]; if (file) { document.getElementById('fileHint').textContent = file.name; const packNameInput = document.getElementById('packName'); packNameInput.value = file.name.replace(/\.(mcpack|zip)$/i, ''); } }
         function toggleOptionsMenu(event, id) { event.stopPropagation(); const menu = document.getElementById(`options-menu-${id}`); const isVisible = menu.style.display === 'block'; document.querySelectorAll('.pack-options-menu').forEach(m => m.style.display = 'none'); if (!isVisible) { menu.style.display = 'block'; } }
         function toggleSortMenu() { const menu = document.getElementById('sortMenu'); const container = document.getElementById('sortContainer'); const isVisible = menu.style.display === 'block'; menu.style.display = isVisible ? 'none' : 'block'; container.classList.toggle('open', !isVisible); }
         function setSort(sortType, element) { event.preventDefault(); state.sortBy = sortType; state.currentPage = 1; const buttonText = document.getElementById('currentSort'); buttonText.textContent = element.textContent; document.querySelectorAll('#sortMenu a').forEach(a => a.classList.remove('active')); element.classList.add('active'); toggleSortMenu(); loadPacksOnStartup(); }
@@ -798,7 +671,7 @@
         function capitalizeFirst(str) { if (!str) return ''; return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase(); }
         function showToast(message, type = 'error') { const container = document.getElementById('toast-container'); const toast = document.createElement('div'); toast.className = `toast ${type}`; toast.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${escapeHtml(message)}`; container.appendChild(toast); setTimeout(() => { toast.remove(); }, 4000); }
         function formatDate(isoString) { if (!isoString) return ''; const date = new Date(isoString); const day = date.getDate(); const month = date.getMonth() + 1; const year = String(date.getFullYear()).slice(-2); return `${day}/${month}/${year}`; }
-        function escapeHtml(str) { return String(str || '').replace(/[&<>\"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); }
+        function escapeHtml(str) { return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); }
         function shade(hex, amt) { let col = hex.replace('#', ''); if (col.length === 3) col = col.split('').map(c => c + c).join(''); let [r, g, b] = [0, 0, 0].map((_, i) => parseInt(col.slice(i * 2, i * 2 + 2), 16));[r, g, b] = [r + amt, g + amt, b + amt].map(v => Math.max(0, Math.min(255, v))); return `#${[r,g,b].map(v=> v.toString(16).padStart(2,'0')).join('')}`; }
         function highlightOne(container, el) { [...container.children].forEach(c => c.classList.remove('active')); el.classList.add('active'); }
         function toggleSet(set, key) { set.has(key) ? set.delete(key) : set.add(key); }
