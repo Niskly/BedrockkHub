@@ -14,16 +14,32 @@
             --muted: #a8b3cf;
             --text: #e8eefc;
             --border: rgba(255, 255, 255, .12);
-            --brand-1: #e74c3c;
-            --brand-2: #c0392b;
+            --brand-1: #de212a;
+            --brand-2: #b21a22;
         }
         * { box-sizing: border-box; }
         html, body { height: 100%; }
         body {
             margin: 0;
-            background: var(--bg-0);
+            background-color: var(--bg-0);
             color: var(--text);
             font: 500 15px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;
+            position: relative;
+            z-index: 1;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            filter: blur(8px);
+            opacity: 0.25;
+            z-index: -1;
         }
         a { color: inherit; text-decoration: none; }
         header {
@@ -41,7 +57,7 @@
             display: grid;
             place-items: center;
             background: linear-gradient(135deg, var(--brand-2), var(--brand-1));
-            box-shadow: 0 12px 30px rgba(231, 76, 60, .22);
+            box-shadow: 0 12px 30px rgba(222, 33, 42, .22);
         }
         .brand-icon-custom {
             width: 100%;
@@ -56,7 +72,7 @@
         .ghost { border-color: var(--border); background: transparent; color: var(--text); }
         .primary {
             background: linear-gradient(90deg, var(--brand-1), var(--brand-2));
-            box-shadow: 0 10px 30px rgba(231, 76, 60, .22);
+            box-shadow: 0 10px 30px rgba(222, 33, 42, .22);
             color: white;
         }
         .container { max-width: 1200px; margin: 0 auto; padding: 28px 18px; }
@@ -97,8 +113,6 @@
         .mini:hover { transform: translateY(-3px); border-color: rgba(255,255,255,.2); }
         .mini .icon { height: 42px; width: 42px; border-radius: 8px; display: grid; place-items: center; background: var(--bg-0); flex-shrink: 0; }
         .tiny { font-size: 12px; color: var(--muted); }
-
-        /* Styles for the new content in the mini cards */
         .mini-content { display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
         .mini-content-title { font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .mini-stats { display: flex; flex-wrap: wrap; gap: 12px; font-size: 11px; color: var(--muted); margin-top: 4px; }
@@ -157,7 +171,7 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const COLORS = [{key: 'red',hex: '#ef4444'}, {key: 'blue',hex: '#3b82f6'}, {key: 'green',hex: '#22c55e'}, {key: 'yellow',hex: '#eab308'}, {key: 'purple',hex: '#a855f7'}, {key: 'pink',hex: '#ec4899'}, {key: 'orange',hex: '#f97316'}, {key: 'teal',hex: '#14b8a6'}, {key: 'gray',hex: '#6b7280'}, {key: 'black',hex: '#1f2937'}];
+        const COLORS = [{key: 'red',hex: '#de212a'}, {key: 'blue',hex: '#3b82f6'}, {key: 'green',hex: '#22c55e'}, {key: 'yellow',hex: '#eab308'}, {key: 'purple',hex: '#a855f7'}, {key: 'pink',hex: '#ec4899'}, {key: 'orange',hex: '#f97316'}, {key: 'teal',hex: '#14b8a6'}, {key: 'gray',hex: '#6b7280'}, {key: 'black',hex: '#1f2937'}];
 
         function escapeHtml(str) { return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); }
         
