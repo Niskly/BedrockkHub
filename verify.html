@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify Your Account - BedrockHub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
+            --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
+            --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 15px/1.6 Inter, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg');
+            background-size: cover; filter: blur(8px); opacity: 0.25; z-index: -1;
+        }
+        .card { background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px; padding: 2.5rem; width: 100%; max-width: 450px; text-align: center; }
+        h1 { font-size: 2rem; font-weight: 800; margin-bottom: 1rem; }
+        .form-group input {
+            width: 100%; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2);
+            color: var(--text); font-size: 1.5rem; text-align: center; letter-spacing: 8px;
+        }
+        .btn { padding: .75rem 1.5rem; border-radius: 12px; font-weight: 700; cursor: pointer; border: 1px solid transparent; width: 100%; margin-top: 1.5rem; }
+        .primary { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: white; box-shadow: var(--shadow-brand); }
+        /* Style to hide content by default to prevent flashing */
+        #main-content {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="card" id="main-content">
+        <h1>Check your email</h1>
+        <p class="muted">We've sent a 6-digit verification code to <b id="user-email">your email</b>.</p>
+        <form id="verify-form">
+            <div class="form-group">
+                <input type="text" id="token" required maxlength="6" pattern="\d{6}" placeholder="------">
+            </div>
+            <button type="submit" class="btn primary">Verify Account</button>
+        </form>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const email = urlParams.get('email');
+        const mainContent = document.getElementById('main-content');
+
+        // Logic to protect the page and prevent content flash
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (session) {
+                // User is already logged in, they shouldn't be here.
+                window.location.href = '/index.html';
+                return;
+            }
+
+            if (!email) {
+                // User navigated here directly without signing up.
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // If we reach here, the user belongs on this page. Show the content.
+            document.getElementById('user-email').textContent = email;
+            mainContent.style.visibility = 'visible';
+            mainContent.style.opacity = '1';
+        });
+
+        document.getElementById('verify-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const token = document.getElementById('token').value;
+
+            if (!email || !token) {
+                alert('Email or token is missing from the URL. Please try signing up again.');
+                return;
+            }
+
+            const { data, error } = await supabase.auth.verifyOtp({
+                email: email,
+                token: token,
+                type: 'signup'
+            });
+
+            if (error) {
+                alert('Verification failed: ' + error.message);
+            } else {
+                // On success, the user is now logged in. Send them to complete their profile.
+                window.location.href = '/complete-profile.html';
+            }
+        });
+    </script>
+</body>
+</html>
+
