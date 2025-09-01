@@ -182,11 +182,18 @@
             padding: 28px 18px; 
         }
 
+        .card { 
+            background: var(--bg-1); 
+            border: 1px solid var(--border); 
+            border-radius: 18px; 
+            box-shadow: var(--shadow-card);
+        }
+        
         .hero {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4rem; /* Increased gap */
+            gap: 4rem;
             padding: 40px 0;
         }
 
@@ -551,7 +558,7 @@
                             <i class="fa-solid fa-palette"></i> Browse Packs
                             <i class="fa-solid fa-arrow-right"></i>
                         </a>
-                        <a class="btn ghost btn-hero" href="/texturepacks.html">
+                        <a class="btn ghost btn-hero" href="#latest-uploads">
                             <i class="fa-solid fa-download"></i> Latest Uploads
                         </a>
                     </div>
@@ -571,7 +578,7 @@
                     </div>
                 </div>
 
-                <aside class="preview">
+                <aside class="preview" id="latest-uploads">
                     <div class="preview-head">
                         <strong>
                             <i class="fa-solid fa-sparkles"></i>
@@ -582,12 +589,18 @@
                     <div class="packs-grid" id="latest-packs-grid">
                         <div class="loading">Loading latest packs...</div>
                     </div>
+                     <div style="margin-top: 2.5rem; text-align: center;">
+                        <a class="btn primary btn-hero" href="/texturepacks.html">
+                            <i class="fa-solid fa-arrow-right"></i>
+                            <span>Explore All Packs</span>
+                        </a>
+                    </div>
                 </aside>
             </div>
         </section>
 
         <section class="container community">
-             <div style="padding: 3rem;">
+             <div class="card" style="padding: 3rem;">
                 <h2 class="glowing-title">
                     <span class="grad">Join the BedrockHub Community</span>
                 </h2>
@@ -615,12 +628,6 @@
                         <h3 style="margin-bottom: 1rem;">Rate & Review</h3>
                         <p class="muted">Help others find the best texture packs</p>
                     </div>
-                </div>
-                <div style="margin-top: 2.5rem;">
-                    <a class="btn primary btn-hero" href="/texturepacks.html">
-                        <i class="fa-solid fa-arrow-right"></i>
-                        <span>Explore All Packs</span>
-                    </a>
                 </div>
             </div>
         </section>
