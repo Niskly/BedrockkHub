@@ -48,7 +48,7 @@
             --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
             --shadow-card: 0 24px 70px rgba(0, 0, 0, .55);
             --shadow-glow: 0 0 40px rgba(222, 33, 42, .3);
-            --shadow-elegant: 0 10px 30px -10px rgba(222, 33, 42, .3);
+            --shadow-elegant: 0 10px 30px -10px rgba(0,0,0, .2);
         }
 
         * { 
@@ -72,7 +72,6 @@
             min-height: 100vh;
         }
 
-        /* Your exact background */
         body::before {
             content: '';
             position: fixed;
@@ -90,7 +89,6 @@
 
         a { color: inherit; text-decoration: none; }
 
-        /* Header - Your exact styling */
         header {
             position: sticky; top: 0; z-index: 50;
             backdrop-filter: saturate(1.2) blur(10px);
@@ -207,8 +205,7 @@
             position: relative;
             overflow: hidden;
         }
-
-        /* Hero card shimmer effect */
+        
         .hero-card::before {
             content: '';
             position: absolute;
@@ -288,7 +285,6 @@
             left: 100%;
         }
 
-        /* Stats section */
         .stats {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -328,7 +324,6 @@
             font-weight: 600;
         }
 
-        /* Preview section - Enhanced */
         .preview {
             padding: 24px;
             width: 100%;
@@ -360,106 +355,94 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
-
-        .grid-mini { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
-            gap: 16px; 
+        
+        .packs {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
         }
-
-        .mini { 
-            display: flex; 
-            gap: 1rem; 
-            align-items: center; 
-            background: var(--bg-2); 
-            border: 1px solid var(--border); 
-            padding: 16px; 
-            border-radius: 16px; 
-            transition: all 0.3s ease; 
-            position: relative;
-            overflow: hidden;
+        
+        .latest-pack-card {
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: all 0.2s ease;
         }
-
-        .mini::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(222, 33, 42, 0.1), transparent);
-            transition: left 0.5s;
-        }
-
-        .mini:hover::before {
-            left: 100%;
-        }
-
-        .mini:hover { 
-            transform: translateY(-5px); 
+        .latest-pack-card:hover {
+            transform: translateY(-4px);
             border-color: var(--border-strong);
             box-shadow: var(--shadow-elegant);
         }
-
-        .mini .icon { 
-            height: 48px; 
-            width: 48px; 
-            border-radius: 12px; 
-            display: grid; 
-            place-items: center; 
-            background: var(--bg-0); 
-            flex-shrink: 0;
-            border: 2px solid var(--border);
+        .pack-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-
+        .pack-icon { 
+            width: 48px; 
+            height: 48px; 
+            border-radius: 8px; 
+            object-fit: cover; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); 
+            flex-shrink: 0;
+        }
+        .pack-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        .pack-stats-details {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            font-size: 0.9rem;
+            color: var(--muted-foreground);
+        }
+        .stat-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+        }
+        .stat-item i {
+            font-size: 0.8em;
+            color: var(--muted-foreground);
+        }
+        .pack-download-btn {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            color: var(--text);
+            transition: all 0.2s ease;
+            margin-top: auto; /* Pushes button to the bottom */
+        }
+        .pack-download-btn:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(222, 33, 42, .2);
+            color: white;
+        }
         .tiny { 
             font-size: 12px; 
             color: var(--muted); 
         }
-
-        .mini-content { 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            overflow: hidden; 
-            flex: 1;
-        }
-
-        .mini-content-title { 
-            font-weight: 800; 
-            white-space: nowrap; 
-            overflow: hidden; 
-            text-overflow: ellipsis;
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .mini-stats { 
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 16px; 
-            font-size: 0.85rem; 
-            color: var(--muted); 
-        }
-
-        .mini-stats span { 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 6px;
-            font-weight: 600;
-        }
-
-        .mini-stats i {
-            color: var(--primary);
-        }
-
-        /* Loading state */
+        
         .loading {
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 2rem;
             color: var(--muted);
+            grid-column: 1 / -1; /* Center loading across all columns */
         }
 
         .loading::after {
@@ -478,7 +461,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Community section */
         .community {
             margin-top: 4rem;
             text-align: center;
@@ -517,7 +499,6 @@
             font-size: 1.5rem;
         }
 
-        /* Footer */
         footer {
             margin-top: 6rem;
             padding: 3rem 0;
@@ -550,29 +531,26 @@
             color: var(--primary);
         }
 
-        /* Responsive */
         @media (max-width: 1024px) { 
             .title { font-size: 2.5rem; }
             .hero-card { padding: 40px 30px; }
+            .packs { grid-template-columns: repeat(2, 1fr); } 
         }
 
         @media (max-width: 768px) { 
             .nav-actions { display: none; }
-            .grid-mini { grid-template-columns: 1fr; }
             .stats { grid-template-columns: 1fr; gap: 1rem; }
             .title { font-size: 2rem; }
             .hero-card { padding: 30px 20px; }
             .btn-hero { min-width: auto; }
             .hero-cta { flex-direction: column; align-items: center; }
+            .packs { grid-template-columns: 1fr; } 
         }
 
         @media (max-width: 480px) {
             .container { padding: 20px 15px; }
-            .mini { flex-direction: column; text-align: center; }
-            .mini .icon { margin-bottom: 1rem; }
         }
 
-        /* Accessibility */
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
                 animation-duration: 0.01ms !important;
@@ -606,7 +584,7 @@
     <main>
         <section class="container">
             <div class="hero">
-                <div class="hero-card">
+                <div class="card hero-card">
                     <h1 class="title">
                         Discover & Download<br>
                         <span class="grad">Bedrock Texture Packs</span>
@@ -624,7 +602,6 @@
                             <i class="fa-solid fa-download"></i> Latest Uploads
                         </a>
                     </div>
-
                     <div class="stats">
                         <div class="stat">
                             <span class="stat-number">1.2K+</span>
@@ -641,14 +618,16 @@
                     </div>
                 </div>
 
-                <aside class="preview">
+                <aside class="card preview">
                     <div class="preview-head">
-                        <strong>
-                            <i class="fa-solid fa-sparkles"></i>
-                            Latest Uploads
-                        </strong>
+                        <a href="/texturepacks.html" style="text-decoration: none;">
+                            <strong>
+                                <i class="fa-solid fa-sparkles"></i>
+                                Latest Uploads
+                            </strong>
+                        </a>
                     </div>
-                    <div class="grid-mini" id="latest-packs-grid">
+                    <div class="packs" id="latest-packs-grid">
                         <div class="loading">Loading latest packs...</div>
                     </div>
                 </aside>
@@ -658,7 +637,7 @@
         <section class="container community">
             <div class="card" style="padding: 3rem;">
                 <h2 style="font-size: 2.5rem; font-weight: 900; margin-bottom: 1rem;">Join Our Community</h2>
-                <p class="muted" style="margin-bottom: 3rem;">Connect with creators, share your packs, and discover amazing content</p>
+                <p class="muted" style="margin-bottom: 2rem;">Connect with creators, share your packs, and discover amazing content.</p>
                 
                 <div class="community-grid">
                     <div class="community-card">
@@ -683,6 +662,12 @@
                         <p class="muted">Help others find the best texture packs</p>
                     </div>
                 </div>
+                <div style="margin-top: 2.5rem;">
+                    <a class="btn primary btn-hero" href="/texturepacks.html">
+                        <i class="fa-solid fa-arrow-right"></i>
+                        <span>Explore All Packs</span>
+                    </a>
+                </div>
             </div>
         </section>
     </main>
@@ -705,7 +690,7 @@
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const COLORS = [
@@ -741,12 +726,19 @@
         }
 
         function formatDownloads(count) {
+            if (!count) return '0';
             if (count >= 1000000) {
                 return (count / 1000000).toFixed(1) + 'M';
             } else if (count >= 1000) {
                 return (count / 1000).toFixed(1) + 'K';
             }
             return count.toLocaleString();
+        }
+
+        // This function will now simply redirect to texturepacks.html
+        function redirectToTexturePacks(event) {
+            event.preventDefault(); // Prevent default anchor behavior
+            window.location.href = '/texturepacks.html';
         }
 
         async function loadLatestPacks() {
@@ -768,85 +760,56 @@
                 if (data && data.length > 0) {
                     grid.innerHTML = '';
                     data.forEach(pack => {
-                        const color = COLORS.find(c => c.key === pack.color)?.hex || '#6b7280';
-                        const packElement = document.createElement('a');
-                        packElement.href = '/texturepacks.html';
-                        packElement.className = 'mini';
+                        const colorKey = pack.color || 'gray';
+                        const color = COLORS.find(c => c.key === colorKey)?.hex || '#6b7280';
+                        
+                        let iconContent;
+                        if (pack.icon_url) {
+                            iconContent = `<img class="pack-icon" src="${pack.icon_url}" alt="${escapeHtml(pack.name)} Icon">`;
+                        } else {
+                            iconContent = `<div class="pack-icon" style="background:${color}; display:grid; place-items:center;"><i class="fa-solid fa-cube" style="color:white; font-size:1.8em;"></i></div>`;
+                        }
+
+                        const packElement = document.createElement('div');
+                        packElement.className = 'latest-pack-card';
                         packElement.innerHTML = `
-                            <div class="icon" style="background:${pack.icon_url ? 'transparent' : color}">
-                                ${pack.icon_url 
-                                    ? `<img src="${pack.icon_url}" style="width:100%; height:100%; object-fit:cover; border-radius: 10px;" alt="${escapeHtml(pack.name)}" />` 
-                                    : '<i class="fa-solid fa-cube" style="color: white; font-size: 1.5rem;"></i>'
-                                }
-                            </div>
-                            <div class="mini-content">
-                                <div class="mini-content-title">${escapeHtml(pack.name)}</div>
-                                <div class="mini-stats">
-                                    <span><i class="fa-solid fa-download"></i> ${formatDownloads(pack.download_count)}</span>
-                                    <span><i class="fa-solid fa-calendar-day"></i> ${formatDate(pack.created_at)}</span>
+                            <div class="pack-header">
+                                ${iconContent}
+                                <div>
+                                    <h4 class="pack-name">${escapeHtml(pack.name)}</h4>
                                 </div>
                             </div>
+                            <div class="pack-stats-details">
+                                <div class="stat-item">
+                                    <i class="fa-solid fa-download"></i>
+                                    <span id="downloads-${pack.id}">${formatDownloads(pack.download_count)}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fa-solid fa-calendar-day"></i>
+                                    <span>${formatDate(pack.created_at)}</span>
+                                </div>
+                            </div>
+                            <a href="/texturepacks.html" class="pack-download-btn" onclick="redirectToTexturePacks(event)">
+                                <i class="fa-solid fa-download"></i> Download Pack
+                            </a>
                         `;
                         grid.appendChild(packElement);
                     });
                 } else {
-                    grid.innerHTML = '<div class="mini"><div class="mini-content"><div class="tiny">No packs uploaded yet.</div></div></div>';
+                    grid.innerHTML = '<div class="card panel tiny">No packs uploaded yet.</div>';
                 }
             } catch (err) {
-                console.error("Error loading packs:", err);
-                // Fallback to mock data
-                grid.innerHTML = '';
-                const mockPacks = [
-                    {
-                        name: 'Faithful 32x',
-                        download_count: 15420,
-                        created_at: '2024-01-15T10:00:00Z',
-                        color: 'blue'
-                    },
-                    {
-                        name: 'Vanilla Tweaks',
-                        download_count: 8930,
-                        created_at: '2024-01-14T15:30:00Z',
-                        color: 'green'
-                    },
-                    {
-                        name: 'Modern HD',
-                        download_count: 12100,
-                        created_at: '2024-01-13T09:15:00Z',
-                        color: 'purple'
-                    },
-                    {
-                        name: 'Cartoon Pack',
-                        download_count: 6750,
-                        created_at: '2024-01-12T14:20:00Z',
-                        color: 'yellow'
-                    }
-                ];
-
-                mockPacks.forEach(pack => {
-                    const color = COLORS.find(c => c.key === pack.color)?.hex || '#6b7280';
-                    const packElement = document.createElement('a');
-                    packElement.href = '/texturepacks.html';
-                    packElement.className = 'mini';
-                    packElement.innerHTML = `
-                        <div class="icon" style="background:${color}">
-                            <i class="fa-solid fa-cube" style="color: white; font-size: 1.5rem;"></i>
-                        </div>
-                        <div class="mini-content">
-                            <div class="mini-content-title">${escapeHtml(pack.name)}</div>
-                            <div class="mini-stats">
-                                <span><i class="fa-solid fa-download"></i> ${formatDownloads(pack.download_count)}</span>
-                                <span><i class="fa-solid fa-calendar-day"></i> ${formatDate(pack.created_at)}</span>
-                            </div>
-                        </div>
-                    `;
-                    grid.appendChild(packElement);
-                });
+                 grid.innerHTML = '<div class="card panel tiny">Could not load packs. Please try again later.</div>';
             }
         }
+        
+        function init() {
+            // Make function globally available for inline event handlers
+            window.redirectToTexturePacks = redirectToTexturePacks;
+            document.addEventListener('DOMContentLoaded', loadLatestPacks);
+        }
 
-        // Load packs when page loads
-        document.addEventListener('DOMContentLoaded', loadLatestPacks);
+        init();
     </script>
 </body>
 
