@@ -158,18 +158,18 @@
         #tagSearchInput { padding: .5rem .8rem; }
         
         #tagSelectModal .modal-body {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            display: flex;
+            flex-wrap: wrap;
             gap: 8px;
             padding: 20px;
             padding-top: 10px;
         }
         #tagSelectModal .tag-checkbox {
-            font-size: 11px; /* Smaller font size */
-            padding: .2rem .4rem; /* Adjusted padding */
+            font-size: 11px;
+            padding: .2rem .4rem;
             border-radius: 999px;
             border: 1px solid var(--border);
-            background: var(--bg-0); /* Changed to black */
+            background: var(--bg-0);
             color: white;
             font-weight: 700;
             text-transform: capitalize;
@@ -179,7 +179,7 @@
         }
         #tagSelectModal .tag-checkbox:hover {
             border-color: var(--brand-1);
-            background-color: #1a1a1a; /* A slightly lighter black on hover */
+            background-color: #1a1a1a;
         }
         #tagSelectModal .tag-checkbox.selected {
             background-color: var(--brand-1);
@@ -850,7 +850,7 @@
         function escapeHtml(str) { return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); }
         function shade(hex, amt) { let col = hex.replace('#', ''); if (col.length === 3) col = col.split('').map(c => c + c).join(''); let [r, g, b] = [0, 0, 0].map((_, i) => parseInt(col.slice(i * 2, i * 2 + 2), 16));[r, g, b] = [r + amt, g + amt, b + amt].map(v => Math.max(0, Math.min(255, v))); return `#${[r,g,b].map(v=> v.toString(16).padStart(2,'0')).join('')}`; }
         function highlightOne(container, el) { [...container.children].forEach(c => c.classList.remove('active')); el.classList.add('active'); }
-        function toggleSet(set, key) { set.has(key) ? set.delete(key) : set.add(key) : set.add(key); }
+        function toggleSet(set, key) { set.has(key) ? set.delete(key) : set.add(key); }
 
         /* ====== INITIALIZATION ====== */
         function init() {
