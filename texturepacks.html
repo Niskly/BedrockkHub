@@ -123,7 +123,7 @@
             color: white; border: none;
         }
         .backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, .6); display: none; align-items: center; justify-content: center; z-index: 60; }
-        .modal { width: 100%; max-width: 760px; background: var(--bg-2); border-radius: 12px; overflow: hidden; }
+        .modal { width: 100%; max-width: 760px; background: var(--bg-2); border-radius: 12px; overflow-y: auto; max-height: 90vh; }
         .modal .panel { padding: 20px; }
         .modal-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 20px 20px; }
         .modal-footer .right-actions { display: flex; gap: 10px; }
@@ -133,7 +133,8 @@
         .file-upload-area i { font-size: 32px; margin-bottom: 12px; color: var(--brand-1); }
         .file-hint { margin-top: 6px; color: var(--muted); }
         .label-with-icon { display: flex; align-items: center; gap: 6px; }
-        input[type="text"], textarea { width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-2);color:var(--text); font-family: inherit; font-size: inherit; }
+        input[type="text"], input[type="file"], textarea { width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-2);color:var(--text); font-family: inherit; font-size: inherit; }
+        input[type="file"] { padding: .5rem; }
         textarea { resize: vertical; height: 120px; }
         .sort-container { position: relative; }
         .sort-btn { padding: .25rem .5rem; gap: .5rem; }
@@ -240,28 +241,32 @@
                 <form id="uploadForm" onsubmit="handleUpload(event)">
                     <fieldset id="uploadFormFieldset">
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px; align-items: start;">
-                            <div>
+                            <div style="grid-column: span 2;">
                                 <label class="tiny label-with-icon"><span>Pack name</span></label>
                                 <input id="packName" required placeholder="e.g. Crystal PvP" type="text">
                             </div>
+                            
+                            <div style="grid-column: span 2;">
+                               <label class="tiny">Description (optional)</label>
+                               <textarea id="packDescription" placeholder="A short description of the pack..."></textarea>
+                            </div>
+                            
                             <div>
                                 <label class="tiny">Primary color</label>
                                 <div id="modalSwatches" class="swatches"></div>
                             </div>
+                            <div>
+                                <label class="tiny">Pack Icon (Optional)</label>
+                                <input id="iconInput" type="file" accept="image/png,image/jpeg">
+                            </div>
 
                             <div>
-                               <label class="tiny">Description (optional)</label>
-                               <textarea id="packDescription" placeholder="A short description of the pack..."></textarea>
+                                <label class="tiny">Resolution</label>
+                                <div id="modalResolutions" class="resolutions"></div>
                             </div>
-                            <div>
-                                <div>
-                                    <label class="tiny">Resolution</label>
-                                    <div id="modalResolutions" class="resolutions"></div>
-                                </div>
-                                <div style="margin-top: 14px;">
-                                    <label class="tiny">Version</label>
-                                    <div id="modalVersions" class="resolutions"></div>
-                                </div>
+                             <div>
+                                <label class="tiny">Version</label>
+                                <div id="modalVersions" class="resolutions"></div>
                             </div>
 
                             <div style="grid-column: span 2;">
@@ -385,11 +390,15 @@
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
             const fieldset = document.getElementById('uploadFormFieldset');
-            const file = document.getElementById('fileInput').files[0];
+            const packFileInput = document.getElementById('fileInput');
+            const iconFileInput = document.getElementById('iconInput');
+
+            const packFile = packFileInput.files[0];
+            const iconFile = iconFileInput.files[0];
             const name = document.getElementById('packName').value.trim();
             const description = document.getElementById('packDescription').value.trim();
 
-            if (!file || (!file.name.endsWith('.mcpack') && !file.name.endsWith('.zip'))) { 
+            if (!packFile || (!packFile.name.endsWith('.mcpack') && !packFile.name.endsWith('.zip'))) { 
                 showToast('Please select a valid .mcpack or .zip file'); 
                 return; 
             }
@@ -403,40 +412,53 @@
             
             try {
                 let iconUrl = null;
-                const zip = new JSZip();
-                const contents = await zip.loadAsync(file);
-                
-                let iconFile = null;
-                const bedrockIconMatches = contents.file(/pack_icon\.png$/i);
-                if (bedrockIconMatches.length > 0) {
-                    iconFile = bedrockIconMatches[0];
-                } else {
-                    const javaIconMatches = contents.file(/pack\.png$/i);
-                    if (javaIconMatches.length > 0) {
-                        iconFile = javaIconMatches[0];
-                    }
-                }
 
+                // --- NEW HYBRID ICON LOGIC ---
+                // Priority 1: Use the manually selected icon file if it exists.
                 if (iconFile) {
                     submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...';
-                    const iconBlob = await iconFile.async('blob');
-                    const iconFileName = `icons/${Date.now()}-icon.png`;
-                    const { error: iconError } = await supabase.storage.from('packs').upload(iconFileName, iconBlob);
+                    const iconFileName = `icons/${Date.now()}-${iconFile.name}`;
+                    const { error: iconError } = await supabase.storage.from('packs').upload(iconFileName, iconFile);
                     if (iconError) throw iconError;
                     const { data } = supabase.storage.from('packs').getPublicUrl(iconFileName);
                     iconUrl = data.publicUrl;
+                } 
+                // Priority 2: If no manual icon, try to find one automatically.
+                else {
+                    const zip = new JSZip();
+                    const contents = await zip.loadAsync(packFile);
+                    let autoIconFile = null;
+                    const bedrockIconMatches = contents.file(/pack_icon\.png$/i);
+                    if (bedrockIconMatches.length > 0) {
+                        autoIconFile = bedrockIconMatches[0];
+                    } else {
+                        const javaIconMatches = contents.file(/pack\.png$/i);
+                        if (javaIconMatches.length > 0) {
+                            autoIconFile = javaIconMatches[0];
+                        }
+                    }
+
+                    if (autoIconFile) {
+                        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...';
+                        const iconBlob = await autoIconFile.async('blob');
+                        const iconFileName = `icons/${Date.now()}-icon.png`;
+                        const { error: iconError } = await supabase.storage.from('packs').upload(iconFileName, iconBlob);
+                        if (iconError) throw iconError;
+                        const { data } = supabase.storage.from('packs').getPublicUrl(iconFileName);
+                        iconUrl = data.publicUrl;
+                    }
                 }
 
                 submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Pack...';
-                const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9-._]/g, '').replace(/\s+/g, '-');
+                const sanitizedFileName = packFile.name.replace(/[^a-zA-Z0-9-._]/g, '').replace(/\s+/g, '-');
                 const fileName = `${Date.now()}-${sanitizedFileName}`;
 
-                await supabase.storage.from('packs').upload(fileName, file);
+                await supabase.storage.from('packs').upload(fileName, packFile);
                 const response = await fetch('/api/addpacks', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
-                        name: name || file.name.replace(/\.(mcpack|zip)$/i, ''),
+                        name: name || packFile.name.replace(/\.(mcpack|zip)$/i, ''),
                         color: state.modalColor,
                         tags: [...state.modalTags],
                         filename: fileName,
