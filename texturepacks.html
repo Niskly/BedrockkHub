@@ -240,7 +240,7 @@
                 <form id="uploadForm" onsubmit="handleUpload(event)">
                     <fieldset id="uploadFormFieldset">
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px; align-items: start;">
-                             <div>
+                            <div>
                                 <label class="tiny label-with-icon"><span>Pack name</span></label>
                                 <input id="packName" required placeholder="e.g. Crystal PvP" type="text">
                             </div>
@@ -253,7 +253,7 @@
                                <label class="tiny">Description (optional)</label>
                                <textarea id="packDescription" placeholder="A short description of the pack..."></textarea>
                             </div>
-
+                            
                             <div>
                                 <label class="tiny">Resolution</label>
                                 <div id="modalResolutions" class="resolutions"></div>
@@ -262,7 +262,7 @@
                                 <label class="tiny">Version</label>
                                 <div id="modalVersions" class="resolutions"></div>
                             </div>
-                            
+
                             <div style="grid-column: span 2;">
                                 <label class="tiny">Tags</label>
                                 <div id="modalTags" class="tags"></div>
@@ -380,6 +380,7 @@
             render();
         }
         
+        // UPDATED: handleUpload now uses the fully automatic icon detection ONLY
         async function handleUpload(e) {
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
@@ -406,20 +407,14 @@
                 const contents = await zip.loadAsync(packFile);
                 
                 let iconFile = null;
-                // Most reliable search: Iterate through all files to find the icon.
-                contents.forEach((relativePath, file) => {
-                    const lowerCaseName = relativePath.toLowerCase();
-                    if (lowerCaseName.endsWith('pack_icon.png')) {
-                        iconFile = file;
+                const bedrockIconMatches = contents.file(/pack_icon\.png$/i);
+                if (bedrockIconMatches.length > 0) {
+                    iconFile = bedrockIconMatches[0];
+                } else {
+                    const javaIconMatches = contents.file(/pack\.png$/i);
+                    if (javaIconMatches.length > 0) {
+                        iconFile = javaIconMatches[0];
                     }
-                });
-                if (!iconFile) {
-                     contents.forEach((relativePath, file) => {
-                        const lowerCaseName = relativePath.toLowerCase();
-                        if (lowerCaseName.endsWith('pack.png')) {
-                            iconFile = file;
-                        }
-                    });
                 }
 
                 if (iconFile) {
