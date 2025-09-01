@@ -59,6 +59,7 @@
         .form-group {
             margin-bottom: 1.25rem;
             text-align: left;
+            position: relative; /* Needed for the eye icon */
         }
         .form-group label {
             display: block;
@@ -74,6 +75,18 @@
             background: var(--bg-2);
             color: var(--text);
             font-size: 1rem;
+        }
+        /* Style for password input with eye icon */
+        #password {
+            padding-right: 3rem; /* Make space for the icon */
+        }
+        .eye-icon {
+            position: absolute;
+            top: 50%;
+            right: 1rem;
+            transform: translateY(25%);
+            cursor: pointer;
+            color: var(--muted);
         }
         .btn {
             padding: .75rem 1.5rem;
@@ -110,6 +123,7 @@
                 <div class="form-group">
                     <label for="password">Password (at least 6 characters)</label>
                     <input type="password" id="password" required minlength="6">
+                    <i class="fa-solid fa-eye eye-icon" id="togglePassword"></i>
                 </div>
                 <button type="submit" class="btn primary">Create Account</button>
             </form>
@@ -124,14 +138,24 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // Password visibility toggle logic
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+
+        togglePassword.addEventListener('click', function () {
+            // Toggle the type attribute
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            // Toggle the eye icon
+            this.classList.toggle('fa-eye-slash');
+        });
+
         document.getElementById('signup-form').addEventListener('submit', async (event) => {
             event.preventDefault();
             
             const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            const password = passwordInput.value;
 
-            // This simplified version only creates the user in Supabase Auth.
-            // The username and other details are handled on the next page.
             const { data, error } = await supabase.auth.signUp({
                 email: email,
                 password: password,
@@ -140,11 +164,11 @@
             if (error) {
                 alert('Sign-up failed: ' + error.message);
             } else {
-                // On success, redirect to the new page to complete the profile.
-                // Supabase automatically logs the user in, so the next page will have their session.
+                // CORRECTED REDIRECT: Go to complete the profile
                 window.location.href = '/complete-profile.html';
             }
         });
     </script>
 </body>
 </html>
+
