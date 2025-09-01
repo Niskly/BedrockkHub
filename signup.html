@@ -1,28 +1,150 @@
-<script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-    const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    document.getElementById('signup-form').addEventListener('submit', async (event) => {
-        event.preventDefault();
-        
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-
-        // The user is only created here. The username etc. is handled on the next page.
-        const { data, error } = await supabase.auth.signUp({
-            email: email,
-            password: password,
-        });
-
-        if (error) {
-            alert('Sign-up failed: ' + error.message);
-        } else {
-            alert('Account created! Now let\'s complete your profile.');
-            // This is the key change: redirect to the new page.
-            // Supabase automatically logs them in, so the next page will have their session.
-            window.location.href = '/complete-profile.html';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign Up - BedrockHub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
+            --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
+            --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
         }
-    });
-</script>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { height: 100%; }
+        body {
+            margin: 0;
+            background-color: var(--bg-0);
+            color: var(--text);
+            font: 500 15px/1.6 Inter, sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg');
+            background-size: cover;
+            background-position: center;
+            filter: blur(8px);
+            opacity: 0.25;
+            z-index: -1;
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .signup-card {
+            background: var(--bg-1);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+        .signup-card h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+        .form-group {
+            margin-bottom: 1.25rem;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: .5rem;
+            font-weight: 600;
+            color: var(--muted);
+        }
+        .form-group input {
+            width: 100%;
+            padding: .75rem 1rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg-2);
+            color: var(--text);
+            font-size: 1rem;
+        }
+        .btn {
+            padding: .75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid transparent;
+            width: 100%;
+        }
+        .primary {
+            background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+            color: white;
+            box-shadow: var(--shadow-brand);
+        }
+        .sub-text {
+            color: var(--muted);
+            margin-top: 1.5rem;
+        }
+        .sub-text a {
+            color: var(--brand-1);
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <div class="signup-card">
+            <h1>Create an Account</h1>
+            <form id="signup-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password (at least 6 characters)</label>
+                    <input type="password" id="password" required minlength="6">
+                </div>
+                <button type="submit" class="btn primary">Create Account</button>
+            </form>
+            <p class="sub-text">Already have an account? <a href="/login.html">Login</a></p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        document.getElementById('signup-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // This simplified version only creates the user in Supabase Auth.
+            // The username and other details are handled on the next page.
+            const { data, error } = await supabase.auth.signUp({
+                email: email,
+                password: password,
+            });
+
+            if (error) {
+                alert('Sign-up failed: ' + error.message);
+            } else {
+                // On success, redirect to the new page to complete the profile.
+                // Supabase automatically logs the user in, so the next page will have their session.
+                window.location.href = '/complete-profile.html';
+            }
+        });
+    </script>
+</body>
+</html>
