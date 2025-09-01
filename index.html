@@ -48,7 +48,7 @@
             --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
             --shadow-card: 0 24px 70px rgba(0, 0, 0, .55);
             --shadow-glow: 0 0 40px rgba(222, 33, 42, .3);
-            --shadow-elegant: 0 10px 30px -10px rgba(222, 33, 42, .3);
+            --shadow-elegant: 0 10px 30px -10px rgba(0,0,0, .2);
         }
 
         * { 
@@ -356,65 +356,63 @@
             50% { opacity: 0.5; }
         }
         
-        /* MODIFIED: Pack card styles for a 4-column grid (no background on cards) */
         .packs {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 18px;
         }
-
-        .pack { 
-            overflow: hidden; 
-            background: transparent; /* Remove background */
-            border: none; /* Remove border */
-            box-shadow: none; /* Remove shadow */
-            padding: 0;
+        
+        .latest-pack-card {
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1rem;
             display: flex;
             flex-direction: column;
-            align-items: flex-start; /* Align content to the left */
-            text-align: left;
-            transition: transform .2s;
+            gap: 12px;
+            transition: all 0.2s ease;
         }
-        
-        .pack:hover { 
-            transform: translateY(-4px); 
+        .latest-pack-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--border-strong);
+            box-shadow: var(--shadow-elegant);
         }
-
         .pack-header {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 8px;
+            gap: 12px;
         }
-
         .pack-icon { 
             width: 48px; 
             height: 48px; 
-            border-radius: 8px; /* Square icon */
+            border-radius: 8px; 
             object-fit: cover; 
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); 
+            flex-shrink: 0;
         }
         .pack-name {
             font-size: 1.1rem;
             font-weight: 600;
             margin: 0;
         }
-
         .pack-stats-details {
             display: flex;
-            gap: 15px; /* Space between download count and date */
-            margin-bottom: 12px;
+            justify-content: space-between;
+            width: 100%;
             font-size: 0.9rem;
             color: var(--muted-foreground);
-            padding-left: 58px; /* Align with the text beside the icon */
         }
-        .pack-stats-details .stat-item i {
+        .stat-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+        }
+        .stat-item i {
             font-size: 0.8em;
             color: var(--muted-foreground);
         }
-
         .pack-download-btn {
-            background: var(--surface-1);
+            background: var(--surface-2);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 10px 15px;
@@ -423,19 +421,16 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            width: 100%; /* Make button full width of its card */
+            width: 100%;
             color: var(--text);
             transition: all 0.2s ease;
+            margin-top: auto; /* Pushes button to the bottom */
         }
-
         .pack-download-btn:hover {
             border-color: var(--primary);
             box-shadow: 0 0 15px rgba(222, 33, 42, .2);
-            background: var(--surface-2);
             color: white;
         }
-
-
         .tiny { 
             font-size: 12px; 
             color: var(--muted); 
@@ -539,8 +534,7 @@
         @media (max-width: 1024px) { 
             .title { font-size: 2.5rem; }
             .hero-card { padding: 40px 30px; }
-            .packs { grid-template-columns: repeat(2, 1fr); } /* 2 columns on tablet */
-            .pack-stats-details { padding-left: 58px; } /* Keep alignment for tablet */
+            .packs { grid-template-columns: repeat(2, 1fr); } 
         }
 
         @media (max-width: 768px) { 
@@ -550,8 +544,7 @@
             .hero-card { padding: 30px 20px; }
             .btn-hero { min-width: auto; }
             .hero-cta { flex-direction: column; align-items: center; }
-            .packs { grid-template-columns: 1fr; } /* 1 column on mobile */
-            .pack-stats-details { padding-left: 58px; } /* Keep alignment for mobile */
+            .packs { grid-template-columns: 1fr; } 
         }
 
         @media (max-width: 480px) {
@@ -742,14 +735,6 @@
             return count.toLocaleString();
         }
 
-        function shade(hex, amt) { 
-            let col = hex.replace('#', ''); 
-            if (col.length === 3) col = col.split('').map(c => c + c).join(''); 
-            let [r, g, b] = [0, 0, 0].map((_, i) => parseInt(col.slice(i * 2, i * 2 + 2), 16));
-            [r, g, b] = [r + amt, g + amt, b + amt].map(v => Math.max(0, Math.min(255, v))); 
-            return `#${[r,g,b].map(v=> v.toString(16).padStart(2,'0')).join('')}`; 
-        }
-        
         // This function will now simply redirect to texturepacks.html
         function redirectToTexturePacks(event) {
             event.preventDefault(); // Prevent default anchor behavior
@@ -786,15 +771,23 @@
                         }
 
                         const packElement = document.createElement('div');
-                        packElement.className = 'pack'; // Removed 'card' class
+                        packElement.className = 'latest-pack-card';
                         packElement.innerHTML = `
                             <div class="pack-header">
                                 ${iconContent}
-                                <h4 class="pack-name">${escapeHtml(pack.name)}</h4>
+                                <div>
+                                    <h4 class="pack-name">${escapeHtml(pack.name)}</h4>
+                                </div>
                             </div>
                             <div class="pack-stats-details">
-                                <div class="stat-item"><i class="fa-solid fa-download"></i><span id="downloads-${pack.id}">${formatDownloads(pack.download_count)}</span></div>
-                                <div class="stat-item"><i class="fa-solid fa-calendar-day"></i><span>${formatDate(pack.created_at)}</span></div>
+                                <div class="stat-item">
+                                    <i class="fa-solid fa-download"></i>
+                                    <span id="downloads-${pack.id}">${formatDownloads(pack.download_count)}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fa-solid fa-calendar-day"></i>
+                                    <span>${formatDate(pack.created_at)}</span>
+                                </div>
                             </div>
                             <a href="/texturepacks.html" class="pack-download-btn" onclick="redirectToTexturePacks(event)">
                                 <i class="fa-solid fa-download"></i> Download Pack
@@ -813,7 +806,6 @@
         function init() {
             // Make function globally available for inline event handlers
             window.redirectToTexturePacks = redirectToTexturePacks;
-
             document.addEventListener('DOMContentLoaded', loadLatestPacks);
         }
 
