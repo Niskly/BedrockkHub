@@ -11,6 +11,7 @@
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
             --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
             --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
+            --success: #22c55e;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -39,7 +40,7 @@
         .username-group { display: flex; flex-direction: column; gap: 8px; }
         .username-input-wrapper { display: flex; align-items: center; gap: 10px; }
         #availability-status { font-size: 0.9rem; font-weight: 600; flex-shrink: 0; }
-        .available { color: #22c55e; }
+        .available { color: var(--success); }
         .taken { color: #ef4444; }
         .validation-error { color: #f9a8d4; font-size: 0.85rem; font-weight: 600; }
         .avatar-upload { display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
@@ -58,9 +59,40 @@
             background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: white; box-shadow: var(--shadow-brand);
         }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Styles for the success overlay */
+        .success-overlay {
+            position: fixed;
+            inset: 0; /* top, right, bottom, left = 0 */
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            color: white;
+            animation: fadeIn 0.3s ease-out;
+        }
+        .success-overlay i {
+            font-size: 4rem;
+            color: var(--success);
+            margin-bottom: 1rem;
+        }
+        .success-overlay p {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
+    <!-- Success Message Overlay -->
+    <div id="success-overlay" class="success-overlay">
+        <i class="fa-solid fa-face-smile-beam"></i>
+        <p>You have successfully created a profile!</p>
+    </div>
+
     <div class="main-content">
         <div class="card">
             <h1>Almost there!</h1>
@@ -112,12 +144,41 @@
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 currentUser = user;
+                // Check if their profile is already complete. If so, redirect.
+                const { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).single();
+                if (profile && profile.username) {
+                    window.location.href = '/index.html'; // Profile is complete, send to homepage
+                }
             } else {
-                window.location.href = '/login'; // Not logged in, redirect
+                window.location.href = '/login.html'; // Not logged in, redirect to login
             }
         });
 
-        // Handle PFP Preview
+        // Username validation logic
+        usernameInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            const username = usernameInput.value;
+            if (username.length > 0 && !usernameRegex.test(username)) {
+                errorEl.textContent = 'Only letters and numbers are allowed.';
+                statusEl.textContent = '';
+                submitBtn.disabled = true;
+                return;
+            } else {
+                errorEl.textContent = '';
+                submitBtn.disabled = false;
+            }
+            debounceTimer = setTimeout(async () => {
+                if (username.length < 3) {
+                    statusEl.textContent = '';
+                    return;
+                }
+                const { data } = await supabase.from('profiles').select('username').ilike('username', username).single();
+                statusEl.textContent = data ? 'Taken' : 'Available';
+                statusEl.className = data ? 'taken' : 'available';
+            }, 500);
+        });
+
+        // PFP preview logic
         const avatarInput = document.getElementById('avatar-input');
         const avatarPreview = document.getElementById('avatar-preview');
         avatarInput.addEventListener('change', (event) => {
@@ -131,107 +192,54 @@
             }
         });
 
-        // Check username availability and format
-        usernameInput.addEventListener('input', () => {
-            clearTimeout(debounceTimer);
-            const username = usernameInput.value;
-            
-            // 1. NEW: Validate format (letters and numbers only)
-            if (username.length > 0 && !usernameRegex.test(username)) {
-                errorEl.textContent = 'Only letters and numbers are allowed.';
-                statusEl.textContent = '';
-                submitBtn.disabled = true;
-                return;
-            } else {
-                errorEl.textContent = '';
-                submitBtn.disabled = false;
-            }
-
-            // 2. Check availability (debounced)
-            debounceTimer = setTimeout(async () => {
-                if (username.length < 3) {
-                    statusEl.textContent = '';
-                    return;
-                }
-                
-                // NEW: Use filter with lower() to make check case-insensitive
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .select('username')
-                    .filter('username', 'ilike', username) // 'ilike' is the case-insensitive version of 'like'
-                    .single();
-                
-                if (data) {
-                    statusEl.textContent = 'Taken';
-                    statusEl.className = 'taken';
-                } else {
-                    statusEl.textContent = 'Available';
-                    statusEl.className = 'available';
-                }
-            }, 500);
-        });
-
         // Handle form submission
         document.getElementById('profile-form').addEventListener('submit', async (event) => {
             event.preventDefault();
-            
             const username = usernameInput.value;
             const dob = document.getElementById('dob').value;
             const avatarFile = avatarInput.files[0];
             let avatarUrl = null;
 
-            // Final checks before submitting
-            if (statusEl.classList.contains('taken')) {
-                alert('Username is taken!');
-                return;
-            }
-            if (!usernameRegex.test(username)) {
-                alert('Username can only contain letters and numbers.');
+            if (statusEl.classList.contains('taken') || !usernameRegex.test(username)) {
+                alert('Please fix the errors before submitting.');
                 return;
             }
             
             submitBtn.disabled = true;
             submitBtn.textContent = 'Saving...';
 
-            // 1. Upload avatar if one is selected
             if (avatarFile) {
                 const filePath = `${currentUser.id}/${Date.now()}`;
-                const { data, error: uploadError } = await supabase.storage
-                    .from('avatars')
-                    .upload(filePath, avatarFile);
-
+                const { data, error: uploadError } = await supabase.storage.from('avatars').upload(filePath, avatarFile);
                 if (uploadError) {
                     alert('Error uploading avatar: ' + uploadError.message);
                     submitBtn.disabled = false;
                     submitBtn.textContent = 'Complete Profile';
                     return;
                 }
-                
                 const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(data.path);
                 avatarUrl = publicUrl;
             }
 
-            // 2. Update the user's profile
-            const { error: updateError } = await supabase
-                .from('profiles')
-                .update({
-                    username: username,
-                    date_of_birth: dob,
-                    avatar_url: avatarUrl
-                })
-                .eq('id', currentUser.id);
+            const { error: updateError } = await supabase.from('profiles').update({
+                username: username,
+                date_of_birth: dob,
+                avatar_url: avatarUrl
+            }).eq('id', currentUser.id);
 
             if (updateError) {
                 alert('Error updating profile: ' + updateError.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Complete Profile';
             } else {
-                // NEW: Updated success message
-                alert('You have successfully created a profile!');
-                window.location.href = '/';
+                // Show success overlay and then redirect
+                document.getElementById('success-overlay').style.display = 'flex';
+                setTimeout(() => {
+                    window.location.href = '/index.html';
+                }, 2500); // Wait 2.5 seconds before redirecting
             }
-            
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Complete Profile';
         });
     </script>
 </body>
 </html>
+
