@@ -23,8 +23,13 @@
             background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg');
             background-size: cover; filter: blur(8px); opacity: 0.25; z-index: -1;
         }
+        /* ---- NEW: HIDE CONTENT BY DEFAULT ---- */
         .main-content {
-            display: flex; align-items: center; justify-content: center; padding: 2rem; min-height: 100vh;
+            display: none; /* This prevents the "flash" of content */
+            align-items: center; 
+            justify-content: center; 
+            padding: 2rem; 
+            min-height: 100vh;
         }
         .card {
             background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px;
@@ -59,35 +64,18 @@
             background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: white; box-shadow: var(--shadow-brand);
         }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        /* Styles for the success overlay */
         .success-overlay {
-            position: fixed;
-            inset: 0; /* top, right, bottom, left = 0 */
-            background-color: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(5px);
-            display: none; /* Hidden by default */
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            color: white;
-            animation: fadeIn 0.3s ease-out;
+            position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px); display: none; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 100;
+            color: white; animation: fadeIn 0.3s ease-out;
         }
-        .success-overlay i {
-            font-size: 4rem;
-            color: var(--success);
-            margin-bottom: 1rem;
-        }
-        .success-overlay p {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
+        .success-overlay i { font-size: 4rem; color: var(--success); margin-bottom: 1rem; }
+        .success-overlay p { font-size: 1.5rem; font-weight: 700; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
-    <!-- Success Message Overlay -->
     <div id="success-overlay" class="success-overlay">
         <i class="fa-solid fa-face-smile-beam"></i>
         <p>You have successfully created a profile!</p>
@@ -138,23 +126,25 @@
         const statusEl = document.getElementById('availability-status');
         const errorEl = document.getElementById('username-error');
         const submitBtn = document.getElementById('submit-btn');
+        const mainContent = document.querySelector('.main-content');
 
-        // Check for user on page load
         document.addEventListener('DOMContentLoaded', async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 currentUser = user;
-                // Check if their profile is already complete. If so, redirect.
                 const { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).single();
                 if (profile && profile.username) {
-                    window.location.href = '/index.html'; // Profile is complete, send to homepage
+                    window.location.href = '/index.html';
+                } else {
+                    // ---- NEW: ONLY SHOW CONTENT IF USER BELONGS HERE ----
+                    mainContent.style.display = 'flex';
                 }
             } else {
-                window.location.href = '/login.html'; // Not logged in, redirect to login
+                window.location.href = '/login.html';
             }
         });
 
-        // Username validation logic
+        // Username validation logic remains the same
         usernameInput.addEventListener('input', () => {
             clearTimeout(debounceTimer);
             const username = usernameInput.value;
@@ -178,7 +168,7 @@
             }, 500);
         });
 
-        // PFP preview logic
+        // PFP preview logic remains the same
         const avatarInput = document.getElementById('avatar-input');
         const avatarPreview = document.getElementById('avatar-preview');
         avatarInput.addEventListener('change', (event) => {
@@ -232,11 +222,10 @@
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Complete Profile';
             } else {
-                // Show success overlay and then redirect
                 document.getElementById('success-overlay').style.display = 'flex';
                 setTimeout(() => {
                     window.location.href = '/index.html';
-                }, 2500); // Wait 2.5 seconds before redirecting
+                }, 2500);
             }
         });
     </script>
