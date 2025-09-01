@@ -123,7 +123,7 @@
             color: white; border: none;
         }
         .backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, .6); display: none; align-items: center; justify-content: center; z-index: 60; }
-        .backdrop.on-top { z-index: 70; } /* FIX: Higher z-index for tag modal */
+        .backdrop.on-top { z-index: 70; }
         .modal { width: 100%; max-width: 760px; background: var(--bg-2); border-radius: 12px; overflow-y: auto; max-height: 90vh; }
         .modal .panel { padding: 20px; }
         .modal-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 20px 20px; }
@@ -155,17 +155,19 @@
         fieldset { border: none; padding: 0; margin: 0; }
         #uploadFormFieldset:disabled { opacity: 0.5; pointer-events: none; }
         
-        /* UPDATE: New styles for the tag selection modal */
+        #tagSearchInput { padding: .5rem .8rem; }
+        
         #tagSelectModal .modal-body {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
             padding: 20px;
         }
         #tagSelectModal .tag-checkbox {
             background: var(--bg-0);
-            padding: 10px 16px;
-            border-radius: 10px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 14px;
             border: 1px solid var(--border);
             cursor: pointer;
             text-transform: capitalize;
@@ -326,9 +328,12 @@
         <div class="modal card" style="max-width: 500px;" id="tagSelectModal">
             <div class="panel">
                 <strong>Select Tags</strong>
+                <div style="margin-top: 12px;">
+                    <input type="text" id="tagSearchInput" placeholder="Search tags...">
+                </div>
             </div>
             <div class="modal-body">
-                </div>
+            </div>
             <div class="modal-footer center-actions">
                 <button type="button" class="btn sm ghost" onclick="closeTagModal(false)">Cancel</button>
                 <button type="button" class="btn primary" onclick="closeTagModal(true)">Done</button>
@@ -406,7 +411,7 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const COLORS = [{key: 'none', hex: '#4b5563', icon: 'fa-solid fa-ban'}, {key: 'red',hex: '#ef4444'}, {key: 'blue',hex: '#3b82f6'}, {key: 'green',hex: '#22c55e'}, {key: 'yellow',hex: '#eab308'}, {key: 'purple',hex: '#a855f7'}, {key: 'pink',hex: '#ec4899'}, {key: 'orange',hex: '#f97316'}, {key: 'teal',hex: '#14b8a6'}, {key: 'gray',hex: '#6b7280'}, {key: 'black',hex: '#1f2937'}];
-        const TAGS = ['pvp', 'bedwars', 'skywars', 'anime', 'crystal pvp', 'survival'];
+        const TAGS = ['pvp', 'bedwars', 'skywars', 'anime', 'crystal pvp', 'survival', 'fps', 'low fire', 'default edit', 'faithful', 'simple'];
         const RESOLUTIONS = ['8x', '16x', '32x', '64x'];
         const packsPerPage = 9;
         let packs = [];
@@ -713,10 +718,11 @@
 
         function buildSwatches(container, clickHandler, activeSet) { container.innerHTML = ''; COLORS.forEach(c => { const b = document.createElement('button'); b.type = 'button'; b.className = 'swatch' + ((activeSet && activeSet.has(c.key)) ? ' active' : ''); b.style.background = c.hex; b.title = c.key; if (c.icon) { b.innerHTML = `<i class="${c.icon}"></i>`; } b.onclick = () => clickHandler(c.key, b); container.appendChild(b); }); }
         
-        // UPDATE: Renders new tag selector items
-        function buildModalTags(container, clickHandler, activeSet) {
+        function buildModalTags(container, activeSet, filter = '') {
             container.innerHTML = '';
-            TAGS.forEach(t => {
+            const filteredTags = TAGS.filter(tag => tag.toLowerCase().includes(filter.toLowerCase()));
+
+            filteredTags.forEach(t => {
                 const tagEl = document.createElement('div');
                 tagEl.className = 'tag-checkbox';
                 if (activeSet.has(t)) {
@@ -752,14 +758,24 @@
         function openTagModal() { 
             isEditingTags = false;
             tempModalTags = new Set(state.modalTags);
-            buildModalTags(document.querySelector('#tagSelectModal .modal-body'), (tag) => {}, tempModalTags);
+            const searchInput = document.getElementById('tagSearchInput');
+            searchInput.value = '';
+            buildModalTags(document.querySelector('#tagSelectModal .modal-body'), tempModalTags);
+            searchInput.oninput = () => {
+                buildModalTags(document.querySelector('#tagSelectModal .modal-body'), tempModalTags, searchInput.value);
+            };
             document.getElementById('tag-select-backdrop').style.display = 'flex';
         }
 
         function openEditTagModal() { 
             isEditingTags = true;
             tempModalTags = new Set(state.editTags);
-            buildModalTags(document.querySelector('#tagSelectModal .modal-body'), (tag) => {}, tempModalTags);
+            const searchInput = document.getElementById('tagSearchInput');
+            searchInput.value = '';
+            buildModalTags(document.querySelector('#tagSelectModal .modal-body'), tempModalTags);
+            searchInput.oninput = () => {
+                buildModalTags(document.querySelector('#tagSelectModal .modal-body'), tempModalTags, searchInput.value);
+            };
             document.getElementById('tag-select-backdrop').style.display = 'flex';
         }
 
@@ -773,6 +789,9 @@
                     updateTagButtonText();
                 }
             }
+            const searchInput = document.getElementById('tagSearchInput');
+            searchInput.value = '';
+            searchInput.oninput = null;
             document.getElementById('tag-select-backdrop').style.display = 'none';
         }
 
