@@ -175,11 +175,9 @@
             text-transform: capitalize;
             cursor: pointer;
             transition: all 0.2s ease-in-out;
-            text-align: center;
         }
         #tagSelectModal .tag-checkbox:hover {
             border-color: var(--brand-1);
-            background-color: #1a1a1a;
         }
         #tagSelectModal .tag-checkbox.selected {
             background-color: var(--brand-1);
@@ -717,7 +715,7 @@
             }
 
             filteredTags.forEach(t => {
-                const tagEl = document.createElement('div');
+                const tagEl = document.createElement('span');
                 tagEl.className = 'tag-checkbox';
                 if (activeSet.has(t)) {
                     tagEl.classList.add('selected');
