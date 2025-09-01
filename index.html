@@ -356,24 +356,85 @@
             50% { opacity: 0.5; }
         }
         
-        /* MODIFIED: Pack card styles for a 4-column grid */
+        /* MODIFIED: Pack card styles for a 4-column grid (no background on cards) */
         .packs {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 18px;
         }
 
-        .pack { overflow: hidden; }
-        .pack.card { transition: box-shadow .2s, transform .2s, border-color .2s; }
-        .pack.card:hover { transform: translateY(-4px); box-shadow: 0 28px 75px rgba(0, 0, 0, .65); border-color: rgba(255,255,255,.2); }
-        .thumb { height: 140px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-        .pack .thumb { border-bottom-color: var(--border) !important; }
-        .thumb .pack-icon-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; filter: blur(8px) brightness(0.7); transform: scale(1.1); }
-        .thumb .pack-icon { position: relative; width: 90px; height: 90px; border-radius: 8px; object-fit: cover; z-index: 1; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
-        .thumb .glyph { height: 68px; width: 68px; border-radius: 14px; display: grid; place-items: center; color: white; }
-        .content { padding: 14px; }
-        .pack-stats-top { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--muted-foreground); }
-        .stat-item { display: flex; align-items: center; gap: 6px; }
+        .pack { 
+            overflow: hidden; 
+            background: transparent; /* Remove background */
+            border: none; /* Remove border */
+            box-shadow: none; /* Remove shadow */
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; /* Align content to the left */
+            text-align: left;
+            transition: transform .2s;
+        }
+        
+        .pack:hover { 
+            transform: translateY(-4px); 
+        }
+
+        .pack-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .pack-icon { 
+            width: 48px; 
+            height: 48px; 
+            border-radius: 8px; /* Square icon */
+            object-fit: cover; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); 
+        }
+        .pack-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .pack-stats-details {
+            display: flex;
+            gap: 15px; /* Space between download count and date */
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+            color: var(--muted-foreground);
+            padding-left: 58px; /* Align with the text beside the icon */
+        }
+        .pack-stats-details .stat-item i {
+            font-size: 0.8em;
+            color: var(--muted-foreground);
+        }
+
+        .pack-download-btn {
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%; /* Make button full width of its card */
+            color: var(--text);
+            transition: all 0.2s ease;
+        }
+
+        .pack-download-btn:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(222, 33, 42, .2);
+            background: var(--surface-2);
+            color: white;
+        }
+
 
         .tiny { 
             font-size: 12px; 
@@ -386,6 +447,7 @@
             justify-content: center;
             padding: 2rem;
             color: var(--muted);
+            grid-column: 1 / -1; /* Center loading across all columns */
         }
 
         .loading::after {
@@ -478,6 +540,7 @@
             .title { font-size: 2.5rem; }
             .hero-card { padding: 40px 30px; }
             .packs { grid-template-columns: repeat(2, 1fr); } /* 2 columns on tablet */
+            .pack-stats-details { padding-left: 58px; } /* Keep alignment for tablet */
         }
 
         @media (max-width: 768px) { 
@@ -488,6 +551,7 @@
             .btn-hero { min-width: auto; }
             .hero-cta { flex-direction: column; align-items: center; }
             .packs { grid-template-columns: 1fr; } /* 1 column on mobile */
+            .pack-stats-details { padding-left: 58px; } /* Keep alignment for mobile */
         }
 
         @media (max-width: 480px) {
@@ -686,34 +750,10 @@
             return `#${[r,g,b].map(v=> v.toString(16).padStart(2,'0')).join('')}`; 
         }
         
-        async function handleDownload(event, packId, downloadUrl, downloadName) {
-            event.preventDefault();
-            event.stopPropagation(); // Prevents navigating if the parent is a link
-            try {
-                await fetch('/api/increment-download', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ id: packId })
-                });
-                const countElement = document.getElementById(`downloads-${packId}`);
-                if (countElement) {
-                    const currentCount = parseInt(countElement.textContent.replace(/[K,M,.]/g, ''), 10) || 0;
-                    countElement.textContent = formatDownloads(currentCount + 1);
-                }
-            } catch (err) {
-                console.error("Failed to update download count:", err);
-            } finally {
-                fetch(downloadUrl)
-                    .then(response => response.blob())
-                    .then(blob => {
-                        const link = document.createElement('a');
-                        link.href = URL.createObjectURL(blob);
-                        link.download = downloadName;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    });
-            }
+        // This function will now simply redirect to texturepacks.html
+        function redirectToTexturePacks(event) {
+            event.preventDefault(); // Prevent default anchor behavior
+            window.location.href = '/texturepacks.html';
         }
 
         async function loadLatestPacks() {
@@ -737,38 +777,28 @@
                     data.forEach(pack => {
                         const colorKey = pack.color || 'gray';
                         const color = COLORS.find(c => c.key === colorKey)?.hex || '#6b7280';
-                        const { data: fileData } = supabase.storage.from('packs').getPublicUrl(pack.filename);
-                        const downloadUrl = fileData.publicUrl;
-                        const extension = pack.filename.split('.').pop();
-                        const downloadName = `${pack.name}.${extension}`;
-
-                        let thumbContent;
-                        let thumbBackgroundStyle;
-
+                        
+                        let iconContent;
                         if (pack.icon_url) {
-                            thumbContent = `<div class="pack-icon-bg" style="background-image: url('${pack.icon_url}');"></div><img class="pack-icon" src="${pack.icon_url}" alt="${escapeHtml(pack.name)} Icon">`;
-                            thumbBackgroundStyle = `background: linear-gradient(135deg,#1f2937,#0f172a);`;
+                            iconContent = `<img class="pack-icon" src="${pack.icon_url}" alt="${escapeHtml(pack.name)} Icon">`;
                         } else {
-                            thumbContent = `<div class="glyph" style="background:${color}"><i class="fa-solid fa-cube"></i></div>`;
-                            thumbBackgroundStyle = `background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})`;
+                            iconContent = `<div class="pack-icon" style="background:${color}; display:grid; place-items:center;"><i class="fa-solid fa-cube" style="color:white; font-size:1.8em;"></i></div>`;
                         }
 
                         const packElement = document.createElement('div');
-                        packElement.className = 'card pack';
+                        packElement.className = 'pack'; // Removed 'card' class
                         packElement.innerHTML = `
-                            <div class="thumb" style="${thumbBackgroundStyle}">
-                                ${thumbContent}
+                            <div class="pack-header">
+                                ${iconContent}
+                                <h4 class="pack-name">${escapeHtml(pack.name)}</h4>
                             </div>
-                            <div class="content">
-                                <div class="pack-stats-top">
-                                    <div class="stat-item"><i class="fa-solid fa-download"></i><span id="downloads-${pack.id}">${formatDownloads(pack.download_count)}</span></div>
-                                    <div class="stat-item"><i class="fa-solid fa-calendar-day"></i><span>${formatDate(pack.created_at)}</span></div>
-                                </div>
-                                <h4 style="margin-bottom: 0.25rem;">${escapeHtml(pack.name)}</h4>
-                                <a href="${downloadUrl}" class="btn primary" style="width: 100%; margin-top: 1rem; justify-content: center;" onclick="handleDownload(event, ${pack.id}, '${downloadUrl}', '${escapeHtml(downloadName)}')">
-                                    <i class="fa-solid fa-download"></i> Download
-                                </a>
+                            <div class="pack-stats-details">
+                                <div class="stat-item"><i class="fa-solid fa-download"></i><span id="downloads-${pack.id}">${formatDownloads(pack.download_count)}</span></div>
+                                <div class="stat-item"><i class="fa-solid fa-calendar-day"></i><span>${formatDate(pack.created_at)}</span></div>
                             </div>
+                            <a href="/texturepacks.html" class="pack-download-btn" onclick="redirectToTexturePacks(event)">
+                                <i class="fa-solid fa-download"></i> Download Pack
+                            </a>
                         `;
                         grid.appendChild(packElement);
                     });
@@ -781,8 +811,8 @@
         }
         
         function init() {
-            // Make functions globally available for inline event handlers
-            window.handleDownload = handleDownload;
+            // Make function globally available for inline event handlers
+            window.redirectToTexturePacks = redirectToTexturePacks;
 
             document.addEventListener('DOMContentLoaded', loadLatestPacks);
         }
