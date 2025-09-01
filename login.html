@@ -66,7 +66,7 @@
                 <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
                 Continue with Google
             </button>
-            <p class="sub-text">Don't have an account? <a href="/signup.html">Sign Up</a></p>
+            <p class="sub-text">Don't have an account? <a href="/signup">Sign Up</a></p>
         </div>
     </div>
 
@@ -76,20 +76,21 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // This is the new "brain" function for routing users.
+        // This is the "brain" function that correctly routes users AFTER they log in.
         async function checkProfileAndRedirect(user) {
-            const { data: profile, error } = await supabase
+            if (!user) return;
+            const { data: profile } = await supabase
                 .from('profiles')
                 .select('username')
                 .eq('id', user.id)
                 .single();
 
             if (profile && profile.username) {
-                // Profile is complete, go to the homepage.
+                // Profile is complete, send to homepage.
                 window.location.href = '/';
             } else {
-                // Profile is NOT complete, go to the profile setup page.
-                window.location.href = '/complete-profile.html';
+                // Profile is incomplete, send to the setup page.
+                window.location.href = '/complete-profile';
             }
         }
 
@@ -103,15 +104,13 @@
             if (error) {
                 alert('Login failed: ' + error.message);
             } else if (data.user) {
-                // On a successful login, call the brain function.
                 await checkProfileAndRedirect(data.user);
             }
         });
 
         // Google OAuth Login
         document.getElementById('google-login-btn').addEventListener('click', async () => {
-            const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
-            if (error) { alert('Google login failed: ' + error.message); }
+            await supabase.auth.signInWithOAuth({ provider: 'google' });
         });
         
         // This handles the redirect back from Google.
