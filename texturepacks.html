@@ -123,6 +123,7 @@
             color: white; border: none;
         }
         .backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, .6); display: none; align-items: center; justify-content: center; z-index: 60; }
+        .backdrop.on-top { z-index: 70; } /* FIX: Higher z-index for tag modal */
         .modal { width: 100%; max-width: 760px; background: var(--bg-2); border-radius: 12px; overflow-y: auto; max-height: 90vh; }
         .modal .panel { padding: 20px; }
         .modal-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 20px 20px; }
@@ -153,22 +154,47 @@
         .pagination-btn:hover { border-color: white; }
         fieldset { border: none; padding: 0; margin: 0; }
         #uploadFormFieldset:disabled { opacity: 0.5; pointer-events: none; }
-        #tagSelectModal .modal-body { display: flex; flex-wrap: wrap; gap: 10px; padding: 20px; }
-        #tagSelectModal .tag-checkbox-wrapper { display: flex; align-items: center; }
+        
+        /* UPDATE: New styles for the tag selection modal */
+        #tagSelectModal .modal-body {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            padding: 20px;
+        }
         #tagSelectModal .tag-checkbox {
             background: var(--bg-0);
-            padding: 8px 12px;
-            border-radius: 99px;
+            padding: 10px 16px;
+            border-radius: 10px;
             border: 1px solid var(--border);
             cursor: pointer;
             text-transform: capitalize;
-            transition: background-color 0.2s, border-color 0.2s;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 700;
+        }
+        #tagSelectModal .tag-checkbox:hover {
+            border-color: var(--brand-1);
+            transform: translateY(-2px);
+        }
+        #tagSelectModal .tag-checkbox .checkmark {
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.2s ease-in-out;
+            color: white;
         }
         #tagSelectModal .tag-checkbox.selected {
             background-color: var(--brand-1);
             border-color: var(--brand-2);
+            color: white;
         }
-        
+        #tagSelectModal .tag-checkbox.selected .checkmark {
+            opacity: 1;
+            transform: scale(1);
+        }
+
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         
         @media (max-width:1024px) { .layout { grid-template-columns: 1fr; } .sidebar { position: static; } .packs { grid-template-columns: repeat(2, 1fr); } }
@@ -296,7 +322,7 @@
         </div>
     </div>
     
-    <div id="tag-select-backdrop" class="backdrop">
+    <div id="tag-select-backdrop" class="backdrop on-top">
         <div class="modal card" style="max-width: 500px;" id="tagSelectModal">
             <div class="panel">
                 <strong>Select Tags</strong>
@@ -687,23 +713,21 @@
 
         function buildSwatches(container, clickHandler, activeSet) { container.innerHTML = ''; COLORS.forEach(c => { const b = document.createElement('button'); b.type = 'button'; b.className = 'swatch' + ((activeSet && activeSet.has(c.key)) ? ' active' : ''); b.style.background = c.hex; b.title = c.key; if (c.icon) { b.innerHTML = `<i class="${c.icon}"></i>`; } b.onclick = () => clickHandler(c.key, b); container.appendChild(b); }); }
         
+        // UPDATE: Renders new tag selector items
         function buildModalTags(container, clickHandler, activeSet) {
             container.innerHTML = '';
             TAGS.forEach(t => {
-                const div = document.createElement('div');
-                div.className = 'tag-checkbox-wrapper';
-                const tagEl = document.createElement('span');
+                const tagEl = document.createElement('div');
                 tagEl.className = 'tag-checkbox';
                 if (activeSet.has(t)) {
                     tagEl.classList.add('selected');
                 }
-                tagEl.textContent = capitalizeFirst(t);
+                tagEl.innerHTML = `<span class="tag-text">${capitalizeFirst(t)}</span><i class="fa-solid fa-check checkmark"></i>`;
                 tagEl.onclick = () => {
                     toggleSet(tempModalTags, t);
                     tagEl.classList.toggle('selected');
                 };
-                div.appendChild(tagEl);
-                container.appendChild(div);
+                container.appendChild(tagEl);
             });
         }
 
