@@ -133,8 +133,7 @@
         .file-upload-area i { font-size: 32px; margin-bottom: 12px; color: var(--brand-1); }
         .file-hint { margin-top: 6px; color: var(--muted); }
         .label-with-icon { display: flex; align-items: center; gap: 6px; }
-        input[type="text"], input[type="file"], textarea { width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-2);color:var(--text); font-family: inherit; font-size: inherit; }
-        input[type="file"] { padding: .5rem; }
+        input[type="text"], textarea { width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-2);color:var(--text); font-family: inherit; font-size: inherit; }
         textarea { resize: vertical; height: 120px; }
         .sort-container { position: relative; }
         .sort-btn { padding: .25rem .5rem; gap: .5rem; }
@@ -154,6 +153,15 @@
         .pagination-btn:hover { border-color: white; }
         fieldset { border: none; padding: 0; margin: 0; }
         #uploadFormFieldset:disabled { opacity: 0.5; pointer-events: none; }
+        
+        /* New styles for the tag dropdown */
+        .tag-select-container { position: relative; }
+        .tag-select-btn { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: .7rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2); }
+        .tag-select-menu { display: none; position: absolute; top: 100%; left: 0; width: 100%; z-index: 70; background: var(--bg-1); border: 1px solid var(--border); border-radius: 10px; margin-top: 6px; max-height: 150px; overflow-y: auto; }
+        .tag-select-menu label { display: block; padding: 8px 12px; cursor: pointer; text-transform: capitalize; }
+        .tag-select-menu label:hover { background-color: var(--brand-1); }
+        .tag-select-menu input { margin-right: 10px; }
+
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         
         @media (max-width:1024px) { .layout { grid-template-columns: 1fr; } .sidebar { position: static; } .packs { grid-template-columns: repeat(2, 1fr); } }
@@ -194,10 +202,6 @@
                 <h3>Resolutions</h3>
                 <div id="resolutionBoxes" class="resolutions"></div>
                 <div class="row" style="margin-top:8px"><button class="btn sm btn-clear" onclick="clearResolutions()">Clear resolutions</button></div>
-                <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
-                <h3>Version</h3>
-                <div id="versionBoxes" class="resolutions"></div>
-                <div class="row" style="margin-top:8px"><button class="btn sm btn-clear" onclick="clearVersions()">Clear versions</button></div>
                 <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
                 <h3>Tags</h3>
                 <div id="tagCloud" class="tags"></div>
@@ -241,38 +245,36 @@
                 <form id="uploadForm" onsubmit="handleUpload(event)">
                     <fieldset id="uploadFormFieldset">
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px; align-items: start;">
-                            <div style="grid-column: span 2;">
+                            <div>
                                 <label class="tiny label-with-icon"><span>Pack name</span></label>
                                 <input id="packName" required placeholder="e.g. Crystal PvP" type="text">
                             </div>
-                            
-                            <div style="grid-column: span 2;">
-                               <label class="tiny">Description (optional)</label>
-                               <textarea id="packDescription" placeholder="A short description of the pack..."></textarea>
-                            </div>
-                            
                             <div>
                                 <label class="tiny">Primary color</label>
                                 <div id="modalSwatches" class="swatches"></div>
                             </div>
+
                             <div>
-                                <label class="tiny">Pack Icon (Optional Override)</label>
-                                <input id="iconInput" type="file" accept="image/png,image/jpeg">
+                               <label class="tiny">Description (optional)</label>
+                               <textarea id="packDescription" placeholder="A short description of the pack..."></textarea>
                             </div>
-
-                             <div>
-                                <label class="tiny">Resolution</label>
-                                <div id="modalResolutions" class="resolutions"></div>
+                            <div>
+                                <div>
+                                    <label class="tiny">Resolution</label>
+                                    <div id="modalResolutions" class="resolutions"></div>
+                                </div>
+                                <div style="margin-top: 14px;">
+                                    <label class="tiny">Tags</label>
+                                    <div class="tag-select-container">
+                                        <button type="button" id="tagSelectorBtn" class="tag-select-btn" onclick="toggleTagMenu()">
+                                            <span id="tagSelectorBtnText">Select Tags</span>
+                                            <i class="fa-solid fa-chevron-down fa-xs"></i>
+                                        </button>
+                                        <div class="tag-select-menu" id="modalTags"></div>
+                                    </div>
+                                </div>
                             </div>
-                             <div>
-                                <label class="tiny">Version</label>
-                                <div id="modalVersions" class="resolutions"></div>
-                            </div>
-
-                            <div style="grid-column: span 2;">
-                                <label class="tiny">Tags</label>
-                                <div id="modalTags" class="tags"></div>
-                            </div>
+                            
                             <div class="file-upload-area" onclick="document.getElementById('fileInput').click()" style="grid-column: span 2;">
                                 <i class="fa-solid fa-file-arrow-up"></i>
                                 <div>Drag & drop or <span style="color:var(--brand-1)">browse files</span></div>
@@ -362,10 +364,9 @@
         const COLORS = [{key: 'none', hex: '#4b5563', icon: 'fa-solid fa-ban'}, {key: 'red',hex: '#ef4444'}, {key: 'blue',hex: '#3b82f6'}, {key: 'green',hex: '#22c55e'}, {key: 'yellow',hex: '#eab308'}, {key: 'purple',hex: '#a855f7'}, {key: 'pink',hex: '#ec4899'}, {key: 'orange',hex: '#f97316'}, {key: 'teal',hex: '#14b8a6'}, {key: 'gray',hex: '#6b7280'}, {key: 'black',hex: '#1f2937'}];
         const TAGS = ['pvp', 'bedwars', 'skywars', 'anime', 'crystal pvp', 'survival'];
         const RESOLUTIONS = ['8x', '16x', '32x', '64x'];
-        const VERSIONS = ['bedrock', 'java'];
         const packsPerPage = 9;
         let packs = [];
-        const state = { q: '', colors: new Set(), tags: new Set(), resolutions: new Set(), versions: new Set(), currentPage: 1, modalColor: null, modalTags: new Set(), modalResolution: null, modalVersion: null, editColor: null, editTags: new Set(), editResolution: null, editVersion: null, sortBy: 'latest' };
+        const state = { q: '', colors: new Set(), tags: new Set(), resolutions: new Set(), currentPage: 1, modalColor: null, modalTags: new Set(), modalResolution: null, sortBy: 'latest' };
         let currentEditId = null;
 
         /* ====== API & DATA FUNCTIONS ====== */
@@ -390,11 +391,7 @@
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
             const fieldset = document.getElementById('uploadFormFieldset');
-            const packFileInput = document.getElementById('fileInput');
-            const iconFileInput = document.getElementById('iconInput');
-
-            const packFile = packFileInput.files[0];
-            const manualIconFile = iconFileInput.files[0];
+            const packFile = document.getElementById('fileInput').files[0];
             const name = document.getElementById('packName').value.trim();
             const description = document.getElementById('packDescription').value.trim();
 
@@ -402,13 +399,15 @@
                 showToast('Please select a valid .mcpack or .zip file'); 
                 return; 
             }
-            if (manualIconFile && !['image/png', 'image/jpeg'].includes(manualIconFile.type)) {
-                showToast('Invalid icon file. Please select a PNG or JPG image.');
-                return;
-            }
             if (!state.modalColor) { showToast('You forgot to select a primary color.'); return; }
             if (!state.modalResolution) { showToast('You forgot to select a resolution.'); return; }
-            if (!state.modalVersion) { showToast('You forgot to select a version.'); return; }
+            
+            let detectedVersion = '';
+            if (packFile.name.toLowerCase().endsWith('.mcpack')) {
+                detectedVersion = 'bedrock';
+            } else if (packFile.name.toLowerCase().endsWith('.zip')) {
+                detectedVersion = 'java';
+            }
 
             submitBtn.disabled = true;
             fieldset.disabled = true;
@@ -416,47 +415,33 @@
             
             try {
                 let iconUrl = null;
+                const zip = new JSZip();
+                const contents = await zip.loadAsync(packFile);
+                
+                let iconFile = null;
+                contents.forEach((relativePath, file) => {
+                    const lowerCaseName = relativePath.toLowerCase();
+                    if (lowerCaseName.endsWith('pack_icon.png')) {
+                        iconFile = file;
+                    }
+                });
+                if (!iconFile) {
+                     contents.forEach((relativePath, file) => {
+                        const lowerCaseName = relativePath.toLowerCase();
+                        if (lowerCaseName.endsWith('pack.png')) {
+                            iconFile = file;
+                        }
+                    });
+                }
 
-                // Priority 1: Use the manually selected icon file if it exists.
-                if (manualIconFile) {
+                if (iconFile) {
                     submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...';
-                    const iconFileName = `icons/${Date.now()}-${manualIconFile.name}`;
-                    const { error: iconError } = await supabase.storage.from('packs').upload(iconFileName, manualIconFile);
+                    const iconBlob = await iconFile.async('blob');
+                    const iconFileName = `icons/${Date.now()}-icon.png`;
+                    const { error: iconError } = await supabase.storage.from('packs').upload(iconFileName, iconBlob);
                     if (iconError) throw iconError;
                     const { data } = supabase.storage.from('packs').getPublicUrl(iconFileName);
                     iconUrl = data.publicUrl;
-                } 
-                // Priority 2: If no manual icon, try to find one automatically.
-                else {
-                    const zip = new JSZip();
-                    const contents = await zip.loadAsync(packFile);
-                    let autoIconFile = null;
-                    
-                    // Most thorough search: iterate over all files.
-                    contents.forEach((relativePath, file) => {
-                        const lowerCaseName = relativePath.toLowerCase();
-                        if (lowerCaseName.endsWith('pack_icon.png')) {
-                            autoIconFile = file;
-                        }
-                    });
-                    if (!autoIconFile) {
-                         contents.forEach((relativePath, file) => {
-                            const lowerCaseName = relativePath.toLowerCase();
-                            if (lowerCaseName.endsWith('pack.png')) {
-                                autoIconFile = file;
-                            }
-                        });
-                    }
-
-                    if (autoIconFile) {
-                        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...';
-                        const iconBlob = await autoIconFile.async('blob');
-                        const iconFileName = `icons/${Date.now()}-icon.png`;
-                        const { error: iconError } = await supabase.storage.from('packs').upload(iconFileName, iconBlob);
-                        if (iconError) throw iconError;
-                        const { data } = supabase.storage.from('packs').getPublicUrl(iconFileName);
-                        iconUrl = data.publicUrl;
-                    }
                 }
 
                 submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Pack...';
@@ -473,7 +458,7 @@
                         tags: [...state.modalTags],
                         filename: fileName,
                         resolution: state.modalResolution,
-                        version: state.modalVersion,
+                        version: detectedVersion,
                         description: description,
                         icon_url: iconUrl
                     })
@@ -498,8 +483,7 @@
                 description: document.getElementById('editPackDescription').value.trim(),
                 color: state.editColor,
                 tags: [...state.editTags].join(','),
-                resolution: state.editResolution,
-                version: state.editVersion
+                resolution: state.editResolution
             }).eq('id', currentEditId);
             if (error) {
                 showToast('Save failed: ' + error.message);
@@ -546,7 +530,8 @@
             } catch (err) {
                 console.error("Failed to update download count:", err);
             } finally {
-                window.location.href = downloadUrl;
+                const link = event.currentTarget;
+                window.location.href = link.href;
             }
         }
 
@@ -558,8 +543,7 @@
                 const cOk = state.colors.size === 0 || state.colors.has(p.color);
                 const tOk = state.tags.size === 0 || [...state.tags].every(t => (p.tags || []).includes(t));
                 const rOk = state.resolutions.size === 0 || state.resolutions.has(p.resolution);
-                const vOk = state.versions.size === 0 || state.versions.has(p.version);
-                return qOk && cOk && tOk && rOk && vOk;
+                return qOk && cOk && tOk && rOk;
             });
 
             const startIndex = (state.currentPage - 1) * packsPerPage;
@@ -636,6 +620,10 @@
             const card = document.createElement('div');
             card.className = 'card pack';
             const { data } = supabase.storage.from('packs').getPublicUrl(p.filename);
+
+            const extension = p.filename.split('.').pop();
+            const downloadName = `${p.name}.${extension}`;
+
             let thumbContent;
             let thumbBackgroundStyle;
             if (p.icon_url) {
@@ -650,7 +638,7 @@
                     ${thumbContent}
                     <button class="pack-options-btn" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                     <div class="pack-options-menu" id="options-menu-${p.id}">
-                        <a href="${data.publicUrl}" onclick="handleDownload(event, ${p.id}, '${data.publicUrl}')"><i class="fa-solid fa-download"></i> Download</a>
+                        <a href="${data.publicUrl}" download="${escapeHtml(downloadName)}" onclick="handleDownload(event, ${p.id}, this.href)"><i class="fa-solid fa-download"></i> Download</a>
                         <a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>
                     </div>
                 </div>
