@@ -241,32 +241,28 @@
                 <form id="uploadForm" onsubmit="handleUpload(event)">
                     <fieldset id="uploadFormFieldset">
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px; align-items: start;">
-                            <div style="grid-column: span 2;">
+                            <div>
                                 <label class="tiny label-with-icon"><span>Pack name</span></label>
                                 <input id="packName" required placeholder="e.g. Crystal PvP" type="text">
                             </div>
-                            
-                            <div style="grid-column: span 2;">
-                               <label class="tiny">Description (optional)</label>
-                               <textarea id="packDescription" placeholder="A short description of the pack..."></textarea>
-                            </div>
-                            
                             <div>
                                 <label class="tiny">Primary color</label>
                                 <div id="modalSwatches" class="swatches"></div>
                             </div>
-                            <div>
-                                <label class="tiny">Pack Icon (Optional Override)</label>
-                                <input id="iconInput" type="file" accept="image/png,image/jpeg">
-                            </div>
 
-                             <div>
-                                <label class="tiny">Resolution</label>
-                                <div id="modalResolutions" class="resolutions"></div>
+                            <div>
+                               <label class="tiny">Description (optional)</label>
+                               <textarea id="packDescription" placeholder="A short description of the pack..."></textarea>
                             </div>
-                             <div>
-                                <label class="tiny">Version</label>
-                                <div id="modalVersions" class="resolutions"></div>
+                            <div>
+                                <div>
+                                    <label class="tiny">Resolution</label>
+                                    <div id="modalResolutions" class="resolutions"></div>
+                                </div>
+                                <div style="margin-top: 14px;">
+                                    <label class="tiny">Version</label>
+                                    <div id="modalVersions" class="resolutions"></div>
+                                </div>
                             </div>
 
                             <div style="grid-column: span 2;">
@@ -390,21 +386,13 @@
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
             const fieldset = document.getElementById('uploadFormFieldset');
-            const packFileInput = document.getElementById('fileInput');
-            const iconFileInput = document.getElementById('iconInput');
-
-            const packFile = packFileInput.files[0];
-            const manualIconFile = iconFileInput.files[0];
+            const packFile = document.getElementById('fileInput').files[0];
             const name = document.getElementById('packName').value.trim();
             const description = document.getElementById('packDescription').value.trim();
 
             if (!packFile || (!packFile.name.endsWith('.mcpack') && !packFile.name.endsWith('.zip'))) { 
                 showToast('Please select a valid .mcpack or .zip file'); 
                 return; 
-            }
-            if (manualIconFile && !['image/png', 'image/jpeg'].includes(manualIconFile.type)) {
-                showToast('Invalid icon file. Please select a PNG or JPG image.');
-                return;
             }
             if (!state.modalColor) { showToast('You forgot to select a primary color.'); return; }
             if (!state.modalResolution) { showToast('You forgot to select a resolution.'); return; }
@@ -416,47 +404,28 @@
             
             try {
                 let iconUrl = null;
+                const zip = new JSZip();
+                const contents = await zip.loadAsync(packFile);
+                
+                let iconFile = null;
+                const bedrockIconMatches = contents.file(/pack_icon\.png$/i);
+                if (bedrockIconMatches.length > 0) {
+                    iconFile = bedrockIconMatches[0];
+                } else {
+                    const javaIconMatches = contents.file(/pack\.png$/i);
+                    if (javaIconMatches.length > 0) {
+                        iconFile = javaIconMatches[0];
+                    }
+                }
 
-                // Priority 1: Use the manually selected icon file if it exists.
-                if (manualIconFile) {
+                if (iconFile) {
                     submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...';
-                    const iconFileName = `icons/${Date.now()}-${manualIconFile.name}`;
-                    const { error: iconError } = await supabase.storage.from('packs').upload(iconFileName, manualIconFile);
+                    const iconBlob = await iconFile.async('blob');
+                    const iconFileName = `icons/${Date.now()}-icon.png`;
+                    const { error: iconError } = await supabase.storage.from('packs').upload(iconFileName, iconBlob);
                     if (iconError) throw iconError;
                     const { data } = supabase.storage.from('packs').getPublicUrl(iconFileName);
                     iconUrl = data.publicUrl;
-                } 
-                // Priority 2: If no manual icon, try to find one automatically.
-                else {
-                    const zip = new JSZip();
-                    const contents = await zip.loadAsync(packFile);
-                    let autoIconFile = null;
-                    
-                    // Most thorough search: iterate over all files.
-                    contents.forEach((relativePath, file) => {
-                        const lowerCaseName = relativePath.toLowerCase();
-                        if (lowerCaseName.endsWith('pack_icon.png')) {
-                            autoIconFile = file;
-                        }
-                    });
-                    if (!autoIconFile) {
-                         contents.forEach((relativePath, file) => {
-                            const lowerCaseName = relativePath.toLowerCase();
-                            if (lowerCaseName.endsWith('pack.png')) {
-                                autoIconFile = file;
-                            }
-                        });
-                    }
-
-                    if (autoIconFile) {
-                        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...';
-                        const iconBlob = await autoIconFile.async('blob');
-                        const iconFileName = `icons/${Date.now()}-icon.png`;
-                        const { error: iconError } = await supabase.storage.from('packs').upload(iconFileName, iconBlob);
-                        if (iconError) throw iconError;
-                        const { data } = supabase.storage.from('packs').getPublicUrl(iconFileName);
-                        iconUrl = data.publicUrl;
-                    }
                 }
 
                 submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Pack...';
@@ -636,6 +605,11 @@
             const card = document.createElement('div');
             card.className = 'card pack';
             const { data } = supabase.storage.from('packs').getPublicUrl(p.filename);
+
+            // NEW: Create the custom download name
+            const extension = p.filename.split('.').pop();
+            const downloadName = `${p.name}.${extension}`;
+
             let thumbContent;
             let thumbBackgroundStyle;
             if (p.icon_url) {
@@ -650,7 +624,7 @@
                     ${thumbContent}
                     <button class="pack-options-btn" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                     <div class="pack-options-menu" id="options-menu-${p.id}">
-                        <a href="${data.publicUrl}" onclick="handleDownload(event, ${p.id}, '${data.publicUrl}')"><i class="fa-solid fa-download"></i> Download</a>
+                        <a href="${data.publicUrl}" download="${escapeHtml(downloadName)}" onclick="handleDownload(event, ${p.id}, '${data.publicUrl}')"><i class="fa-solid fa-download"></i> Download</a>
                         <a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>
                     </div>
                 </div>
