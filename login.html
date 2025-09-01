@@ -23,11 +23,40 @@
             background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg');
             background-size: cover; filter: blur(8px); opacity: 0.25; z-index: -1;
         }
-        .main-content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+        .main-content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; position: relative; }
         .login-card {
             background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px;
             padding: 2.5rem; width: 100%; max-width: 420px; text-align: center;
+            transition: opacity 0.3s ease-in-out;
         }
+        /* Class to hide the form */
+        .login-card.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        /* New overlay style */
+        #redirect-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--text);
+            font-weight: 700;
+            font-size: 1.2rem;
+            display: none; /* Hidden by default */
+            align-items: center;
+            gap: 1rem;
+        }
+        #redirect-overlay.visible {
+            display: flex;
+        }
+        .spinner {
+            width: 24px; height: 24px; border: 3px solid var(--border);
+            border-top: 3px solid var(--brand-1); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
         h1 { font-size: 2rem; font-weight: 800; margin-bottom: 1rem; }
         .form-group { margin-bottom: 1.25rem; text-align: left; }
         label { display: block; margin-bottom: .5rem; font-weight: 600; color: var(--muted); }
@@ -49,7 +78,7 @@
 </head>
 <body>
     <div class="main-content">
-        <div class="login-card">
+        <div class="login-card" id="login-card">
             <h1>Login to BedrockHub</h1>
             <form id="login-form">
                 <div class="form-group">
@@ -68,6 +97,11 @@
             </button>
             <p class="sub-text">Don't have an account? <a href="/signup">Sign Up</a></p>
         </div>
+        <!-- New Overlay -->
+        <div id="redirect-overlay">
+            <div class="spinner"></div>
+            <span>Please wait...</span>
+        </div>
     </div>
 
     <script type="module">
@@ -76,7 +110,9 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // This is the "brain" function that correctly routes users AFTER they log in.
+        const loginCard = document.getElementById('login-card');
+        const redirectOverlay = document.getElementById('redirect-overlay');
+
         async function checkProfileAndRedirect(user) {
             if (!user) return;
             const { data: profile } = await supabase
@@ -84,38 +120,39 @@
                 .select('username')
                 .eq('id', user.id)
                 .single();
-
             if (profile && profile.username) {
-                // Profile is complete, send to homepage.
                 window.location.href = '/';
             } else {
-                // Profile is incomplete, send to the setup page.
                 window.location.href = '/complete-profile';
             }
         }
 
-        // Email/Password Login
         document.getElementById('login-form').addEventListener('submit', async (event) => {
             event.preventDefault();
+            loginCard.classList.add('hidden');
+            redirectOverlay.classList.add('visible');
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
             if (error) {
                 alert('Login failed: ' + error.message);
+                loginCard.classList.remove('hidden');
+                redirectOverlay.classList.remove('visible');
             } else if (data.user) {
                 await checkProfileAndRedirect(data.user);
             }
         });
 
-        // Google OAuth Login
         document.getElementById('google-login-btn').addEventListener('click', async () => {
             await supabase.auth.signInWithOAuth({ provider: 'google' });
         });
         
-        // This handles the redirect back from Google.
         supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN' && session) {
+                // The moment the user lands back from Google, show the overlay.
+                loginCard.classList.add('hidden');
+                redirectOverlay.classList.add('visible');
+                // Then proceed with the check.
                 checkProfileAndRedirect(session.user);
             }
         });
