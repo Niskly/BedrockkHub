@@ -153,15 +153,12 @@
         .pagination-btn:hover { border-color: white; }
         fieldset { border: none; padding: 0; margin: 0; }
         #uploadFormFieldset:disabled { opacity: 0.5; pointer-events: none; }
-        
-        /* New styles for the tag dropdown */
         .tag-select-container { position: relative; }
-        .tag-select-btn { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: .7rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2); }
+        .tag-select-btn { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: .7rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text); }
         .tag-select-menu { display: none; position: absolute; top: 100%; left: 0; width: 100%; z-index: 70; background: var(--bg-1); border: 1px solid var(--border); border-radius: 10px; margin-top: 6px; max-height: 150px; overflow-y: auto; }
         .tag-select-menu label { display: block; padding: 8px 12px; cursor: pointer; text-transform: capitalize; }
         .tag-select-menu label:hover { background-color: var(--brand-1); }
         .tag-select-menu input { margin-right: 10px; }
-
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         
         @media (max-width:1024px) { .layout { grid-template-columns: 1fr; } .sidebar { position: static; } .packs { grid-template-columns: repeat(2, 1fr); } }
@@ -395,7 +392,7 @@
             const name = document.getElementById('packName').value.trim();
             const description = document.getElementById('packDescription').value.trim();
 
-            if (!packFile || (!packFile.name.endsWith('.mcpack') && !packFile.name.endsWith('.zip'))) { 
+            if (!packFile || (!packFile.name.toLowerCase().endsWith('.mcpack') && !packFile.name.toLowerCase().endsWith('.zip'))) { 
                 showToast('Please select a valid .mcpack or .zip file'); 
                 return; 
             }
@@ -419,19 +416,14 @@
                 const contents = await zip.loadAsync(packFile);
                 
                 let iconFile = null;
-                contents.forEach((relativePath, file) => {
-                    const lowerCaseName = relativePath.toLowerCase();
-                    if (lowerCaseName.endsWith('pack_icon.png')) {
-                        iconFile = file;
+                const bedrockIconMatches = contents.file(/pack_icon\.png$/i);
+                if (bedrockIconMatches.length > 0) {
+                    iconFile = bedrockIconMatches[0];
+                } else {
+                    const javaIconMatches = contents.file(/pack\.png$/i);
+                    if (javaIconMatches.length > 0) {
+                        iconFile = javaIconMatches[0];
                     }
-                });
-                if (!iconFile) {
-                     contents.forEach((relativePath, file) => {
-                        const lowerCaseName = relativePath.toLowerCase();
-                        if (lowerCaseName.endsWith('pack.png')) {
-                            iconFile = file;
-                        }
-                    });
                 }
 
                 if (iconFile) {
@@ -659,29 +651,58 @@
         }
 
         function buildSwatches(container, clickHandler, activeSet) { container.innerHTML = ''; COLORS.forEach(c => { const b = document.createElement('button'); b.type = 'button'; b.className = 'swatch' + ((activeSet && activeSet.has(c.key)) ? ' active' : ''); b.style.background = c.hex; b.title = c.key; if (c.icon) { b.innerHTML = `<i class="${c.icon}"></i>`; } b.onclick = () => clickHandler(c.key, b); container.appendChild(b); }); }
-        function buildTags(container, clickHandler, activeSet) { container.innerHTML = ''; TAGS.forEach(t => { const s = document.createElement('button'); s.type = 'button'; s.className = 'tag'; s.textContent = capitalizeFirst(t); if (activeSet?.has(t)) {s.classList.add('active');} s.onclick = () => clickHandler(t, s); container.appendChild(s); }); }
-        function buildSelectorBoxes(container, clickHandler, activeState, options) { container.innerHTML = ''; const isMultiSelect = activeState instanceof Set; options.forEach(opt => { const box = document.createElement('button'); box.type = 'button'; const isActive = isMultiSelect ? activeState.has(opt) : (activeState === opt); box.className = 'res-box' + (isActive ? ' active' : ''); box.textContent = opt; box.onclick = () => clickHandler(opt, box); container.appendChild(box); }); }
+        
+        // UPDATED: buildTags for modal dropdown
+        function buildTags(container, clickHandler, activeSet) {
+            container.innerHTML = '';
+            TAGS.forEach(t => {
+                const label = document.createElement('label');
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = t;
+                if (activeSet?.has(t)) {
+                    checkbox.checked = true;
+                }
+                checkbox.onchange = () => clickHandler(t, checkbox);
+                label.appendChild(checkbox);
+                label.appendChild(document.createTextNode(capitalizeFirst(t)));
+                container.appendChild(label);
+            });
+        }
+
+        function buildResolutionBoxes(container, clickHandler, activeState) { container.innerHTML = ''; const isMultiSelect = activeState instanceof Set; RESOLUTIONS.forEach(res => { const box = document.createElement('button'); box.type = 'button'; const isActive = isMultiSelect ? activeState.has(res) : (activeState === res); box.className = 'res-box' + (isActive ? ' active' : ''); box.textContent = res; box.onclick = () => clickHandler(res, box); container.appendChild(box); }); }
 
         /* ====== EVENT HANDLERS & MODAL CONTROLS ====== */
-        function openModal() { document.getElementById('backdrop').style.display = 'flex'; state.modalColor = null; state.modalResolution = null; state.modalVersion = null; state.modalTags = new Set(); buildSwatches(document.getElementById('modalSwatches'), (k, el) => { state.modalColor = k; highlightOne(el.parentElement, el); }, null); buildTags(document.getElementById('modalTags'), (k, el) => { toggleSet(state.modalTags, k); el.classList.toggle('active'); }, new Set()); buildSelectorBoxes(document.getElementById('modalResolutions'), (res, el) => { state.modalResolution = res; highlightOne(el.parentElement, el); }, null, RESOLUTIONS); buildSelectorBoxes(document.getElementById('modalVersions'), (v, el) => { state.modalVersion = v; highlightOne(el.parentElement, el); }, null, VERSIONS); }
-        function closeModal() { document.getElementById('backdrop').style.display = 'none'; document.getElementById('uploadForm').reset(); document.getElementById('fileHint').textContent = '.mcpack or .zip files only'; }
-        function openEditModal(id) { const p = packs.find(x => x.id === id); if (!p) return showToast('Pack not found'); currentEditId = id; document.getElementById('editId').value = id; document.getElementById('editPackName').value = p.name || ''; document.getElementById('editPackDescription').value = p.description || ''; state.editColor = p.color || null; state.editTags = new Set(p.tags || []); state.editResolution = p.resolution || null; state.editVersion = p.version || null; buildSwatches(document.getElementById('editModalSwatches'), (k, el) => { state.editColor = k; highlightOne(el.parentElement, el); }, new Set([state.editColor])); buildTags(document.getElementById('editModalTags'), (k, el) => { toggleSet(state.editTags, k); el.classList.toggle('active'); }, state.editTags); buildSelectorBoxes(document.getElementById('editModalResolutions'), (res, el) => { state.editResolution = res; highlightOne(el.parentElement, el); }, state.editResolution, RESOLUTIONS); buildSelectorBoxes(document.getElementById('editModalVersions'), (v, el) => { state.editVersion = v; highlightOne(el.parentElement, el); }, state.editVersion, VERSIONS); document.getElementById('editBackdrop').style.display = 'flex'; }
+        function openModal() { document.getElementById('backdrop').style.display = 'flex'; state.modalColor = null; state.modalResolution = null; state.modalTags = new Set(); buildSwatches(document.getElementById('modalSwatches'), (k, el) => { state.modalColor = k; highlightOne(el.parentElement, el); }, null); buildTags(document.getElementById('modalTags'), (k, el) => { toggleSet(state.modalTags, k); updateTagButtonText(); }, state.modalTags); buildResolutionBoxes(document.getElementById('modalResolutions'), (res, el) => { state.modalResolution = res; highlightOne(el.parentElement, el); }, null); updateTagButtonText(); }
+        function closeModal() { document.getElementById('backdrop').style.display = 'none'; document.getElementById('uploadForm').reset(); }
+        function openEditModal(id) { const p = packs.find(x => x.id === id); if (!p) return alert('Pack not found'); currentEditId = id; document.getElementById('editId').value = id; document.getElementById('editPackName').value = p.name || ''; state.editColor = p.color || null; state.editTags = new Set(p.tags || []); state.editResolution = p.resolution || null; buildSwatches(document.getElementById('editModalSwatches'), (k, el) => { state.editColor = k; highlightOne(el.parentElement, el); }, new Set([state.editColor])); buildTags(document.getElementById('editModalTags'), (k, el) => { toggleSet(state.editTags, k); el.classList.toggle('active'); }, state.editTags); buildResolutionBoxes(document.getElementById('editModalResolutions'), (res, el) => { state.editResolution = res; highlightOne(el.parentElement, el); }, state.editResolution); document.getElementById('editBackdrop').style.display = 'flex'; }
         function closeEditModal() { currentEditId = null; document.getElementById('editBackdrop').style.display = 'none'; }
         function promptDelete() { if (!currentEditId) return; document.getElementById('confirmDeleteBackdrop').style.display = 'flex'; }
         function cancelDelete() { document.getElementById('confirmDeleteBackdrop').style.display = 'none'; }
         
         function applyFilters() { state.currentPage = 1; state.q = document.getElementById('q').value.trim().toLowerCase(); render(); }
         function clearSearch() { state.currentPage = 1; document.getElementById('q').value = ''; applyFilters(); }
-        function clearColors() { state.currentPage = 1; state.colors.clear(); buildSwatches(document.getElementById('colorSwatches'), (k, el) => { state.currentPage = 1; toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors); render(); }
-        function clearTags() { state.currentPage = 1; state.tags.clear(); buildTags(document.getElementById('tagCloud'), (k, el) => { state.currentPage = 1; toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags); render(); }
-        function clearResolutions() { state.currentPage = 1; state.resolutions.clear(); buildSelectorBoxes(document.getElementById('resolutionBoxes'), (res, el) => { state.currentPage = 1; toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions, RESOLUTIONS); render(); }
-        function clearVersions() { state.currentPage = 1; state.versions.clear(); buildSelectorBoxes(document.getElementById('versionBoxes'), (v, el) => { state.currentPage = 1; toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS); render(); }
-        function resetAll() { state.currentPage = 1; clearSearch(); clearColors(); clearTags(); clearResolutions(); clearVersions(); }
+        function clearColors() { state.currentPage = 1; state.colors.clear(); buildSwatches(document.getElementById('colorSwatches'), (k, el) => { toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors); render(); }
+        function clearTags() { state.currentPage = 1; state.tags.clear(); buildTags(document.getElementById('tagCloud'), (k, el) => { toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags); render(); }
+        function clearResolutions() { state.currentPage = 1; state.resolutions.clear(); buildResolutionBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions); render(); }
+        function resetAll() { state.currentPage = 1; clearSearch(); clearColors(); clearTags(); clearResolutions(); }
         
         function hintFile() { const fileInput = document.getElementById('fileInput'); const file = fileInput.files[0]; if (file) { document.getElementById('fileHint').textContent = file.name; const packNameInput = document.getElementById('packName'); packNameInput.value = file.name.replace(/\.(mcpack|zip)$/i, ''); } }
         function toggleOptionsMenu(event, id) { event.stopPropagation(); const menu = document.getElementById(`options-menu-${id}`); const isVisible = menu.style.display === 'block'; document.querySelectorAll('.pack-options-menu').forEach(m => m.style.display = 'none'); if (!isVisible) { menu.style.display = 'block'; } }
         function toggleSortMenu() { const menu = document.getElementById('sortMenu'); const container = document.getElementById('sortContainer'); const isVisible = menu.style.display === 'block'; menu.style.display = isVisible ? 'none' : 'block'; container.classList.toggle('open', !isVisible); }
         function setSort(sortType, element) { event.preventDefault(); state.sortBy = sortType; state.currentPage = 1; const buttonText = document.getElementById('currentSort'); buttonText.textContent = element.textContent; document.querySelectorAll('#sortMenu a').forEach(a => a.classList.remove('active')); element.classList.add('active'); toggleSortMenu(); loadPacksOnStartup(); }
+        
+        function toggleTagMenu() { const menu = document.getElementById('modalTags'); menu.style.display = menu.style.display === 'block' ? 'none' : 'block'; }
+        function updateTagButtonText() {
+            const btnText = document.getElementById('tagSelectorBtnText');
+            if (state.modalTags.size === 0) {
+                btnText.textContent = 'Select Tags';
+            } else if (state.modalTags.size === 1) {
+                btnText.textContent = '1 Tag Selected';
+            } else {
+                btnText.textContent = `${state.modalTags.size} Tags Selected`;
+            }
+        }
         
         /* ====== UTILITY FUNCTIONS ====== */
         function capitalizeFirst(str) { if (!str) return ''; return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase(); }
@@ -694,17 +715,17 @@
 
         /* ====== INITIALIZATION ====== */
         function init() {
-            window.openModal = openModal; window.closeModal = closeModal; window.openEditModal = openEditModal; window.closeEditModal = closeEditModal; window.handleUpload = handleUpload; window.saveEdit = saveEdit; window.promptDelete = promptDelete; window.cancelDelete = cancelDelete; window.confirmDelete = confirmDelete; window.applyFilters = applyFilters; window.clearSearch = clearSearch; window.clearColors = clearColors; window.clearTags = clearTags; window.clearResolutions = clearResolutions; window.clearVersions = clearVersions; window.resetAll = resetAll; window.hintFile = hintFile; window.toggleOptionsMenu = toggleOptionsMenu; window.handleDownload = handleDownload; window.toggleSortMenu = toggleSortMenu; window.setSort = setSort; window.nextPage = nextPage; window.prevPage = prevPage;
+            window.openModal = openModal; window.closeModal = closeModal; window.openEditModal = openEditModal; window.closeEditModal = closeEditModal; window.handleUpload = handleUpload; window.saveEdit = saveEdit; window.promptDelete = promptDelete; window.cancelDelete = cancelDelete; window.confirmDelete = confirmDelete; window.applyFilters = applyFilters; window.clearSearch = clearSearch; window.clearColors = clearColors; window.clearTags = clearTags; window.clearResolutions = clearResolutions; window.resetAll = resetAll; window.hintFile = hintFile; window.toggleOptionsMenu = toggleOptionsMenu; window.handleDownload = handleDownload; window.toggleSortMenu = toggleSortMenu; window.setSort = setSort; window.nextPage = nextPage; window.prevPage = prevPage; window.toggleTagMenu = toggleTagMenu;
             
             if (document.getElementById('grid')) {
-                buildSwatches(document.getElementById('colorSwatches'), (k, el) => { state.currentPage = 1; toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
-                buildTags(document.getElementById('tagCloud'), (k, el) => { state.currentPage = 1; toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
-                buildSelectorBoxes(document.getElementById('resolutionBoxes'), (res, el) => { state.currentPage = 1; toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions, RESOLUTIONS);
-                buildSelectorBoxes(document.getElementById('versionBoxes'), (v, el) => { state.currentPage = 1; toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS);
+                buildSwatches(document.getElementById('colorSwatches'), (k, el) => { toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
+                buildTags(document.getElementById('tagCloud'), (k, el) => { toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
+                buildResolutionBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions);
                 
                 window.addEventListener('click', (e) => {
                     if (!e.target.closest('.pack-options-btn')) { document.querySelectorAll('.pack-options-menu').forEach(menu => menu.style.display = 'none'); }
                     if (!e.target.closest('.sort-container')) { document.getElementById('sortMenu').style.display = 'none'; document.getElementById('sortContainer').classList.remove('open'); }
+                    if (!e.target.closest('.tag-select-container')) { document.getElementById('modalTags').style.display = 'none'; }
                 });
                 
                 loadPacksOnStartup();
