@@ -48,7 +48,7 @@
             --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
             --shadow-card: 0 24px 70px rgba(0, 0, 0, .55);
             --shadow-glow: 0 0 40px rgba(222, 33, 42, .3);
-            --shadow-elegant: 0 10px 30px -10px rgba(222, 33, 42, .3);
+            --shadow-elegant: 0 10px 30px -10px rgba(0, 0, 0, .3);
         }
 
         * { 
@@ -72,7 +72,6 @@
             min-height: 100vh;
         }
 
-        /* Your exact background */
         body::before {
             content: '';
             position: fixed;
@@ -90,7 +89,6 @@
 
         a { color: inherit; text-decoration: none; }
 
-        /* Header - Your exact styling */
         header {
             position: sticky; top: 0; z-index: 50;
             backdrop-filter: saturate(1.2) blur(10px);
@@ -208,24 +206,6 @@
             overflow: hidden;
         }
 
-        /* Hero card shimmer effect */
-        .hero-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            animation: shimmer 3s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { left: -100%; }
-            50% { left: 100%; }
-            100% { left: 100%; }
-        }
-
         .title { 
             font-size: 3.5rem; 
             line-height: 1.05; 
@@ -288,7 +268,6 @@
             left: 100%;
         }
 
-        /* Stats section */
         .stats {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -328,7 +307,6 @@
             font-weight: 600;
         }
 
-        /* Preview section - Enhanced */
         .preview {
             padding: 24px;
             width: 100%;
@@ -361,55 +339,72 @@
             50% { opacity: 0.5; }
         }
 
-        .grid-mini { 
+        .packs-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            grid-template-columns: repeat(4, 1fr); 
             gap: 16px; 
         }
 
-        .mini { 
-            display: flex; 
-            gap: 1rem; 
-            align-items: center; 
-            background: var(--bg-2); 
-            border: 1px solid var(--border); 
-            padding: 16px; 
-            border-radius: 16px; 
-            transition: all 0.3s ease; 
-            position: relative;
-            overflow: hidden;
+        .latest-pack-card {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: all 0.2s ease;
         }
-
-        .mini::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(222, 33, 42, 0.1), transparent);
-            transition: left 0.5s;
-        }
-
-        .mini:hover::before {
-            left: 100%;
-        }
-
-        .mini:hover { 
-            transform: translateY(-5px); 
-            border-color: var(--border-strong);
+        .latest-pack-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
             box-shadow: var(--shadow-elegant);
         }
-
-        .mini .icon { 
-            height: 48px; 
-            width: 48px; 
-            border-radius: 12px; 
-            display: grid; 
-            place-items: center; 
-            background: var(--bg-0); 
+        .pack-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .pack-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            object-fit: cover;
             flex-shrink: 0;
-            border: 2px solid var(--border);
+        }
+        .pack-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .pack-stats {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            font-size: 0.9rem;
+            color: var(--muted-foreground);
+        }
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .download-button {
+            background: var(--surface-3);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 15px;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.2s ease;
+            margin-top: auto;
+        }
+        .download-button:hover {
+            border-color: var(--primary);
+            color: white;
+            background: var(--surface-1);
         }
 
         .tiny { 
@@ -417,49 +412,13 @@
             color: var(--muted); 
         }
 
-        .mini-content { 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            overflow: hidden; 
-            flex: 1;
-        }
-
-        .mini-content-title { 
-            font-weight: 800; 
-            white-space: nowrap; 
-            overflow: hidden; 
-            text-overflow: ellipsis;
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .mini-stats { 
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 16px; 
-            font-size: 0.85rem; 
-            color: var(--muted); 
-        }
-
-        .mini-stats span { 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 6px;
-            font-weight: 600;
-        }
-
-        .mini-stats i {
-            color: var(--primary);
-        }
-
-        /* Loading state */
         .loading {
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 2rem;
             color: var(--muted);
+            grid-column: 1 / -1;
         }
 
         .loading::after {
@@ -478,7 +437,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Community section */
         .community {
             margin-top: 4rem;
             text-align: center;
@@ -517,7 +475,6 @@
             font-size: 1.5rem;
         }
 
-        /* Footer */
         footer {
             margin-top: 6rem;
             padding: 3rem 0;
@@ -550,29 +507,26 @@
             color: var(--primary);
         }
 
-        /* Responsive */
         @media (max-width: 1024px) { 
             .title { font-size: 2.5rem; }
             .hero-card { padding: 40px 30px; }
+            .packs-grid { grid-template-columns: repeat(2, 1fr); }
         }
 
         @media (max-width: 768px) { 
             .nav-actions { display: none; }
-            .grid-mini { grid-template-columns: 1fr; }
             .stats { grid-template-columns: 1fr; gap: 1rem; }
             .title { font-size: 2rem; }
             .hero-card { padding: 30px 20px; }
             .btn-hero { min-width: auto; }
             .hero-cta { flex-direction: column; align-items: center; }
+            .packs-grid { grid-template-columns: 1fr; }
         }
 
         @media (max-width: 480px) {
             .container { padding: 20px 15px; }
-            .mini { flex-direction: column; text-align: center; }
-            .mini .icon { margin-bottom: 1rem; }
         }
 
-        /* Accessibility */
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
                 animation-duration: 0.01ms !important;
@@ -606,7 +560,7 @@
     <main>
         <section class="container">
             <div class="hero">
-                <div class="hero-card">
+                <div class="hero-card" style="background:none; border:none; box-shadow:none;">
                     <h1 class="title">
                         Discover & Download<br>
                         <span class="grad">Bedrock Texture Packs</span>
@@ -624,7 +578,6 @@
                             <i class="fa-solid fa-download"></i> Latest Uploads
                         </a>
                     </div>
-
                     <div class="stats">
                         <div class="stat">
                             <span class="stat-number">1.2K+</span>
@@ -641,14 +594,14 @@
                     </div>
                 </div>
 
-                <aside class="preview">
+                <aside class="preview" style="background:none; border:none; box-shadow:none; padding: 24px 0;">
                     <div class="preview-head">
                         <strong>
                             <i class="fa-solid fa-sparkles"></i>
                             Latest Uploads
                         </strong>
                     </div>
-                    <div class="grid-mini" id="latest-packs-grid">
+                    <div class="packs-grid" id="latest-packs-grid">
                         <div class="loading">Loading latest packs...</div>
                     </div>
                 </aside>
@@ -741,6 +694,7 @@
         }
 
         function formatDownloads(count) {
+            if (!count) return '0';
             if (count >= 1000000) {
                 return (count / 1000000).toFixed(1) + 'M';
             } else if (count >= 1000) {
@@ -760,92 +714,51 @@
                     .order('created_at', { ascending: false })
                     .limit(4);
 
-                if (error) {
-                    console.error("Failed to load latest packs", error);
-                    throw error;
-                }
+                if (error) throw error;
 
                 if (data && data.length > 0) {
                     grid.innerHTML = '';
                     data.forEach(pack => {
                         const color = COLORS.find(c => c.key === pack.color)?.hex || '#6b7280';
-                        const packElement = document.createElement('a');
-                        packElement.href = '/texturepacks.html';
-                        packElement.className = 'mini';
+                        
+                        let iconContent;
+                        if (pack.icon_url) {
+                            iconContent = `<img class="pack-icon" src="${pack.icon_url}" alt="${escapeHtml(pack.name)} Icon">`;
+                        } else {
+                            iconContent = `<div class="pack-icon" style="background:${color}; display:grid; place-items:center;"><i class="fa-solid fa-cube" style="color:white; font-size:1.8em;"></i></div>`;
+                        }
+
+                        const packElement = document.createElement('div');
+                        packElement.className = 'latest-pack-card';
                         packElement.innerHTML = `
-                            <div class="icon" style="background:${pack.icon_url ? 'transparent' : color}">
-                                ${pack.icon_url 
-                                    ? `<img src="${pack.icon_url}" style="width:100%; height:100%; object-fit:cover; border-radius: 10px;" alt="${escapeHtml(pack.name)}" />` 
-                                    : '<i class="fa-solid fa-cube" style="color: white; font-size: 1.5rem;"></i>'
-                                }
+                            <div class="pack-header">
+                                ${iconContent}
+                                <h4 class="pack-name">${escapeHtml(pack.name)}</h4>
                             </div>
-                            <div class="mini-content">
-                                <div class="mini-content-title">${escapeHtml(pack.name)}</div>
-                                <div class="mini-stats">
-                                    <span><i class="fa-solid fa-download"></i> ${formatDownloads(pack.download_count)}</span>
-                                    <span><i class="fa-solid fa-calendar-day"></i> ${formatDate(pack.created_at)}</span>
+                            <div class="pack-stats">
+                                <div class="stat-item">
+                                    <i class="fa-solid fa-download"></i>
+                                    <span>${formatDownloads(pack.download_count)}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fa-solid fa-calendar-day"></i>
+                                    <span>${formatDate(pack.created_at)}</span>
                                 </div>
                             </div>
+                            <a href="/texturepacks.html" class="download-button">
+                                Download Pack
+                            </a>
                         `;
                         grid.appendChild(packElement);
                     });
                 } else {
-                    grid.innerHTML = '<div class="mini"><div class="mini-content"><div class="tiny">No packs uploaded yet.</div></div></div>';
+                    grid.innerHTML = '<div class="card panel tiny" style="grid-column: 1 / -1;">No packs uploaded yet.</div>';
                 }
             } catch (err) {
-                console.error("Error loading packs:", err);
-                // Fallback to mock data
-                grid.innerHTML = '';
-                const mockPacks = [
-                    {
-                        name: 'Faithful 32x',
-                        download_count: 15420,
-                        created_at: '2024-01-15T10:00:00Z',
-                        color: 'blue'
-                    },
-                    {
-                        name: 'Vanilla Tweaks',
-                        download_count: 8930,
-                        created_at: '2024-01-14T15:30:00Z',
-                        color: 'green'
-                    },
-                    {
-                        name: 'Modern HD',
-                        download_count: 12100,
-                        created_at: '2024-01-13T09:15:00Z',
-                        color: 'purple'
-                    },
-                    {
-                        name: 'Cartoon Pack',
-                        download_count: 6750,
-                        created_at: '2024-01-12T14:20:00Z',
-                        color: 'yellow'
-                    }
-                ];
-
-                mockPacks.forEach(pack => {
-                    const color = COLORS.find(c => c.key === pack.color)?.hex || '#6b7280';
-                    const packElement = document.createElement('a');
-                    packElement.href = '/texturepacks.html';
-                    packElement.className = 'mini';
-                    packElement.innerHTML = `
-                        <div class="icon" style="background:${color}">
-                            <i class="fa-solid fa-cube" style="color: white; font-size: 1.5rem;"></i>
-                        </div>
-                        <div class="mini-content">
-                            <div class="mini-content-title">${escapeHtml(pack.name)}</div>
-                            <div class="mini-stats">
-                                <span><i class="fa-solid fa-download"></i> ${formatDownloads(pack.download_count)}</span>
-                                <span><i class="fa-solid fa-calendar-day"></i> ${formatDate(pack.created_at)}</span>
-                            </div>
-                        </div>
-                    `;
-                    grid.appendChild(packElement);
-                });
+                 grid.innerHTML = '<div class="card panel tiny" style="grid-column: 1 / -1;">Could not load packs. Please try again later.</div>';
             }
         }
-
-        // Load packs when page loads
+        
         document.addEventListener('DOMContentLoaded', loadLatestPacks);
     </script>
 </body>
