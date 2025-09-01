@@ -23,7 +23,6 @@
             background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg');
             background-size: cover; filter: blur(8px); opacity: 0.25; z-index: -1;
         }
-        /* ---- HIDE CONTENT BY DEFAULT TO PREVENT FLASH ---- */
         .main-content {
             display: none; 
             align-items: center; 
@@ -81,6 +80,7 @@
             color: var(--muted);
             text-decoration: underline;
             font-size: 0.9rem;
+            cursor: pointer;
         }
         .cancel-link a:hover {
             color: var(--text);
@@ -122,7 +122,7 @@
                 <button type="submit" id="submit-btn" class="btn primary">Complete Profile</button>
             </form>
             <p class="cancel-link">
-                <a href="/index.html">I'll do this later</a>
+                <a id="cancel-setup">Go back to sign up page</a>
             </p>
         </div>
     </div>
@@ -149,16 +149,20 @@
                 currentUser = user;
                 const { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).single();
                 if (profile && profile.username) {
-                    // This user has a complete profile and shouldn't be here. Redirect them.
                     window.location.href = '/index.html';
                 } else {
-                    // This is a new user who belongs here. Show the content.
                     mainContent.style.display = 'flex';
                 }
             } else {
-                // This user is not logged in and shouldn't be here. Redirect them.
                 window.location.href = '/login.html';
             }
+        });
+        
+        // NEW: Sign out and go back when the cancel link is clicked
+        document.getElementById('cancel-setup').addEventListener('click', async (event) => {
+            event.preventDefault();
+            await supabase.auth.signOut();
+            window.location.href = '/signup.html';
         });
 
         usernameInput.addEventListener('input', () => {
