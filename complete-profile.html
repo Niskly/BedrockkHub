@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Complete Your Profile - BedrockHub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
+            --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
+            --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            margin: 0; background-color: var(--bg-0); color: var(--text);
+            font: 500 15px/1.6 Inter, sans-serif; min-height: 100vh;
+        }
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg');
+            background-size: cover; filter: blur(8px); opacity: 0.25; z-index: -1;
+        }
+        .main-content {
+            display: flex; align-items: center; justify-content: center; padding: 2rem; min-height: 100vh;
+        }
+        .card {
+            background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px;
+            padding: 2.5rem; width: 100%; max-width: 480px; text-align: center;
+        }
+        h1 { font-size: 2rem; font-weight: 800; margin-bottom: 2rem; }
+        .form-group { margin-bottom: 1.5rem; text-align: left; }
+        label { display: block; margin-bottom: .5rem; font-weight: 600; color: var(--muted); }
+        input {
+            width: 100%; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border);
+            background: var(--bg-2); color: var(--text); font-size: 1rem;
+        }
+        .username-group { display: flex; gap: 10px; align-items: center; }
+        #availability-status { font-size: 0.9rem; font-weight: 600; }
+        .available { color: #22c55e; }
+        .taken { color: #ef4444; }
+        .avatar-upload { display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+        .avatar-preview {
+            width: 120px; height: 120px; border-radius: 50%; background: var(--bg-2);
+            border: 2px dashed var(--border); display: flex; align-items: center; justify-content: center;
+            font-size: 4rem; color: var(--muted); overflow: hidden;
+        }
+        .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+        #avatar-input { display: none; }
+        .btn {
+            padding: .75rem 1.5rem; border-radius: 12px; font-weight: 700; cursor: pointer;
+            border: 1px solid transparent; width: 100%;
+        }
+        .primary {
+            background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: white; box-shadow: var(--shadow-brand);
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <div class="card">
+            <h1>Almost there!</h1>
+            <p class="muted" style="margin-top:-1rem; margin-bottom: 2rem;">Let's set up your profile.</p>
+            <form id="profile-form">
+                <div class="avatar-upload">
+                    <div class="avatar-preview" id="avatar-preview">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <label for="avatar-input" class="btn" style="width: auto; background: var(--bg-2); border-color: var(--border);">Upload Picture</label>
+                    <input type="file" id="avatar-input" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <div class="username-group">
+                        <input type="text" id="username" required minlength="3">
+                        <span id="availability-status"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="dob">Date of Birth</label>
+                    <input type="date" id="dob" required>
+                </div>
+                <button type="submit" class="btn primary">Complete Profile</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentUser = null;
+        let debounceTimer;
+
+        // Check for user on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                currentUser = user;
+            } else {
+                window.location.href = '/login.html'; // Not logged in, redirect
+            }
+        });
+
+        // Handle PFP Preview
+        const avatarInput = document.getElementById('avatar-input');
+        const avatarPreview = document.getElementById('avatar-preview');
+        avatarInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    avatarPreview.innerHTML = `<img src="${e.target.result}" alt="Avatar Preview">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Check username availability
+        const usernameInput = document.getElementById('username');
+        const statusEl = document.getElementById('availability-status');
+        usernameInput.addEventListener('keyup', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(async () => {
+                const username = usernameInput.value;
+                if (username.length < 3) {
+                    statusEl.textContent = '';
+                    return;
+                }
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('username')
+                    .eq('username', username)
+                    .single();
+                
+                if (data) {
+                    statusEl.textContent = 'Taken';
+                    statusEl.className = 'taken';
+                } else {
+                    statusEl.textContent = 'Available';
+                    statusEl.className = 'available';
+                }
+            }, 500);
+        });
+
+        // Handle form submission
+        document.getElementById('profile-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            const username = usernameInput.value;
+            const dob = document.getElementById('dob').value;
+            const avatarFile = avatarInput.files[0];
+            let avatarUrl = null;
+
+            if (statusEl.classList.contains('taken')) {
+                alert('Username is taken!');
+                return;
+            }
+
+            // 1. Upload avatar if one is selected
+            if (avatarFile) {
+                const filePath = `${currentUser.id}/${Date.now()}`;
+                const { data, error } = await supabase.storage
+                    .from('avatars')
+                    .upload(filePath, avatarFile);
+
+                if (error) {
+                    alert('Error uploading avatar: ' + error.message);
+                    return;
+                }
+                
+                const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(data.path);
+                avatarUrl = publicUrl;
+            }
+
+            // 2. Update the user's profile
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({
+                    username: username,
+                    date_of_birth: dob,
+                    avatar_url: avatarUrl
+                })
+                .eq('id', currentUser.id);
+
+            if (updateError) {
+                alert('Error updating profile: ' + updateError.message);
+            } else {
+                alert('Profile completed successfully!');
+                window.location.href = '/index.html';
+            }
+        });
+    </script>
+</body>
+</html>
