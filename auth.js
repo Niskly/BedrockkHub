@@ -1,11 +1,11 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const navActions = document.getElementById('nav-actions');
 
-// --- Renders the UI for a logged-in user with a complete profile ---
+// This function renders the dropdown menu for a fully logged-in user
 function renderUserDropdown(profile) {
     const avatarContent = profile.avatar_url
         ? `<img src="${profile.avatar_url}" alt="User Avatar" class="nav-avatar-img">`
@@ -27,21 +27,18 @@ function renderUserDropdown(profile) {
         </div>
     `;
 
-    // Add event listeners for the new elements
     const userMenuBtn = document.querySelector('.user-menu-btn');
     const dropdownContent = document.querySelector('.dropdown-content');
-    userMenuBtn.addEventListener('click', () => {
-        dropdownContent.classList.toggle('show');
-    });
+    userMenuBtn.addEventListener('click', () => dropdownContent.classList.toggle('show'));
 
     document.getElementById('logout-btn').addEventListener('click', async (e) => {
         e.preventDefault();
         await supabase.auth.signOut();
-        window.location.reload(); // Reload to update UI
+        window.location.reload();
     });
 }
 
-// --- Renders the UI for a logged-out user ---
+// This function renders the simple "Login" button for logged-out users
 function renderLoginButton() {
     navActions.innerHTML = `
         <a class="btn ghost" href="/index.html"><i class="fa-solid fa-house"></i> Home</a>
@@ -50,42 +47,33 @@ function renderLoginButton() {
     `;
 }
 
-// --- NEW: Renders a "Complete Profile" button for new users ---
-function renderCompleteProfileButton() {
-    navActions.innerHTML = `
-        <a class="btn ghost" href="/index.html"><i class="fa-solid fa-house"></i> Home</a>
-        <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
-        <a class="btn primary" href="/complete-profile.html"><i class="fa-solid fa-user-pen"></i> Finish Setup</a>
-    `;
-}
-
-
-// --- Main function to check user state ---
+// This is the main logic that runs on every page load
 async function updateUserStatus() {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (user) {
-        // User is logged in, check their profile
-        const { data: profile, error } = await supabase
+        // A user is logged in. Let's check if their profile is complete.
+        const { data: profile } = await supabase
             .from('profiles')
-            .select('username, avatar_url')
+            .select('username')
             .eq('id', user.id)
             .single();
             
         if (profile && profile.username) {
-            // Profile is complete, render the user dropdown
+            // The profile is complete. Show the user's dropdown menu.
             renderUserDropdown(profile);
         } else {
-            // Profile is INCOMPLETE, render the "Finish Setup" button
-            // This lets the user browse the site and not get stuck in a loop
-            renderCompleteProfileButton();
+            // The profile is INCOMPLETE. This user should not be on a main page.
+            // We sign them out to prevent them from getting stuck.
+            // This ensures they will see the "Login" button next time.
+            await supabase.auth.signOut();
+            renderLoginButton();
         }
     } else {
-        // User is not logged in, render the login button
+        // No user is logged in. Show the standard "Login" button.
         renderLoginButton();
     }
 }
 
-// Run the check when the page loads
 document.addEventListener('DOMContentLoaded', updateUserStatus);
 
