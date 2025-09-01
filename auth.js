@@ -1,6 +1,6 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJI moundsvcCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const navActions = document.getElementById('nav-actions');
@@ -58,24 +58,33 @@ async function checkUserAndProfile(user) {
         .eq('id', user.id)
         .single();
 
+    if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching profile:', error);
+        renderLoginButton();
+        return;
+    }
+
     if (profile && profile.username) {
+        // This is a fully authenticated user with a complete profile.
         renderUserDropdown(profile);
     } else {
-        // This case handles new users who haven't finished their profile.
-        // It signs them out to ensure they don't get stuck in a weird state.
-        await supabase.auth.signOut();
-        renderLoginButton();
+        // This is a new user who has logged in but not completed their profile.
+        // We must redirect them to the completion page to continue.
+        const authPages = ['/login.html', '/signup.html', '/verify.html', '/complete-profile.html'];
+        if (!authPages.includes(window.location.pathname)) {
+            window.location.href = '/complete-profile.html';
+        }
     }
 }
 
-// ** THE NEW, ROBUST WAY TO HANDLE AUTHENTICATION **
-// This listener runs once on page load, and again every time the user logs in or out.
+// ** THE CORRECTED, ROBUST WAY TO HANDLE AUTHENTICATION **
 supabase.auth.onAuthStateChange((event, session) => {
-    if (session) {
-        // User is logged in.
+    // This listener handles all auth events: SIGNED_IN, SIGNED_OUT, INITIAL_SESSION
+    if (session && session.user) {
+        // An active session exists, check if the profile is complete.
         checkUserAndProfile(session.user);
     } else {
-        // User is logged out.
+        // No session, the user is logged out.
         renderLoginButton();
     }
 });
