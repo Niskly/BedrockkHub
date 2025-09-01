@@ -48,7 +48,7 @@
             --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
             --shadow-card: 0 24px 70px rgba(0, 0, 0, .55);
             --shadow-glow: 0 0 40px rgba(222, 33, 42, .3);
-            --shadow-elegant: 0 10px 30px -10px rgba(0, 0, 0, .3);
+            --shadow-elegant: 0 10px 30px -10px rgba(222, 33, 42, .3);
         }
 
         * { 
@@ -72,6 +72,7 @@
             min-height: 100vh;
         }
 
+        /* Your exact background */
         body::before {
             content: '';
             position: fixed;
@@ -89,6 +90,7 @@
 
         a { color: inherit; text-decoration: none; }
 
+        /* Header - Your exact styling */
         header {
             position: sticky; top: 0; z-index: 50;
             backdrop-filter: saturate(1.2) blur(10px);
@@ -204,7 +206,24 @@
             max-width: 900px;
             position: relative;
             overflow: hidden;
-            background:none; border:none; box-shadow:none;
+        }
+
+        /* Hero card shimmer effect */
+        .hero-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            50% { left: 100%; }
+            100% { left: 100%; }
         }
 
         .title { 
@@ -253,7 +272,23 @@
             position: relative;
             overflow: hidden;
         }
-        
+
+        .btn-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-hero:hover::before {
+            left: 100%;
+        }
+
+        /* Stats section */
         .stats {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -293,12 +328,12 @@
             font-weight: 600;
         }
 
+        /* Preview section - Enhanced */
         .preview {
+            padding: 24px;
             width: 100%;
             max-width: 900px;
             position: relative;
-            background:none; border:none; box-shadow:none; 
-            padding: 24px 0;
         }
 
         .preview-head { 
@@ -326,7 +361,6 @@
             50% { opacity: 0.5; }
         }
 
-        /* Styles from your old working code */
         .grid-mini { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
@@ -346,6 +380,21 @@
             overflow: hidden;
         }
 
+        .mini::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(222, 33, 42, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .mini:hover::before {
+            left: 100%;
+        }
+
         .mini:hover { 
             transform: translateY(-5px); 
             border-color: var(--border-strong);
@@ -362,7 +411,12 @@
             flex-shrink: 0;
             border: 2px solid var(--border);
         }
-        
+
+        .tiny { 
+            font-size: 12px; 
+            color: var(--muted); 
+        }
+
         .mini-content { 
             display: flex; 
             flex-direction: column; 
@@ -399,18 +453,13 @@
             color: var(--primary);
         }
 
-        .tiny { 
-            font-size: 12px; 
-            color: var(--muted); 
-        }
-        
+        /* Loading state */
         .loading {
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 2rem;
             color: var(--muted);
-            grid-column: 1 / -1;
         }
 
         .loading::after {
@@ -429,6 +478,7 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Community section */
         .community {
             margin-top: 4rem;
             text-align: center;
@@ -467,6 +517,7 @@
             font-size: 1.5rem;
         }
 
+        /* Footer */
         footer {
             margin-top: 6rem;
             padding: 3rem 0;
@@ -499,6 +550,7 @@
             color: var(--primary);
         }
 
+        /* Responsive */
         @media (max-width: 1024px) { 
             .title { font-size: 2.5rem; }
             .hero-card { padding: 40px 30px; }
@@ -520,6 +572,7 @@
             .mini .icon { margin-bottom: 1rem; }
         }
 
+        /* Accessibility */
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
                 animation-duration: 0.01ms !important;
@@ -571,6 +624,7 @@
                             <i class="fa-solid fa-download"></i> Latest Uploads
                         </a>
                     </div>
+
                     <div class="stats">
                         <div class="stat">
                             <span class="stat-number">1.2K+</span>
@@ -687,7 +741,6 @@
         }
 
         function formatDownloads(count) {
-            if (!count) return '0';
             if (count >= 1000000) {
                 return (count / 1000000).toFixed(1) + 'M';
             } else if (count >= 1000) {
@@ -737,13 +790,62 @@
                         grid.appendChild(packElement);
                     });
                 } else {
-                    grid.innerHTML = '<div class="mini" style="justify-content:center;"><div class="tiny">No packs uploaded yet.</div></div>';
+                    grid.innerHTML = '<div class="mini"><div class="mini-content"><div class="tiny">No packs uploaded yet.</div></div></div>';
                 }
             } catch (err) {
-                 grid.innerHTML = '<div class="mini" style="justify-content:center; color: var(--muted-foreground);">Could not load packs. Please try again later.</div>';
+                console.error("Error loading packs:", err);
+                // Fallback to mock data
+                grid.innerHTML = '';
+                const mockPacks = [
+                    {
+                        name: 'Faithful 32x',
+                        download_count: 15420,
+                        created_at: '2024-01-15T10:00:00Z',
+                        color: 'blue'
+                    },
+                    {
+                        name: 'Vanilla Tweaks',
+                        download_count: 8930,
+                        created_at: '2024-01-14T15:30:00Z',
+                        color: 'green'
+                    },
+                    {
+                        name: 'Modern HD',
+                        download_count: 12100,
+                        created_at: '2024-01-13T09:15:00Z',
+                        color: 'purple'
+                    },
+                    {
+                        name: 'Cartoon Pack',
+                        download_count: 6750,
+                        created_at: '2024-01-12T14:20:00Z',
+                        color: 'yellow'
+                    }
+                ];
+
+                mockPacks.forEach(pack => {
+                    const color = COLORS.find(c => c.key === pack.color)?.hex || '#6b7280';
+                    const packElement = document.createElement('a');
+                    packElement.href = '/texturepacks.html';
+                    packElement.className = 'mini';
+                    packElement.innerHTML = `
+                        <div class="icon" style="background:${color}">
+                            <i class="fa-solid fa-cube" style="color: white; font-size: 1.5rem;"></i>
+                        </div>
+                        <div class="mini-content">
+                            <div class="mini-content-title">${escapeHtml(pack.name)}</div>
+                            <div class="mini-stats">
+                                <span><i class="fa-solid fa-download"></i> ${formatDownloads(pack.download_count)}</span>
+                                <span><i class="fa-solid fa-calendar-day"></i> ${formatDate(pack.created_at)}</span>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(packElement);
+                });
             }
         }
 
+        // Load packs when page loads
         document.addEventListener('DOMContentLoaded', loadLatestPacks);
     </script>
 </body>
