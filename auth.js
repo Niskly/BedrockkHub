@@ -5,7 +5,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const navActions = document.getElementById('nav-actions');
 
-// --- Renders the UI for a logged-in user ---
+// --- Renders the UI for a logged-in user with a complete profile ---
 function renderUserDropdown(profile) {
     const avatarContent = profile.avatar_url
         ? `<img src="${profile.avatar_url}" alt="User Avatar" class="nav-avatar-img">`
@@ -13,7 +13,7 @@ function renderUserDropdown(profile) {
 
     navActions.innerHTML = `
         <a class="btn ghost" href="/"><i class="fa-solid fa-house"></i> Home</a>
-        <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
+        <a class="btn ghost" href="/texturepacks"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
         <div class="user-dropdown">
             <button class="user-menu-btn">
                 ${avatarContent}
@@ -21,23 +21,17 @@ function renderUserDropdown(profile) {
                 <i class="fa-solid fa-chevron-down"></i>
             </button>
             <div class="dropdown-content">
-                <a href="/settings.html"><i class="fa-solid fa-cog"></i> Settings</a>
+                <a href="/settings"><i class="fa-solid fa-cog"></i> Settings</a>
                 <a href="#" id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
             </div>
         </div>
     `;
-
-    // Add event listeners for the new elements
     const userMenuBtn = document.querySelector('.user-menu-btn');
     const dropdownContent = document.querySelector('.dropdown-content');
-    userMenuBtn.addEventListener('click', () => {
-        dropdownContent.classList.toggle('show');
-    });
-
+    userMenuBtn.addEventListener('click', () => dropdownContent.classList.toggle('show'));
     document.getElementById('logout-btn').addEventListener('click', async (e) => {
         e.preventDefault();
         await supabase.auth.signOut();
-        window.location.href = '/login.html'; // Go to login page after logout
     });
 }
 
@@ -45,46 +39,35 @@ function renderUserDropdown(profile) {
 function renderLoginButton() {
     navActions.innerHTML = `
         <a class="btn ghost" href="/"><i class="fa-solid fa-house"></i> Home</a>
-        <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
-        <a class="btn primary" href="/login.html"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+        <a class="btn ghost" href="/texturepacks"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
+        <a class="btn primary" href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
     `;
 }
 
-// --- Main function to check user state ---
-async function checkUserAndProfile(user) {
-    const { data: profile, error } = await supabase
+// --- Main function to check the user's profile for the UI ---
+async function checkUserProfileForUI(user) {
+    const { data: profile, error } } = await supabase
         .from('profiles')
         .select('username, avatar_url')
         .eq('id', user.id)
         .single();
-
-    if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching profile:', error);
-        renderLoginButton();
-        return;
-    }
-
+    
+    // This script only cares about displaying the UI.
+    // The login page now handles all redirects.
     if (profile && profile.username) {
-        // This is a fully authenticated user with a complete profile.
         renderUserDropdown(profile);
     } else {
-        // This is a new user who has logged in but not completed their profile.
-        // We must redirect them to the completion page to continue.
-        const authPages = ['/login.html', '/signup.html', '/verify.html', '/complete-profile.html'];
-        if (!authPages.includes(window.location.pathname)) {
-            window.location.href = '/complete-profile.html';
-        }
+        // If the profile is incomplete, the user shouldn't be on this page.
+        // The safest action is to show the login button.
+        renderLoginButton();
     }
 }
 
-// ** THE CORRECTED, ROBUST WAY TO HANDLE AUTHENTICATION **
+// This listener correctly updates the UI without causing redirects.
 supabase.auth.onAuthStateChange((event, session) => {
-    // This listener handles all auth events: SIGNED_IN, SIGNED_OUT, INITIAL_SESSION
     if (session && session.user) {
-        // An active session exists, check if the profile is complete.
-        checkUserAndProfile(session.user);
+        checkUserProfileForUI(session.user);
     } else {
-        // No session, the user is logged out.
         renderLoginButton();
     }
 });
