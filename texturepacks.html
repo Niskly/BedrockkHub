@@ -153,12 +153,12 @@
         .pagination-btn:hover { border-color: white; }
         fieldset { border: none; padding: 0; margin: 0; }
         #uploadFormFieldset:disabled { opacity: 0.5; pointer-events: none; }
-        .tag-select-container { position: relative; }
-        .tag-select-btn { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: .7rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text); }
-        .tag-select-menu { display: none; position: absolute; top: 100%; left: 0; width: 100%; z-index: 70; background: var(--bg-1); border: 1px solid var(--border); border-radius: 10px; margin-top: 6px; max-height: 150px; overflow-y: auto; }
-        .tag-select-menu label { display: block; padding: 8px 12px; cursor: pointer; text-transform: capitalize; }
-        .tag-select-menu label:hover { background-color: var(--brand-1); }
-        .tag-select-menu input { margin-right: 10px; }
+        #tagSelectModal .modal-body { display: flex; flex-wrap: wrap; gap: 10px; padding: 20px; }
+        #tagSelectModal .tag-checkbox { display: flex; align-items: center; gap: 8px; background: var(--bg-0); padding: 8px 12px; border-radius: 99px; border: 1px solid var(--border); cursor: pointer; }
+        #tagSelectModal input[type="checkbox"] { display: none; }
+        #tagSelectModal input[type="checkbox"]:checked + label { background-color: var(--brand-1); border-color: var(--brand-2); }
+        #tagSelectModal label { cursor: pointer; text-transform: capitalize; }
+        
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         
         @media (max-width:1024px) { .layout { grid-template-columns: 1fr; } .sidebar { position: static; } .packs { grid-template-columns: repeat(2, 1fr); } }
@@ -262,13 +262,10 @@
                                 </div>
                                 <div style="margin-top: 14px;">
                                     <label class="tiny">Tags</label>
-                                    <div class="tag-select-container">
-                                        <button type="button" id="tagSelectorBtn" class="tag-select-btn" onclick="toggleTagMenu()">
-                                            <span id="tagSelectorBtnText">Select Tags</span>
-                                            <i class="fa-solid fa-chevron-down fa-xs"></i>
-                                        </button>
-                                        <div class="tag-select-menu" id="modalTags"></div>
-                                    </div>
+                                    <button type="button" class="btn ghost" style="width:100%; justify-content: space-between;" onclick="openTagModal()">
+                                        <span id="tagSelectorBtnText">Select Tags</span>
+                                        <i class="fa-solid fa-chevron-down fa-xs"></i>
+                                    </button>
                                 </div>
                             </div>
                             
@@ -288,6 +285,21 @@
             </div>
         </div>
     </div>
+    
+    <div id="tag-select-backdrop" class="backdrop">
+        <div class="modal card" style="max-width: 500px;" id="tagSelectModal">
+            <div class="panel">
+                <strong>Select Tags</strong>
+            </div>
+            <div class="modal-body">
+                </div>
+            <div class="modal-footer center-actions">
+                <button type="button" class="btn sm ghost" onclick="closeTagModal(false)">Cancel</button>
+                <button type="button" class="btn primary" onclick="closeTagModal(true)">Done</button>
+            </div>
+        </div>
+    </div>
+
     <div id="editBackdrop" class="backdrop">
         <div class="modal card">
             <div class="panel">
@@ -314,10 +326,6 @@
                             <div id="editModalResolutions" class="resolutions"></div>
                         </div>
                          <div style="grid-column: span 1;">
-                            <label class="tiny">Version</label>
-                            <div id="editModalVersions" class="resolutions"></div>
-                        </div>
-                        <div style="grid-column: span 2;">
                             <label class="tiny">Tags</label>
                             <div id="editModalTags" class="tags"></div>
                         </div>
@@ -363,8 +371,9 @@
         const RESOLUTIONS = ['8x', '16x', '32x', '64x'];
         const packsPerPage = 9;
         let packs = [];
-        const state = { q: '', colors: new Set(), tags: new Set(), resolutions: new Set(), currentPage: 1, modalColor: null, modalTags: new Set(), modalResolution: null, sortBy: 'latest' };
+        const state = { q: '', colors: new Set(), tags: new Set(), resolutions: new Set(), currentPage: 1, modalColor: null, modalTags: new Set(), modalResolution: null, editColor: null, editTags: new Set(), editResolution: null, sortBy: 'latest' };
         let currentEditId = null;
+        let tempModalTags = new Set();
 
         /* ====== API & DATA FUNCTIONS ====== */
         async function loadPacksOnStartup() {
@@ -416,14 +425,19 @@
                 const contents = await zip.loadAsync(packFile);
                 
                 let iconFile = null;
-                const bedrockIconMatches = contents.file(/pack_icon\.png$/i);
-                if (bedrockIconMatches.length > 0) {
-                    iconFile = bedrockIconMatches[0];
-                } else {
-                    const javaIconMatches = contents.file(/pack\.png$/i);
-                    if (javaIconMatches.length > 0) {
-                        iconFile = javaIconMatches[0];
+                contents.forEach((relativePath, file) => {
+                    const lowerCaseName = relativePath.toLowerCase();
+                    if (lowerCaseName.endsWith('pack_icon.png')) {
+                        iconFile = file;
                     }
+                });
+                if (!iconFile) {
+                     contents.forEach((relativePath, file) => {
+                        const lowerCaseName = relativePath.toLowerCase();
+                        if (lowerCaseName.endsWith('pack.png')) {
+                            iconFile = file;
+                        }
+                    });
                 }
 
                 if (iconFile) {
@@ -621,6 +635,7 @@
             const card = document.createElement('div');
             card.className = 'card pack';
             const { data } = supabase.storage.from('packs').getPublicUrl(p.filename);
+
             const extension = p.filename.split('.').pop();
             const downloadName = `${p.name}.${extension}`;
 
@@ -638,7 +653,7 @@
                     ${thumbContent}
                     <button class="pack-options-btn" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                     <div class="pack-options-menu" id="options-menu-${p.id}">
-                        <a href="${data.publicUrl}" onclick="handleDownload(event, ${p.id}, '${data.publicUrl}', '${escapeHtml(downloadName)}')"><i class="fa-solid fa-download"></i> Download</a>
+                        <a href="${data.publicUrl}" download="${escapeHtml(downloadName)}" onclick="handleDownload(event, ${p.id}, this.href, '${escapeHtml(downloadName)}')"><i class="fa-solid fa-download"></i> Download</a>
                         <a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>
                     </div>
                 </div>
@@ -663,17 +678,24 @@
         function buildModalTags(container, clickHandler, activeSet) {
             container.innerHTML = '';
             TAGS.forEach(t => {
-                const label = document.createElement('label');
+                const div = document.createElement('div');
+                div.className = 'tag-checkbox';
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.value = t;
+                checkbox.id = `tag-${t}`;
                 if (activeSet?.has(t)) {
                     checkbox.checked = true;
                 }
-                checkbox.onchange = () => clickHandler(t, checkbox);
-                label.appendChild(checkbox);
-                label.appendChild(document.createTextNode(capitalizeFirst(t)));
-                container.appendChild(label);
+                checkbox.onchange = () => clickHandler(t);
+                
+                const label = document.createElement('label');
+                label.htmlFor = `tag-${t}`;
+                label.textContent = capitalizeFirst(t);
+
+                div.appendChild(checkbox);
+                div.appendChild(label);
+                container.appendChild(div);
             });
         }
 
@@ -692,9 +714,42 @@
         function buildSelectorBoxes(container, clickHandler, activeState, options) { container.innerHTML = ''; const isMultiSelect = activeState instanceof Set; options.forEach(opt => { const box = document.createElement('button'); box.type = 'button'; const isActive = isMultiSelect ? activeState.has(opt) : (activeState === opt); box.className = 'res-box' + (isActive ? ' active' : ''); box.textContent = opt; box.onclick = () => clickHandler(opt, box); container.appendChild(box); }); }
 
         /* ====== EVENT HANDLERS & MODAL CONTROLS ====== */
-        function openModal() { document.getElementById('backdrop').style.display = 'flex'; state.modalColor = null; state.modalResolution = null; state.modalTags = new Set(); buildSwatches(document.getElementById('modalSwatches'), (k, el) => { state.modalColor = k; highlightOne(el.parentElement, el); }, null); buildModalTags(document.getElementById('modalTags'), (k, el) => { toggleSet(state.modalTags, k); updateTagButtonText(); }, state.modalTags); buildResolutionBoxes(document.getElementById('modalResolutions'), (res, el) => { state.modalResolution = res; highlightOne(el.parentElement, el); }, null); updateTagButtonText(); }
-        function closeModal() { document.getElementById('backdrop').style.display = 'none'; document.getElementById('uploadForm').reset(); document.getElementById('fileHint').textContent = '.mcpack or .zip files only'; }
-        function openEditModal(id) { /* (edit modal logic unchanged) */ }
+        function openModal() { document.getElementById('backdrop').style.display = 'flex'; state.modalColor = null; state.modalResolution = null; state.modalTags = new Set(); buildSwatches(document.getElementById('modalSwatches'), (k, el) => { state.modalColor = k; highlightOne(el.parentElement, el); }, null); buildResolutionBoxes(document.getElementById('modalResolutions'), (res, el) => { state.modalResolution = res; highlightOne(el.parentElement, el); }, null); updateTagButtonText(); }
+        function closeModal() { document.getElementById('backdrop').style.display = 'none'; document.getElementById('uploadForm').reset(); }
+        
+        function openTagModal() { 
+            tempModalTags = new Set(state.modalTags); // backup current tags
+            buildModalTags(document.querySelector('#tagSelectModal .modal-body'), (tag) => {
+                toggleSet(tempModalTags, tag);
+            }, tempModalTags);
+            document.getElementById('tag-select-backdrop').style.display = 'flex';
+        }
+
+        function closeTagModal(shouldSave) {
+            if (shouldSave) {
+                state.modalTags = new Set(tempModalTags);
+                updateTagButtonText();
+            }
+            document.getElementById('tag-select-backdrop').style.display = 'none';
+        }
+
+        function openEditModal(id) { 
+            const p = packs.find(x => x.id === id);
+            if (!p) return alert('Pack not found');
+            currentEditId = id;
+            document.getElementById('editId').value = id;
+            document.getElementById('editPackName').value = p.name || '';
+            document.getElementById('editPackDescription').value = p.description || '';
+            state.editColor = p.color || null;
+            state.editTags = new Set(p.tags || []);
+            state.editResolution = p.resolution || null;
+            
+            buildSwatches(document.getElementById('editModalSwatches'), (k, el) => { state.editColor = k; highlightOne(el.parentElement, el); }, new Set([state.editColor]));
+            buildSidebarTags(document.getElementById('editModalTags'), (k, el) => { toggleSet(state.editTags, k); el.classList.toggle('active'); }, state.editTags);
+            buildResolutionBoxes(document.getElementById('editModalResolutions'), (res, el) => { state.editResolution = res; highlightOne(el.parentElement, el); }, state.editResolution);
+            
+            document.getElementById('editBackdrop').style.display = 'flex';
+        }
         function closeEditModal() { currentEditId = null; document.getElementById('editBackdrop').style.display = 'none'; }
         function promptDelete() { if (!currentEditId) return; document.getElementById('confirmDeleteBackdrop').style.display = 'flex'; }
         function cancelDelete() { document.getElementById('confirmDeleteBackdrop').style.display = 'none'; }
@@ -711,7 +766,6 @@
         function toggleSortMenu() { const menu = document.getElementById('sortMenu'); const container = document.getElementById('sortContainer'); const isVisible = menu.style.display === 'block'; menu.style.display = isVisible ? 'none' : 'block'; container.classList.toggle('open', !isVisible); }
         function setSort(sortType, element) { event.preventDefault(); state.sortBy = sortType; state.currentPage = 1; const buttonText = document.getElementById('currentSort'); buttonText.textContent = element.textContent; document.querySelectorAll('#sortMenu a').forEach(a => a.classList.remove('active')); element.classList.add('active'); toggleSortMenu(); loadPacksOnStartup(); }
         
-        function toggleTagMenu() { const menu = document.getElementById('modalTags'); menu.style.display = menu.style.display === 'block' ? 'none' : 'block'; }
         function updateTagButtonText() {
             const btnText = document.getElementById('tagSelectorBtnText');
             if (state.modalTags.size === 0) {
@@ -734,7 +788,7 @@
 
         /* ====== INITIALIZATION ====== */
         function init() {
-            window.openModal = openModal; window.closeModal = closeModal; window.openEditModal = openEditModal; window.closeEditModal = closeEditModal; window.handleUpload = handleUpload; window.saveEdit = saveEdit; window.promptDelete = promptDelete; window.cancelDelete = cancelDelete; window.confirmDelete = confirmDelete; window.applyFilters = applyFilters; window.clearSearch = clearSearch; window.clearColors = clearColors; window.clearTags = clearTags; window.clearResolutions = clearResolutions; window.resetAll = resetAll; window.hintFile = hintFile; window.toggleOptionsMenu = toggleOptionsMenu; window.handleDownload = handleDownload; window.toggleSortMenu = toggleSortMenu; window.setSort = setSort; window.nextPage = nextPage; window.prevPage = prevPage; window.toggleTagMenu = toggleTagMenu;
+            window.openModal = openModal; window.closeModal = closeModal; window.openTagModal = openTagModal; window.closeTagModal = closeTagModal; window.openEditModal = openEditModal; window.closeEditModal = closeEditModal; window.handleUpload = handleUpload; window.saveEdit = saveEdit; window.promptDelete = promptDelete; window.cancelDelete = cancelDelete; window.confirmDelete = confirmDelete; window.applyFilters = applyFilters; window.clearSearch = clearSearch; window.clearColors = clearColors; window.clearTags = clearTags; window.clearResolutions = clearResolutions; window.resetAll = resetAll; window.hintFile = hintFile; window.toggleOptionsMenu = toggleOptionsMenu; window.handleDownload = handleDownload; window.toggleSortMenu = toggleSortMenu; window.setSort = setSort; window.nextPage = nextPage; window.prevPage = prevPage;
             
             if (document.getElementById('grid')) {
                 buildSwatches(document.getElementById('colorSwatches'), (k, el) => { toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
@@ -744,7 +798,6 @@
                 window.addEventListener('click', (e) => {
                     if (!e.target.closest('.pack-options-btn')) { document.querySelectorAll('.pack-options-menu').forEach(menu => menu.style.display = 'none'); }
                     if (!e.target.closest('.sort-container')) { document.getElementById('sortMenu').style.display = 'none'; document.getElementById('sortContainer').classList.remove('open'); }
-                    if (!e.target.closest('.tag-select-container')) { document.getElementById('modalTags').style.display = 'none'; }
                 });
                 
                 loadPacksOnStartup();
