@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -492,6 +491,34 @@
             color: var(--primary);
         }
 
+        /* NEW STYLES for the User Dropdown Menu */
+        .user-dropdown { position: relative; display: inline-block; }
+        .user-menu-btn {
+            background: var(--bg-2); border: 1px solid var(--border); color: var(--text);
+            padding: 8px 12px; border-radius: 12px; display: flex; align-items: center;
+            gap: 10px; cursor: pointer; font-weight: 600;
+        }
+        .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+        .nav-avatar-default {
+            width: 28px; height: 28px; border-radius: 50%; background: var(--bg-0);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .user-menu-btn .fa-chevron-down { font-size: 0.8em; transition: transform 0.2s; }
+        .user-menu-btn:hover { border-color: var(--border-strong); }
+        .dropdown-content {
+            display: none; position: absolute; right: 0; top: 110%;
+            background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px;
+            min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10;
+            overflow: hidden;
+        }
+        .dropdown-content.show { display: block; }
+        .dropdown-content a {
+            color: var(--muted); padding: 12px 16px; text-decoration: none;
+            display: flex; align-items: center; gap: 10px; font-weight: 600;
+        }
+        .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
+
+
         @media (max-width: 1024px) { 
             .title { font-size: 2.5rem; }
             .hero-content { padding: 40px 30px; }
@@ -499,7 +526,7 @@
         }
 
         @media (max-width: 768px) { 
-            .nav-actions { display: none; }
+            .nav-actions { display: none; } /* Hide old nav actions on mobile, auth.js will handle it */
             .stats { grid-template-columns: 1fr; gap: 1rem; }
             .title { font-size: 2rem; }
             .hero-content { padding: 30px 20px; }
@@ -534,11 +561,8 @@
                     <div class="tiny">Minecraft Bedrock • community</div>
                 </div>
             </a>
-            <div class="nav-actions">
-                <a class="btn ghost" href="/"><i class="fa-solid fa-house"></i> Home</a>
-                <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
-                <a class="btn primary" href="/login.html"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
-</div>
+            <!-- This div is now a placeholder filled by auth.js -->
+            <div class="nav-actions" id="nav-actions"></div>
         </div>
     </header>
 
@@ -601,7 +625,7 @@
         </section>
 
         <section class="container community">
-             <div style="padding: 3rem;">
+           <div style="padding: 3rem;">
                 <h2 class="glowing-title">
                     <span class="grad">Join the BedrockHub Community</span>
                 </h2>
@@ -765,6 +789,8 @@
 
         init();
     </script>
+    
+    <!-- NEW SCRIPT for Authentication -->
+    <script type="module" src="/auth.js"></script>
 </body>
-
 </html>
