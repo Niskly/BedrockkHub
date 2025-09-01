@@ -156,9 +156,9 @@
         #tagSelectModal .modal-body { display: flex; flex-wrap: wrap; gap: 10px; padding: 20px; }
         #tagSelectModal .tag-checkbox { display: flex; align-items: center; gap: 8px; background: var(--bg-0); padding: 8px 12px; border-radius: 99px; border: 1px solid var(--border); cursor: pointer; }
         #tagSelectModal input[type="checkbox"] { display: none; }
-        #tagSelectModal input[type="checkbox"]:checked + label { background-color: var(--brand-1); border-color: var(--brand-2); }
+        #tagSelectModal input[type="checkbox"]:checked + label { color: var(--brand-1); font-weight: 800; }
         #tagSelectModal label { cursor: pointer; text-transform: capitalize; }
-        
+
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         
         @media (max-width:1024px) { .layout { grid-template-columns: 1fr; } .sidebar { position: static; } .packs { grid-template-columns: repeat(2, 1fr); } }
@@ -327,7 +327,10 @@
                         </div>
                          <div style="grid-column: span 1;">
                             <label class="tiny">Tags</label>
-                            <div id="editModalTags" class="tags"></div>
+                             <button type="button" class="btn ghost" style="width:100%; justify-content: space-between;" onclick="openEditTagModal()">
+                                <span id="editTagSelectorBtnText">Select Tags</span>
+                                <i class="fa-solid fa-chevron-down fa-xs"></i>
+                            </button>
                         </div>
                         <div style="grid-column: span 2;"><label class="tiny">Description (optional)</label>
                             <textarea id="editPackDescription" placeholder="A short description of the pack..."></textarea>
@@ -374,6 +377,7 @@
         const state = { q: '', colors: new Set(), tags: new Set(), resolutions: new Set(), currentPage: 1, modalColor: null, modalTags: new Set(), modalResolution: null, editColor: null, editTags: new Set(), editResolution: null, sortBy: 'latest' };
         let currentEditId = null;
         let tempModalTags = new Set();
+        let isEditingTags = false;
 
         /* ====== API & DATA FUNCTIONS ====== */
         async function loadPacksOnStartup() {
@@ -536,7 +540,6 @@
             } catch (err) {
                 console.error("Failed to update download count:", err);
             } finally {
-                // Fetch the file as a blob to enable custom naming
                 fetch(downloadUrl)
                     .then(response => response.blob())
                     .then(blob => {
@@ -635,7 +638,6 @@
             const card = document.createElement('div');
             card.className = 'card pack';
             const { data } = supabase.storage.from('packs').getPublicUrl(p.filename);
-
             const extension = p.filename.split('.').pop();
             const downloadName = `${p.name}.${extension}`;
 
@@ -653,7 +655,7 @@
                     ${thumbContent}
                     <button class="pack-options-btn" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                     <div class="pack-options-menu" id="options-menu-${p.id}">
-                        <a href="${data.publicUrl}" download="${escapeHtml(downloadName)}" onclick="handleDownload(event, ${p.id}, this.href, '${escapeHtml(downloadName)}')"><i class="fa-solid fa-download"></i> Download</a>
+                        <a href="${data.publicUrl}" onclick="handleDownload(event, ${p.id}, '${data.publicUrl}', '${escapeHtml(downloadName)}')"><i class="fa-solid fa-download"></i> Download</a>
                         <a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>
                     </div>
                 </div>
@@ -683,14 +685,14 @@
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.value = t;
-                checkbox.id = `tag-${t}`;
+                checkbox.id = `modal-tag-${t}`;
                 if (activeSet?.has(t)) {
                     checkbox.checked = true;
                 }
                 checkbox.onchange = () => clickHandler(t);
                 
                 const label = document.createElement('label');
-                label.htmlFor = `tag-${t}`;
+                label.htmlFor = `modal-tag-${t}`;
                 label.textContent = capitalizeFirst(t);
 
                 div.appendChild(checkbox);
@@ -715,10 +717,20 @@
 
         /* ====== EVENT HANDLERS & MODAL CONTROLS ====== */
         function openModal() { document.getElementById('backdrop').style.display = 'flex'; state.modalColor = null; state.modalResolution = null; state.modalTags = new Set(); buildSwatches(document.getElementById('modalSwatches'), (k, el) => { state.modalColor = k; highlightOne(el.parentElement, el); }, null); buildResolutionBoxes(document.getElementById('modalResolutions'), (res, el) => { state.modalResolution = res; highlightOne(el.parentElement, el); }, null); updateTagButtonText(); }
-        function closeModal() { document.getElementById('backdrop').style.display = 'none'; document.getElementById('uploadForm').reset(); }
+        function closeModal() { document.getElementById('backdrop').style.display = 'none'; document.getElementById('uploadForm').reset(); document.getElementById('fileHint').textContent = '.mcpack or .zip files only'; }
         
         function openTagModal() { 
-            tempModalTags = new Set(state.modalTags); // backup current tags
+            isEditingTags = false;
+            tempModalTags = new Set(state.modalTags);
+            buildModalTags(document.querySelector('#tagSelectModal .modal-body'), (tag) => {
+                toggleSet(tempModalTags, tag);
+            }, tempModalTags);
+            document.getElementById('tag-select-backdrop').style.display = 'flex';
+        }
+
+        function openEditTagModal() { 
+            isEditingTags = true;
+            tempModalTags = new Set(state.editTags);
             buildModalTags(document.querySelector('#tagSelectModal .modal-body'), (tag) => {
                 toggleSet(tempModalTags, tag);
             }, tempModalTags);
@@ -727,8 +739,13 @@
 
         function closeTagModal(shouldSave) {
             if (shouldSave) {
-                state.modalTags = new Set(tempModalTags);
-                updateTagButtonText();
+                if (isEditingTags) {
+                    state.editTags = new Set(tempModalTags);
+                    updateEditTagButtonText();
+                } else {
+                    state.modalTags = new Set(tempModalTags);
+                    updateTagButtonText();
+                }
             }
             document.getElementById('tag-select-backdrop').style.display = 'none';
         }
@@ -745,7 +762,7 @@
             state.editResolution = p.resolution || null;
             
             buildSwatches(document.getElementById('editModalSwatches'), (k, el) => { state.editColor = k; highlightOne(el.parentElement, el); }, new Set([state.editColor]));
-            buildSidebarTags(document.getElementById('editModalTags'), (k, el) => { toggleSet(state.editTags, k); el.classList.toggle('active'); }, state.editTags);
+            updateEditTagButtonText();
             buildResolutionBoxes(document.getElementById('editModalResolutions'), (res, el) => { state.editResolution = res; highlightOne(el.parentElement, el); }, state.editResolution);
             
             document.getElementById('editBackdrop').style.display = 'flex';
@@ -776,6 +793,16 @@
                 btnText.textContent = `${state.modalTags.size} Tags Selected`;
             }
         }
+        function updateEditTagButtonText() {
+            const btnText = document.getElementById('editTagSelectorBtnText');
+            if (state.editTags.size === 0) {
+                btnText.textContent = 'Select Tags';
+            } else if (state.editTags.size === 1) {
+                btnText.textContent = '1 Tag Selected';
+            } else {
+                btnText.textContent = `${state.editTags.size} Tags Selected`;
+            }
+        }
         
         /* ====== UTILITY FUNCTIONS ====== */
         function capitalizeFirst(str) { if (!str) return ''; return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase(); }
@@ -788,7 +815,7 @@
 
         /* ====== INITIALIZATION ====== */
         function init() {
-            window.openModal = openModal; window.closeModal = closeModal; window.openTagModal = openTagModal; window.closeTagModal = closeTagModal; window.openEditModal = openEditModal; window.closeEditModal = closeEditModal; window.handleUpload = handleUpload; window.saveEdit = saveEdit; window.promptDelete = promptDelete; window.cancelDelete = cancelDelete; window.confirmDelete = confirmDelete; window.applyFilters = applyFilters; window.clearSearch = clearSearch; window.clearColors = clearColors; window.clearTags = clearTags; window.clearResolutions = clearResolutions; window.resetAll = resetAll; window.hintFile = hintFile; window.toggleOptionsMenu = toggleOptionsMenu; window.handleDownload = handleDownload; window.toggleSortMenu = toggleSortMenu; window.setSort = setSort; window.nextPage = nextPage; window.prevPage = prevPage;
+            window.openModal = openModal; window.closeModal = closeModal; window.openTagModal = openTagModal; window.closeTagModal = closeTagModal; window.openEditModal = openEditModal; window.closeEditModal = closeEditModal; window.openEditTagModal = openEditTagModal; window.handleUpload = handleUpload; window.saveEdit = saveEdit; window.promptDelete = promptDelete; window.cancelDelete = cancelDelete; window.confirmDelete = confirmDelete; window.applyFilters = applyFilters; window.clearSearch = clearSearch; window.clearColors = clearColors; window.clearTags = clearTags; window.clearResolutions = clearResolutions; window.resetAll = resetAll; window.hintFile = hintFile; window.toggleOptionsMenu = toggleOptionsMenu; window.handleDownload = handleDownload; window.toggleSortMenu = toggleSortMenu; window.setSort = setSort; window.nextPage = nextPage; window.prevPage = prevPage;
             
             if (document.getElementById('grid')) {
                 buildSwatches(document.getElementById('colorSwatches'), (k, el) => { toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
