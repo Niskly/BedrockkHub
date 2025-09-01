@@ -48,7 +48,7 @@
             --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
             --shadow-card: 0 24px 70px rgba(0, 0, 0, .55);
             --shadow-glow: 0 0 40px rgba(222, 33, 42, .3);
-            --shadow-elegant: 0 10px 30px -10px rgba(0, 0, 0, .3);
+            --shadow-elegant: 0 10px 30px -10px rgba(0,0,0, .2);
         }
 
         * { 
@@ -204,6 +204,7 @@
             max-width: 900px;
             position: relative;
             overflow: hidden;
+            background:none; border:none; box-shadow:none;
         }
 
         .title { 
@@ -308,10 +309,11 @@
         }
 
         .preview {
-            padding: 24px;
             width: 100%;
             max-width: 900px;
             position: relative;
+            background:none; border:none; box-shadow:none; 
+            padding: 24px 0;
         }
 
         .preview-head { 
@@ -560,7 +562,7 @@
     <main>
         <section class="container">
             <div class="hero">
-                <div class="hero-card" style="background:none; border:none; box-shadow:none;">
+                <div class="hero-card">
                     <h1 class="title">
                         Discover & Download<br>
                         <span class="grad">Bedrock Texture Packs</span>
@@ -594,7 +596,7 @@
                     </div>
                 </div>
 
-                <aside class="preview" style="background:none; border:none; box-shadow:none; padding: 24px 0;">
+                <aside class="preview">
                     <div class="preview-head">
                         <strong>
                             <i class="fa-solid fa-sparkles"></i>
