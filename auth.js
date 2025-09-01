@@ -13,7 +13,7 @@ function renderUserDropdown(profile) {
 
     navActions.innerHTML = `
         <a class="btn ghost" href="/"><i class="fa-solid fa-house"></i> Home</a>
-        <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
+        <a class="btn ghost" href="/texturepacks"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
         <div class="user-dropdown">
             <button class="user-menu-btn">
                 ${avatarContent}
@@ -21,7 +21,7 @@ function renderUserDropdown(profile) {
                 <i class="fa-solid fa-chevron-down"></i>
             </button>
             <div class="dropdown-content">
-                <a href="/settings.html"><i class="fa-solid fa-cog"></i> Settings</a>
+                <a href="/settings"><i class="fa-solid fa-cog"></i> Settings</a>
                 <a href="#" id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
             </div>
         </div>
@@ -37,7 +37,7 @@ function renderUserDropdown(profile) {
     document.getElementById('logout-btn').addEventListener('click', async (e) => {
         e.preventDefault();
         await supabase.auth.signOut();
-        window.location.reload(); // Reload to update UI
+        window.location.href = '/'; // Redirect to home on logout
     });
 }
 
@@ -45,40 +45,48 @@ function renderUserDropdown(profile) {
 function renderLoginButton() {
     navActions.innerHTML = `
         <a class="btn ghost" href="/"><i class="fa-solid fa-house"></i> Home</a>
-        <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
-        <a class="btn primary" href="/login.html"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+        <a class="btn ghost" href="/texturepacks"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
+        <a class="btn primary" href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
     `;
 }
 
 // --- Main function to check user state ---
 async function updateUserStatus() {
     const { data: { user } } = await supabase.auth.getUser();
+    const currentPath = window.location.pathname;
+    const authPages = ['/login', '/signup', '/complete-profile'];
 
     if (user) {
         // User is logged in, now check their profile
-        const { data: profile, error } = await supabase
+        const { data: profile } = await supabase
             .from('profiles')
-            .select('username, avatar_url')
+            .select('username')
             .eq('id', user.id)
             .single();
             
         if (profile && profile.username) {
-            // Profile is complete, render the user dropdown
+            // -- PROFILE IS COMPLETE --
             renderUserDropdown(profile);
+            // If user with complete profile is on an auth page, send them home.
+            if (authPages.includes(currentPath)) {
+                window.location.href = '/';
+            }
         } else {
-            // Profile is incomplete, redirect to complete it
-            // Avoid redirect loop if we're already on the page
-            if (window.location.pathname !== '/complete-profile.html' && window.location.pathname !== '/signup.html' && window.location.pathname !== '/login.html' ) {
-                window.location.href = '/complete-profile.html';
+            // -- PROFILE IS INCOMPLETE --
+            // If user with incomplete profile is NOT on an auth page, force them to complete it.
+            if (!authPages.includes(currentPath)) {
+                window.location.href = '/complete-profile';
             } else {
-                renderLoginButton(); // Render login button on auth pages to avoid confusion
+                // If they are on an auth page already, just show the login button to avoid a broken UI
+                renderLoginButton();
             }
         }
     } else {
-        // User is not logged in, render the login button
+        // -- USER IS NOT LOGGED IN --
         renderLoginButton();
     }
 }
 
 // Run the check when the page loads
 document.addEventListener('DOMContentLoaded', updateUserStatus);
+
