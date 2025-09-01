@@ -164,23 +164,8 @@
             if (error) {
                 alert('Sign-up failed: ' + error.message);
             } else {
-                // ---
-                // IMPORTANT NOTE FOR THIS TO WORK:
-                // This code redirects to the 'complete-profile' page. This will only
-                // work correctly if you have "Email Confirmation" turned OFF in your
-                // Supabase project settings.
-                //
-                // WHY? Because when email confirmation is ON, Supabase creates the user
-                // but does NOT log them in until they click the link in the email.
-                // When this page redirects, the next page will not find a logged-in user
-                // and will send them to the login page.
-                //
-                // HOW TO FIX:
-                // 1. Go to your Supabase Dashboard
-                // 2. Go to Authentication > Providers > Email
-                // 3. Turn OFF the "Confirm email" toggle.
-                // ---
-                window.location.href = '/complete-profile.html';
+                // Redirect to the new verification page, passing the email as a parameter
+                window.location.href = `/verify.html?email=${encodeURIComponent(email)}`;
             }
         });
     </script>
