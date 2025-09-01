@@ -181,13 +181,6 @@
             margin: 0 auto; 
             padding: 28px 18px; 
         }
-
-        .card { 
-            background: var(--bg-1); 
-            border: 1px solid var(--border); 
-            border-radius: 18px; 
-            box-shadow: var(--shadow-card);
-        }
         
         .hero {
             display: flex;
@@ -600,7 +593,7 @@
         </section>
 
         <section class="container community">
-             <div class="card" style="padding: 3rem;">
+             <div style="padding: 3rem;">
                 <h2 class="glowing-title">
                     <span class="grad">Join the BedrockHub Community</span>
                 </h2>
@@ -751,7 +744,7 @@
                         grid.appendChild(packElement);
                     });
                 } else {
-                    grid.innerHTML = '<div class="card panel tiny">No packs uploaded yet.</div>';
+                    grid.innerHTML = '<div class="card panel tiny" style="grid-column: 1 / -1;">No packs uploaded yet.</div>';
                 }
             } catch (err) {
                  grid.innerHTML = '<div class="card panel tiny" style="grid-column: 1 / -1;">Could not load packs. Please try again later.</div>';
