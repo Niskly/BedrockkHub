@@ -5,15 +5,15 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const navActions = document.getElementById('nav-actions');
 
-// --- Renders the UI for a logged-in user ---
+// --- Renders the UI for a logged-in user with a complete profile ---
 function renderUserDropdown(profile) {
     const avatarContent = profile.avatar_url
         ? `<img src="${profile.avatar_url}" alt="User Avatar" class="nav-avatar-img">`
         : `<div class="nav-avatar-default"><i class="fa-solid fa-user"></i></div>`;
 
     navActions.innerHTML = `
-        <a class="btn ghost" href="/"><i class="fa-solid fa-house"></i> Home</a>
-        <a class="btn ghost" href="/texturepacks"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
+        <a class="btn ghost" href="/index.html"><i class="fa-solid fa-house"></i> Home</a>
+        <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
         <div class="user-dropdown">
             <button class="user-menu-btn">
                 ${avatarContent}
@@ -21,7 +21,7 @@ function renderUserDropdown(profile) {
                 <i class="fa-solid fa-chevron-down"></i>
             </button>
             <div class="dropdown-content">
-                <a href="/settings"><i class="fa-solid fa-cog"></i> Settings</a>
+                <a href="/settings.html"><i class="fa-solid fa-cog"></i> Settings</a>
                 <a href="#" id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
             </div>
         </div>
@@ -37,52 +37,51 @@ function renderUserDropdown(profile) {
     document.getElementById('logout-btn').addEventListener('click', async (e) => {
         e.preventDefault();
         await supabase.auth.signOut();
-        window.location.href = '/'; // Redirect to home on logout
+        window.location.reload(); // Reload to update UI
     });
 }
 
 // --- Renders the UI for a logged-out user ---
 function renderLoginButton() {
     navActions.innerHTML = `
-        <a class="btn ghost" href="/"><i class="fa-solid fa-house"></i> Home</a>
-        <a class="btn ghost" href="/texturepacks"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
-        <a class="btn primary" href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+        <a class="btn ghost" href="/index.html"><i class="fa-solid fa-house"></i> Home</a>
+        <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
+        <a class="btn primary" href="/login.html"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
     `;
 }
+
+// --- NEW: Renders a "Complete Profile" button for new users ---
+function renderCompleteProfileButton() {
+    navActions.innerHTML = `
+        <a class="btn ghost" href="/index.html"><i class="fa-solid fa-house"></i> Home</a>
+        <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
+        <a class="btn primary" href="/complete-profile.html"><i class="fa-solid fa-user-pen"></i> Finish Setup</a>
+    `;
+}
+
 
 // --- Main function to check user state ---
 async function updateUserStatus() {
     const { data: { user } } = await supabase.auth.getUser();
-    const currentPath = window.location.pathname;
-    const authPages = ['/login', '/signup', '/complete-profile'];
 
     if (user) {
-        // User is logged in, now check their profile
-        const { data: profile } = await supabase
+        // User is logged in, check their profile
+        const { data: profile, error } = await supabase
             .from('profiles')
-            .select('username')
+            .select('username, avatar_url')
             .eq('id', user.id)
             .single();
             
         if (profile && profile.username) {
-            // -- PROFILE IS COMPLETE --
+            // Profile is complete, render the user dropdown
             renderUserDropdown(profile);
-            // If user with complete profile is on an auth page, send them home.
-            if (authPages.includes(currentPath)) {
-                window.location.href = '/';
-            }
         } else {
-            // -- PROFILE IS INCOMPLETE --
-            // If user with incomplete profile is NOT on an auth page, force them to complete it.
-            if (!authPages.includes(currentPath)) {
-                window.location.href = '/complete-profile';
-            } else {
-                // If they are on an auth page already, just show the login button to avoid a broken UI
-                renderLoginButton();
-            }
+            // Profile is INCOMPLETE, render the "Finish Setup" button
+            // This lets the user browse the site and not get stuck in a loop
+            renderCompleteProfileButton();
         }
     } else {
-        // -- USER IS NOT LOGGED IN --
+        // User is not logged in, render the login button
         renderLoginButton();
     }
 }
