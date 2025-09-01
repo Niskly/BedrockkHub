@@ -154,11 +154,21 @@
         fieldset { border: none; padding: 0; margin: 0; }
         #uploadFormFieldset:disabled { opacity: 0.5; pointer-events: none; }
         #tagSelectModal .modal-body { display: flex; flex-wrap: wrap; gap: 10px; padding: 20px; }
-        #tagSelectModal .tag-checkbox { display: flex; align-items: center; gap: 8px; background: var(--bg-0); padding: 8px 12px; border-radius: 99px; border: 1px solid var(--border); cursor: pointer; }
-        #tagSelectModal input[type="checkbox"] { display: none; }
-        #tagSelectModal input[type="checkbox"]:checked + label { color: var(--brand-1); font-weight: 800; }
-        #tagSelectModal label { cursor: pointer; text-transform: capitalize; }
-
+        #tagSelectModal .tag-checkbox-wrapper { display: flex; align-items: center; }
+        #tagSelectModal .tag-checkbox {
+            background: var(--bg-0);
+            padding: 8px 12px;
+            border-radius: 99px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            text-transform: capitalize;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        #tagSelectModal .tag-checkbox.selected {
+            background-color: var(--brand-1);
+            border-color: var(--brand-2);
+        }
+        
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         
         @media (max-width:1024px) { .layout { grid-template-columns: 1fr; } .sidebar { position: static; } .packs { grid-template-columns: repeat(2, 1fr); } }
@@ -327,7 +337,7 @@
                         </div>
                          <div style="grid-column: span 1;">
                             <label class="tiny">Tags</label>
-                             <button type="button" class="btn ghost" style="width:100%; justify-content: space-between;" onclick="openEditTagModal()">
+                            <button type="button" class="btn ghost" style="width:100%; justify-content: space-between;" onclick="openEditTagModal()">
                                 <span id="editTagSelectorBtnText">Select Tags</span>
                                 <i class="fa-solid fa-chevron-down fa-xs"></i>
                             </button>
@@ -681,22 +691,18 @@
             container.innerHTML = '';
             TAGS.forEach(t => {
                 const div = document.createElement('div');
-                div.className = 'tag-checkbox';
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.value = t;
-                checkbox.id = `modal-tag-${t}`;
-                if (activeSet?.has(t)) {
-                    checkbox.checked = true;
+                div.className = 'tag-checkbox-wrapper';
+                const tagEl = document.createElement('span');
+                tagEl.className = 'tag-checkbox';
+                if (activeSet.has(t)) {
+                    tagEl.classList.add('selected');
                 }
-                checkbox.onchange = () => clickHandler(t);
-                
-                const label = document.createElement('label');
-                label.htmlFor = `modal-tag-${t}`;
-                label.textContent = capitalizeFirst(t);
-
-                div.appendChild(checkbox);
-                div.appendChild(label);
+                tagEl.textContent = capitalizeFirst(t);
+                tagEl.onclick = () => {
+                    toggleSet(tempModalTags, t);
+                    tagEl.classList.toggle('selected');
+                };
+                div.appendChild(tagEl);
                 container.appendChild(div);
             });
         }
@@ -708,7 +714,7 @@
                 s.type = 'button';
                 s.className = 'tag' + (activeSet?.has(t) ? ' active' : '');
                 s.textContent = capitalizeFirst(t);
-                s.onclick = () => clickHandler(t, s);
+                s.onclick = () => { clickHandler(t, s); s.classList.toggle('active'); };
                 container.appendChild(s);
             });
         }
@@ -717,23 +723,19 @@
 
         /* ====== EVENT HANDLERS & MODAL CONTROLS ====== */
         function openModal() { document.getElementById('backdrop').style.display = 'flex'; state.modalColor = null; state.modalResolution = null; state.modalTags = new Set(); buildSwatches(document.getElementById('modalSwatches'), (k, el) => { state.modalColor = k; highlightOne(el.parentElement, el); }, null); buildResolutionBoxes(document.getElementById('modalResolutions'), (res, el) => { state.modalResolution = res; highlightOne(el.parentElement, el); }, null); updateTagButtonText(); }
-        function closeModal() { document.getElementById('backdrop').style.display = 'none'; document.getElementById('uploadForm').reset(); document.getElementById('fileHint').textContent = '.mcpack or .zip files only'; }
+        function closeModal() { document.getElementById('backdrop').style.display = 'none'; document.getElementById('uploadForm').reset(); }
         
         function openTagModal() { 
             isEditingTags = false;
             tempModalTags = new Set(state.modalTags);
-            buildModalTags(document.querySelector('#tagSelectModal .modal-body'), (tag) => {
-                toggleSet(tempModalTags, tag);
-            }, tempModalTags);
+            buildModalTags(document.querySelector('#tagSelectModal .modal-body'), (tag) => {}, tempModalTags);
             document.getElementById('tag-select-backdrop').style.display = 'flex';
         }
 
         function openEditTagModal() { 
             isEditingTags = true;
             tempModalTags = new Set(state.editTags);
-            buildModalTags(document.querySelector('#tagSelectModal .modal-body'), (tag) => {
-                toggleSet(tempModalTags, tag);
-            }, tempModalTags);
+            buildModalTags(document.querySelector('#tagSelectModal .modal-body'), (tag) => {}, tempModalTags);
             document.getElementById('tag-select-backdrop').style.display = 'flex';
         }
 
