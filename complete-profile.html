@@ -6,6 +6,9 @@
     <title>Complete Your Profile - BedrockHub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Import Cropper.js for image cropping -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js" defer></script>
     <style>
         :root {
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
@@ -24,11 +27,8 @@
             background-size: cover; filter: blur(8px); opacity: 0.25; z-index: -1;
         }
         .main-content {
-            display: none; 
-            align-items: center; 
-            justify-content: center; 
-            padding: 2rem; 
-            min-height: 100vh;
+            display: none; align-items: center; justify-content: center; 
+            padding: 2rem; min-height: 100vh;
         }
         .card {
             background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px;
@@ -37,16 +37,28 @@
         h1 { font-size: 2rem; font-weight: 800; margin-bottom: 2rem; }
         .form-group { margin-bottom: 1.5rem; text-align: left; }
         label { display: block; margin-bottom: .5rem; font-weight: 600; color: var(--muted); }
-        input {
+        
+        /* --- NEW USERNAME INPUT STYLES --- */
+        .username-input-container {
+            display: flex; align-items: center; gap: 10px;
             width: 100%; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border);
-            background: var(--bg-2); color: var(--text); font-size: 1rem;
+            background: var(--bg-2);
         }
-        .username-group { display: flex; flex-direction: column; gap: 8px; }
-        .username-input-wrapper { display: flex; align-items: center; gap: 10px; }
+        .username-hint { font-size: 1rem; color: var(--muted); }
+        #username {
+            flex-grow: 1; background: transparent; border: none; color: var(--text);
+            font-size: 1rem; padding: 0; outline: none;
+        }
         #availability-status { font-size: 0.9rem; font-weight: 600; flex-shrink: 0; }
         .available { color: var(--success); }
         .taken { color: #ef4444; }
-        .validation-error { color: #f9a8d4; font-size: 0.85rem; font-weight: 600; }
+        .validation-error { color: #f9a8d4; font-size: 0.85rem; font-weight: 600; margin-top: 8px; }
+        
+        input[type="date"] {
+            width: 100%; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border);
+            background: var(--bg-2); color: var(--text); font-size: 1rem;
+        }
+
         .avatar-upload { display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
         .avatar-preview {
             width: 120px; height: 120px; border-radius: 50%; background: var(--bg-2);
@@ -73,24 +85,43 @@
         .success-overlay p { font-size: 1.5rem; font-weight: 700; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
-        .cancel-link {
-             text-align: center; margin-top: 1.5rem;
+        .cancel-link { text-align: center; margin-top: 1.5rem; }
+        .cancel-link a { color: var(--muted); text-decoration: underline; font-size: 0.9rem; cursor: pointer; }
+        .cancel-link a:hover { color: var(--text); }
+
+        /* --- CROPPER MODAL STYLES --- */
+        .crop-modal-backdrop {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center; z-index: 200;
         }
-        .cancel-link a {
-            color: var(--muted);
-            text-decoration: underline;
-            font-size: 0.9rem;
-            cursor: pointer;
+        .crop-modal-content {
+            background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px;
+            width: 90%; max-width: 500px; padding: 1.5rem;
         }
-        .cancel-link a:hover {
-            color: var(--text);
-        }
+        .cropper-container { max-height: 40vh; margin-top: 1rem; }
+        .cropper-container img { max-width: 100%; }
+        .crop-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem; }
+        .cropper-view-box, .cropper-face { border-radius: 50% !important; }
     </style>
 </head>
 <body>
     <div id="success-overlay" class="success-overlay">
         <i class="fa-solid fa-face-smile-beam"></i>
         <p>You have successfully created a profile!</p>
+    </div>
+
+    <!-- Cropper Modal -->
+    <div id="crop-modal" class="crop-modal-backdrop">
+        <div class="crop-modal-content">
+            <h2 style="text-align: center; margin-bottom: 0.5rem;">Crop Your Avatar</h2>
+            <div class="cropper-container">
+                <img id="cropper-image" src="">
+            </div>
+            <div class="crop-actions">
+                <button id="cancel-crop-btn" class="btn" style="background: var(--bg-2); width: auto;">Cancel</button>
+                <button id="save-crop-btn" class="btn primary" style="width: auto;">Save</button>
+            </div>
+        </div>
     </div>
 
     <div class="main-content">
@@ -103,17 +134,16 @@
                         <i class="fa-solid fa-user"></i>
                     </div>
                     <label for="avatar-input" class="btn" style="width: auto; background: var(--bg-2); border-color: var(--border);">Upload Picture</label>
-                    <input type="file" id="avatar-input" accept="image/*">
+                    <input type="file" id="avatar-input" accept="image/png, image/jpeg, image/gif">
                 </div>
                 <div class="form-group">
                     <label for="username">Username</label>
-                    <div class="username-group">
-                        <div class="username-input-wrapper">
-                           <input type="text" id="username" required minlength="3">
-                           <span id="availability-status"></span>
-                        </div>
-                        <div id="username-error" class="validation-error"></div>
+                    <div class="username-input-container">
+                        <span class="username-hint">Length 3-16</span>
+                        <input type="text" id="username" required minlength="3" maxlength="16">
+                        <span id="availability-status"></span>
                     </div>
+                    <div id="username-error" class="validation-error"></div>
                 </div>
                 <div class="form-group">
                     <label for="dob">Date of Birth</label>
@@ -135,6 +165,8 @@
 
         let currentUser = null;
         let debounceTimer;
+        let cropper = null;
+        let croppedAvatarBlob = null;
         const usernameRegex = /^[a-zA-Z0-9]+$/;
 
         const usernameInput = document.getElementById('username');
@@ -142,14 +174,20 @@
         const errorEl = document.getElementById('username-error');
         const submitBtn = document.getElementById('submit-btn');
         const mainContent = document.querySelector('.main-content');
-
+        const avatarInput = document.getElementById('avatar-input');
+        const avatarPreview = document.getElementById('avatar-preview');
+        const cropModal = document.getElementById('crop-modal');
+        const cropperImage = document.getElementById('cropper-image');
+        const cancelCropBtn = document.getElementById('cancel-crop-btn');
+        const saveCropBtn = document.getElementById('save-crop-btn');
+        
         document.addEventListener('DOMContentLoaded', async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 currentUser = user;
                 const { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).single();
                 if (profile && profile.username) {
-                    window.location.href = '/index.html';
+                    window.location.href = '/';
                 } else {
                     mainContent.style.display = 'flex';
                 }
@@ -158,7 +196,6 @@
             }
         });
         
-        // NEW: Sign out and go back when the cancel link is clicked
         document.getElementById('cancel-setup').addEventListener('click', async (event) => {
             event.preventDefault();
             await supabase.auth.signOut();
@@ -168,47 +205,98 @@
         usernameInput.addEventListener('input', () => {
             clearTimeout(debounceTimer);
             const username = usernameInput.value;
+            let isValid = true;
+
+            // Clear previous states
+            errorEl.textContent = '';
+            statusEl.textContent = '';
+            submitBtn.disabled = false;
+
             if (username.length > 0 && !usernameRegex.test(username)) {
                 errorEl.textContent = 'Only letters and numbers are allowed.';
-                statusEl.textContent = '';
+                isValid = false;
+            }
+            if (username.length > 0 && (username.length < 3 || username.length > 16)) {
+                 errorEl.textContent = 'Username must be between 3 and 16 characters.';
+                 isValid = false;
+            }
+
+            if (!isValid) {
                 submitBtn.disabled = true;
                 return;
-            } else {
-                errorEl.textContent = '';
-                submitBtn.disabled = false;
             }
+
             debounceTimer = setTimeout(async () => {
-                if (username.length < 3) {
-                    statusEl.textContent = '';
-                    return;
-                }
+                if (username.length < 3) return;
                 const { data } = await supabase.from('profiles').select('username').ilike('username', username).single();
-                statusEl.textContent = data ? 'Taken' : 'Available';
-                statusEl.className = data ? 'taken' : 'available';
+                if (data) {
+                    statusEl.textContent = 'Taken';
+                    statusEl.className = 'taken';
+                    submitBtn.disabled = true;
+                } else {
+                    statusEl.textContent = 'Available';
+                    statusEl.className = 'available';
+                    submitBtn.disabled = false;
+                }
             }, 500);
         });
-
-        const avatarInput = document.getElementById('avatar-input');
-        const avatarPreview = document.getElementById('avatar-preview');
+        
+        // --- NEW CROPPER LOGIC ---
         avatarInput.addEventListener('change', (event) => {
             const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    avatarPreview.innerHTML = `<img src="${e.target.result}" alt="Avatar Preview">`;
-                };
-                reader.readAsDataURL(file);
-            }
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                cropperImage.src = e.target.result;
+                cropModal.style.display = 'flex';
+                
+                if (cropper) cropper.destroy();
+
+                cropper = new Cropper(cropperImage, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    dragMode: 'move',
+                    background: false,
+                    autoCropArea: 0.8,
+                    cropBoxMovable: false,
+                    cropBoxResizable: false,
+                });
+            };
+            reader.readAsDataURL(file);
         });
+
+        cancelCropBtn.addEventListener('click', () => {
+            cropModal.style.display = 'none';
+            if (cropper) cropper.destroy();
+            avatarInput.value = ''; // Reset file input
+        });
+
+        saveCropBtn.addEventListener('click', () => {
+            if (!cropper) return;
+            const canvas = cropper.getCroppedCanvas({
+                width: 256, // Create a 256x256 image
+                height: 256,
+            });
+
+            canvas.toBlob((blob) => {
+                croppedAvatarBlob = blob;
+                const url = URL.createObjectURL(blob);
+                avatarPreview.innerHTML = `<img src="${url}" alt="Avatar Preview">`;
+            }, 'image/png');
+
+            cropModal.style.display = 'none';
+            if (cropper) cropper.destroy();
+        });
+
 
         document.getElementById('profile-form').addEventListener('submit', async (event) => {
             event.preventDefault();
             const username = usernameInput.value;
             const dob = document.getElementById('dob').value;
-            const avatarFile = avatarInput.files[0];
             let avatarUrl = null;
 
-            if (statusEl.classList.contains('taken') || !usernameRegex.test(username)) {
+            if (statusEl.classList.contains('taken') || !usernameRegex.test(username) || username.length < 3 || username.length > 16) {
                 alert('Please fix the errors before submitting.');
                 return;
             }
@@ -216,9 +304,9 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Saving...';
 
-            if (avatarFile) {
-                const filePath = `${currentUser.id}/${Date.now()}`;
-                const { data, error: uploadError } = await supabase.storage.from('avatars').upload(filePath, avatarFile);
+            if (croppedAvatarBlob) {
+                const filePath = `${currentUser.id}/${Date.now()}.png`;
+                const { data, error: uploadError } = await supabase.storage.from('avatars').upload(filePath, croppedAvatarBlob);
                 if (uploadError) {
                     alert('Error uploading avatar: ' + uploadError.message);
                     submitBtn.disabled = false;
@@ -242,11 +330,10 @@
             } else {
                 document.getElementById('success-overlay').style.display = 'flex';
                 setTimeout(() => {
-                    window.location.href = '/index.html';
+                    window.location.href = '/';
                 }, 2500);
             }
         });
     </script>
 </body>
 </html>
-
