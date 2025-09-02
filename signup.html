@@ -18,7 +18,6 @@
         body {
             margin: 0; background-color: var(--bg-0); color: var(--text);
             font: 500 15px/1.6 Inter, sans-serif; display: flex; flex-direction: column; min-height: 100vh;
-            /* HIDDEN BY DEFAULT TO PREVENT FLASH */
             visibility: hidden;
             opacity: 0;
             transition: opacity 0.2s ease-in;
@@ -34,7 +33,6 @@
         }
         a { color: inherit; text-decoration: none; }
         
-        /* --- CORRECT NAVBAR STYLES --- */
         header {
             position: sticky; top: 0; z-index: 50;
             backdrop-filter: saturate(1.2) blur(10px);
@@ -55,26 +53,8 @@
         .nav-actions .btn { padding: .6rem 1rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; }
         .nav-actions .ghost { border-color: var(--border); background: transparent; color: var(--text); }
         .nav-actions .primary { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); box-shadow: var(--shadow-brand); color: white; border: none; }
-        .user-dropdown { position: relative; display: inline-block; }
-        .user-menu-btn {
-            background: var(--bg-2); border: 1px solid var(--border); color: var(--text);
-            padding: 8px 12px; border-radius: 12px; display: flex; align-items: center;
-            gap: 10px; cursor: pointer; font-weight: 600;
-        }
-        .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
-        .nav-avatar-default {
-            width: 28px; height: 28px; border-radius: 50%; background: var(--bg-0);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .user-menu-btn .fa-chevron-down { font-size: 0.8em; transition: transform 0.2s; }
-        .user-menu-btn:hover { border-color: var(--border-strong); }
-        .dropdown-content { display: none; position: absolute; right: 0; top: 110%; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; }
-        .dropdown-content.show { display: block; }
-        .dropdown-content a { color: var(--muted); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 600; }
-        .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
         .tiny { font-size: 12px; color: var(--muted); }
 
-        /* --- PAGE-SPECIFIC STYLES --- */
         .main-content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; }
         .signup-card {
             background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px;
@@ -93,12 +73,11 @@
             width: 100%; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border);
             background: var(--bg-2); color: var(--text); font-size: 1rem;
         }
-        /* --- CORRECTED EYE ICON STYLE --- */
         .password-toggle {
             position: absolute;
-            top: 52px; /* Vertically aligns with the middle of the input field */
+            top: 52px; 
             right: 1rem;
-            transform: translateY(-50%); /* Centers the icon itself on the line */
+            transform: translateY(-50%);
             color: var(--muted);
             cursor: pointer;
         }
@@ -133,7 +112,8 @@
                 </div>
             </a>
             <div id="nav-actions" class="nav-actions">
-                </div>
+                <!-- Auth.js will populate this -->
+            </div>
         </div>
     </header>
 
@@ -173,20 +153,15 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Page Protection: Check user status before showing the page
         document.addEventListener('DOMContentLoaded', async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                window.location.replace('/'); // Use replace to avoid back-button issues
+                window.location.replace('/');
             } else {
-                // Only show the page if the user is not logged in
                 document.body.classList.add('visible');
             }
         });
 
-        const passwordInput = document.getElementById('password');
-        const confirmPasswordInput = document.getElementById('confirmPassword');
-        
         function showToast(message, type = 'error') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -196,7 +171,6 @@
             setTimeout(() => { toast.remove(); }, 4000);
         }
 
-        // Password visibility toggles
         document.querySelectorAll('.password-toggle').forEach(toggle => {
             toggle.addEventListener('click', () => {
                 const targetId = toggle.getAttribute('data-target');
@@ -208,15 +182,13 @@
             });
         });
 
-        // Form submission
         document.getElementById('signup-form').addEventListener('submit', async (event) => {
             event.preventDefault();
             
             const email = document.getElementById('email').value;
-            const password = passwordInput.value;
-            const confirmPassword = confirmPasswordInput.value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
 
-            // Validation checks before submitting
             const isLengthOk = password.length >= 6;
             const hasCapital = /[A-Z]/.test(password);
             const hasNumber = /[0-9]/.test(password);
@@ -234,14 +206,15 @@
                 password: password,
             });
 
-            // --- CORRECTED ERROR HANDLING ---
+            // --- NEW, RELIABLE LOGIC ---
             if (error) {
-                if (error.message && error.message.toLowerCase().includes("user already registered")) {
-                    showToast("An account with this email already exists.");
-                } else {
-                    showToast(error.message || "An unknown error occurred.");
-                }
+                showToast(error.message || "An unknown error occurred.");
+            } else if (data.user && data.user.email_confirmed_at) {
+                // This is the key: If Supabase returns a user that is ALREADY confirmed,
+                // it means the account exists.
+                showToast("An account with this email already exists.");
             } else {
+                // Otherwise, it's a new user who needs to verify their email.
                 window.location.href = `/verify?email=${encodeURIComponent(email)}`;
             }
         });
