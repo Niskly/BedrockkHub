@@ -93,16 +93,14 @@
             width: 100%; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border);
             background: var(--bg-2); color: var(--text); font-size: 1rem;
         }
+        /* --- CORRECTED EYE ICON STYLE --- */
         .password-toggle {
             position: absolute;
-            top: 50%;
+            top: 52px; /* Vertically aligns with the middle of the input field */
             right: 1rem;
-            transform: translateY(25%);
+            transform: translateY(-50%); /* Centers the icon itself on the line */
             color: var(--muted);
             cursor: pointer;
-        }
-        .form-group:has(.password-req-text) .password-toggle {
-             transform: translateY(-25%); /* Adjust for fields with text below */
         }
         .password-req-text {
             font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem;
@@ -135,8 +133,7 @@
                 </div>
             </a>
             <div id="nav-actions" class="nav-actions">
-                <!-- Auth.js will populate this -->
-            </div>
+                </div>
         </div>
     </header>
 
@@ -237,6 +234,7 @@
                 password: password,
             });
 
+            // --- CORRECTED ERROR HANDLING ---
             if (error) {
                 if (error.message && error.message.toLowerCase().includes("user already registered")) {
                     showToast("An account with this email already exists.");
@@ -251,4 +249,3 @@
     <script type="module" src="/auth.js"></script>
 </body>
 </html>
-
