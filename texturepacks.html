@@ -187,9 +187,8 @@
         }
         /* Styles for Admin Controls */
         #admin-actions { display: none; /* Hidden by default */ }
-        .pack-options-btn { display: none; /* Hidden by default */ }
         
-        /* --- NEW STYLES FOR THE USER DROPDOWN MENU --- */
+        /* --- STYLES FOR THE USER DROPDOWN MENU --- */
         .user-dropdown { position: relative; display: inline-block; }
         .user-menu-btn {
             background: var(--bg-2); border: 1px solid var(--border); color: var(--text);
@@ -215,7 +214,7 @@
             display: flex; align-items: center; gap: 10px; font-weight: 600;
         }
         .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
-        /* --- END OF NEW STYLES --- */
+        /* --- END OF STYLES --- */
 
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         
@@ -288,7 +287,6 @@
     </section>
 
     <!-- All Modals (Upload, Edit, Confirm Delete, Tag Select) go here -->
-    <!-- ... (No changes to the modals themselves) ... -->
     <div id="backdrop" class="backdrop">
         <div class="modal card">
             <div class="panel">
@@ -516,19 +514,18 @@
                 thumbBackgroundStyle = `background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})`;
             }
 
-            const adminMenu = currentUserRole === 'admin' ? `
-                <button class="pack-options-btn" style="display: grid;" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                <div class="pack-options-menu" id="options-menu-${p.id}">
-                    <a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>
-                </div>` : '';
-            
-            const downloadButton = `<a href="${data.publicUrl}" class="pack-options-btn" style="display: grid; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);" onclick="handleDownload(event, ${p.id}, '${data.publicUrl}', '${escapeHtml(downloadName)}')"><i class="fa-solid fa-download"></i></a>`;
+            // CORRECTED LOGIC: Create the full menu content based on the user's role
+            const downloadLink = `<a href="${data.publicUrl}" onclick="handleDownload(event, ${p.id}, '${data.publicUrl}', '${escapeHtml(downloadName)}')"><i class="fa-solid fa-download"></i> Download</a>`;
+            const editLink = currentUserRole === 'admin' ? `<a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>` : '';
 
             card.innerHTML = `
                 <div class="thumb" style="${thumbBackgroundStyle}">
                     ${thumbContent}
-                    ${adminMenu}
-                    ${downloadButton}
+                    <button class="pack-options-btn" style="display: grid;" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                    <div class="pack-options-menu" id="options-menu-${p.id}">
+                        ${downloadLink}
+                        ${editLink}
+                    </div>
                 </div>
                 <div class="content">
                     <div class="pack-stats-top">
@@ -619,4 +616,3 @@
 </body>
 
 </html>
-
