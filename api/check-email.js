@@ -19,20 +19,24 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Email is required.' });
     }
 
-    // Securely look up a user by email using admin privileges.
-    const { data, error } = await supabase.auth.admin.getUserByEmail(email);
+    // --- THE CORRECTED FUNCTION ---
+    // Instead of the non-existent 'getUserByEmail', we use 'listUsers'.
+    const { data: { users }, error } = await supabase.auth.admin.listUsers({
+      email: email,
+    });
 
     if (error) {
-      // A "User not found" error is expected for a NEW user, which is a success case for us.
-      if (error.status === 404) {
-        return res.status(200).json({ exists: false });
-      }
-      // Any other error is a real problem.
+      // Any error during the lookup is a server problem.
       throw error;
     }
 
-    // If no error occurred, a user was found.
-    res.status(200).json({ exists: true });
+    // If the 'users' array contains one or more users, it means the email exists.
+    if (users && users.length > 0) {
+      res.status(200).json({ exists: true });
+    } else {
+      // If the array is empty, the email is available.
+      res.status(200).json({ exists: false });
+    }
 
   } catch (error) {
     console.error('Error in check-email function:', error);
