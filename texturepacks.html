@@ -15,7 +15,6 @@
             --muted: #a8b3cf;
             --text: #e8eefc;
             --border: rgba(255, 255, 255, .12);
-            --border-strong: rgba(255, 255, 255, .2);
             --brand-1: #de212a;
             --brand-2: #b21a22;
             --danger: #ef4444;
@@ -185,35 +184,11 @@
             border-color: var(--brand-2);
             color: white;
         }
+        /* Styles for Admin Controls */
+        #admin-actions { display: none; /* Hidden by default */ }
+        .pack-options-btn { display: none; /* Hidden by default */ }
 
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-
-        /* NEW STYLES for the User Dropdown Menu */
-        .user-dropdown { position: relative; display: inline-block; }
-        .user-menu-btn {
-            background: var(--bg-2); border: 1px solid var(--border); color: var(--text);
-            padding: 8px 12px; border-radius: 12px; display: flex; align-items: center;
-            gap: 10px; cursor: pointer; font-weight: 600;
-        }
-        .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
-        .nav-avatar-default {
-            width: 28px; height: 28px; border-radius: 50%; background: var(--bg-0);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .user-menu-btn .fa-chevron-down { font-size: 0.8em; transition: transform 0.2s; }
-        .user-menu-btn:hover { border-color: var(--border-strong); }
-        .dropdown-content {
-            display: none; position: absolute; right: 0; top: 110%;
-            background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px;
-            min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10;
-            overflow: hidden;
-        }
-        .dropdown-content.show { display: block; }
-        .dropdown-content a {
-            color: var(--muted); padding: 12px 16px; text-decoration: none;
-            display: flex; align-items: center; gap: 10px; font-weight: 600;
-        }
-        .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
         
         @media (max-width:1024px) { .layout { grid-template-columns: 1fr; } .sidebar { position: static; } .packs { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width:768px) { .packs { grid-template-columns: 1fr; } .nav-actions { display: none; } }
@@ -232,17 +207,20 @@
                     <div class="tiny">Minecraft Bedrock • community</div>
                 </div>
             </a>
-            <!-- UPDATED: This div is now a placeholder filled by auth.js -->
-            <div class="nav-actions" id="nav-actions"></div>
+            <div id="nav-actions" class="nav-actions">
+                <!-- Auth.js will populate this -->
+            </div>
         </div>
     </header>
 
     <section class="container" id="main-content">
         <div class="layout">
             <aside class="sidebar card panel">
-                <h3>Actions</h3>
-                <div class="row"><button class="btn primary" onclick="openModal()" style="width: 100%;"><i class="fa-solid fa-cloud-upload-alt"></i> Upload Pack</button></div>
-                <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+                <div id="admin-actions">
+                    <h3>Actions</h3>
+                    <div class="row"><button class="btn primary" onclick="openModal()" style="width: 100%;"><i class="fa-solid fa-cloud-upload-alt"></i> Upload Pack</button></div>
+                    <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+                </div>
                 <h3>Colors</h3>
                 <div id="colorSwatches" class="swatches"></div>
                 <div class="row" style="margin-top:8px"><button class="btn sm btn-clear" onclick="clearColors()">Clear colors</button></div>
@@ -301,7 +279,6 @@
                                 <label class="tiny">Primary color</label>
                                 <div id="modalSwatches" class="swatches"></div>
                             </div>
-
                             <div>
                                <label class="tiny">Description (optional)</label>
                                <textarea id="packDescription" placeholder="A short description of the pack..."></textarea>
@@ -432,6 +409,7 @@
         let currentEditId = null;
         let tempModalTags = new Set();
         let isEditingTags = false;
+        let currentUserRole = null; // NEW: To store the user's role
 
         /* ====== API & DATA FUNCTIONS ====== */
         async function loadPacksOnStartup() {
@@ -704,14 +682,20 @@
                 thumbContent = `<div class="glyph" style="background:${color}"><i class="fa-solid fa-cube"></i></div>`;
                 thumbBackgroundStyle = `background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})`;
             }
+
+            // NEW: Conditionally render admin buttons
+            const adminMenu = currentUserRole === 'admin' ? `
+                <button class="pack-options-btn" style="display: grid;" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                <div class="pack-options-menu" id="options-menu-${p.id}">
+                    <a href="${data.publicUrl}" onclick="handleDownload(event, ${p.id}, '${data.publicUrl}', '${escapeHtml(downloadName)}')"><i class="fa-solid fa-download"></i> Download</a>
+                    <a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>
+                </div>` : 
+                `<a href="${data.publicUrl}" class="pack-options-btn" style="display: grid;" onclick="handleDownload(event, ${p.id}, '${data.publicUrl}', '${escapeHtml(downloadName)}')"><i class="fa-solid fa-download"></i></a>`;
+
             card.innerHTML = `
                 <div class="thumb" style="${thumbBackgroundStyle}">
                     ${thumbContent}
-                    <button class="pack-options-btn" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                    <div class="pack-options-menu" id="options-menu-${p.id}">
-                        <a href="${data.publicUrl}" onclick="handleDownload(event, ${p.id}, '${data.publicUrl}', '${escapeHtml(downloadName)}')"><i class="fa-solid fa-download"></i> Download</a>
-                        <a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>
-                    </div>
+                    ${adminMenu}
                 </div>
                 <div class="content">
                     <div class="pack-stats-top">
@@ -876,7 +860,30 @@
         function toggleSet(set, key) { set.has(key) ? set.delete(key) : set.add(key); }
 
         /* ====== INITIALIZATION ====== */
+        async function checkUserAndInitialize() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data: profile, error } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single();
+                
+                if (profile) {
+                    currentUserRole = profile.role;
+                }
+            }
+
+            if (currentUserRole === 'admin') {
+                document.getElementById('admin-actions').style.display = 'block';
+            }
+            
+            // Now that we know the role, we can load the packs
+            await loadPacksOnStartup();
+        }
+
         function init() {
+            // Make functions globally accessible for inline onclick handlers
             window.openModal = openModal; window.closeModal = closeModal; window.openTagModal = openTagModal; window.closeTagModal = closeTagModal; window.openEditModal = openEditModal; window.closeEditModal = closeEditModal; window.openEditTagModal = openEditTagModal; window.handleUpload = handleUpload; window.saveEdit = saveEdit; window.promptDelete = promptDelete; window.cancelDelete = cancelDelete; window.confirmDelete = confirmDelete; window.applyFilters = applyFilters; window.clearSearch = clearSearch; window.clearColors = clearColors; window.clearTags = clearTags; window.clearResolutions = clearResolutions; window.resetAll = resetAll; window.hintFile = hintFile; window.toggleOptionsMenu = toggleOptionsMenu; window.handleDownload = handleDownload; window.toggleSortMenu = toggleSortMenu; window.setSort = setSort; window.nextPage = nextPage; window.prevPage = prevPage;
             
             if (document.getElementById('grid')) {
@@ -889,13 +896,12 @@
                     if (!e.target.closest('.sort-container')) { document.getElementById('sortMenu').style.display = 'none'; document.getElementById('sortContainer').classList.remove('open'); }
                 });
                 
-                loadPacksOnStartup();
+                // NEW: Call the role check function on load
+                checkUserAndInitialize();
             }
         }
         init();
     </script>
-
-    <!-- NEW SCRIPT for Authentication -->
     <script type="module" src="/auth.js"></script>
 </body>
 
