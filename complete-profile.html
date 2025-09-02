@@ -31,7 +31,7 @@
         }
         .card {
             background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px;
-            padding: 2.5rem; width: 100%; max-width: 440px; /* Made smaller */ text-align: center;
+            padding: 2.5rem; width: 100%; max-width: 420px; /* Made smaller */ text-align: center;
         }
         h1 { font-size: 2rem; font-weight: 800; margin-bottom: 2rem; }
         .form-group { margin-bottom: 1.5rem; text-align: left; }
@@ -91,7 +91,6 @@
         .cancel-link a { color: var(--muted); text-decoration: underline; font-size: 0.9rem; cursor: pointer; }
         .cancel-link a:hover { color: var(--text); }
 
-        /* --- UPGRADED CROPPER MODAL STYLES --- */
         .crop-modal-backdrop {
             position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
             display: none; align-items: center; justify-content: center; z-index: 200;
@@ -107,11 +106,11 @@
         .crop-actions { display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
         .cropper-view-box {
             border-radius: 50% !important;
-            box-shadow: 0 0 0 3px var(--brand-1); /* Red border effect */
+            box-shadow: 0 0 0 3px var(--brand-1);
             outline: none;
         }
         .cropper-face { border-radius: 50% !important; }
-        .cropper-bg { background-image: none !important; /* Remove gray background */ }
+        .cropper-bg { background-image: none !important; }
     </style>
 </head>
 <body>
@@ -120,7 +119,6 @@
         <p>You have successfully created a profile!</p>
     </div>
 
-    <!-- Cropper Modal -->
     <div id="crop-modal" class="crop-modal-backdrop">
         <div class="crop-modal-content">
             <h2 style="text-align: center; margin-bottom: 0.5rem;">Crop Your Avatar</h2>
