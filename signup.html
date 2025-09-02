@@ -18,34 +18,24 @@
         body {
             margin: 0; background-color: var(--bg-0); color: var(--text);
             font: 500 15px/1.6 Inter, sans-serif; display: flex; flex-direction: column; min-height: 100vh;
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.2s ease-in;
+            visibility: hidden; opacity: 0; transition: opacity 0.2s ease-in;
         }
-        body.visible {
-            visibility: visible;
-            opacity: 1;
-        }
+        body.visible { visibility: visible; opacity: 1; }
         body::before {
             content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg');
             background-size: cover; filter: blur(8px); opacity: 0.25; z-index: -1;
         }
         a { color: inherit; text-decoration: none; }
-        
         header {
-            position: sticky; top: 0; z-index: 50;
-            backdrop-filter: saturate(1.2) blur(10px);
-            background: rgba(12, 12, 12, 0.7);
-            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(1.2) blur(10px);
+            background: rgba(12, 12, 12, 0.7); border-bottom: 1px solid var(--border);
         }
         .nav { max-width: 1200px; margin: 0 auto; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
         .brand { display: flex; align-items: center; gap: .8rem; }
         .brand-badge {
-            height: 44px; width: 44px; border-radius: 12px;
-            display: grid; place-items: center;
-            background: linear-gradient(135deg, var(--brand-2), var(--brand-1));
-            box-shadow: var(--shadow-brand);
+            height: 44px; width: 44px; border-radius: 12px; display: grid; place-items: center;
+            background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand);
         }
         .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-13px); }
         .brand-title { font-weight: 800; letter-spacing: .6px; }
@@ -54,7 +44,6 @@
         .nav-actions .ghost { border-color: var(--border); background: transparent; color: var(--text); }
         .nav-actions .primary { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); box-shadow: var(--shadow-brand); color: white; border: none; }
         .tiny { font-size: 12px; color: var(--muted); }
-
         .main-content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; }
         .signup-card {
             background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px;
@@ -74,21 +63,13 @@
             background: var(--bg-2); color: var(--text); font-size: 1rem;
         }
         .password-toggle {
-            position: absolute;
-            top: 52px; 
-            right: 1rem;
-            transform: translateY(-50%);
-            color: var(--muted);
-            cursor: pointer;
+            position: absolute; top: 52px; right: 1rem; transform: translateY(-50%);
+            color: var(--muted); cursor: pointer;
         }
-        .password-req-text {
-            font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem;
-        }
-        
+        .password-req-text { font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem; }
         .signup-card .btn.primary { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: white; box-shadow: var(--shadow-brand); width: 100%; padding: .75rem 1.5rem; margin-top: 1.5rem;}
         .sub-text { color: var(--muted); margin-top: 1.2rem; }
         .sub-text a { color: var(--brand-1); font-weight: 700; }
-
         #toast-container { position: fixed; top: 80px; right: 20px; z-index: 100; display: flex; flex-direction: column; gap: 10px; }
         .toast {
             padding: 12px 18px; border-radius: 8px; color: white; font-weight: 700;
@@ -111,9 +92,7 @@
                     <div class="tiny">Minecraft Bedrock • community</div>
                 </div>
             </a>
-            <div id="nav-actions" class="nav-actions">
-                <!-- Auth.js will populate this -->
-            </div>
+            <div id="nav-actions" class="nav-actions"></div>
         </div>
     </header>
 
@@ -155,11 +134,8 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                window.location.replace('/');
-            } else {
-                document.body.classList.add('visible');
-            }
+            if (user) { window.location.replace('/'); } 
+            else { document.body.classList.add('visible'); }
         });
 
         function showToast(message, type = 'error') {
@@ -184,42 +160,64 @@
 
         document.getElementById('signup-form').addEventListener('submit', async (event) => {
             event.preventDefault();
+            const submitBtn = event.target.querySelector('button[type="submit"]');
             
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
 
-            // --- 1. PASSWORD VALIDATION RESTORED ---
-            // These checks now run first and will show the correct pop-up messages.
-            const isLengthOk = password.length >= 6;
-            const hasCapital = /[A-Z]/.test(password);
-            const hasNumber = /[0-9]/.test(password);
-            const passwordsMatch = password === confirmPassword;
-
-            if (!isLengthOk || !hasCapital || !hasNumber) {
-                return showToast('Minimum 6 characters, consists of at least one uppercase and number.');
-            }
-            if (!passwordsMatch) {
-                return showToast('Passwords do not match.');
+            // --- 1. RESTORED PASSWORD VALIDATION ---
+            if (password !== confirmPassword) { return showToast('Passwords do not match.'); }
+            if (password.length < 6 || !/[A-Z]/.test(password) || !/\d/.test(password)) {
+                return showToast('Password must meet the requirements.');
             }
 
-            // --- 2. THE DEFINITIVE FIX FOR EXISTING ACCOUNTS ---
-            const { data, error } = await supabase.auth.signUp({
-                email: email,
-                password: password,
-            });
-            
-            if (error) {
-                // Handle any unexpected errors from Supabase
-                showToast(error.message || "An unknown error occurred.");
-            } else if (data.user && data.user.identities && data.user.identities.length === 0) {
-                // SUCCESS: This is a brand new user. Send them to verify.
-                // A new user has an empty identities array until they confirm their email.
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Checking...';
+
+            try {
+                // --- 2. THE PROACTIVE CHECK ---
+                // Ask the database if the email exists *before* trying to sign up.
+                // We query the 'profiles' table, as it contains user emails after creation.
+                const { data: existingProfile, error: checkError } = await supabase
+                    .from('profiles')
+                    .select('email')
+                    .eq('email', email)
+                    .single();
+
+                if (checkError && checkError.code !== 'PGRST116') {
+                    // An actual error occurred during the check, not just "no rows found"
+                    throw checkError;
+                }
+
+                if (existingProfile) {
+                    // If we found a profile, the account already exists. Stop here.
+                    showToast("An account with this email already exists.");
+                    return; // Exit the function
+                }
+
+                // --- 3. PROCEED WITH SIGN UP ---
+                // If we reach here, the email is new. It is safe to create the account.
+                submitBtn.textContent = 'Creating Account...';
+                const { data, error: signUpError } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                });
+
+                if (signUpError) {
+                    throw signUpError; // Throw any errors from the sign-up process
+                }
+
+                // Success! Redirect to verification.
                 window.location.href = `/verify?email=${encodeURIComponent(email)}`;
-            } else {
-                // FAILURE: This account already exists. Show the error pop-up.
-                // An existing user will have an identities array with at least one entry.
-                showToast("An account with this email already exists.");
+
+            } catch (error) {
+                // Catch any errors from the process and display them.
+                showToast(error.message || "An unknown error occurred.");
+            } finally {
+                // --- 4. ALWAYS RE-ENABLE THE BUTTON ---
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Account';
             }
         });
     </script>
