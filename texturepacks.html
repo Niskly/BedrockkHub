@@ -19,6 +19,7 @@
             --brand-2: #b21a22;
             --danger: #ef4444;
             --success: #22c55e;
+            --border-strong: rgba(255, 255, 255, .2);
         }
         * { box-sizing: border-box; }
         html, body { height: 100%; scroll-behavior: smooth; }
@@ -187,6 +188,34 @@
         /* Styles for Admin Controls */
         #admin-actions { display: none; /* Hidden by default */ }
         .pack-options-btn { display: none; /* Hidden by default */ }
+        
+        /* --- NEW STYLES FOR THE USER DROPDOWN MENU --- */
+        .user-dropdown { position: relative; display: inline-block; }
+        .user-menu-btn {
+            background: var(--bg-2); border: 1px solid var(--border); color: var(--text);
+            padding: 8px 12px; border-radius: 12px; display: flex; align-items: center;
+            gap: 10px; cursor: pointer; font-weight: 600;
+        }
+        .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+        .nav-avatar-default {
+            width: 28px; height: 28px; border-radius: 50%; background: var(--bg-0);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .user-menu-btn .fa-chevron-down { font-size: 0.8em; transition: transform 0.2s; }
+        .user-menu-btn:hover { border-color: var(--border-strong); }
+        .dropdown-content {
+            display: none; position: absolute; right: 0; top: 110%;
+            background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px;
+            min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10;
+            overflow: hidden;
+        }
+        .dropdown-content.show { display: block; }
+        .dropdown-content a {
+            color: var(--muted); padding: 12px 16px; text-decoration: none;
+            display: flex; align-items: center; gap: 10px; font-weight: 600;
+        }
+        .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
+        /* --- END OF NEW STYLES --- */
 
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         
@@ -258,6 +287,8 @@
         </div>
     </section>
 
+    <!-- All Modals (Upload, Edit, Confirm Delete, Tag Select) go here -->
+    <!-- ... (No changes to the modals themselves) ... -->
     <div id="backdrop" class="backdrop">
         <div class="modal card">
             <div class="panel">
@@ -390,7 +421,7 @@
             </div>
         </div>
     </div>
-
+    
     <div id="toast-container"></div>
 
     <script type="module">
@@ -409,7 +440,7 @@
         let currentEditId = null;
         let tempModalTags = new Set();
         let isEditingTags = false;
-        let currentUserRole = null; // NEW: To store the user's role
+        let currentUserRole = null; // To store the user's role
 
         /* ====== API & DATA FUNCTIONS ====== */
         async function loadPacksOnStartup() {
@@ -429,163 +460,13 @@
             render();
         }
         
-        async function handleUpload(e) {
-            e.preventDefault();
-            const submitBtn = document.getElementById('submitBtn');
-            const fieldset = document.getElementById('uploadFormFieldset');
-            const packFile = document.getElementById('fileInput').files[0];
-            const name = document.getElementById('packName').value.trim();
-            const description = document.getElementById('packDescription').value.trim();
+        // ... (handleUpload, saveEdit, confirmDelete, handleDownload functions remain the same) ...
+        async function handleUpload(e){e.preventDefault();const t=document.getElementById("submitBtn"),o=document.getElementById("uploadFormFieldset"),a=document.getElementById("fileInput").files[0],n=document.getElementById("packName").value.trim(),i=document.getElementById("packDescription").value.trim();if(!a||!a.name.toLowerCase().endsWith(".mcpack")&&!a.name.toLowerCase().endsWith(".zip"))return void showToast("Please select a valid .mcpack or .zip file");if(!state.modalColor)return void showToast("You forgot to select a primary color.");if(!state.modalResolution)return void showToast("You forgot to select a resolution.");let l="";a.name.toLowerCase().endsWith(".mcpack")?l="bedrock":a.name.toLowerCase().endsWith(".zip")&&(l="java"),t.disabled=!0,o.disabled=!0,t.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Processing...';try{let e=null;const r=new JSZip,d=await r.loadAsync(a);let s=null;if(d.forEach((e,t)=>{const o=e.toLowerCase();o.endsWith("pack_icon.png")&&(s=t)}),!s&&d.forEach((e,t)=>{const o=e.toLowerCase();o.endsWith("pack.png")&&(s=t)}),s){t.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...';const o=await s.async("blob"),a=`icons/${Date.now()}-icon.png`,{error:n}=await supabase.storage.from("packs").upload(a,o);if(n)throw n;const{data:i}=supabase.storage.from("packs").getPublicUrl(a);e=i.publicUrl}t.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Uploading Pack...';const c=a.name.replace(/[^a-zA-Z0-9-._]/g,"").replace(/\s+/g,"-"),p=`${Date.now()}-${c}`;await supabase.storage.from("packs").upload(p,a);const m=await fetch("/api/addpacks",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:n||a.name.replace(/\.(mcpack|zip)$/i,""),color:state.modalColor,tags:[...state.modalTags],filename:p,resolution:state.modalResolution,version:l,description:i,icon_url:e})});if(!m.ok)throw new Error((await m.json()).details||"Failed to add pack metadata.");await loadPacksOnStartup(),closeModal()}catch(e){showToast("Upload failed: "+e.message)}finally{t.disabled=!1,o.disabled=!1,t.innerHTML='<i class="fa-solid fa-upload"></i> Upload'}}
+        async function saveEdit(e){e.preventDefault();if(!currentEditId)return;const{error:t}=await supabase.from("packs").update({name:document.getElementById("editPackName").value.trim(),description:document.getElementById("editPackDescription").value.trim(),color:state.editColor,tags:[...state.editTags].join(","),resolution:state.editResolution}).eq("id",currentEditId);t?showToast("Save failed: "+t.message):(await loadPacksOnStartup(),closeEditModal())}
+        async function confirmDelete(){if(!currentEditId)return;const e=packs.find(e=>e.id===currentEditId);if(!e)return void cancelDelete();try{await supabase.storage.from("packs").remove([e.filename]),e.icon_url&&await supabase.storage.from("packs").remove([`icons/${e.icon_url.split("/").pop()}`]);const{error:t}=await supabase.from("packs").delete().eq("id",currentEditId);if(t)throw t;await loadPacksOnStartup()}catch(e){showToast("Delete failed: "+e.message)}finally{cancelDelete(),closeEditModal()}}
+        async function handleDownload(e,t,o,a){e.preventDefault();try{await fetch("/api/increment-download",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:t})});const e=document.getElementById(`downloads-${t}`);if(e){const t=parseInt(e.textContent.replace(/,/g,""),10);e.textContent=(t+1).toLocaleString()}}catch(e){console.error("Failed to update download count:",e)}finally{fetch(o).then(e=>e.blob()).then(e=>{const t=document.createElement("a");t.href=URL.createObjectURL(e),t.download=a,document.body.appendChild(t),t.click(),document.body.removeChild(t)})}}
 
-            if (!packFile || (!packFile.name.toLowerCase().endsWith('.mcpack') && !packFile.name.toLowerCase().endsWith('.zip'))) { 
-                showToast('Please select a valid .mcpack or .zip file'); 
-                return; 
-            }
-            if (!state.modalColor) { showToast('You forgot to select a primary color.'); return; }
-            if (!state.modalResolution) { showToast('You forgot to select a resolution.'); return; }
-            
-            let detectedVersion = '';
-            if (packFile.name.toLowerCase().endsWith('.mcpack')) {
-                detectedVersion = 'bedrock';
-            } else if (packFile.name.toLowerCase().endsWith('.zip')) {
-                detectedVersion = 'java';
-            }
-
-            submitBtn.disabled = true;
-            fieldset.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
-            
-            try {
-                let iconUrl = null;
-                const zip = new JSZip();
-                const contents = await zip.loadAsync(packFile);
-                
-                let iconFile = null;
-                contents.forEach((relativePath, file) => {
-                    const lowerCaseName = relativePath.toLowerCase();
-                    if (lowerCaseName.endsWith('pack_icon.png')) {
-                        iconFile = file;
-                    }
-                });
-                if (!iconFile) {
-                     contents.forEach((relativePath, file) => {
-                        const lowerCaseName = relativePath.toLowerCase();
-                        if (lowerCaseName.endsWith('pack.png')) {
-                            iconFile = file;
-                        }
-                    });
-                }
-
-                if (iconFile) {
-                    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...';
-                    const iconBlob = await iconFile.async('blob');
-                    const iconFileName = `icons/${Date.now()}-icon.png`;
-                    const { error: iconError } = await supabase.storage.from('packs').upload(iconFileName, iconBlob);
-                    if (iconError) throw iconError;
-                    const { data } = supabase.storage.from('packs').getPublicUrl(iconFileName);
-                    iconUrl = data.publicUrl;
-                }
-
-                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Pack...';
-                const sanitizedFileName = packFile.name.replace(/[^a-zA-Z0-9-._]/g, '').replace(/\s+/g, '-');
-                const fileName = `${Date.now()}-${sanitizedFileName}`;
-
-                await supabase.storage.from('packs').upload(fileName, packFile);
-                const response = await fetch('/api/addpacks', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        name: name || packFile.name.replace(/\.(mcpack|zip)$/i, ''),
-                        color: state.modalColor,
-                        tags: [...state.modalTags],
-                        filename: fileName,
-                        resolution: state.modalResolution,
-                        version: detectedVersion,
-                        description: description,
-                        icon_url: iconUrl
-                    })
-                });
-                if (!response.ok) { throw new Error((await response.json()).details || 'Failed to add pack metadata.'); }
-                await loadPacksOnStartup();
-                closeModal();
-            } catch (err) {
-                showToast('Upload failed: ' + err.message);
-            } finally {
-                submitBtn.disabled = false;
-                fieldset.disabled = false;
-                submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload';
-            }
-        }
-
-        async function saveEdit(e) {
-            e.preventDefault();
-            if (!currentEditId) return;
-            const { error } = await supabase.from('packs').update({
-                name: document.getElementById('editPackName').value.trim(),
-                description: document.getElementById('editPackDescription').value.trim(),
-                color: state.editColor,
-                tags: [...state.editTags].join(','),
-                resolution: state.editResolution
-            }).eq('id', currentEditId);
-            if (error) {
-                showToast('Save failed: ' + error.message);
-            } else {
-                await loadPacksOnStartup();
-                closeEditModal();
-            }
-        }
-
-        async function confirmDelete() {
-            if (!currentEditId) return;
-            const packToDelete = packs.find(p => p.id === currentEditId);
-            if (!packToDelete) { cancelDelete(); return; }
-            try {
-                await supabase.storage.from('packs').remove([packToDelete.filename]);
-                if (packToDelete.icon_url) {
-                    const iconFileName = packToDelete.icon_url.split('/').pop();
-                    await supabase.storage.from('packs').remove([`icons/${iconFileName}`]);
-                }
-                const { error } = await supabase.from('packs').delete().eq('id', currentEditId);
-                if (error) throw error;
-                await loadPacksOnStartup();
-            } catch (error) {
-                showToast('Delete failed: ' + error.message);
-            } finally {
-                cancelDelete();
-                closeEditModal();
-            }
-        }
-
-        async function handleDownload(event, packId, downloadUrl, downloadName) {
-            event.preventDefault();
-            try {
-                await fetch('/api/increment-download', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ id: packId })
-                });
-                const countElement = document.getElementById(`downloads-${packId}`);
-                if (countElement) {
-                    const currentCount = parseInt(countElement.textContent.replace(/,/g, ''), 10);
-                    countElement.textContent = (currentCount + 1).toLocaleString();
-                }
-            } catch (err) {
-                console.error("Failed to update download count:", err);
-            } finally {
-                fetch(downloadUrl)
-                    .then(response => response.blob())
-                    .then(blob => {
-                        const link = document.createElement('a');
-                        link.href = URL.createObjectURL(blob);
-                        link.download = downloadName;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    });
-            }
-        }
-
-        /* ====== UI RENDERING & PAGINATION ====== */
+        /* ====== UI RENDERING ====== */
         function render() {
             const grid = document.getElementById('grid');
             const filtered = packs.filter(p => {
@@ -610,59 +491,11 @@
             renderPagination(filtered.length);
         }
 
-        function renderPagination(totalPacks) {
-            const controls = document.getElementById('pagination-controls');
-            controls.innerHTML = '';
-            const totalPages = Math.ceil(totalPacks / packsPerPage);
-
-            if (totalPages <= 1) return;
-
-            if (state.currentPage > 1) {
-                const prevBtn = document.createElement('button');
-                prevBtn.className = 'pagination-btn';
-                prevBtn.innerHTML = '<i class="fa-solid fa-arrow-left"></i>';
-                prevBtn.onclick = prevPage;
-                controls.appendChild(prevBtn);
-            }
-
-            const pageIndicator = document.createElement('span');
-            pageIndicator.className = 'tiny';
-            pageIndicator.textContent = `Page ${state.currentPage} of ${totalPages}`;
-            controls.appendChild(pageIndicator);
-
-            if (state.currentPage < totalPages) {
-                const nextBtn = document.createElement('button');
-                nextBtn.className = 'pagination-btn';
-                nextBtn.innerHTML = '<i class="fa-solid fa-arrow-right"></i>';
-                nextBtn.onclick = nextPage;
-                controls.appendChild(nextBtn);
-            }
-        }
-        
-        function scrollToContentTop() {
-            const header = document.querySelector('header');
-            const mainContent = document.getElementById('main-content');
-            if (!header || !mainContent) return;
-
-            const headerHeight = header.offsetHeight;
-            const contentPosition = mainContent.offsetTop;
-            
-            window.scrollTo({
-                top: contentPosition - headerHeight - 14,
-                behavior: 'smooth'
-            });
-        }
-        
-        function nextPage() {
-            state.currentPage++;
-            scrollToContentTop();
-            render();
-        }
-        function prevPage() {
-            state.currentPage--;
-            scrollToContentTop();
-            render();
-        }
+        // ... (renderPagination, scrollToContentTop, nextPage, prevPage remain the same) ...
+        function renderPagination(e){const t=document.getElementById("pagination-controls");t.innerHTML="";const o=Math.ceil(e/9);if(o<=1)return;if(state.currentPage>1){const e=document.createElement("button");e.className="pagination-btn",e.innerHTML='<i class="fa-solid fa-arrow-left"></i>',e.onclick=prevPage,t.appendChild(e)}const a=document.createElement("span");a.className="tiny",a.textContent=`Page ${state.currentPage} of ${o}`,t.appendChild(a),state.currentPage<o&&(()=>{const e=document.createElement("button");e.className="pagination-btn",e.innerHTML='<i class="fa-solid fa-arrow-right"></i>',e.onclick=nextPage,t.appendChild(e)})()}
+        function scrollToContentTop(){const e=document.querySelector("header"),t=document.getElementById("main-content");if(!e||!t)return;const o=e.offsetHeight,a=t.offsetTop;window.scrollTo({top:a-o-14,behavior:"smooth"})}
+        function nextPage(){state.currentPage++,scrollToContentTop(),render()}
+        function prevPage(){state.currentPage--,scrollToContentTop(),render()}
 
         function renderCard(p) {
             const colorKey = p.color || 'gray';
@@ -683,19 +516,19 @@
                 thumbBackgroundStyle = `background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})`;
             }
 
-            // NEW: Conditionally render admin buttons
             const adminMenu = currentUserRole === 'admin' ? `
                 <button class="pack-options-btn" style="display: grid;" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                 <div class="pack-options-menu" id="options-menu-${p.id}">
-                    <a href="${data.publicUrl}" onclick="handleDownload(event, ${p.id}, '${data.publicUrl}', '${escapeHtml(downloadName)}')"><i class="fa-solid fa-download"></i> Download</a>
                     <a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>
-                </div>` : 
-                `<a href="${data.publicUrl}" class="pack-options-btn" style="display: grid;" onclick="handleDownload(event, ${p.id}, '${data.publicUrl}', '${escapeHtml(downloadName)}')"><i class="fa-solid fa-download"></i></a>`;
+                </div>` : '';
+            
+            const downloadButton = `<a href="${data.publicUrl}" class="pack-options-btn" style="display: grid; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);" onclick="handleDownload(event, ${p.id}, '${data.publicUrl}', '${escapeHtml(downloadName)}')"><i class="fa-solid fa-download"></i></a>`;
 
             card.innerHTML = `
                 <div class="thumb" style="${thumbBackgroundStyle}">
                     ${thumbContent}
                     ${adminMenu}
+                    ${downloadButton}
                 </div>
                 <div class="content">
                     <div class="pack-stats-top">
@@ -713,177 +546,58 @@
             return card;
         }
 
-        function buildSwatches(container, clickHandler, activeSet) { container.innerHTML = ''; COLORS.forEach(c => { const b = document.createElement('button'); b.type = 'button'; b.className = 'swatch' + ((activeSet && activeSet.has(c.key)) ? ' active' : ''); b.style.background = c.hex; b.title = c.key; if (c.icon) { b.innerHTML = `<i class="${c.icon}"></i>`; } b.onclick = () => clickHandler(c.key, b); container.appendChild(b); }); }
-        
-        function buildModalTags(container, activeSet, filter = '') {
-            container.innerHTML = '';
-            const filteredTags = TAGS.filter(tag => tag.toLowerCase().includes(filter.toLowerCase()));
-
-            if (filteredTags.length === 0) {
-                container.innerHTML = `<div class="tiny" style="grid-column: 1 / -1; text-align: center;">No tags found.</div>`;
-            }
-
-            filteredTags.forEach(t => {
-                const tagEl = document.createElement('span');
-                tagEl.className = 'tag-checkbox';
-                if (activeSet.has(t)) {
-                    tagEl.classList.add('selected');
-                }
-                tagEl.textContent = capitalizeFirst(t);
-                tagEl.onclick = () => {
-                    toggleSet(tempModalTags, t);
-                    tagEl.classList.toggle('selected');
-                };
-                container.appendChild(tagEl);
-            });
-        }
-
-        function buildSidebarTags(container, clickHandler, activeSet) {
-            container.innerHTML = '';
-            TAGS.forEach(t => {
-                const s = document.createElement('button');
-                s.type = 'button';
-                s.className = 'tag' + (activeSet?.has(t) ? ' active' : '');
-                s.textContent = capitalizeFirst(t);
-                s.onclick = () => { clickHandler(t, s); s.classList.toggle('active'); };
-                container.appendChild(s);
-            });
-        }
-        
-        function buildSelectorBoxes(container, clickHandler, activeState, options) { container.innerHTML = ''; const isMultiSelect = activeState instanceof Set; options.forEach(opt => { const box = document.createElement('button'); box.type = 'button'; const isActive = isMultiSelect ? activeState.has(opt) : (activeState === opt); box.className = 'res-box' + (isActive ? ' active' : ''); box.textContent = opt; box.onclick = () => clickHandler(opt, box); container.appendChild(box); }); }
-
-        /* ====== EVENT HANDLERS & MODAL CONTROLS ====== */
-        function openModal() { document.getElementById('backdrop').style.display = 'flex'; state.modalColor = null; state.modalResolution = null; state.modalTags = new Set(); buildSwatches(document.getElementById('modalSwatches'), (k, el) => { state.modalColor = k; highlightOne(el.parentElement, el); }, null); buildSelectorBoxes(document.getElementById('modalResolutions'), (res, el) => { state.modalResolution = res; highlightOne(el.parentElement, el); }, null, RESOLUTIONS); updateTagButtonText(); }
-        function closeModal() { document.getElementById('backdrop').style.display = 'none'; document.getElementById('uploadForm').reset(); }
-        
-        function openTagModal() { 
-            isEditingTags = false;
-            tempModalTags = new Set(state.modalTags);
-            const searchInput = document.getElementById('tagSearchInput');
-            searchInput.value = '';
-            buildModalTags(document.querySelector('#tagSelectModal .modal-body'), tempModalTags);
-            searchInput.oninput = () => {
-                buildModalTags(document.querySelector('#tagSelectModal .modal-body'), tempModalTags, searchInput.value);
-            };
-            document.getElementById('tag-select-backdrop').style.display = 'flex';
-        }
-
-        function openEditTagModal() { 
-            isEditingTags = true;
-            tempModalTags = new Set(state.editTags);
-            const searchInput = document.getElementById('tagSearchInput');
-            searchInput.value = '';
-            buildModalTags(document.querySelector('#tagSelectModal .modal-body'), tempModalTags);
-            searchInput.oninput = () => {
-                buildModalTags(document.querySelector('#tagSelectModal .modal-body'), tempModalTags, searchInput.value);
-            };
-            document.getElementById('tag-select-backdrop').style.display = 'flex';
-        }
-
-        function closeTagModal(shouldSave) {
-            if (shouldSave) {
-                if (isEditingTags) {
-                    state.editTags = new Set(tempModalTags);
-                    updateEditTagButtonText();
-                } else {
-                    state.modalTags = new Set(tempModalTags);
-                    updateTagButtonText();
-                }
-            }
-            const searchInput = document.getElementById('tagSearchInput');
-            searchInput.value = '';
-            searchInput.oninput = null;
-            document.getElementById('tag-select-backdrop').style.display = 'none';
-        }
-
-        function openEditModal(id) { 
-            const p = packs.find(x => x.id === id);
-            if (!p) return alert('Pack not found');
-            currentEditId = id;
-            document.getElementById('editId').value = id;
-            document.getElementById('editPackName').value = p.name || '';
-            document.getElementById('editPackDescription').value = p.description || '';
-            state.editColor = p.color || null;
-            state.editTags = new Set(p.tags || []);
-            state.editResolution = p.resolution || null;
-            
-            buildSwatches(document.getElementById('editModalSwatches'), (k, el) => { state.editColor = k; highlightOne(el.parentElement, el); }, new Set([state.editColor]));
-            updateEditTagButtonText();
-            buildSelectorBoxes(document.getElementById('editModalResolutions'), (res, el) => { state.editResolution = res; highlightOne(el.parentElement, el); }, state.editResolution, RESOLUTIONS);
-            
-            document.getElementById('editBackdrop').style.display = 'flex';
-        }
-        function closeEditModal() { currentEditId = null; document.getElementById('editBackdrop').style.display = 'none'; }
-        function promptDelete() { if (!currentEditId) return; document.getElementById('confirmDeleteBackdrop').style.display = 'flex'; }
-        function cancelDelete() { document.getElementById('confirmDeleteBackdrop').style.display = 'none'; }
-        
-        function applyFilters() { state.currentPage = 1; state.q = document.getElementById('q').value.trim().toLowerCase(); render(); }
-        function clearSearch() { state.currentPage = 1; document.getElementById('q').value = ''; applyFilters(); }
-        function clearColors() { state.currentPage = 1; state.colors.clear(); buildSwatches(document.getElementById('colorSwatches'), (k, el) => { toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors); render(); }
-        function clearTags() { state.currentPage = 1; state.tags.clear(); buildSidebarTags(document.getElementById('tagCloud'), (k, el) => { toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags); render(); }
-        function clearResolutions() { state.currentPage = 1; state.resolutions.clear(); buildSelectorBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions, RESOLUTIONS); render(); }
-        function resetAll() { state.currentPage = 1; clearSearch(); clearColors(); clearTags(); clearResolutions(); }
-        
-        function hintFile() { const fileInput = document.getElementById('fileInput'); const file = fileInput.files[0]; if (file) { document.getElementById('fileHint').textContent = file.name; const packNameInput = document.getElementById('packName'); packNameInput.value = file.name.replace(/\.(mcpack|zip)$/i, ''); } }
-        function toggleOptionsMenu(event, id) { event.stopPropagation(); const menu = document.getElementById(`options-menu-${id}`); const isVisible = menu.style.display === 'block'; document.querySelectorAll('.pack-options-menu').forEach(m => m.style.display = 'none'); if (!isVisible) { menu.style.display = 'block'; } }
-        function toggleSortMenu() { const menu = document.getElementById('sortMenu'); const container = document.getElementById('sortContainer'); const isVisible = menu.style.display === 'block'; menu.style.display = isVisible ? 'none' : 'block'; container.classList.toggle('open', !isVisible); }
-        function setSort(sortType, element) { event.preventDefault(); state.sortBy = sortType; state.currentPage = 1; const buttonText = document.getElementById('currentSort'); buttonText.textContent = element.textContent; document.querySelectorAll('#sortMenu a').forEach(a => a.classList.remove('active')); element.classList.add('active'); toggleSortMenu(); loadPacksOnStartup(); }
-        
-        function updateTagButtonText() {
-            const btnText = document.getElementById('tagSelectorBtnText');
-            if (state.modalTags.size === 0) {
-                btnText.textContent = 'Select Tags';
-            } else if (state.modalTags.size === 1) {
-                btnText.textContent = '1 Tag Selected';
-            } else {
-                btnText.textContent = `${state.modalTags.size} Tags Selected`;
-            }
-        }
-        function updateEditTagButtonText() {
-            const btnText = document.getElementById('editTagSelectorBtnText');
-            if (state.editTags.size === 0) {
-                btnText.textContent = 'Select Tags';
-            } else if (state.editTags.size === 1) {
-                btnText.textContent = '1 Tag Selected';
-            } else {
-                btnText.textContent = `${state.editTags.size} Tags Selected`;
-            }
-        }
-        
-        /* ====== UTILITY FUNCTIONS ====== */
-        function capitalizeFirst(str) { if (!str) return ''; return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase(); }
-        function showToast(message, type = 'error') { const container = document.getElementById('toast-container'); const toast = document.createElement('div'); toast.className = `toast ${type}`; toast.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${escapeHtml(message)}`; container.appendChild(toast); setTimeout(() => { toast.remove(); }, 4000); }
-        function formatDate(isoString) { if (!isoString) return ''; const date = new Date(isoString); const day = date.getDate(); const month = date.getMonth() + 1; const year = String(date.getFullYear()).slice(-2); return `${day}/${month}/${year}`; }
-        function escapeHtml(str) { return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); }
-        function shade(hex, amt) { let col = hex.replace('#', ''); if (col.length === 3) col = col.split('').map(c => c + c).join(''); let [r, g, b] = [0, 0, 0].map((_, i) => parseInt(col.slice(i * 2, i * 2 + 2), 16));[r, g, b] = [r + amt, g + amt, b + amt].map(v => Math.max(0, Math.min(255, v))); return `#${[r,g,b].map(v=> v.toString(16).padStart(2,'0')).join('')}`; }
-        function highlightOne(container, el) { [...container.children].forEach(c => c.classList.remove('active')); el.classList.add('active'); }
-        function toggleSet(set, key) { set.has(key) ? set.delete(key) : set.add(key); }
+        // ... (All other UI, event handlers, and utility functions remain the same) ...
+        function buildSwatches(e,t,o){e.innerHTML="",COLORS.forEach(a=>{const n=document.createElement("button");n.type="button",n.className="swatch"+(o&&o.has(a.key)?" active":""),n.style.background=a.hex,n.title=a.key,a.icon&&(n.innerHTML=`<i class="${a.icon}"></i>`),n.onclick=()=>t(a.key,n),e.appendChild(n)})}
+        function buildModalTags(e,t,o=""){e.innerHTML="";const a=TAGS.filter(e=>e.toLowerCase().includes(o.toLowerCase()));0===a.length&&(e.innerHTML='<div class="tiny" style="grid-column: 1 / -1; text-align: center;">No tags found.</div>'),a.forEach(o=>{const a=document.createElement("span");a.className="tag-checkbox",t.has(o)&&a.classList.add("selected"),a.textContent=capitalizeFirst(o),a.onclick=()=>{toggleSet(tempModalTags,o),a.classList.toggle("selected")},e.appendChild(a)})}
+        function buildSidebarTags(e,t,o){e.innerHTML="",TAGS.forEach(a=>{const n=document.createElement("button");n.type="button",n.className="tag"+(o?.has(a)?" active":""),n.textContent=capitalizeFirst(a),n.onclick=()=>{t(a,n),n.classList.toggle("active")},e.appendChild(n)})}
+        function buildSelectorBoxes(e,t,o,a){e.innerHTML="";const n=o instanceof Set;a.forEach(a=>{const i=document.createElement("button");i.type="button";const l=n?o.has(a):o===a;i.className="res-box"+(l?" active":""),i.textContent=a,i.onclick=()=>t(a,i),e.appendChild(i)})}
+        function openModal(){document.getElementById("backdrop").style.display="flex",state.modalColor=null,state.modalResolution=null,state.modalTags=new Set,buildSwatches(document.getElementById("modalSwatches"),(e,t)=>{state.modalColor=e,highlightOne(t.parentElement,t)},null),buildSelectorBoxes(document.getElementById("modalResolutions"),(e,t)=>{state.modalResolution=e,highlightOne(t.parentElement,t)},null,RESOLUTIONS),updateTagButtonText()}
+        function closeModal(){document.getElementById("backdrop").style.display="none",document.getElementById("uploadForm").reset()}
+        function openTagModal(){isEditingTags=!1,tempModalTags=new Set(state.modalTags);const e=document.getElementById("tagSearchInput");e.value="",buildModalTags(document.querySelector("#tagSelectModal .modal-body"),tempModalTags),e.oninput=()=>{buildModalTags(document.querySelector("#tagSelectModal .modal-body"),tempModalTags,e.value)},document.getElementById("tag-select-backdrop").style.display="flex"}
+        function openEditTagModal(){isEditingTags=!0,tempModalTags=new Set(state.editTags);const e=document.getElementById("tagSearchInput");e.value="",buildModalTags(document.querySelector("#tagSelectModal .modal-body"),tempModalTags),e.oninput=()=>{buildModalTags(document.querySelector("#tagSelectModal .modal-body"),tempModalTags,e.value)},document.getElementById("tag-select-backdrop").style.display="flex"}
+        function closeTagModal(e){if(e)if(isEditingTags){state.editTags=new Set(tempModalTags),updateEditTagButtonText()}else state.modalTags=new Set(tempModalTags),updateTagButtonText();const t=document.getElementById("tagSearchInput");t.value="",t.oninput=null,document.getElementById("tag-select-backdrop").style.display="none"}
+        function openEditModal(e){const t=packs.find(t=>t.id===e);if(!t)return alert("Pack not found");currentEditId=e,document.getElementById("editId").value=e,document.getElementById("editPackName").value=t.name||"",document.getElementById("editPackDescription").value=t.description||"",state.editColor=t.color||null,state.editTags=new Set(t.tags||[]),state.editResolution=t.resolution||null,buildSwatches(document.getElementById("editModalSwatches"),(e,t)=>{state.editColor=e,highlightOne(t.parentElement,t)},new Set([state.editColor])),updateEditTagButtonText(),buildSelectorBoxes(document.getElementById("editModalResolutions"),(e,t)=>{state.editResolution=e,highlightOne(t.parentElement,t)},state.editResolution,RESOLUTIONS),document.getElementById("editBackdrop").style.display="flex"}
+        function closeEditModal(){currentEditId=null,document.getElementById("editBackdrop").style.display="none"}
+        function promptDelete(){if(currentEditId)document.getElementById("confirmDeleteBackdrop").style.display="flex"}
+        function cancelDelete(){document.getElementById("confirmDeleteBackdrop").style.display="none"}
+        function applyFilters(){state.currentPage=1,state.q=document.getElementById("q").value.trim().toLowerCase(),render()}
+        function clearSearch(){state.currentPage=1,document.getElementById("q").value="",applyFilters()}
+        function clearColors(){state.currentPage=1,state.colors.clear(),buildSwatches(document.getElementById("colorSwatches"),(e,t)=>{toggleSet(state.colors,e),t.classList.toggle("active"),render()},state.colors),render()}
+        function clearTags(){state.currentPage=1,state.tags.clear(),buildSidebarTags(document.getElementById("tagCloud"),(e,t)=>{toggleSet(state.tags,e),t.classList.toggle("active"),render()},state.tags),render()}
+        function clearResolutions(){state.currentPage=1,state.resolutions.clear(),buildSelectorBoxes(document.getElementById("resolutionBoxes"),(e,t)=>{toggleSet(state.resolutions,e),t.classList.toggle("active"),render()},state.resolutions,RESOLUTIONS),render()}
+        function resetAll(){state.currentPage=1,clearSearch(),clearColors(),clearTags(),clearResolutions()}
+        function hintFile(){const e=document.getElementById("fileInput"),t=e.files[0];if(t){document.getElementById("fileHint").textContent=t.name;const o=document.getElementById("packName");o.value=t.name.replace(/\.(mcpack|zip)$/i,"")}}
+        function toggleOptionsMenu(e,t){e.stopPropagation();const o=document.getElementById(`options-menu-${t}`),a="block"===o.style.display;document.querySelectorAll(".pack-options-menu").forEach(e=>e.style.display="none"),a||(o.style.display="block")}
+        function toggleSortMenu(){const e=document.getElementById("sortMenu"),t=document.getElementById("sortContainer"),o="block"===e.style.display;e.style.display=o?"none":"block",t.classList.toggle("open",!o)}
+        function setSort(e,t){event.preventDefault(),state.sortBy=e,state.currentPage=1;const o=document.getElementById("currentSort");o.textContent=t.textContent,document.querySelectorAll("#sortMenu a").forEach(e=>e.classList.remove("active")),t.classList.add("active"),toggleSortMenu(),loadPacksOnStartup()}
+        function updateTagButtonText(){const e=document.getElementById("tagSelectorBtnText");0===state.modalTags.size?e.textContent="Select Tags":1===state.modalTags.size?e.textContent="1 Tag Selected":e.textContent=`${state.modalTags.size} Tags Selected`}
+        function updateEditTagButtonText(){const e=document.getElementById("editTagSelectorBtnText");0===state.editTags.size?e.textContent="Select Tags":1===state.editTags.size?e.textContent="1 Tag Selected":e.textContent=`${state.editTags.size} Tags Selected`}
+        function capitalizeFirst(e){return e?e.charAt(0).toUpperCase()+e.slice(1).toLowerCase():""}
+        function showToast(e,t="error"){const o=document.getElementById("toast-container"),a=document.createElement("div");a.className=`toast ${t}`,a.innerHTML=`<i class="fa-solid fa-circle-exclamation"></i> ${escapeHtml(e)}`,o.appendChild(a),setTimeout(()=>{a.remove()},4e3)}
+        function formatDate(e){if(!e)return"";const t=new Date(e),o=t.getDate(),a=t.getMonth()+1;return`${o}/${a}/${String(t.getFullYear()).slice(-2)}`}
+        function escapeHtml(e){return String(e||"").replace(/[&<>"']/g,e=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[e])}
+        function shade(e,t){let o=e.replace("#","");3===o.length&&(o=o.split("").map(e=>e+e).join(""));let[a,n,i]=[0,0,0].map((e,t)=>parseInt(o.slice(2*t,2*t+2),16));return[a,n,i]=[a+t,n+t,i+t].map(e=>Math.max(0,Math.min(255,e))),`#${[a,n,i].map(e=>e.toString(16).padStart(2,"0")).join("")}`}
+        function highlightOne(e,t){[...e.children].forEach(e=>e.classList.remove("active")),t.classList.add("active")}
+        function toggleSet(e,t){e.has(t)?e.delete(t):e.add(t)}
 
         /* ====== INITIALIZATION ====== */
         async function checkUserAndInitialize() {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                const { data: profile, error } = await supabase
+                const { data: profile } = await supabase
                     .from('profiles')
                     .select('role')
                     .eq('id', user.id)
                     .single();
-                
-                if (profile) {
-                    currentUserRole = profile.role;
-                }
+                if (profile) currentUserRole = profile.role;
             }
-
             if (currentUserRole === 'admin') {
                 document.getElementById('admin-actions').style.display = 'block';
             }
-            
-            // Now that we know the role, we can load the packs
             await loadPacksOnStartup();
         }
 
         function init() {
-            // Make functions globally accessible for inline onclick handlers
             window.openModal = openModal; window.closeModal = closeModal; window.openTagModal = openTagModal; window.closeTagModal = closeTagModal; window.openEditModal = openEditModal; window.closeEditModal = closeEditModal; window.openEditTagModal = openEditTagModal; window.handleUpload = handleUpload; window.saveEdit = saveEdit; window.promptDelete = promptDelete; window.cancelDelete = cancelDelete; window.confirmDelete = confirmDelete; window.applyFilters = applyFilters; window.clearSearch = clearSearch; window.clearColors = clearColors; window.clearTags = clearTags; window.clearResolutions = clearResolutions; window.resetAll = resetAll; window.hintFile = hintFile; window.toggleOptionsMenu = toggleOptionsMenu; window.handleDownload = handleDownload; window.toggleSortMenu = toggleSortMenu; window.setSort = setSort; window.nextPage = nextPage; window.prevPage = prevPage;
             
             if (document.getElementById('grid')) {
@@ -896,7 +610,6 @@
                     if (!e.target.closest('.sort-container')) { document.getElementById('sortMenu').style.display = 'none'; document.getElementById('sortContainer').classList.remove('open'); }
                 });
                 
-                // NEW: Call the role check function on load
                 checkUserAndInitialize();
             }
         }
