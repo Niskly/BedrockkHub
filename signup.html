@@ -166,40 +166,52 @@
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
 
-            // --- 1. PASSWORD VALIDATION RUNS FIRST ---
             if (password !== confirmPassword) { return showToast('Passwords do not match.'); }
             if (password.length < 6 || !/[A-Z]/.test(password) || !/\d/.test(password)) {
                 return showToast('Password must meet the requirements.');
             }
 
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Creating Account...';
+            submitBtn.textContent = 'Checking...';
 
             try {
-                // --- 2. ATTEMPT TO SIGN UP ---
-                const { data, error } = await supabase.auth.signUp({
+                // Step 1: Call our secure API route to check if the email exists
+                const response = await fetch('/api/check-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+
+                const { exists, error: checkError } = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(checkError || 'Failed to check email.');
+                }
+
+                if (exists) {
+                    // Step 2: If it exists, show the error and stop.
+                    showToast("An account with this email already exists.");
+                    return; 
+                }
+
+                // Step 3: If it doesn't exist, proceed with creating the account.
+                submitBtn.textContent = 'Creating Account...';
+                const { error: signUpError } = await supabase.auth.signUp({
                     email: email,
                     password: password,
                 });
 
-                if (error) {
-                    throw error;
+                if (signUpError) {
+                    throw signUpError;
                 }
 
-                // --- 3. THE DEFINITIVE CHECK ---
-                // A new user account will have an empty 'identities' array.
-                // An existing account will have one or more identities.
-                if (data.user && data.user.identities && data.user.identities.length > 0) {
-                    showToast("An account with this email already exists.");
-                } else {
-                    // This is a new user, proceed to verification.
-                    window.location.href = `/verify?email=${encodeURIComponent(email)}`;
-                }
+                // Step 4: Success! Redirect to verification.
+                window.location.href = `/verify?email=${encodeURIComponent(email)}`;
 
             } catch (error) {
                 showToast(error.message || "An unknown error occurred.");
             } finally {
-                // --- 4. ALWAYS RE-ENABLE THE BUTTON ---
+                // Step 5: Always re-enable the button.
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Create Account';
             }
