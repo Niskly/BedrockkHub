@@ -6,7 +6,6 @@
     <title>Complete Your Profile - BedrockHub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- Import Cropper.js for image cropping -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js" defer></script>
     <style>
@@ -38,25 +37,29 @@
         .form-group { margin-bottom: 1.5rem; text-align: left; }
         label { display: block; margin-bottom: .5rem; font-weight: 600; color: var(--muted); }
         
-        /* --- NEW USERNAME INPUT STYLES --- */
         .username-input-container {
             display: flex; align-items: center; gap: 10px;
-            width: 100%; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border);
+            width: 100%; padding-right: 1rem; border-radius: 10px; border: 1px solid var(--border);
             background: var(--bg-2);
         }
-        .username-hint { font-size: 1rem; color: var(--muted); }
         #username {
             flex-grow: 1; background: transparent; border: none; color: var(--text);
-            font-size: 1rem; padding: 0; outline: none;
+            font-size: 1rem; padding: .75rem 1rem; outline: none;
         }
         #availability-status { font-size: 0.9rem; font-weight: 600; flex-shrink: 0; }
         .available { color: var(--success); }
         .taken { color: #ef4444; }
         .validation-error { color: #f9a8d4; font-size: 0.85rem; font-weight: 600; margin-top: 8px; }
         
-        input[type="date"] {
+        /* --- NEW DOB SELECTOR STYLES --- */
+        .dob-selectors { display: flex; gap: 10px; }
+        .dob-selectors select {
             width: 100%; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border);
-            background: var(--bg-2); color: var(--text); font-size: 1rem;
+            background: var(--bg-2); color: var(--text); font-size: 1rem; appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
         }
 
         .avatar-upload { display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
@@ -89,17 +92,19 @@
         .cancel-link a { color: var(--muted); text-decoration: underline; font-size: 0.9rem; cursor: pointer; }
         .cancel-link a:hover { color: var(--text); }
 
-        /* --- CROPPER MODAL STYLES --- */
+        /* --- UPGRADED CROPPER MODAL STYLES --- */
         .crop-modal-backdrop {
             position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
             display: none; align-items: center; justify-content: center; z-index: 200;
         }
         .crop-modal-content {
             background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px;
-            width: 90%; max-width: 500px; padding: 1.5rem;
+            width: 90%; max-width: 400px; /* Made smaller */ padding: 1.5rem;
         }
         .cropper-container { max-height: 40vh; margin-top: 1rem; }
         .cropper-container img { max-width: 100%; }
+        .crop-controls { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1rem; }
+        .zoom-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; }
         .crop-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem; }
         .cropper-view-box, .cropper-face { border-radius: 50% !important; }
     </style>
@@ -114,8 +119,10 @@
     <div id="crop-modal" class="crop-modal-backdrop">
         <div class="crop-modal-content">
             <h2 style="text-align: center; margin-bottom: 0.5rem;">Crop Your Avatar</h2>
-            <div class="cropper-container">
-                <img id="cropper-image" src="">
+            <div class="cropper-container"><img id="cropper-image" src=""></div>
+            <div class="crop-controls">
+                <button id="zoom-out-btn" class="zoom-btn">-</button>
+                <button id="zoom-in-btn" class="zoom-btn">+</button>
             </div>
             <div class="crop-actions">
                 <button id="cancel-crop-btn" class="btn" style="background: var(--bg-2); width: auto;">Cancel</button>
@@ -130,24 +137,25 @@
             <p class="muted" style="margin-top:-1rem; margin-bottom: 2rem;">Let's set up your profile.</p>
             <form id="profile-form">
                 <div class="avatar-upload">
-                    <div class="avatar-preview" id="avatar-preview">
-                        <i class="fa-solid fa-user"></i>
-                    </div>
+                    <div class="avatar-preview" id="avatar-preview"><i class="fa-solid fa-user"></i></div>
                     <label for="avatar-input" class="btn" style="width: auto; background: var(--bg-2); border-color: var(--border);">Upload Picture</label>
                     <input type="file" id="avatar-input" accept="image/png, image/jpeg, image/gif">
                 </div>
                 <div class="form-group">
                     <label for="username">Username</label>
                     <div class="username-input-container">
-                        <span class="username-hint">Length 3-16</span>
-                        <input type="text" id="username" required minlength="3" maxlength="16">
+                        <input type="text" id="username" required minlength="3" maxlength="16" placeholder="Length 3-16">
                         <span id="availability-status"></span>
                     </div>
                     <div id="username-error" class="validation-error"></div>
                 </div>
                 <div class="form-group">
-                    <label for="dob">Date of Birth</label>
-                    <input type="date" id="dob" required>
+                    <label for="dob-month">Date of Birth</label>
+                    <div class="dob-selectors">
+                        <select id="dob-month" required><option value="" disabled selected>Month</option></select>
+                        <select id="dob-day" required><option value="" disabled selected>Day</option></select>
+                        <select id="dob-year" required><option value="" disabled selected>Year</option></select>
+                    </div>
                 </div>
                 <button type="submit" id="submit-btn" class="btn primary">Complete Profile</button>
             </form>
@@ -180,8 +188,30 @@
         const cropperImage = document.getElementById('cropper-image');
         const cancelCropBtn = document.getElementById('cancel-crop-btn');
         const saveCropBtn = document.getElementById('save-crop-btn');
+        const zoomInBtn = document.getElementById('zoom-in-btn');
+        const zoomOutBtn = document.getElementById('zoom-out-btn');
+        const dobMonth = document.getElementById('dob-month');
+        const dobDay = document.getElementById('dob-day');
+        const dobYear = document.getElementById('dob-year');
+
+        // --- NEW DOB POPULATION ---
+        function populateDateSelectors() {
+            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            months.forEach((month, i) => {
+                const option = new Option(month, i + 1);
+                dobMonth.add(option);
+            });
+            for (let i = 1; i <= 31; i++) {
+                dobDay.add(new Option(i, i));
+            }
+            const currentYear = new Date().getFullYear();
+            for (let i = currentYear; i >= currentYear - 100; i--) {
+                dobYear.add(new Option(i, i));
+            }
+        }
         
         document.addEventListener('DOMContentLoaded', async () => {
+            populateDateSelectors();
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 currentUser = user;
@@ -206,12 +236,9 @@
             clearTimeout(debounceTimer);
             const username = usernameInput.value;
             let isValid = true;
-
-            // Clear previous states
             errorEl.textContent = '';
             statusEl.textContent = '';
             submitBtn.disabled = false;
-
             if (username.length > 0 && !usernameRegex.test(username)) {
                 errorEl.textContent = 'Only letters and numbers are allowed.';
                 isValid = false;
@@ -220,12 +247,10 @@
                  errorEl.textContent = 'Username must be between 3 and 16 characters.';
                  isValid = false;
             }
-
             if (!isValid) {
                 submitBtn.disabled = true;
                 return;
             }
-
             debounceTimer = setTimeout(async () => {
                 if (username.length < 3) return;
                 const { data } = await supabase.from('profiles').select('username').ilike('username', username).single();
@@ -241,26 +266,17 @@
             }, 500);
         });
         
-        // --- NEW CROPPER LOGIC ---
         avatarInput.addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = (e) => {
                 cropperImage.src = e.target.result;
                 cropModal.style.display = 'flex';
-                
                 if (cropper) cropper.destroy();
-
                 cropper = new Cropper(cropperImage, {
-                    aspectRatio: 1,
-                    viewMode: 1,
-                    dragMode: 'move',
-                    background: false,
-                    autoCropArea: 0.8,
-                    cropBoxMovable: false,
-                    cropBoxResizable: false,
+                    aspectRatio: 1, viewMode: 1, dragMode: 'move', background: false,
+                    autoCropArea: 0.8, cropBoxMovable: false, cropBoxResizable: false,
                 });
             };
             reader.readAsDataURL(file);
@@ -269,33 +285,40 @@
         cancelCropBtn.addEventListener('click', () => {
             cropModal.style.display = 'none';
             if (cropper) cropper.destroy();
-            avatarInput.value = ''; // Reset file input
+            avatarInput.value = '';
         });
+        
+        // --- CROPPER ZOOM ---
+        zoomInBtn.addEventListener('click', () => cropper && cropper.zoom(0.1));
+        zoomOutBtn.addEventListener('click', () => cropper && cropper.zoom(-0.1));
 
         saveCropBtn.addEventListener('click', () => {
             if (!cropper) return;
-            const canvas = cropper.getCroppedCanvas({
-                width: 256, // Create a 256x256 image
-                height: 256,
-            });
-
+            const canvas = cropper.getCroppedCanvas({ width: 256, height: 256 });
             canvas.toBlob((blob) => {
                 croppedAvatarBlob = blob;
                 const url = URL.createObjectURL(blob);
                 avatarPreview.innerHTML = `<img src="${url}" alt="Avatar Preview">`;
             }, 'image/png');
-
             cropModal.style.display = 'none';
             if (cropper) cropper.destroy();
         });
 
-
         document.getElementById('profile-form').addEventListener('submit', async (event) => {
             event.preventDefault();
             const username = usernameInput.value;
-            const dob = document.getElementById('dob').value;
             let avatarUrl = null;
 
+            // --- NEW DOB HANDLING ---
+            const month = dobMonth.value;
+            const day = dobDay.value;
+            const year = dobYear.value;
+            if (!month || !day || !year) {
+                return alert('Please select your full date of birth.');
+            }
+            // Format to YYYY-MM-DD for Supabase
+            const dob = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            
             if (statusEl.classList.contains('taken') || !usernameRegex.test(username) || username.length < 3 || username.length > 16) {
                 alert('Please fix the errors before submitting.');
                 return;
@@ -337,3 +360,4 @@
     </script>
 </body>
 </html>
+
