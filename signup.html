@@ -166,53 +166,37 @@
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
 
-            // --- 1. RESTORED PASSWORD VALIDATION ---
+            // --- 1. PASSWORD VALIDATION RUNS FIRST ---
             if (password !== confirmPassword) { return showToast('Passwords do not match.'); }
             if (password.length < 6 || !/[A-Z]/.test(password) || !/\d/.test(password)) {
                 return showToast('Password must meet the requirements.');
             }
 
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Checking...';
+            submitBtn.textContent = 'Creating Account...';
 
             try {
-                // --- 2. THE PROACTIVE CHECK ---
-                // Ask the database if the email exists *before* trying to sign up.
-                // We query the 'profiles' table, as it contains user emails after creation.
-                const { data: existingProfile, error: checkError } = await supabase
-                    .from('profiles')
-                    .select('email')
-                    .eq('email', email)
-                    .single();
-
-                if (checkError && checkError.code !== 'PGRST116') {
-                    // An actual error occurred during the check, not just "no rows found"
-                    throw checkError;
-                }
-
-                if (existingProfile) {
-                    // If we found a profile, the account already exists. Stop here.
-                    showToast("An account with this email already exists.");
-                    return; // Exit the function
-                }
-
-                // --- 3. PROCEED WITH SIGN UP ---
-                // If we reach here, the email is new. It is safe to create the account.
-                submitBtn.textContent = 'Creating Account...';
-                const { data, error: signUpError } = await supabase.auth.signUp({
+                // --- 2. ATTEMPT TO SIGN UP ---
+                const { data, error } = await supabase.auth.signUp({
                     email: email,
                     password: password,
                 });
 
-                if (signUpError) {
-                    throw signUpError; // Throw any errors from the sign-up process
+                if (error) {
+                    throw error;
                 }
 
-                // Success! Redirect to verification.
-                window.location.href = `/verify?email=${encodeURIComponent(email)}`;
+                // --- 3. THE DEFINITIVE CHECK ---
+                // A new user account will have an empty 'identities' array.
+                // An existing account will have one or more identities.
+                if (data.user && data.user.identities && data.user.identities.length > 0) {
+                    showToast("An account with this email already exists.");
+                } else {
+                    // This is a new user, proceed to verification.
+                    window.location.href = `/verify?email=${encodeURIComponent(email)}`;
+                }
 
             } catch (error) {
-                // Catch any errors from the process and display them.
                 showToast(error.message || "An unknown error occurred.");
             } finally {
                 // --- 4. ALWAYS RE-ENABLE THE BUTTON ---
