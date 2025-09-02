@@ -19,10 +19,10 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Email is required.' });
     }
 
-    // --- THE CORRECTED FUNCTION ---
-    // Instead of the non-existent 'getUserByEmail', we use 'listUsers'.
-    const { data: { users }, error } = await supabase.auth.admin.listUsers({
-      email: email,
+    // --- THE DEFINITIVE FIX ---
+    // This securely calls the 'email_exists' function you added to your database.
+    const { data, error } = await supabase.rpc('email_exists', {
+      email_to_check: email
     });
 
     if (error) {
@@ -30,13 +30,8 @@ export default async function handler(req, res) {
       throw error;
     }
 
-    // If the 'users' array contains one or more users, it means the email exists.
-    if (users && users.length > 0) {
-      res.status(200).json({ exists: true });
-    } else {
-      // If the array is empty, the email is available.
-      res.status(200).json({ exists: false });
-    }
+    // The 'data' returned by the function is the boolean result (true or false).
+    res.status(200).json({ exists: data });
 
   } catch (error) {
     console.error('Error in check-email function:', error);
