@@ -114,12 +114,46 @@
         .remember-me { display: flex; align-items: center; gap: 0.5rem; color: var(--muted); }
         .remember-me input { width: auto; }
         .forgot-password a { color: var(--brand-1); font-weight: 600; }
-
-        .btn.primary { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: white; box-shadow: var(--shadow-brand); }
-        .google-btn { background: #fff; color: #333; border-color: var(--border); }
-        .google-btn img { width: 20px; height: 20px; }
+        
+        .btn.primary { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: white; box-shadow: var(--shadow-brand); width: 100%;}
         .sub-text { color: var(--muted); margin-top: 1.5rem; }
         .sub-text a { color: var(--brand-1); font-weight: 700; }
+
+        /* --- NEW DIVIDER AND SOCIAL LOGIN STYLES --- */
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: var(--muted);
+            margin: 1.5rem 0;
+            font-size: 0.9rem;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border);
+        }
+        .divider span { padding: 0 1rem; }
+        .social-logins {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .social-btn {
+            width: 52px;
+            height: 52px;
+            padding: 0;
+            border-radius: 50%;
+            background: #fff;
+            border: 1px solid var(--border);
+            display: grid;
+            place-items: center;
+        }
+        .social-btn img {
+            width: 24px;
+            height: 24px;
+        }
 
         /* --- TOAST NOTIFICATION STYLES --- */
         #toast-container { position: fixed; top: 80px; right: 20px; z-index: 100; display: flex; flex-direction: column; gap: 10px; }
@@ -130,7 +164,6 @@
         }
         .toast.error { background: var(--danger); }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-
     </style>
 </head>
 <body>
@@ -178,10 +211,18 @@
                 </div>
                 <button type="submit" class="btn primary">Login</button>
             </form>
-            <button id="google-login-btn" class="btn google-btn">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
-                Continue with Google
-            </button>
+
+            <div class="divider">
+                <span>or continue with</span>
+            </div>
+
+            <div class="social-logins">
+                 <button id="google-login-btn" class="social-btn">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
+                </button>
+                <!-- You can add more social login buttons here in the future -->
+            </div>
+
             <p class="sub-text">Don't have an account? <a href="/signup">Sign Up</a></p>
         </div>
         <div id="redirect-overlay">
@@ -201,7 +242,6 @@
         const loginCard = document.getElementById('login-card');
         const redirectOverlay = document.getElementById('redirect-overlay');
 
-        // NEW: Function to show toast messages
         function showToast(message, type = 'error') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -211,7 +251,6 @@
             setTimeout(() => { toast.remove(); }, 4000);
         }
 
-        // Logic for the password visibility toggle
         document.querySelectorAll('.password-toggle').forEach(toggle => {
             toggle.addEventListener('click', () => {
                 const targetId = toggle.getAttribute('data-target');
@@ -223,7 +262,6 @@
             });
         });
 
-        // Main function to check profile and redirect user
         async function checkProfileAndRedirect(user) {
             if (!user) return;
             const { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).single();
@@ -234,7 +272,6 @@
             }
         }
 
-        // Handle standard email/password login
         document.getElementById('login-form').addEventListener('submit', async (event) => {
             event.preventDefault();
             loginCard.classList.add('hidden');
@@ -243,7 +280,6 @@
             const password = document.getElementById('password').value;
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) {
-                // UPDATED: Show toast instead of alert
                 showToast('Incorrect email or password');
                 loginCard.classList.remove('hidden');
                 redirectOverlay.classList.remove('visible');
@@ -252,7 +288,6 @@
             }
         });
 
-        // Handle Google login
         document.getElementById('google-login-btn').addEventListener('click', async () => {
             await supabase.auth.signInWithOAuth({
                 provider: 'google',
@@ -260,7 +295,6 @@
             });
         });
         
-        // This runs when a user is redirected back from Google
         supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN' && session) {
                 loginCard.classList.add('hidden');
