@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - BedrockHub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
+            --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
+            --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { height: 100%; }
+        body {
+            margin: 0; background-color: var(--bg-0); color: var(--text);
+            font: 500 15px/1.6 Inter, sans-serif; display: flex; flex-direction: column; min-height: 100vh;
+        }
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg');
+            background-size: cover; filter: blur(8px); opacity: 0.25; z-index: -1;
+        }
+        .main-content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; position: relative; }
+        .login-card {
+            background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px;
+            padding: 2.5rem; width: 100%; max-width: 420px; text-align: center;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .login-card.hidden { opacity: 0; pointer-events: none; }
+        .brand-icon {
+            width: 60px; height: 60px; border-radius: 16px; margin: 0 auto 1.5rem;
+            display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1));
+            box-shadow: var(--shadow-brand);
+        }
+        .brand-icon img { width: 100%; height: 100%; object-fit: contain; padding: 6px; transform: translateY(-16px); }
+        #redirect-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: var(--text); font-weight: 700; font-size: 1.2rem;
+            display: none; align-items: center; gap: 1rem;
+        }
+        #redirect-overlay.visible { display: flex; }
+        .spinner {
+            width: 24px; height: 24px; border: 3px solid var(--border);
+            border-top: 3px solid var(--brand-1); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        h1 { font-size: 2rem; font-weight: 800; margin-bottom: 2rem; }
+        .form-group { margin-bottom: 1.25rem; text-align: left; position: relative;}
+        label { display: block; margin-bottom: .5rem; font-weight: 600; color: var(--muted); }
+        input {
+            width: 100%; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border);
+            background: var(--bg-2); color: var(--text); font-size: 1rem;
+        }
+        .password-toggle {
+            position: absolute; top: 50%; right: 1rem; transform: translateY(25%);
+            color: var(--muted); cursor: pointer;
+        }
+        .extra-options { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; margin-bottom: 1.5rem; }
+        .remember-me { display: flex; align-items: center; gap: 0.5rem; color: var(--muted); }
+        .remember-me input { width: auto; }
+        .forgot-password a { color: var(--brand-1); font-weight: 600; }
+
+        .btn {
+            padding: .75rem 1.5rem; border-radius: 12px; font-weight: 700; cursor: pointer;
+            border: 1px solid transparent; width: 100%; margin-bottom: 1rem;
+            display: inline-flex; align-items: center; justify-content: center; gap: .75rem;
+        }
+        .primary { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: white; box-shadow: var(--shadow-brand); }
+        .google-btn { background: #fff; color: #333; border-color: var(--border); }
+        .google-btn img { width: 20px; height: 20px; }
+        .sub-text { color: var(--muted); margin-top: 1.5rem; }
+        .sub-text a { color: var(--brand-1); font-weight: 700; }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <div class="login-card" id="login-card">
+            <div class="brand-icon">
+                <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="BedrockHub Icon">
+            </div>
+            <h1>Login</h1>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                     <i class="fa-solid fa-eye password-toggle" data-target="password"></i>
+                </div>
+                <div class="extra-options">
+                    <label class="remember-me">
+                        <input type="checkbox" id="rememberMe">
+                        Remember me
+                    </label>
+                    <div class="forgot-password">
+                        <a href="/forgot-password">Forgot Password?</a>
+                    </div>
+                </div>
+                <button type="submit" class="btn primary">Login</button>
+            </form>
+            <button id="google-login-btn" class="btn google-btn">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
+                Continue with Google
+            </button>
+            <p class="sub-text">Don't have an account? <a href="/signup">Sign Up</a></p>
+        </div>
+        <div id="redirect-overlay">
+            <div class="spinner"></div>
+            <span>Please wait...</span>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const loginCard = document.getElementById('login-card');
+        const redirectOverlay = document.getElementById('redirect-overlay');
+
+        // Logic for the password visibility toggle
+        document.querySelectorAll('.password-toggle').forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const targetId = toggle.getAttribute('data-target');
+                const passwordInput = document.getElementById(targetId);
+                const isPassword = passwordInput.type === 'password';
+                passwordInput.type = isPassword ? 'text' : 'password';
+                toggle.classList.toggle('fa-eye', !isPassword);
+                toggle.classList.toggle('fa-eye-slash', isPassword);
+            });
+        });
+
+        // Main function to check profile and redirect user
+        async function checkProfileAndRedirect(user) {
+            if (!user) return;
+            const { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).single();
+            if (profile && profile.username) {
+                window.location.href = '/';
+            } else {
+                window.location.href = '/complete-profile';
+            }
+        }
+
+        // Handle standard email/password login
+        document.getElementById('login-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            loginCard.classList.add('hidden');
+            redirectOverlay.classList.add('visible');
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) {
+                alert('Login failed: ' + error.message);
+                loginCard.classList.remove('hidden');
+                redirectOverlay.classList.remove('visible');
+            } else if (data.user) {
+                await checkProfileAndRedirect(data.user);
+            }
+        });
+
+        // Handle Google login
+        document.getElementById('google-login-btn').addEventListener('click', async () => {
+            await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: { redirectTo: 'https://mchub.vercel.app/login' }
+            });
+        });
+        
+        // This runs when a user is redirected back from Google
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' && session) {
+                loginCard.classList.add('hidden');
+                redirectOverlay.classList.add('visible');
+                checkProfileAndRedirect(session.user);
+            }
+        });
+    </script>
+</body>
+</html>
+
