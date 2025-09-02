@@ -31,7 +31,7 @@
         }
         .card {
             background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px;
-            padding: 2.5rem; width: 100%; max-width: 480px; text-align: center;
+            padding: 2.5rem; width: 100%; max-width: 440px; /* Made smaller */ text-align: center;
         }
         h1 { font-size: 2rem; font-weight: 800; margin-bottom: 2rem; }
         .form-group { margin-bottom: 1.5rem; text-align: left; }
@@ -51,7 +51,6 @@
         .taken { color: #ef4444; }
         .validation-error { color: #f9a8d4; font-size: 0.85rem; font-weight: 600; margin-top: 8px; }
         
-        /* --- NEW DOB SELECTOR STYLES --- */
         .dob-selectors { display: flex; gap: 10px; }
         .dob-selectors select {
             width: 100%; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border);
@@ -99,14 +98,20 @@
         }
         .crop-modal-content {
             background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px;
-            width: 90%; max-width: 400px; /* Made smaller */ padding: 1.5rem;
+            width: 90%; max-width: 400px; padding: 1.5rem;
         }
         .cropper-container { max-height: 40vh; margin-top: 1rem; }
         .cropper-container img { max-width: 100%; }
         .crop-controls { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1rem; }
         .zoom-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; }
-        .crop-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem; }
-        .cropper-view-box, .cropper-face { border-radius: 50% !important; }
+        .crop-actions { display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
+        .cropper-view-box {
+            border-radius: 50% !important;
+            box-shadow: 0 0 0 3px var(--brand-1); /* Red border effect */
+            outline: none;
+        }
+        .cropper-face { border-radius: 50% !important; }
+        .cropper-bg { background-image: none !important; /* Remove gray background */ }
     </style>
 </head>
 <body>
@@ -125,7 +130,7 @@
                 <button id="zoom-in-btn" class="zoom-btn">+</button>
             </div>
             <div class="crop-actions">
-                <button id="cancel-crop-btn" class="btn" style="background: var(--bg-2); width: auto;">Cancel</button>
+                <button id="cancel-crop-btn" class="btn" style="background: var(--bg-2); border-color: var(--border); width: auto;">Cancel</button>
                 <button id="save-crop-btn" class="btn primary" style="width: auto;">Save</button>
             </div>
         </div>
@@ -194,7 +199,6 @@
         const dobDay = document.getElementById('dob-day');
         const dobYear = document.getElementById('dob-year');
 
-        // --- NEW DOB POPULATION ---
         function populateDateSelectors() {
             const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
             months.forEach((month, i) => {
@@ -288,7 +292,6 @@
             avatarInput.value = '';
         });
         
-        // --- CROPPER ZOOM ---
         zoomInBtn.addEventListener('click', () => cropper && cropper.zoom(0.1));
         zoomOutBtn.addEventListener('click', () => cropper && cropper.zoom(-0.1));
 
@@ -309,14 +312,12 @@
             const username = usernameInput.value;
             let avatarUrl = null;
 
-            // --- NEW DOB HANDLING ---
             const month = dobMonth.value;
             const day = dobDay.value;
             const year = dobYear.value;
             if (!month || !day || !year) {
                 return alert('Please select your full date of birth.');
             }
-            // Format to YYYY-MM-DD for Supabase
             const dob = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             
             if (statusEl.classList.contains('taken') || !usernameRegex.test(username) || username.length < 3 || username.length > 16) {
