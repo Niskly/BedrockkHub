@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scno ale=1.0" />
     <title>Sign Up - MCHub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -87,7 +87,7 @@
         }
         .password-toggle {
             position: absolute;
-            bottom: 14px; /* CORRECTED POSITION */
+            bottom: 14px;
             right: 1rem;
             color: var(--muted);
             cursor: pointer;
@@ -123,7 +123,8 @@
                 </div>
             </a>
             <div id="nav-actions" class="nav-actions">
-                </div>
+                <!-- Auth.js will populate this -->
+            </div>
         </div>
     </header>
 
@@ -214,7 +215,11 @@
             });
 
             if (error) {
-                showToast(error.message);
+                if (error.message.includes("User already registered")) {
+                    showToast("An account with this email already exists.");
+                } else {
+                    showToast(error.message);
+                }
             } else {
                 window.location.href = `/verify?email=${encodeURIComponent(email)}`;
             }
@@ -223,3 +228,4 @@
     <script type="module" src="/auth.js"></script>
 </body>
 </html>
+
