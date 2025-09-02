@@ -27,7 +27,6 @@
         }
         .btn { padding: .75rem 1.5rem; border-radius: 12px; font-weight: 700; cursor: pointer; border: 1px solid transparent; width: 100%; margin-top: 1.5rem; }
         .primary { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: white; box-shadow: var(--shadow-brand); }
-        /* Style to hide content by default to prevent flashing */
         #main-content {
             visibility: hidden;
             opacity: 0;
@@ -57,23 +56,38 @@
         const email = urlParams.get('email');
         const mainContent = document.getElementById('main-content');
 
-        // Logic to protect the page and prevent content flash
+        // --- NEW, ROBUST PAGE PROTECTION LOGIC ---
         document.addEventListener('DOMContentLoaded', async () => {
             const { data: { session } } = await supabase.auth.getSession();
 
             if (session) {
                 // User is already logged in, they shouldn't be here.
-                window.location.href = '/index.html';
+                window.location.href = '/';
                 return;
             }
 
             if (!email) {
-                // User navigated here directly without signing up.
+                // User navigated here directly without an email.
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // --- THE CRUCIAL CHECK ---
+            // Before showing the form, check if a profile already exists for this email.
+            const { data: existingProfile } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('email', email)
+                .single();
+
+            if (existingProfile) {
+                // This email belongs to a user who has already completed their profile.
+                // They should log in, not verify again.
                 window.location.href = '/login.html';
                 return;
             }
 
-            // If we reach here, the user belongs on this page. Show the content.
+            // If we reach here, it's a legitimate new user. Show them the form.
             document.getElementById('user-email').textContent = email;
             mainContent.style.visibility = 'visible';
             mainContent.style.opacity = '1';
@@ -84,7 +98,7 @@
             const token = document.getElementById('token').value;
 
             if (!email || !token) {
-                alert('Email or token is missing from the URL. Please try signing up again.');
+                alert('Email or token is missing. Please try signing up again.');
                 return;
             }
 
@@ -98,10 +112,9 @@
                 alert('Verification failed: ' + error.message);
             } else {
                 // On success, the user is now logged in. Send them to complete their profile.
-                window.location.href = '/complete-profile.html';
+                window.location.href = '/complete-profile';
             }
         });
     </script>
 </body>
 </html>
-
