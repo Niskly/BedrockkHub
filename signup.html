@@ -26,7 +26,7 @@
         }
         a { color: inherit; text-decoration: none; }
         
-        /* --- NAVBAR STYLES --- */
+        /* --- CORRECT NAVBAR STYLES --- */
         header {
             position: sticky; top: 0; z-index: 50;
             backdrop-filter: saturate(1.2) blur(10px);
@@ -86,15 +86,12 @@
             background: var(--bg-2); color: var(--text); font-size: 1rem;
         }
         .password-toggle {
-            position: absolute; top: 50%; right: 1rem; transform: translateY(25%);
-            color: var(--muted); cursor: pointer;
+            position: absolute;
+            bottom: 14px; /* CORRECTED POSITION */
+            right: 1rem;
+            color: var(--muted);
+            cursor: pointer;
         }
-        .validation-icon {
-            position: absolute; top: 50%; right: 2.5rem; transform: translateY(25%);
-            display: none; /* Hidden by default */
-        }
-        .validation-icon.valid { color: var(--success); }
-        .validation-icon.invalid { color: var(--danger); }
         .password-req-text {
             font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem;
         }
@@ -126,8 +123,7 @@
                 </div>
             </a>
             <div id="nav-actions" class="nav-actions">
-                <!-- Auth.js will populate this -->
-            </div>
+                </div>
         </div>
     </header>
 
@@ -152,8 +148,6 @@
                     <label for="confirmPassword">Confirm Password</label>
                     <input type="password" id="confirmPassword" required>
                     <i class="fa-solid fa-eye password-toggle" data-target="confirmPassword"></i>
-                    <i class="fa-solid fa-check validation-icon valid" id="confirm-check"></i>
-                    <i class="fa-solid fa-times validation-icon invalid" id="confirm-x"></i>
                 </div>
                 <button type="submit" class="btn primary">Create Account</button>
             </form>
@@ -171,8 +165,6 @@
 
         const passwordInput = document.getElementById('password');
         const confirmPasswordInput = document.getElementById('confirmPassword');
-        const confirmCheck = document.getElementById('confirm-check');
-        const confirmX = document.getElementById('confirm-x');
         
         function showToast(message, type = 'error') {
             const container = document.getElementById('toast-container');
@@ -194,17 +186,6 @@
                 toggle.classList.toggle('fa-eye-slash', isPassword);
             });
         });
-
-        // Event listener to check confirm password as user types in the first password field
-        passwordInput.addEventListener('input', validateConfirmPassword);
-        // Event listener for the confirm password field
-        confirmPasswordInput.addEventListener('input', validateConfirmPassword);
-        
-        function validateConfirmPassword() {
-            const passwordsMatch = passwordInput.value === confirmPasswordInput.value && confirmPasswordInput.value.length > 0;
-            confirmCheck.style.display = passwordsMatch ? 'block' : 'none';
-            confirmX.style.display = !passwordsMatch && confirmPasswordInput.value.length > 0 ? 'block' : 'none';
-        }
 
         // Form submission
         document.getElementById('signup-form').addEventListener('submit', async (event) => {
@@ -242,4 +223,3 @@
     <script type="module" src="/auth.js"></script>
 </body>
 </html>
-
