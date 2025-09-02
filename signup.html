@@ -95,11 +95,14 @@
         }
         .password-toggle {
             position: absolute;
-            top: 50%; /* CORRECTED POSITION */
+            top: 50%;
             right: 1rem;
-            transform: translateY(25%); /* Nudge based on label height */
+            transform: translateY(25%);
             color: var(--muted);
             cursor: pointer;
+        }
+        .form-group:has(.password-req-text) .password-toggle {
+             transform: translateY(-25%); /* Adjust for fields with text below */
         }
         .password-req-text {
             font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem;
@@ -235,10 +238,10 @@
             });
 
             if (error) {
-                if (error.message.toLowerCase().includes("user already registered")) {
+                if (error.message && error.message.toLowerCase().includes("user already registered")) {
                     showToast("An account with this email already exists.");
                 } else {
-                    showToast(error.message);
+                    showToast(error.message || "An unknown error occurred.");
                 }
             } else {
                 window.location.href = `/verify?email=${encodeURIComponent(email)}`;
