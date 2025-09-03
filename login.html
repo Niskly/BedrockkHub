@@ -57,6 +57,19 @@
             text-align: center;
             transition: opacity 0.3s ease-in-out;
         }
+        .login-card.hidden { opacity: 0; pointer-events: none; }
+        #redirect-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: var(--text); font-weight: 700; font-size: 1.2rem;
+            display: none; align-items: center; gap: 1rem;
+        }
+        #redirect-overlay.visible { display: flex; }
+        .spinner {
+            width: 24px; height: 24px; border: 3px solid var(--border);
+            border-top: 3px solid var(--brand-1); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .brand-icon {
             width: 50px; height: 50px; border-radius: 14px; margin: 0 auto 1rem;
             display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1));
@@ -188,6 +201,10 @@
 
             <p class="sub-text">Don't have an account? <a href="/signup">Sign Up</a></p>
         </div>
+        <div id="redirect-overlay">
+            <div class="spinner"></div>
+            <span>Please wait...</span>
+        </div>
     </div>
     
     <div id="toast-container"></div>
@@ -197,6 +214,9 @@
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const loginCard = document.getElementById('login-card');
+        const redirectOverlay = document.getElementById('redirect-overlay');
 
         function showToast(message, type = 'error') {
             const container = document.getElementById('toast-container');
@@ -220,21 +240,24 @@
 
         document.getElementById('login-form').addEventListener('submit', async (event) => {
             event.preventDefault();
+            loginCard.classList.add('hidden');
+            redirectOverlay.classList.add('visible');
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const { error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) {
                 showToast('Incorrect email or password');
+                loginCard.classList.remove('hidden');
+                redirectOverlay.classList.remove('visible');
             }
         });
 
         document.getElementById('google-login-btn').addEventListener('click', async () => {
+            loginCard.classList.add('hidden');
+            redirectOverlay.classList.add('visible');
             await supabase.auth.signInWithOAuth({
                 provider: 'google',
-                // --- THIS IS THE FIX ---
-                // Redirect to the homepage after Google sign-in.
-                // The auth.js guard will then take over.
-                options: { redirectTo: 'https://mchub.vercel.app/' } 
+                options: { redirectTo: 'https://mchub.vercel.app/' }
             });
         });
         
