@@ -32,7 +32,6 @@ function renderLoginButton() {
         <a class="btn primary" href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>`;
 }
 
-// --- THIS IS THE NEW, UNIFIED AUTH LOGIC ---
 async function initializeAuth() {
     const publicAuthPages = ['/login', '/signup', '/verify', '/forgot-password', '/update-password', '/complete-profile'];
     const currentPath = window.location.pathname;
@@ -52,24 +51,28 @@ async function initializeAuth() {
     }
 
     const user = session.user;
-    const { data: profile, error: profileError } = await supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single();
+    
+    // Get profile with better error handling
+    const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('username, avatar_url')
+        .eq('id', user.id)
+        .single();
 
-    if (profileError && profileError.code !== 'PGRST116') { // Ignore "no rows found" error for new users
-        console.error("Error getting profile:", profileError);
-        await supabase.auth.signOut();
-        renderLoginButton();
-        return;
-    }
+    // Check if profile is complete - ensure username exists and is not empty
+    const isProfileComplete = profile && profile.username && profile.username.trim() !== '';
 
-    const isProfileComplete = profile && profile.username;
+    console.log('Profile check:', { profile, isProfileComplete, currentPath, isPublicAuthPage });
 
     // --- REDIRECT LOGIC ---
+    // If user has complete profile and is on auth page, redirect to home
     if (isProfileComplete && isPublicAuthPage) {
         window.location.replace('/');
         return;
     }
     
-    if (!isProfileComplete && !isPublicAuthPage) {
+    // If user doesn't have complete profile and is NOT on complete-profile page, redirect there
+    if (!isProfileComplete && !isPublicAuthPage && currentPath !== '/complete-profile') {
         window.location.replace('/complete-profile');
         return;
     }
@@ -78,6 +81,7 @@ async function initializeAuth() {
     if (isProfileComplete) {
         renderUserDropdown(profile);
     } else {
+        // If on complete-profile page, still show login button (user is setting up profile)
         renderLoginButton();
     }
 }
