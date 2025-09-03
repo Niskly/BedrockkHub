@@ -34,7 +34,17 @@ function renderLoginButton() {
 
 // --- THIS IS THE NEW, UNIFIED AUTH LOGIC ---
 async function initializeAuth() {
-    const publicAuthPages = ['/login', '/signup', '/verify', '/forgot-password', '/update-password', '/complete-profile'];
+    const publicAuthPages = [
+  '/login',
+  '/signup',
+  '/verify',
+  '/forgot-password',
+  '/update-password',
+  '/complete-profile',
+  '/',
+  '/texturepacks.html'
+];
+
     const currentPath = window.location.pathname;
     const isPublicAuthPage = publicAuthPages.some(page => currentPath.endsWith(page) || currentPath.endsWith(page + '.html'));
 
