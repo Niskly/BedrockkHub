@@ -49,11 +49,6 @@
         
         .tiny { font-size: 12px; color: var(--muted); }
 
-        /* Hide header when redirecting */
-        body.redirecting header {
-            display: none;
-        }
-
         .main-content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; position: relative; }
         .login-card {
             background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px;
@@ -232,12 +227,6 @@
             setTimeout(() => { toast.remove(); }, 4000);
         }
 
-        function showRedirectState() {
-            document.body.classList.add('redirecting');
-            loginCard.classList.add('hidden');
-            redirectOverlay.classList.add('visible');
-        }
-
         document.querySelectorAll('.password-toggle').forEach(toggle => {
             toggle.addEventListener('click', () => {
                 const targetId = toggle.getAttribute('data-target');
@@ -251,32 +240,28 @@
 
         document.getElementById('login-form').addEventListener('submit', async (event) => {
             event.preventDefault();
-            showRedirectState();
+            loginCard.classList.add('hidden');
+            redirectOverlay.classList.add('visible');
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const { error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) {
                 showToast('Incorrect email or password');
-                document.body.classList.remove('redirecting');
                 loginCard.classList.remove('hidden');
                 redirectOverlay.classList.remove('visible');
             }
-            // Don't handle success here - let auth.js handle the redirect
         });
 
         document.getElementById('google-login-btn').addEventListener('click', async () => {
-            showRedirectState();
+            loginCard.classList.add('hidden');
+            redirectOverlay.classList.add('visible');
             await supabase.auth.signInWithOAuth({
-                provider: 'google'
+                provider: 'google',
+                options: { redirectTo: 'https://mchub.vercel.app/' }
             });
         });
         
     </script>
-    <script type="module">
-        // Conditional auth.js loading - only load if not redirecting
-        if (!document.body.classList.contains('redirecting')) {
-            import('/auth.js');
-        }
-    </script>
+    <script type="module" src="/auth.js"></script>
 </body>
 </html>
