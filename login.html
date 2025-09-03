@@ -49,6 +49,11 @@
         
         .tiny { font-size: 12px; color: var(--muted); }
 
+        /* Hide header when redirecting */
+        body.redirecting header {
+            display: none;
+        }
+
         .main-content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; position: relative; }
         .login-card {
             background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px;
@@ -227,6 +232,12 @@
             setTimeout(() => { toast.remove(); }, 4000);
         }
 
+        function showRedirectState() {
+            document.body.classList.add('redirecting');
+            loginCard.classList.add('hidden');
+            redirectOverlay.classList.add('visible');
+        }
+
         document.querySelectorAll('.password-toggle').forEach(toggle => {
             toggle.addEventListener('click', () => {
                 const targetId = toggle.getAttribute('data-target');
@@ -240,28 +251,48 @@
 
         document.getElementById('login-form').addEventListener('submit', async (event) => {
             event.preventDefault();
-            loginCard.classList.add('hidden');
-            redirectOverlay.classList.add('visible');
+            showRedirectState();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const { error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) {
                 showToast('Incorrect email or password');
+                document.body.classList.remove('redirecting');
                 loginCard.classList.remove('hidden');
                 redirectOverlay.classList.remove('visible');
             }
         });
 
         document.getElementById('google-login-btn').addEventListener('click', async () => {
-            loginCard.classList.add('hidden');
-            redirectOverlay.classList.add('visible');
+            showRedirectState();
             await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: { redirectTo: 'https://mchub.vercel.app/' }
+                provider: 'google'
+                // Remove the redirectTo option to let auth.js handle it
             });
+        });
+
+        // Handle OAuth callback and redirect appropriately
+        supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' && session) {
+                // Check if user has complete profile
+                const { data: profile } = await supabase.from('profiles').select('username').eq('id', session.user.id).single();
+                
+                if (!profile || !profile.username) {
+                    // Profile incomplete - redirect to complete-profile
+                    window.location.href = '/complete-profile';
+                } else {
+                    // Profile complete - redirect to home
+                    window.location.href = '/';
+                }
+            }
         });
         
     </script>
-    <script type="module" src="/auth.js"></script>
+    <script type="module">
+        // Conditional auth.js loading - only load if not redirecting
+        if (!document.body.classList.contains('redirecting')) {
+            import('/auth.js');
+        }
+    </script>
 </body>
 </html>
