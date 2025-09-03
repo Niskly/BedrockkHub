@@ -77,9 +77,9 @@
         /* --- CORRECTED EYE ICON STYLE --- */
         .password-toggle {
             position: absolute;
-            top: 52px; 
+            top: 50%; 
             right: 1rem;
-            transform: translateY(-50%);
+            transform: translateY(25%);
             color: var(--muted);
             cursor: pointer;
         }
@@ -184,8 +184,6 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const loginCard = document.getElementById('login-card');
-
         function showToast(message, type = 'error') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -228,3 +226,4 @@
     <script type="module" src="/auth.js"></script>
 </body>
 </html>
+
