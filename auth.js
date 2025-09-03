@@ -44,7 +44,11 @@ function renderUserDropdown(profile) {
             </div>
         </div>`;
     document.querySelector('.user-menu-btn').addEventListener('click', () => document.querySelector('.dropdown-content').classList.toggle('show'));
-    document.getElementById('logout-btn').addEventListener('click', async (e) => { e.preventDefault(); await supabase.auth.signOut(); window.location.href = '/login'; });
+    document.getElementById('logout-btn').addEventListener('click', async (e) => { 
+        e.preventDefault(); 
+        await supabase.auth.signOut(); 
+        window.location.href = '/login'; 
+    });
 }
 
 function renderLoginButton() {
@@ -59,8 +63,6 @@ async function checkUserProfileForUI(user) {
     if (profile && profile.username) {
         renderUserDropdown(profile);
     } else {
-        // If profile is incomplete, they'll be redirected by the master guard.
-        // Show a simple state in the nav in the meantime.
         renderLoginButton(); 
     }
 }
@@ -68,43 +70,10 @@ async function checkUserProfileForUI(user) {
 // This is now the main brain of the site's authentication
 supabase.auth.onAuthStateChange(async (event, session) => {
     if (session && session.user) {
-        await masterGuard(session.user); // Run the guard first
-        await checkUserProfileForUI(session.user); // Then update the UI
+        await masterGuard(session.user);
+        await checkUserProfileForUI(session.user);
     } else {
         renderLoginButton();
     }
 });
-```
 
-### Step 2: Remove Old Logic from Other Pages
-
-Now we need to delete the old, simple protection scripts from `login.html` and `signup.html` because the new `auth.js` handles everything.
-
-**In `login.html`:**
-Find and **delete** this entire script block. You don't need it anymore.
-
-```javascript
-// DELETE THIS SCRIPT BLOCK FROM login.html
-supabase.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_IN' && session) {
-        loginCard.classList.add('hidden');
-        redirectOverlay.classList.add('visible');
-        checkProfileAndRedirect(session.user);
-    }
-});
-```
-
-**In `signup.html`:**
-Find and **delete** this entire event listener. `auth.js` now handles this.
-
-```javascript
-// DELETE THIS SCRIPT BLOCK FROM signup.html
-document.addEventListener('DOMContentLoaded', async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-        window.location.replace('/'); // Use replace to avoid back-button issues
-    } else {
-        // Only show the page if the user is not logged in
-        document.body.classList.add('visible');
-    }
-});
