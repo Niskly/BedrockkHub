@@ -34,7 +34,20 @@ function renderLoginButton() {
 
 // --- THIS IS THE NEW, UNIFIED AUTH LOGIC ---
 async function initializeAuth() {
-    // 1. Get the user's session
+    // 1. Define pages that are "public" or part of the auth flow.
+    // An incomplete user is ALLOWED to be on these pages.
+    const publicAuthPages = [
+        '/login',
+        '/signup',
+        '/verify',
+        '/forgot-password',
+        '/update-password',
+        '/complete-profile'
+    ];
+    const currentPath = window.location.pathname;
+    const isPublicAuthPage = publicAuthPages.some(page => currentPath.includes(page));
+
+    // 2. Get the user's session
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
     if (sessionError) {
@@ -51,7 +64,7 @@ async function initializeAuth() {
 
     const user = session.user;
 
-    // 2. If there IS a user, get their profile details
+    // 3. If there IS a user, get their profile details
     const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('username, avatar_url')
@@ -60,31 +73,28 @@ async function initializeAuth() {
     
     if (profileError) {
         console.error("Error getting profile:", profileError);
-        // If profile fails to load, sign out to prevent issues
         await supabase.auth.signOut(); 
         renderLoginButton();
         return;
     }
 
-    // 3. Now we have the FULL user status. We can make decisions.
+    // 4. Now we have the FULL user status. We can make decisions.
     const isProfileComplete = profile && profile.username;
-    const isOnAuthPage = window.location.pathname.includes('/login') || window.location.pathname.includes('/signup');
-    const isOnCompletionPage = window.location.pathname.includes('/complete-profile');
 
-    // 4. Run REDIRECT logic first.
-    if (isProfileComplete && isOnAuthPage) {
-        // Logged-in user is on login/signup page. Redirect to home.
+    // 5. Run REDIRECT logic first.
+    if (isProfileComplete && isPublicAuthPage) {
+        // Logged-in, complete user is on a page they shouldn't be on. Redirect to home.
         window.location.replace('/');
         return; // Stop here to prevent UI flicker
     }
     
-    if (!isProfileComplete && !isOnCompletionPage) {
-        // Logged-in user has NOT finished profile and is NOT on the right page. Redirect them.
+    if (!isProfileComplete && !isPublicAuthPage) {
+        // Logged-in, INCOMPLETE user is trying to access a protected page. Redirect them.
         window.location.replace('/complete-profile');
         return; // Stop here to prevent UI flicker
     }
 
-    // 5. If no redirect happened, render the correct UI.
+    // 6. If no redirect happened, render the correct UI.
     if (isProfileComplete) {
         renderUserDropdown(profile);
     } else {
@@ -93,11 +103,8 @@ async function initializeAuth() {
 }
 
 // --- INITIALIZE AND LISTEN FOR CHANGES ---
-
-// 1. Run the check as soon as the page is ready
 document.addEventListener('DOMContentLoaded', initializeAuth);
 
-// 2. Listen for auth changes (e.g., login/logout in another tab) and re-run the check
 supabase.auth.onAuthStateChange((_event, session) => {
     initializeAuth();
 });
