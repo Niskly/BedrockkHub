@@ -2,7 +2,6 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 const navActions = document.getElementById('nav-actions');
 
 function renderUserDropdown(profile) {
@@ -35,11 +34,14 @@ function renderLoginButton() {
 // --- THIS IS THE NEW, UNIFIED AUTH LOGIC ---
 async function initializeAuth() {
     const publicAuthPages = ['/login', '/signup', '/verify', '/forgot-password', '/update-password', '/complete-profile'];
+    // Pages that can be accessed even without a complete profile
+    const publicPages = ['/', '/texturepacks', '/texturepacks.html'];
+    
     const currentPath = window.location.pathname;
     const isPublicAuthPage = publicAuthPages.some(page => currentPath.endsWith(page) || currentPath.endsWith(page + '.html'));
-
+    const isPublicPage = publicPages.some(page => currentPath === page || currentPath.endsWith(page));
+    
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
     if (sessionError) {
         console.error("Error getting session:", sessionError);
         renderLoginButton();
@@ -53,7 +55,7 @@ async function initializeAuth() {
 
     const user = session.user;
     const { data: profile, error: profileError } = await supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single();
-
+    
     if (profileError && profileError.code !== 'PGRST116') { // Ignore "no rows found" error for new users
         console.error("Error getting profile:", profileError);
         await supabase.auth.signOut();
@@ -69,7 +71,8 @@ async function initializeAuth() {
         return;
     }
     
-    if (!isProfileComplete && !isPublicAuthPage) {
+    // Only redirect to complete-profile if they're not on a public page or auth page
+    if (!isProfileComplete && !isPublicAuthPage && !isPublicPage) {
         window.location.replace('/complete-profile');
         return;
     }
