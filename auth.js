@@ -1,6 +1,6 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const navActions = document.getElementById('nav-actions');
@@ -10,16 +10,28 @@ async function masterGuard(user) {
     if (!user) {
         return; // If there's no user, do nothing.
     }
+
     const { data: profile } = await supabase
         .from('profiles')
         .select('username')
         .eq('id', user.id)
         .single();
+
     const isProfileComplete = profile && profile.username;
     const isOnCompletionPage = window.location.pathname.includes('/complete-profile');
+    const isOnAuthPage = window.location.pathname.includes('/login') || window.location.pathname.includes('/signup');
 
+    // Rule #1: If profile is NOT complete AND they are NOT on the completion page, force them there.
     if (!isProfileComplete && !isOnCompletionPage) {
         window.location.replace('/complete-profile');
+        return; // Stop further execution
+    }
+
+    // --- NEW RULE #2 ---
+    // If profile IS complete AND they are on a login/signup page, force them to the homepage.
+    if (isProfileComplete && isOnAuthPage) {
+        window.location.replace('/'); // Use replace to prevent back-button loops
+        return; // Stop further execution
     }
 }
 
@@ -62,9 +74,7 @@ async function checkUserProfileForUI(user) {
     }
 }
 
-// --- NEW, MORE ROBUST AUTHENTICATION LOGIC ---
 
-// This is our main function that checks the auth state and updates the UI
 async function handleAuthState() {
     try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -77,15 +87,14 @@ async function handleAuthState() {
         }
     } catch (error) {
         console.error("Error handling auth state:", error);
-        renderLoginButton(); // If anything fails, show the login button as a fallback
+        renderLoginButton();
     }
 }
 
-// 1. Run our main check as soon as the page content has loaded
 document.addEventListener('DOMContentLoaded', handleAuthState);
 
-// 2. Also listen for any future changes in authentication (e.g., user logs in/out in another tab)
 supabase.auth.onAuthStateChange((event, session) => {
+    // Re-check auth state on any change, like login or logout
     handleAuthState();
 });
 
