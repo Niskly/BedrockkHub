@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BedrockHub — Texture Packs</title>
+    <title>MCHub — Texture Packs</title> <!-- CHANGED -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
@@ -185,10 +185,8 @@
             border-color: var(--brand-2);
             color: white;
         }
-        /* Styles for Admin Controls */
-        #admin-actions { display: none; /* Hidden by default */ }
+        #admin-actions { display: none; }
         
-        /* --- STYLES FOR THE USER DROPDOWN MENU --- */
         .user-dropdown { position: relative; display: inline-block; }
         .user-menu-btn {
             background: var(--bg-2); border: 1px solid var(--border); color: var(--text);
@@ -214,7 +212,6 @@
             display: flex; align-items: center; gap: 10px; font-weight: 600;
         }
         .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
-        /* --- END OF STYLES --- */
 
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         
@@ -231,7 +228,7 @@
                     <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="BedrockHub Icon" class="brand-icon-custom">
                 </div>
                 <div>
-                    <div class="brand-title">BEDROCKHUB</div>
+                    <div class="brand-title">MCHUB</div> <!-- CHANGED -->
                     <div class="tiny">Minecraft Bedrock • community</div>
                 </div>
             </a>
@@ -256,6 +253,12 @@
                 <h3>Resolutions</h3>
                 <div id="resolutionBoxes" class="resolutions"></div>
                 <div class="row" style="margin-top:8px"><button class="btn sm btn-clear" onclick="clearResolutions()">Clear resolutions</button></div>
+                <!-- NEW VERSION FILTER -->
+                <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+                <h3>Version</h3>
+                <div id="versionBoxes" class="resolutions"></div>
+                <div class="row" style="margin-top:8px"><button class="btn sm btn-clear" onclick="clearVersions()">Clear versions</button></div>
+                <!-- END NEW VERSION FILTER -->
                 <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
                 <h3>Tags</h3>
                 <div id="tagCloud" class="tags"></div>
@@ -430,15 +433,16 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const COLORS = [{key: 'none', hex: '#4b5563', icon: 'fa-solid fa-ban'}, {key: 'red',hex: '#ef4444'}, {key: 'blue',hex: '#3b82f6'}, {key: 'green',hex: '#22c55e'}, {key: 'yellow',hex: '#eab308'}, {key: 'purple',hex: '#a855f7'}, {key: 'pink',hex: '#ec4899'}, {key: 'orange',hex: '#f97316'}, {key: 'teal',hex: '#14b8a6'}, {key: 'gray',hex: '#6b7280'}, {key: 'black',hex: '#1f2937'}];
-        const TAGS = ['pvp', 'bedwars', 'skywars', 'anime', 'crystal pvp', 'survival'];
+        const TAGS = ['pvp', 'bedwars', 'skywars', 'anime', 'crystal pvp', 'survival', 'visual']; // ADDED
         const RESOLUTIONS = ['8x', '16x', '32x', '64x'];
+        const VERSIONS = ['bedrock', 'java']; // ADDED
         const packsPerPage = 9;
         let packs = [];
-        const state = { q: '', colors: new Set(), tags: new Set(), resolutions: new Set(), currentPage: 1, modalColor: null, modalTags: new Set(), modalResolution: null, editColor: null, editTags: new Set(), editResolution: null, sortBy: 'latest' };
+        const state = { q: '', colors: new Set(), tags: new Set(), resolutions: new Set(), versions: new Set(), currentPage: 1, modalColor: null, modalTags: new Set(), modalResolution: null, editColor: null, editTags: new Set(), editResolution: null, sortBy: 'latest' }; // ADDED versions
         let currentEditId = null;
         let tempModalTags = new Set();
         let isEditingTags = false;
-        let currentUserRole = null; // To store the user's role
+        let currentUserRole = null;
 
         /* ====== API & DATA FUNCTIONS ====== */
         async function loadPacksOnStartup() {
@@ -458,7 +462,6 @@
             render();
         }
         
-        // ... (handleUpload, saveEdit, confirmDelete, handleDownload functions remain the same) ...
         async function handleUpload(e){e.preventDefault();const t=document.getElementById("submitBtn"),o=document.getElementById("uploadFormFieldset"),a=document.getElementById("fileInput").files[0],n=document.getElementById("packName").value.trim(),i=document.getElementById("packDescription").value.trim();if(!a||!a.name.toLowerCase().endsWith(".mcpack")&&!a.name.toLowerCase().endsWith(".zip"))return void showToast("Please select a valid .mcpack or .zip file");if(!state.modalColor)return void showToast("You forgot to select a primary color.");if(!state.modalResolution)return void showToast("You forgot to select a resolution.");let l="";a.name.toLowerCase().endsWith(".mcpack")?l="bedrock":a.name.toLowerCase().endsWith(".zip")&&(l="java"),t.disabled=!0,o.disabled=!0,t.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Processing...';try{let e=null;const r=new JSZip,d=await r.loadAsync(a);let s=null;if(d.forEach((e,t)=>{const o=e.toLowerCase();o.endsWith("pack_icon.png")&&(s=t)}),!s&&d.forEach((e,t)=>{const o=e.toLowerCase();o.endsWith("pack.png")&&(s=t)}),s){t.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...';const o=await s.async("blob"),a=`icons/${Date.now()}-icon.png`,{error:n}=await supabase.storage.from("packs").upload(a,o);if(n)throw n;const{data:i}=supabase.storage.from("packs").getPublicUrl(a);e=i.publicUrl}t.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Uploading Pack...';const c=a.name.replace(/[^a-zA-Z0-9-._]/g,"").replace(/\s+/g,"-"),p=`${Date.now()}-${c}`;await supabase.storage.from("packs").upload(p,a);const m=await fetch("/api/addpacks",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:n||a.name.replace(/\.(mcpack|zip)$/i,""),color:state.modalColor,tags:[...state.modalTags],filename:p,resolution:state.modalResolution,version:l,description:i,icon_url:e})});if(!m.ok)throw new Error((await m.json()).details||"Failed to add pack metadata.");await loadPacksOnStartup(),closeModal()}catch(e){showToast("Upload failed: "+e.message)}finally{t.disabled=!1,o.disabled=!1,t.innerHTML='<i class="fa-solid fa-upload"></i> Upload'}}
         async function saveEdit(e){e.preventDefault();if(!currentEditId)return;const{error:t}=await supabase.from("packs").update({name:document.getElementById("editPackName").value.trim(),description:document.getElementById("editPackDescription").value.trim(),color:state.editColor,tags:[...state.editTags].join(","),resolution:state.editResolution}).eq("id",currentEditId);t?showToast("Save failed: "+t.message):(await loadPacksOnStartup(),closeEditModal())}
         async function confirmDelete(){if(!currentEditId)return;const e=packs.find(e=>e.id===currentEditId);if(!e)return void cancelDelete();try{await supabase.storage.from("packs").remove([e.filename]),e.icon_url&&await supabase.storage.from("packs").remove([`icons/${e.icon_url.split("/").pop()}`]);const{error:t}=await supabase.from("packs").delete().eq("id",currentEditId);if(t)throw t;await loadPacksOnStartup()}catch(e){showToast("Delete failed: "+e.message)}finally{cancelDelete(),closeEditModal()}}
@@ -472,7 +475,8 @@
                 const cOk = state.colors.size === 0 || state.colors.has(p.color);
                 const tOk = state.tags.size === 0 || [...state.tags].every(t => (p.tags || []).includes(t));
                 const rOk = state.resolutions.size === 0 || state.resolutions.has(p.resolution);
-                return qOk && cOk && tOk && rOk;
+                const vOk = state.versions.size === 0 || state.versions.has(p.version); // ADDED
+                return qOk && cOk && tOk && rOk && vOk; // ADDED
             });
 
             const startIndex = (state.currentPage - 1) * packsPerPage;
@@ -489,7 +493,6 @@
             renderPagination(filtered.length);
         }
 
-        // ... (renderPagination, scrollToContentTop, nextPage, prevPage remain the same) ...
         function renderPagination(e){const t=document.getElementById("pagination-controls");t.innerHTML="";const o=Math.ceil(e/9);if(o<=1)return;if(state.currentPage>1){const e=document.createElement("button");e.className="pagination-btn",e.innerHTML='<i class="fa-solid fa-arrow-left"></i>',e.onclick=prevPage,t.appendChild(e)}const a=document.createElement("span");a.className="tiny",a.textContent=`Page ${state.currentPage} of ${o}`,t.appendChild(a),state.currentPage<o&&(()=>{const e=document.createElement("button");e.className="pagination-btn",e.innerHTML='<i class="fa-solid fa-arrow-right"></i>',e.onclick=nextPage,t.appendChild(e)})()}
         function scrollToContentTop(){const e=document.querySelector("header"),t=document.getElementById("main-content");if(!e||!t)return;const o=e.offsetHeight,a=t.offsetTop;window.scrollTo({top:a-o-14,behavior:"smooth"})}
         function nextPage(){state.currentPage++,scrollToContentTop(),render()}
@@ -514,7 +517,6 @@
                 thumbBackgroundStyle = `background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})`;
             }
 
-            // CORRECTED LOGIC: Create the full menu content based on the user's role
             const downloadLink = `<a href="${data.publicUrl}" onclick="handleDownload(event, ${p.id}, '${data.publicUrl}', '${escapeHtml(downloadName)}')"><i class="fa-solid fa-download"></i> Download</a>`;
             const editLink = currentUserRole === 'admin' ? `<a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>` : '';
 
@@ -536,14 +538,12 @@
                     <div class="meta">
                         ${(p.color && p.color !== 'none') ? `<span class="badge" style="text-transform: capitalize;">${escapeHtml(p.color)}</span>` : ''}
                         ${p.resolution ? `<span class="badge">${escapeHtml(p.resolution)}</span>` : ''}
-                        ${p.version ? `<span class="badge" style="text-transform: capitalize;">${escapeHtml(p.version)}</span>` : ''}
                         ${(p.tags||[]).map(t=>`<span class="badge">${escapeHtml(capitalizeFirst(t))}</span>`).join('')}
                     </div>
                 </div>`;
             return card;
         }
 
-        // ... (All other UI, event handlers, and utility functions remain the same) ...
         function buildSwatches(e,t,o){e.innerHTML="",COLORS.forEach(a=>{const n=document.createElement("button");n.type="button",n.className="swatch"+(o&&o.has(a.key)?" active":""),n.style.background=a.hex,n.title=a.key,a.icon&&(n.innerHTML=`<i class="${a.icon}"></i>`),n.onclick=()=>t(a.key,n),e.appendChild(n)})}
         function buildModalTags(e,t,o=""){e.innerHTML="";const a=TAGS.filter(e=>e.toLowerCase().includes(o.toLowerCase()));0===a.length&&(e.innerHTML='<div class="tiny" style="grid-column: 1 / -1; text-align: center;">No tags found.</div>'),a.forEach(o=>{const a=document.createElement("span");a.className="tag-checkbox",t.has(o)&&a.classList.add("selected"),a.textContent=capitalizeFirst(o),a.onclick=()=>{toggleSet(tempModalTags,o),a.classList.toggle("selected")},e.appendChild(a)})}
         function buildSidebarTags(e,t,o){e.innerHTML="",TAGS.forEach(a=>{const n=document.createElement("button");n.type="button",n.className="tag"+(o?.has(a)?" active":""),n.textContent=capitalizeFirst(a),n.onclick=()=>{t(a,n),n.classList.toggle("active")},e.appendChild(n)})}
@@ -562,7 +562,9 @@
         function clearColors(){state.currentPage=1,state.colors.clear(),buildSwatches(document.getElementById("colorSwatches"),(e,t)=>{toggleSet(state.colors,e),t.classList.toggle("active"),render()},state.colors),render()}
         function clearTags(){state.currentPage=1,state.tags.clear(),buildSidebarTags(document.getElementById("tagCloud"),(e,t)=>{toggleSet(state.tags,e),t.classList.toggle("active"),render()},state.tags),render()}
         function clearResolutions(){state.currentPage=1,state.resolutions.clear(),buildSelectorBoxes(document.getElementById("resolutionBoxes"),(e,t)=>{toggleSet(state.resolutions,e),t.classList.toggle("active"),render()},state.resolutions,RESOLUTIONS),render()}
-        function resetAll(){state.currentPage=1,clearSearch(),clearColors(),clearTags(),clearResolutions()}
+        // NEW clearVersions function
+        function clearVersions(){state.currentPage=1,state.versions.clear(),buildSelectorBoxes(document.getElementById("versionBoxes"),(e,t)=>{toggleSet(state.versions,e),t.classList.toggle("active"),render()},state.versions,VERSIONS),render()}
+        function resetAll(){state.currentPage=1,clearSearch(),clearColors(),clearTags(),clearResolutions(), clearVersions()} // ADDED
         function hintFile(){const e=document.getElementById("fileInput"),t=e.files[0];if(t){document.getElementById("fileHint").textContent=t.name;const o=document.getElementById("packName");o.value=t.name.replace(/\.(mcpack|zip)$/i,"")}}
         function toggleOptionsMenu(e,t){e.stopPropagation();const o=document.getElementById(`options-menu-${t}`),a="block"===o.style.display;document.querySelectorAll(".pack-options-menu").forEach(e=>e.style.display="none"),a||(o.style.display="block")}
         function toggleSortMenu(){const e=document.getElementById("sortMenu"),t=document.getElementById("sortContainer"),o="block"===e.style.display;e.style.display=o?"none":"block",t.classList.toggle("open",!o)}
@@ -596,11 +598,13 @@
 
         function init() {
             window.openModal = openModal; window.closeModal = closeModal; window.openTagModal = openTagModal; window.closeTagModal = closeTagModal; window.openEditModal = openEditModal; window.closeEditModal = closeEditModal; window.openEditTagModal = openEditTagModal; window.handleUpload = handleUpload; window.saveEdit = saveEdit; window.promptDelete = promptDelete; window.cancelDelete = cancelDelete; window.confirmDelete = confirmDelete; window.applyFilters = applyFilters; window.clearSearch = clearSearch; window.clearColors = clearColors; window.clearTags = clearTags; window.clearResolutions = clearResolutions; window.resetAll = resetAll; window.hintFile = hintFile; window.toggleOptionsMenu = toggleOptionsMenu; window.handleDownload = handleDownload; window.toggleSortMenu = toggleSortMenu; window.setSort = setSort; window.nextPage = nextPage; window.prevPage = prevPage;
+            window.clearVersions = clearVersions; // ADDED
             
             if (document.getElementById('grid')) {
                 buildSwatches(document.getElementById('colorSwatches'), (k, el) => { toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
                 buildSidebarTags(document.getElementById('tagCloud'), (k, el) => { toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
                 buildSelectorBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions, RESOLUTIONS);
+                buildSelectorBoxes(document.getElementById('versionBoxes'), (v, el) => { toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS); // ADDED
                 
                 window.addEventListener('click', (e) => {
                     if (!e.target.closest('.pack-options-btn')) { document.querySelectorAll('.pack-options-menu').forEach(menu => menu.style.display = 'none'); }
