@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Complete Your Profile - BedrockHub</title>
+    <title>Complete Your Profile - MCHub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
@@ -31,17 +31,17 @@
         }
         .card {
             background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px;
-            padding: 2rem; /* REDUCED */
+            padding: 2rem;
             width: 100%; max-width: 420px;
             text-align: center;
         }
         h1 {
-            font-size: 1.8rem; /* REDUCED */
+            font-size: 1.8rem;
             font-weight: 800;
-            margin-bottom: 1.5rem; /* REDUCED */
+            margin-bottom: 1.5rem;
         }
         .form-group {
-            margin-bottom: 1.2rem; /* REDUCED */
+            margin-bottom: 1.2rem;
             text-align: left;
         }
         label { display: block; margin-bottom: .5rem; font-weight: 600; color: var(--muted); }
@@ -55,6 +55,17 @@
             flex-grow: 1; background: transparent; border: none; color: var(--text);
             font-size: 1rem; padding: .75rem 1rem; outline: none;
         }
+        /* --- FIX FOR AUTOFILL STYLES --- */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px var(--bg-2) inset !important;
+            -webkit-text-fill-color: var(--text) !important;
+            caret-color: var(--text) !important;
+            border-radius: 10px !important;
+        }
+
         #availability-status { font-size: 0.9rem; font-weight: 600; flex-shrink: 0; }
         .available { color: var(--success); }
         .taken { color: #ef4444; }
@@ -72,11 +83,11 @@
 
         .avatar-upload { display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
         .avatar-preview {
-            width: 100px; /* REDUCED */
-            height: 100px; /* REDUCED */
+            width: 100px;
+            height: 100px;
             border-radius: 50%; background: var(--bg-2);
             border: 2px dashed var(--border); display: flex; align-items: center; justify-content: center;
-            font-size: 3rem; /* REDUCED */
+            font-size: 3rem;
             color: var(--muted); overflow: hidden;
         }
         .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
@@ -136,11 +147,12 @@
             <h2 style="text-align: center; margin-bottom: 0.5rem;">Crop Your Avatar</h2>
             <div class="cropper-container"><img id="cropper-image" src=""></div>
             <div class="crop-controls">
-                <button id="zoom-out-btn" class="zoom-btn">-</button>
-                <button id="zoom-in-btn" class="zoom-btn">+</button>
+                <button id="zoom-out-btn" class="zoom-btn"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                <button id="rotate-btn" class="zoom-btn"><i class="fa-solid fa-rotate-right"></i></button>
+                <button id="zoom-in-btn" class="zoom-btn"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
             </div>
             <div class="crop-actions">
-                <button id="cancel-crop-btn" class="btn" style="background: var(--bg-2); border-color: var(--border); width: auto;">Cancel</button>
+                <button id="cancel-crop-btn" class="btn" style="background: var(--bg-2); border-color: var(--border); color: var(--text); width: auto;">Cancel</button>
                 <button id="save-crop-btn" class="btn primary" style="width: auto;">Save</button>
             </div>
         </div>
@@ -205,6 +217,7 @@
         const saveCropBtn = document.getElementById('save-crop-btn');
         const zoomInBtn = document.getElementById('zoom-in-btn');
         const zoomOutBtn = document.getElementById('zoom-out-btn');
+        const rotateBtn = document.getElementById('rotate-btn'); // NEW
         const dobMonth = document.getElementById('dob-month');
         const dobDay = document.getElementById('dob-day');
         const dobYear = document.getElementById('dob-year');
@@ -231,12 +244,12 @@
                 currentUser = user;
                 const { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).single();
                 if (profile && profile.username) {
-                    window.location.href = '/';
+                    window.location.replace('/'); // FIX for back button
                 } else {
                     mainContent.style.display = 'flex';
                 }
             } else {
-                window.location.href = '/login.html';
+                window.location.replace('/login.html'); // FIX for back button
             }
         });
         
@@ -304,6 +317,7 @@
         
         zoomInBtn.addEventListener('click', () => cropper && cropper.zoom(0.1));
         zoomOutBtn.addEventListener('click', () => cropper && cropper.zoom(-0.1));
+        rotateBtn.addEventListener('click', () => cropper && cropper.rotate(90)); // NEW
 
         saveCropBtn.addEventListener('click', () => {
             if (!cropper) return;
@@ -364,7 +378,7 @@
             } else {
                 document.getElementById('success-overlay').style.display = 'flex';
                 setTimeout(() => {
-                    window.location.href = '/';
+                    window.location.replace('/'); // FIX for back button
                 }, 2500);
             }
         });
