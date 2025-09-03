@@ -254,53 +254,21 @@
             showRedirectState();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) {
                 showToast('Incorrect email or password');
                 document.body.classList.remove('redirecting');
                 loginCard.classList.remove('hidden');
                 redirectOverlay.classList.remove('visible');
-            } else if (data.session) {
-                // Successfully signed in, check profile and redirect
-                await handleSuccessfulLogin(data.session);
             }
+            // Don't handle success here - let auth.js handle the redirect
         });
 
         document.getElementById('google-login-btn').addEventListener('click', async () => {
             showRedirectState();
             await supabase.auth.signInWithOAuth({
                 provider: 'google'
-                // Remove the redirectTo option to let auth.js handle it
             });
-        });
-
-        async function handleSuccessfulLogin(session) {
-            try {
-                // Check if user has complete profile
-                const { data: profile } = await supabase.from('profiles').select('username').eq('id', session.user.id).single();
-                
-                if (!profile || !profile.username) {
-                    // Profile incomplete - redirect to complete-profile
-                    window.location.href = '/complete-profile';
-                } else {
-                    // Profile complete - redirect to home
-                    window.location.href = '/';
-                }
-            } catch (error) {
-                console.error('Error checking profile:', error);
-                // If there's an error checking profile, assume incomplete
-                window.location.href = '/complete-profile';
-            }
-        }
-
-        // Handle OAuth callback and redirect appropriately
-        supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_IN' && session) {
-                // Add a small delay to ensure the session is fully established
-                setTimeout(async () => {
-                    await handleSuccessfulLogin(session);
-                }, 500);
-            }
         });
         
     </script>
