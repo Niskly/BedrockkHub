@@ -1,41 +1,10 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const navActions = document.getElementById('nav-actions');
 
-// This function is our "master guard" that runs on every page
-async function masterGuard(user) {
-    if (!user) {
-        return; // If there's no user, do nothing.
-    }
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', user.id)
-        .single();
-
-    const isProfileComplete = profile && profile.username;
-    const isOnCompletionPage = window.location.pathname.includes('/complete-profile');
-    const isOnAuthPage = window.location.pathname.includes('/login') || window.location.pathname.includes('/signup');
-
-    // Rule #1: If profile is NOT complete AND they are NOT on the completion page, force them there.
-    if (!isProfileComplete && !isOnCompletionPage) {
-        window.location.replace('/complete-profile');
-        return; // Stop further execution
-    }
-
-    // --- NEW RULE #2 ---
-    // If profile IS complete AND they are on a login/signup page, force them to the homepage.
-    if (isProfileComplete && isOnAuthPage) {
-        window.location.replace('/'); // Use replace to prevent back-button loops
-        return; // Stop further execution
-    }
-}
-
-// Renders the dropdown for a logged-in user
 function renderUserDropdown(profile) {
     const avatarContent = profile.avatar_url ? `<img src="${profile.avatar_url}" alt="User Avatar" class="nav-avatar-img">` : `<div class="nav-avatar-default"><i class="fa-solid fa-user"></i></div>`;
     navActions.innerHTML = `
@@ -56,7 +25,6 @@ function renderUserDropdown(profile) {
     });
 }
 
-// Renders the login button for a logged-out user
 function renderLoginButton() {
     navActions.innerHTML = `
         <a class="btn ghost" href="/"><i class="fa-solid fa-house"></i> Home</a>
@@ -64,37 +32,73 @@ function renderLoginButton() {
         <a class="btn primary" href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>`;
 }
 
-// Determines which UI to show
-async function checkUserProfileForUI(user) {
-    const { data: profile } = await supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single();
-    if (profile && profile.username) {
+// --- THIS IS THE NEW, UNIFIED AUTH LOGIC ---
+async function initializeAuth() {
+    // 1. Get the user's session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+    if (sessionError) {
+        console.error("Error getting session:", sessionError);
+        renderLoginButton();
+        return;
+    }
+
+    // If there is no user, just show the login button and we're done.
+    if (!session) {
+        renderLoginButton();
+        return;
+    }
+
+    const user = session.user;
+
+    // 2. If there IS a user, get their profile details
+    const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('username, avatar_url')
+        .eq('id', user.id)
+        .single();
+    
+    if (profileError) {
+        console.error("Error getting profile:", profileError);
+        // If profile fails to load, sign out to prevent issues
+        await supabase.auth.signOut(); 
+        renderLoginButton();
+        return;
+    }
+
+    // 3. Now we have the FULL user status. We can make decisions.
+    const isProfileComplete = profile && profile.username;
+    const isOnAuthPage = window.location.pathname.includes('/login') || window.location.pathname.includes('/signup');
+    const isOnCompletionPage = window.location.pathname.includes('/complete-profile');
+
+    // 4. Run REDIRECT logic first.
+    if (isProfileComplete && isOnAuthPage) {
+        // Logged-in user is on login/signup page. Redirect to home.
+        window.location.replace('/');
+        return; // Stop here to prevent UI flicker
+    }
+    
+    if (!isProfileComplete && !isOnCompletionPage) {
+        // Logged-in user has NOT finished profile and is NOT on the right page. Redirect them.
+        window.location.replace('/complete-profile');
+        return; // Stop here to prevent UI flicker
+    }
+
+    // 5. If no redirect happened, render the correct UI.
+    if (isProfileComplete) {
         renderUserDropdown(profile);
     } else {
         renderLoginButton();
     }
 }
 
+// --- INITIALIZE AND LISTEN FOR CHANGES ---
 
-async function handleAuthState() {
-    try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session && session.user) {
-            await masterGuard(session.user);
-            await checkUserProfileForUI(session.user);
-        } else {
-            renderLoginButton();
-        }
-    } catch (error) {
-        console.error("Error handling auth state:", error);
-        renderLoginButton();
-    }
-}
+// 1. Run the check as soon as the page is ready
+document.addEventListener('DOMContentLoaded', initializeAuth);
 
-document.addEventListener('DOMContentLoaded', handleAuthState);
-
-supabase.auth.onAuthStateChange((event, session) => {
-    // Re-check auth state on any change, like login or logout
-    handleAuthState();
+// 2. Listen for auth changes (e.g., login/logout in another tab) and re-run the check
+supabase.auth.onAuthStateChange((_event, session) => {
+    initializeAuth();
 });
 
