@@ -5,32 +5,25 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const navActions = document.getElementById('nav-actions');
 
-// --- This is the new Master Guard function ---
+// This function is our "master guard" that runs on every page
 async function masterGuard(user) {
     if (!user) {
-        // If there's no user, do nothing. Let public pages load.
-        return;
+        return; // If there's no user, do nothing.
     }
-
-    // If a user is logged in, we MUST check if their profile is complete.
     const { data: profile } = await supabase
         .from('profiles')
         .select('username')
         .eq('id', user.id)
         .single();
-
     const isProfileComplete = profile && profile.username;
     const isOnCompletionPage = window.location.pathname.includes('/complete-profile');
 
-    // THE GOLDEN RULE:
-    // If profile is NOT complete AND they are NOT on the completion page,
-    // force them to the completion page.
     if (!isProfileComplete && !isOnCompletionPage) {
-        window.location.replace('/complete-profile'); // Use replace to prevent back-button loops
+        window.location.replace('/complete-profile');
     }
 }
 
-
+// Renders the dropdown for a logged-in user
 function renderUserDropdown(profile) {
     const avatarContent = profile.avatar_url ? `<img src="${profile.avatar_url}" alt="User Avatar" class="nav-avatar-img">` : `<div class="nav-avatar-default"><i class="fa-solid fa-user"></i></div>`;
     navActions.innerHTML = `
@@ -44,13 +37,14 @@ function renderUserDropdown(profile) {
             </div>
         </div>`;
     document.querySelector('.user-menu-btn').addEventListener('click', () => document.querySelector('.dropdown-content').classList.toggle('show'));
-    document.getElementById('logout-btn').addEventListener('click', async (e) => { 
-        e.preventDefault(); 
-        await supabase.auth.signOut(); 
-        window.location.href = '/login'; 
+    document.getElementById('logout-btn').addEventListener('click', async (e) => {
+        e.preventDefault();
+        await supabase.auth.signOut();
+        window.location.href = '/login';
     });
 }
 
+// Renders the login button for a logged-out user
 function renderLoginButton() {
     navActions.innerHTML = `
         <a class="btn ghost" href="/"><i class="fa-solid fa-house"></i> Home</a>
@@ -58,22 +52,40 @@ function renderLoginButton() {
         <a class="btn primary" href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>`;
 }
 
+// Determines which UI to show
 async function checkUserProfileForUI(user) {
     const { data: profile } = await supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single();
     if (profile && profile.username) {
         renderUserDropdown(profile);
     } else {
-        renderLoginButton(); 
+        renderLoginButton();
     }
 }
 
-// This is now the main brain of the site's authentication
-supabase.auth.onAuthStateChange(async (event, session) => {
-    if (session && session.user) {
-        await masterGuard(session.user);
-        await checkUserProfileForUI(session.user);
-    } else {
-        renderLoginButton();
+// --- NEW, MORE ROBUST AUTHENTICATION LOGIC ---
+
+// This is our main function that checks the auth state and updates the UI
+async function handleAuthState() {
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session && session.user) {
+            await masterGuard(session.user);
+            await checkUserProfileForUI(session.user);
+        } else {
+            renderLoginButton();
+        }
+    } catch (error) {
+        console.error("Error handling auth state:", error);
+        renderLoginButton(); // If anything fails, show the login button as a fallback
     }
+}
+
+// 1. Run our main check as soon as the page content has loaded
+document.addEventListener('DOMContentLoaded', handleAuthState);
+
+// 2. Also listen for any future changes in authentication (e.g., user logs in/out in another tab)
+supabase.auth.onAuthStateChange((event, session) => {
+    handleAuthState();
 });
 
