@@ -34,20 +34,10 @@ function renderLoginButton() {
 
 // --- THIS IS THE NEW, UNIFIED AUTH LOGIC ---
 async function initializeAuth() {
-    // 1. Define pages that are "public" or part of the auth flow.
-    // An incomplete user is ALLOWED to be on these pages.
-    const publicAuthPages = [
-        '/login',
-        '/signup',
-        '/verify',
-        '/forgot-password',
-        '/update-password',
-        '/complete-profile'
-    ];
+    const publicAuthPages = ['/login', '/signup', '/verify', '/forgot-password', '/update-password', '/complete-profile'];
     const currentPath = window.location.pathname;
-    const isPublicAuthPage = publicAuthPages.some(page => currentPath.includes(page));
+    const isPublicAuthPage = publicAuthPages.some(page => currentPath.endsWith(page) || currentPath.endsWith(page + '.html'));
 
-    // 2. Get the user's session
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
     if (sessionError) {
@@ -56,45 +46,35 @@ async function initializeAuth() {
         return;
     }
 
-    // If there is no user, just show the login button and we're done.
     if (!session) {
         renderLoginButton();
         return;
     }
 
     const user = session.user;
+    const { data: profile, error: profileError } = await supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single();
 
-    // 3. If there IS a user, get their profile details
-    const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('username, avatar_url')
-        .eq('id', user.id)
-        .single();
-    
-    if (profileError) {
+    if (profileError && profileError.code !== 'PGRST116') { // Ignore "no rows found" error for new users
         console.error("Error getting profile:", profileError);
-        await supabase.auth.signOut(); 
+        await supabase.auth.signOut();
         renderLoginButton();
         return;
     }
 
-    // 4. Now we have the FULL user status. We can make decisions.
     const isProfileComplete = profile && profile.username;
 
-    // 5. Run REDIRECT logic first.
+    // --- REDIRECT LOGIC ---
     if (isProfileComplete && isPublicAuthPage) {
-        // Logged-in, complete user is on a page they shouldn't be on. Redirect to home.
         window.location.replace('/');
-        return; // Stop here to prevent UI flicker
+        return;
     }
     
     if (!isProfileComplete && !isPublicAuthPage) {
-        // Logged-in, INCOMPLETE user is trying to access a protected page. Redirect them.
         window.location.replace('/complete-profile');
-        return; // Stop here to prevent UI flicker
+        return;
     }
 
-    // 6. If no redirect happened, render the correct UI.
+    // --- RENDER UI LOGIC ---
     if (isProfileComplete) {
         renderUserDropdown(profile);
     } else {
@@ -102,9 +82,10 @@ async function initializeAuth() {
     }
 }
 
-// --- INITIALIZE AND LISTEN FOR CHANGES ---
+// Run the initialization
 document.addEventListener('DOMContentLoaded', initializeAuth);
 
+// Also listen for any future changes
 supabase.auth.onAuthStateChange((_event, session) => {
     initializeAuth();
 });
