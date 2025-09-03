@@ -5,6 +5,32 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const navActions = document.getElementById('nav-actions');
 
+// --- This is the new Master Guard function ---
+async function masterGuard(user) {
+    if (!user) {
+        // If there's no user, do nothing. Let public pages load.
+        return;
+    }
+
+    // If a user is logged in, we MUST check if their profile is complete.
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', user.id)
+        .single();
+
+    const isProfileComplete = profile && profile.username;
+    const isOnCompletionPage = window.location.pathname.includes('/complete-profile');
+
+    // THE GOLDEN RULE:
+    // If profile is NOT complete AND they are NOT on the completion page,
+    // force them to the completion page.
+    if (!isProfileComplete && !isOnCompletionPage) {
+        window.location.replace('/complete-profile'); // Use replace to prevent back-button loops
+    }
+}
+
+
 function renderUserDropdown(profile) {
     const avatarContent = profile.avatar_url ? `<img src="${profile.avatar_url}" alt="User Avatar" class="nav-avatar-img">` : `<div class="nav-avatar-default"><i class="fa-solid fa-user"></i></div>`;
     navActions.innerHTML = `
@@ -18,7 +44,7 @@ function renderUserDropdown(profile) {
             </div>
         </div>`;
     document.querySelector('.user-menu-btn').addEventListener('click', () => document.querySelector('.dropdown-content').classList.toggle('show'));
-    document.getElementById('logout-btn').addEventListener('click', async (e) => { e.preventDefault(); await supabase.auth.signOut(); });
+    document.getElementById('logout-btn').addEventListener('click', async (e) => { e.preventDefault(); await supabase.auth.signOut(); window.location.href = '/login'; });
 }
 
 function renderLoginButton() {
@@ -33,15 +59,52 @@ async function checkUserProfileForUI(user) {
     if (profile && profile.username) {
         renderUserDropdown(profile);
     } else {
-        renderLoginButton();
+        // If profile is incomplete, they'll be redirected by the master guard.
+        // Show a simple state in the nav in the meantime.
+        renderLoginButton(); 
     }
 }
 
-supabase.auth.onAuthStateChange((event, session) => {
+// This is now the main brain of the site's authentication
+supabase.auth.onAuthStateChange(async (event, session) => {
     if (session && session.user) {
-        checkUserProfileForUI(session.user);
+        await masterGuard(session.user); // Run the guard first
+        await checkUserProfileForUI(session.user); // Then update the UI
     } else {
         renderLoginButton();
     }
 });
+```
 
+### Step 2: Remove Old Logic from Other Pages
+
+Now we need to delete the old, simple protection scripts from `login.html` and `signup.html` because the new `auth.js` handles everything.
+
+**In `login.html`:**
+Find and **delete** this entire script block. You don't need it anymore.
+
+```javascript
+// DELETE THIS SCRIPT BLOCK FROM login.html
+supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+        loginCard.classList.add('hidden');
+        redirectOverlay.classList.add('visible');
+        checkProfileAndRedirect(session.user);
+    }
+});
+```
+
+**In `signup.html`:**
+Find and **delete** this entire event listener. `auth.js` now handles this.
+
+```javascript
+// DELETE THIS SCRIPT BLOCK FROM signup.html
+document.addEventListener('DOMContentLoaded', async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+        window.location.replace('/'); // Use replace to avoid back-button issues
+    } else {
+        // Only show the page if the user is not logged in
+        document.body.classList.add('visible');
+    }
+});
