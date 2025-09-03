@@ -1,6 +1,6 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI讖iIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const navActions = document.getElementById('nav-actions');
@@ -17,8 +17,8 @@ function renderUserDropdown(profile) {
                 <a href="#" id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
             </div>
         </div>`;
-    document.querySelector('.user-menu-btn')?.addEventListener('click', () => document.querySelector('.dropdown-content').classList.toggle('show'));
-    document.getElementById('logout-btn')?.addEventListener('click', async (e) => {
+    document.querySelector('.user-menu-btn').addEventListener('click', () => document.querySelector('.dropdown-content').classList.toggle('show'));
+    document.getElementById('logout-btn').addEventListener('click', async (e) => {
         e.preventDefault();
         await supabase.auth.signOut();
         window.location.href = '/login';
@@ -32,53 +32,60 @@ function renderLoginButton() {
         <a class="btn primary" href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>`;
 }
 
-// --- MASTER AUTH LOGIC ---
-async function handleAuthentication() {
-    const { data: { session } } = await supabase.auth.getSession();
-    const currentPath = window.location.pathname.replace(/\.html$/, '');
-    
-    // --- 1. USER IS LOGGED OUT ---
-    if (!session) {
+// --- THIS IS THE NEW, UNIFIED AUTH LOGIC ---
+async function initializeAuth() {
+    const publicAuthPages = ['/login', '/signup', '/verify', '/forgot-password', '/update-password', '/complete-profile'];
+    const currentPath = window.location.pathname;
+    const isPublicAuthPage = publicAuthPages.some(page => currentPath.endsWith(page) || currentPath.endsWith(page + '.html'));
+
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+    if (sessionError) {
+        console.error("Error getting session:", sessionError);
         renderLoginButton();
-        const protectedPaths = ['/complete-profile']; // Add any other protected pages here
-        if (protectedPaths.includes(currentPath)) {
-            window.location.replace('/login');
-        }
         return;
     }
 
-    // --- 2. USER IS LOGGED IN ---
-    const user = session.user;
-    const { data: profile, error } = await supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single();
+    if (!session) {
+        renderLoginButton();
+        return;
+    }
 
-    if (error && error.code !== 'PGRST116') {
-        console.error("Error fetching profile:", error);
+    const user = session.user;
+    const { data: profile, error: profileError } = await supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single();
+
+    if (profileError && profileError.code !== 'PGRST116') { // Ignore "no rows found" error for new users
+        console.error("Error getting profile:", profileError);
         await supabase.auth.signOut();
-        window.location.reload();
+        renderLoginButton();
         return;
     }
 
     const isProfileComplete = profile && profile.username;
-    const authFlowPages = ['/login', '/signup', '/verify', '/forgot-password', '/update-password'];
 
-    // If profile is complete...
+    // --- REDIRECT LOGIC ---
+    if (isProfileComplete && isPublicAuthPage) {
+        window.location.replace('/');
+        return;
+    }
+    
+    if (!isProfileComplete && !isPublicAuthPage) {
+        window.location.replace('/complete-profile');
+        return;
+    }
+
+    // --- RENDER UI LOGIC ---
     if (isProfileComplete) {
         renderUserDropdown(profile);
-        // Redirect them away from auth pages AND the complete-profile page.
-        if (authFlowPages.includes(currentPath) || currentPath === '/complete-profile') {
-            window.location.replace('/');
-        }
-    } 
-    // If profile is NOT complete...
-    else {
-        renderLoginButton(); // Render simple nav bar
-        // If they are a new user signing in for the first time, redirect them ONCE.
-        const justSignedIn = window.location.hash.includes('access_token');
-        if (justSignedIn && currentPath !== '/complete-profile') {
-            window.location.replace('/complete-profile');
-        }
+    } else {
+        renderLoginButton();
     }
 }
 
-// Run the master logic on every page load
-document.addEventListener('DOMContentLoaded', handleAuthentication);
+// Run the initialization
+document.addEventListener('DOMContentLoaded', initializeAuth);
+
+// Also listen for any future changes
+supabase.auth.onAuthStateChange((_event, session) => {
+    initializeAuth();
+});
