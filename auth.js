@@ -46,30 +46,29 @@ async function initializeAuth() {
     authInitialized = true;
 
     const publicAuthPages = [
-        '/login',
-        '/signup',
-        '/verify',
-        '/forgot-password',
-        '/update-password',
-        '/complete-profile',
         '/',
-        '/texturepacks.html'
+        '/texturepacks.html',
+        '/login',
+        '/signup'
+    ];
+
+    const restrictedPages = [
+        '/verify',
+        '/complete-profile',
+        '/update-password'
     ];
 
     const currentPath = window.location.pathname;
-    const isPublicAuthPage = publicAuthPages.some(page =>
-        currentPath === page || currentPath === page + '.html'
-    );
+    const isPublicPage = publicAuthPages.includes(currentPath);
+    const isRestrictedPage = restrictedPages.includes(currentPath);
 
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-    if (sessionError) {
-        console.error("Error getting session:", sessionError);
-        renderLoginButton();
-        return;
-    }
-
-    if (!session) {
+    if (sessionError || !session) {
+        if (isRestrictedPage) {
+            window.location.replace('/login');
+            return;
+        }
         renderLoginButton();
         return;
     }
@@ -81,22 +80,16 @@ async function initializeAuth() {
         .eq('id', user.id)
         .single();
 
-    if (profileError && profileError.code !== 'PGRST116') {
-        console.error("Error getting profile:", profileError);
-        await supabase.auth.signOut();
-        renderLoginButton();
-        return;
-    }
-
     const isProfileComplete = profile && profile.username;
 
-    // Prevent redirect loop
-    if (!isProfileComplete && !isPublicAuthPage && currentPath !== '/complete-profile') {
-        window.location.replace('/complete-profile');
-        return;
+    if (profileError || !isProfileComplete) {
+        if (currentPath !== '/complete-profile' && !isPublicPage) {
+            window.location.replace('/complete-profile');
+            return;
+        }
     }
 
-    if (isProfileComplete && isPublicAuthPage && currentPath !== '/') {
+    if (isProfileComplete && currentPath === '/complete-profile') {
         window.location.replace('/');
         return;
     }
