@@ -85,10 +85,25 @@ async function initializeAuth() {
     }
 }
 
+// Check if we're on a login/signup page to avoid conflicts
+const isAuthPage = ['/login', '/signup', '/login.html', '/signup.html'].some(page => 
+    window.location.pathname.endsWith(page)
+);
+
 // Run the initialization
 document.addEventListener('DOMContentLoaded', initializeAuth);
 
-// Also listen for any future changes
-supabase.auth.onAuthStateChange((_event, session) => {
-    initializeAuth();
-});
+// Only listen for auth changes if we're NOT on login/signup pages
+// This prevents conflicts with login page redirect logic
+if (!isAuthPage) {
+    supabase.auth.onAuthStateChange((_event, session) => {
+        initializeAuth();
+    });
+} else {
+    // On auth pages, still listen but only for SIGNED_OUT events
+    supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_OUT') {
+            initializeAuth();
+        }
+    });
+}
