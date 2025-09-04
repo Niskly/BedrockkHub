@@ -43,8 +43,42 @@ function renderLoginButton() {
         <a class="btn primary" href="/login.html"><i class="fa-solid fa-right-to-bracket"></i> Login</a>`;
 }
 
-// The main function that orchestrates everything
-async function handleAuthStateChange(session) {
+// --- THIS IS THE NEW, UNIFIED AUTH LOGIC ---
+supabase.auth.onAuthStateChange(async (event, session) => {
+    // This listener is now the single source of truth.
+    // It runs on initial page load and on every auth change.
+
+    // First, handle the special case of returning from a Microsoft link
+    if (event === 'SIGNED_IN' && session?.provider_token && session.user.app_metadata.provider === 'azure') {
+        const mcLinkContainer = document.getElementById('minecraft-link-container');
+        if (mcLinkContainer) {
+            mcLinkContainer.innerHTML = `<p class="tiny">Finalizing link, please wait...</p>`;
+        }
+        try {
+            const response = await fetch('/api/link-minecraft', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({ provider_token: session.provider_token })
+            });
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.details || 'Failed to link account.');
+            }
+            window.showToast('Minecraft account linked successfully!');
+        } catch (error) {
+            window.showToast(error.message, 'error');
+        } finally {
+            // Clean the URL and let the rest of the script re-evaluate the user's state
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }
+
+    // Now, run the master guard logic every time
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    
     const protectedPages = ['/settings.html', '/profile.html'];
     const publicAuthPages = ['/login.html', '/signup.html', '/verify.html', '/forgot-password.html', '/update-password.html', '/complete-profile.html'];
     const currentPath = window.location.pathname;
@@ -52,7 +86,7 @@ async function handleAuthStateChange(session) {
     const isProtectedPage = protectedPages.some(page => currentPath.endsWith(page));
     const isPublicAuthPage = publicAuthPages.some(page => currentPath.endsWith(page));
 
-    if (!session) {
+    if (!currentSession) {
         if (isProtectedPage) {
             window.location.replace('/login.html');
             return;
@@ -62,7 +96,7 @@ async function handleAuthStateChange(session) {
         return;
     }
 
-    const user = session.user;
+    const user = currentSession.user;
     const { data: profile } = await supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single();
     
     const isProfileComplete = profile && profile.username;
@@ -77,6 +111,7 @@ async function handleAuthStateChange(session) {
         return;
     }
 
+    // If no redirect has happened, it's safe to render the UI.
     if (isProfileComplete) {
         renderUserDropdown(profile);
     } else {
@@ -84,12 +119,5 @@ async function handleAuthStateChange(session) {
     }
     
     document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user } }));
-}
-
-
-// --- INITIALIZE AND LISTEN ---
-// This is now the ONLY part of the script that runs automatically.
-supabase.auth.onAuthStateChange(async (_event, session) => {
-    await handleAuthStateChange(session);
 });
 
