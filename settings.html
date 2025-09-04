@@ -197,194 +197,134 @@
         </div>
     </main>
 
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+<script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let currentUser = null;
+    let currentUser = null;
 
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = (type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-exclamation"></i>') + ` ${message}`;
-            container.appendChild(toast);
-            setTimeout(() => { toast.remove(); }, 4000);
-        }
-
-        const tabButtons = document.querySelectorAll('.tab-btn');
-        const tabContents = document.querySelectorAll('.tab-content');
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
-                const tabId = button.dataset.tab;
-                tabContents.forEach(content => {
-                    content.classList.toggle('active', content.id === `${tabId}-tab`);
-                });
+    // ... (showToast, tab logic, loadProfileData, forms are unchanged)
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = (type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-exclamation"></i>') + ` ${message}`;
+        container.appendChild(toast);
+        setTimeout(() => { toast.remove(); }, 4000);
+    }
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            const tabId = button.dataset.tab;
+            tabContents.forEach(content => {
+                content.classList.toggle('active', content.id === `${tabId}-tab`);
             });
         });
+    });
+    const mcLinkContainer = document.getElementById('minecraft-link-container');
+    async function loadProfileData() {
+        if (!currentUser) return;
+        const { data, error } = await supabase.from('profiles').select('bio, discord_url, spotify_url, profile_music_url, minecraft_username').eq('id', currentUser.id).single();
+        if (error && error.code !== 'PGRST116') { console.error("Error loading profile:", error); return; }
+        if (data) {
+            document.getElementById('bio').value = data.bio || '';
+            document.getElementById('discord_url').value = data.discord_url || '';
+            document.getElementById('spotify_url').value = data.spotify_url || '';
+            document.getElementById('profile_music_url').value = data.profile_music_url || '';
+            if (data.minecraft_username) {
+                mcLinkContainer.innerHTML = `<label>Minecraft Account</label><div style="display: flex; align-items: center; gap: 10px; background: var(--bg-2); padding: 0.5rem 1rem; border-radius: 10px;"><i class="fa-brands fa-minecraft" style="color: var(--success);"></i><span style="font-weight: 600;">Linked as ${data.minecraft_username}</span></div>`;
+            }
+        }
+    }
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        const updates = { bio: document.getElementById('bio').value, discord_url: document.getElementById('discord_url').value, spotify_url: document.getElementById('spotify_url').value, profile_music_url: document.getElementById('profile_music_url').value };
+        const { error } = await supabase.from('profiles').update(updates).eq('id', currentUser.id);
+        if (error) { showToast("Error saving profile: " + error.message, "error"); } else { showToast("Profile saved successfully!"); }
+        submitBtn.disabled = false;
+    });
+    document.getElementById('password-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newPassword = document.getElementById('new_password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        if (newPassword !== confirmPassword) { return showToast("Passwords do not match.", "error"); }
+        if (newPassword.length < 6) { return showToast("Password must be at least 6 characters.", "error"); }
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) { showToast("Error updating password: " + error.message, "error"); } else { showToast("Password updated successfully!"); e.target.reset(); }
+    });
 
-        const mcLinkContainer = document.getElementById('minecraft-link-container');
-        async function loadProfileData() {
-            if (!currentUser) return;
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('bio, discord_url, spotify_url, profile_music_url, minecraft_username')
-                .eq('id', currentUser.id)
-                .single();
+
+    document.getElementById('link-minecraft-btn').addEventListener('click', async () => {
+        sessionStorage.setItem('isLinkingMicrosoft', 'true');
+        const { error } = await supabase.auth.linkIdentity({
+            provider: 'azure',
+            options: { scopes: 'XboxLive.signin offline_access', redirectTo: window.location.href },
+        });
+        if (error) {
+            showToast('Failed to start Microsoft login: ' + error.message, 'error');
+            sessionStorage.removeItem('isLinkingMicrosoft');
+        }
+    });
+    
+    async function handleMinecraftLinkCallback() {
+        const hash = window.location.hash;
+        if ((hash.includes('provider_token=') || hash.includes('access_token=')) && sessionStorage.getItem('isLinkingMicrosoft') === 'true') {
+            // --- DEBUG LOG ---
+            console.log('%c SETTINGS.JS: Starting Minecraft callback.', 'background: cyan; color: black; font-weight: bold;');
+
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                sessionStorage.removeItem('isLinkingMicrosoft');
+                return;
+            }
             
-            if (error && error.code !== 'PGRST116') {
-                console.error("Error loading profile:", error);
+            const params = new URLSearchParams(hash.substring(1));
+            const provider_token = params.get('provider_token');
+            if (!provider_token) {
+                sessionStorage.removeItem('isLinkingMicrosoft');
                 return;
             }
 
-            if (data) {
-                document.getElementById('bio').value = data.bio || '';
-                document.getElementById('discord_url').value = data.discord_url || '';
-                document.getElementById('spotify_url').value = data.spotify_url || '';
-                document.getElementById('profile_music_url').value = data.profile_music_url || '';
-
-                if (data.minecraft_username) {
-                    mcLinkContainer.innerHTML = `
-                        <label>Minecraft Account</label>
-                        <div style="display: flex; align-items: center; gap: 10px; background: var(--bg-2); padding: 0.5rem 1rem; border-radius: 10px;">
-                            <i class="fa-brands fa-minecraft" style="color: var(--success);"></i>
-                            <span style="font-weight: 600;">Linked as ${data.minecraft_username}</span>
-                        </div>
-                    `;
-                }
-            }
-        }
-
-        document.getElementById('profile-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            submitBtn.disabled = true;
-
-            const updates = {
-                bio: document.getElementById('bio').value,
-                discord_url: document.getElementById('discord_url').value,
-                spotify_url: document.getElementById('spotify_url').value,
-                profile_music_url: document.getElementById('profile_music_url').value,
-            };
-
-            const { error } = await supabase.from('profiles').update(updates).eq('id', currentUser.id);
-
-            if (error) {
-                showToast("Error saving profile: " + error.message, "error");
-            } else {
-                showToast("Profile saved successfully!");
-            }
-            submitBtn.disabled = false;
-        });
-        
-        document.getElementById('password-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const newPassword = document.getElementById('new_password').value;
-            const confirmPassword = document.getElementById('confirm_password').value;
-
-            if (newPassword !== confirmPassword) { return showToast("Passwords do not match.", "error"); }
-            if (newPassword.length < 6) { return showToast("Password must be at least 6 characters.", "error"); }
-
-            const { error } = await supabase.auth.updateUser({ password: newPassword });
-            if (error) {
-                showToast("Error updating password: " + error.message, "error");
-            } else {
-                showToast("Password updated successfully!");
-                e.target.reset();
-            }
-        });
-
-        // --- NEW --- The click listener now sets the flag before linking
-        document.getElementById('link-minecraft-btn').addEventListener('click', async () => {
-            // --- CHANGE 1: SET FLAG ---
-            // Tell the browser a linking process has started
-            sessionStorage.setItem('isLinkingMicrosoft', 'true');
+            mcLinkContainer.innerHTML = `<p class="tiny">Finalizing link, please wait...</p>`;
             
-             const { error } = await supabase.auth.linkIdentity({
-                 provider: 'azure',
-                 options: {
-                     scopes: 'XboxLive.signin offline_access',
-                     redirectTo: window.location.href,
-                 },
-             });
-
-            if (error) {
-                showToast('Failed to start Microsoft login: ' + error.message, 'error');
-                // --- CHANGE 2: CLEAR FLAG ON IMMEDIATE ERROR ---
-                // If it fails right away, clear the flag
+            try {
+                const response = await fetch('/api/link-minecraft', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+                    body: JSON.stringify({ provider_token: provider_token })
+                });
+                const result = await response.json();
+                if (!response.ok) { throw new Error(result.details || 'Failed to link account.'); }
+                showToast('Minecraft account linked successfully!');
+            } catch (error) {
+                showToast(error.message, 'error');
+            } finally {
+                // --- DEBUG LOG ---
+                console.log('%c SETTINGS.JS: FINISHED Minecraft callback. Removing flag now.', 'background: cyan; color: black; font-weight: bold;');
                 sessionStorage.removeItem('isLinkingMicrosoft');
-            }
-        });
-        
-        async function handleMinecraftLinkCallback() {
-            const hash = window.location.hash;
-            // Only run this if we are in the process of linking
-            if ((hash.includes('provider_token=') || hash.includes('access_token=')) && sessionStorage.getItem('isLinkingMicrosoft') === 'true') {
-                
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session) {
-                    // --- CHANGE 3: CLEAR FLAG ON FAILURE ---
-                    sessionStorage.removeItem('isLinkingMicrosoft');
-                    return;
-                }
-                
-                const params = new URLSearchParams(hash.substring(1));
-                const provider_token = params.get('provider_token');
-
-                if (!provider_token) {
-                    // --- CHANGE 4: CLEAR FLAG ON FAILURE ---
-                    sessionStorage.removeItem('isLinkingMicrosoft');
-                    return;
-                }
-
-                mcLinkContainer.innerHTML = `<p class="tiny">Finalizing link, please wait...</p>`;
-                
-                try {
-                    const response = await fetch('/api/link-minecraft', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${session.access_token}`
-                        },
-                        body: JSON.stringify({ provider_token: provider_token })
-                    });
-                    const result = await response.json();
-                    if (!response.ok) {
-                        throw new Error(result.details || 'Failed to link account.');
-                    }
-                    showToast('Minecraft account linked successfully!');
-                } catch (error) {
-                    showToast(error.message, 'error');
-                } finally {
-                    // --- CHANGE 5: ALWAYS CLEAR THE FLAG ---
-                    // This is the most important part.
-                    // No matter what happens, we remove the flag when we're done.
-                    sessionStorage.removeItem('isLinkingMicrosoft');
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                    await loadProfileData();
-                }
-            } else {
-                // If there's no linking process, but a leftover flag exists, clean it up.
-                sessionStorage.removeItem('isLinkingMicrosoft');
+                window.history.replaceState({}, document.title, window.location.pathname);
+                await loadProfileData();
             }
         }
+    }
 
-        // --- AUTH INITIALIZATION LOGIC ---
-        document.addEventListener('auth-ready', async (e) => {
-            const user = e.detail.user;
-            if (user) {
-                currentUser = user;
-                document.getElementById('settings-container').classList.add('loaded'); // Show content
-                await loadProfileData();
-                // We run the callback handler AFTER we know the user is logged in
-                await handleMinecraftLinkCallback();
-            }
-        });
-    </script>
+    document.addEventListener('auth-ready', async (e) => {
+        const user = e.detail.user;
+        if (user) {
+            currentUser = user;
+            document.getElementById('settings-container').classList.add('loaded');
+            await loadProfileData();
+            await handleMinecraftLinkCallback();
+        }
+    });
+</script>
     <script type="module" src="/auth.js"></script>
 </body>
 </html>
