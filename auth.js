@@ -5,6 +5,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const navActions = document.getElementById('nav-actions');
 
+// ... (renderUserDropdown and renderLoginButton functions are unchanged)
 function renderUserDropdown(profile) {
     const avatarContent = profile.avatar_url ? `<img src="${profile.avatar_url}" alt="User Avatar" class="nav-avatar-img">` : `<div class="nav-avatar-default"><i class="fa-solid fa-user"></i></div>`;
     navActions.innerHTML = `
@@ -33,17 +34,18 @@ function renderLoginButton() {
         <a class="btn primary" href="/login.html"><i class="fa-solid fa-right-to-bracket"></i> Login</a>`;
 }
 
+
 async function initializeAuth() {
+    const isLinking = sessionStorage.getItem('isLinkingMicrosoft') === 'true';
+    // --- DEBUG LOG ---
+    console.log(`%c AUTH.JS: Running check... isLinking flag is: ${isLinking}`, 'background: orange; color: black; font-weight: bold;');
+
     const protectedPages = ['/settings.html', '/profile.html'];
     const publicAuthPages = ['/login.html', '/signup.html', '/verify.html', '/forgot-password.html', '/update-password.html', '/complete-profile.html'];
     const currentPath = window.location.pathname;
     
     const isProtectedPage = protectedPages.some(page => currentPath.endsWith(page));
     const isPublicAuthPage = publicAuthPages.some(page => currentPath.endsWith(page));
-
-    // --- CRITICAL FIX ---
-    // Check if a linking process is in progress from the settings page.
-    const isLinking = sessionStorage.getItem('isLinkingMicrosoft') === 'true';
 
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
@@ -55,10 +57,7 @@ async function initializeAuth() {
         return;
     }
 
-    // If there's no session...
     if (!session) {
-        // ...but we are on a protected page AND we are NOT linking, then redirect.
-        // The `!isLinking` part is the key that saves us.
         if (isProtectedPage && !isLinking) {
             window.location.replace('/login.html');
         } else {
@@ -68,13 +67,9 @@ async function initializeAuth() {
         return;
     }
 
-    // If we DO have a session, continue...
     const user = session.user;
     const { data: profile, error: profileError } = await supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single();
     
-    // --- CRITICAL FIX 2 ---
-    // If there's an error fetching the profile, BUT we are linking, DO NOT LOG OUT.
-    // Let the settings page handle the temporary state.
     if (profileError && profileError.code !== 'PGRST116' && !isLinking) {
         console.error("Error getting profile during normal operation, signing out:", profileError);
         await supabase.auth.signOut();
@@ -90,31 +85,22 @@ async function initializeAuth() {
         return;
     }
     
-    // --- CRITICAL FIX 3 ---
-    // If the profile is incomplete, BUT we are linking, DO NOT redirect.
-    // The profile will be updated by the linking process itself.
     if (!isProfileComplete && !currentPath.endsWith('/complete-profile.html') && !isPublicAuthPage && !isLinking) {
         window.location.replace('/complete-profile.html');
         return;
     }
 
-    // If all checks pass, render the correct nav bar.
     if (isProfileComplete) {
         renderUserDropdown(profile);
     } else {
         renderLoginButton();
     }
     
-    // Finally, tell the page (like settings.html) that auth is ready and pass the user data.
     document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user, profile } }));
 }
 
-// RUN THE AUTH GUARD ON INITIAL LOAD
 initializeAuth();
 
-// RERUN IT WHEN THE AUTH STATE CHANGES
 supabase.auth.onAuthStateChange((_event, session) => {
-    // This listener is important for real-time updates.
-    // Our improved initializeAuth is now safe to be called on every change.
     initializeAuth();
 });
