@@ -42,15 +42,30 @@
     </div>
 
     <script>
+        // Add a timeout to prevent hanging
+        setTimeout(() => {
+            if (window.opener) {
+                window.opener.postMessage({
+                    type: 'MINECRAFT_AUTH_ERROR',
+                    error: 'Authentication timeout - please try again'
+                }, window.location.origin);
+            }
+            window.close();
+        }, 60000); // 60 second timeout
+
         // Extract parameters from URL
         const urlParams = new URLSearchParams(window.location.search);
         const hash = window.location.hash.substring(1);
         const hashParams = new URLSearchParams(hash);
         
+        console.log('Callback URL params:', urlParams.toString());
+        console.log('Callback hash params:', hashParams.toString());
+        
         // Check for errors first
         const error = urlParams.get('error') || hashParams.get('error');
         if (error) {
             const errorDescription = urlParams.get('error_description') || hashParams.get('error_description') || 'Unknown error occurred';
+            console.error('OAuth error:', error, errorDescription);
             window.opener.postMessage({
                 type: 'MINECRAFT_AUTH_ERROR',
                 error: decodeURIComponent(errorDescription)
@@ -63,29 +78,35 @@
         const accessToken = hashParams.get('access_token');
         const authCode = urlParams.get('code');
         
+        console.log('Access token found:', !!accessToken);
+        console.log('Auth code found:', !!authCode);
+        
         if (accessToken) {
+            console.log('Sending access token back to parent');
             // Send access token back to parent window
             window.opener.postMessage({
                 type: 'MINECRAFT_AUTH_SUCCESS',
                 accessToken: accessToken
             }, window.location.origin);
+            window.close();
         } else if (authCode) {
+            console.log('Sending auth code back to parent');
             // Send authorization code back to parent window
             window.opener.postMessage({
                 type: 'MINECRAFT_AUTH_SUCCESS',
                 authCode: authCode,
                 state: urlParams.get('state')
             }, window.location.origin);
+            window.close();
         } else {
+            console.error('No authentication data found');
             // No valid authentication data found
             window.opener.postMessage({
                 type: 'MINECRAFT_AUTH_ERROR',
                 error: 'No authentication data received from Microsoft'
             }, window.location.origin);
+            window.close();
         }
-        
-        // Close the popup
-        window.close();
     </script>
 </body>
 </html>
