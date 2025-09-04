@@ -42,15 +42,29 @@
     </div>
 
     <script>
+        console.log('Callback page loaded');
+        console.log('Full URL:', window.location.href);
+        console.log('Has opener:', !!window.opener);
+        
+        // Show debug info on the page
+        function updateStatus(message) {
+            console.log(message);
+            document.querySelector('h2').textContent = message;
+        }
+        
+        updateStatus('Processing authentication...');
+        
         // Add a timeout to prevent hanging
         setTimeout(() => {
+            console.log('Timeout reached');
+            updateStatus('Timeout - closing window');
             if (window.opener) {
                 window.opener.postMessage({
                     type: 'MINECRAFT_AUTH_ERROR',
                     error: 'Authentication timeout - please try again'
                 }, window.location.origin);
             }
-            window.close();
+            setTimeout(() => window.close(), 2000);
         }, 60000); // 60 second timeout
 
         // Extract parameters from URL
@@ -58,19 +72,24 @@
         const hash = window.location.hash.substring(1);
         const hashParams = new URLSearchParams(hash);
         
-        console.log('Callback URL params:', urlParams.toString());
-        console.log('Callback hash params:', hashParams.toString());
+        console.log('URL search params:', urlParams.toString());
+        console.log('URL hash params:', hashParams.toString());
+        console.log('Origin:', window.location.origin);
         
         // Check for errors first
         const error = urlParams.get('error') || hashParams.get('error');
         if (error) {
             const errorDescription = urlParams.get('error_description') || hashParams.get('error_description') || 'Unknown error occurred';
             console.error('OAuth error:', error, errorDescription);
-            window.opener.postMessage({
-                type: 'MINECRAFT_AUTH_ERROR',
-                error: decodeURIComponent(errorDescription)
-            }, window.location.origin);
-            window.close();
+            updateStatus('Error: ' + error);
+            
+            if (window.opener) {
+                window.opener.postMessage({
+                    type: 'MINECRAFT_AUTH_ERROR',
+                    error: decodeURIComponent(errorDescription)
+                }, window.location.origin);
+            }
+            setTimeout(() => window.close(), 3000);
             return;
         }
         
@@ -80,32 +99,51 @@
         
         console.log('Access token found:', !!accessToken);
         console.log('Auth code found:', !!authCode);
+        console.log('Access token length:', accessToken ? accessToken.length : 'N/A');
         
         if (accessToken) {
             console.log('Sending access token back to parent');
-            // Send access token back to parent window
-            window.opener.postMessage({
-                type: 'MINECRAFT_AUTH_SUCCESS',
-                accessToken: accessToken
-            }, window.location.origin);
-            window.close();
+            updateStatus('Success! Closing window...');
+            
+            if (window.opener) {
+                console.log('Posting message to opener');
+                window.opener.postMessage({
+                    type: 'MINECRAFT_AUTH_SUCCESS',
+                    accessToken: accessToken
+                }, window.location.origin);
+                console.log('Message posted');
+            } else {
+                console.error('No window.opener available');
+                updateStatus('Error: No parent window');
+            }
+            
+            setTimeout(() => window.close(), 2000);
         } else if (authCode) {
             console.log('Sending auth code back to parent');
-            // Send authorization code back to parent window
-            window.opener.postMessage({
-                type: 'MINECRAFT_AUTH_SUCCESS',
-                authCode: authCode,
-                state: urlParams.get('state')
-            }, window.location.origin);
-            window.close();
+            updateStatus('Success! Processing code...');
+            
+            if (window.opener) {
+                window.opener.postMessage({
+                    type: 'MINECRAFT_AUTH_SUCCESS',
+                    authCode: authCode,
+                    state: urlParams.get('state')
+                }, window.location.origin);
+            }
+            setTimeout(() => window.close(), 2000);
         } else {
             console.error('No authentication data found');
-            // No valid authentication data found
-            window.opener.postMessage({
-                type: 'MINECRAFT_AUTH_ERROR',
-                error: 'No authentication data received from Microsoft'
-            }, window.location.origin);
-            window.close();
+            console.log('Available URL params:', Array.from(urlParams.keys()));
+            console.log('Available hash params:', Array.from(hashParams.keys()));
+            
+            updateStatus('Error: No authentication data');
+            
+            if (window.opener) {
+                window.opener.postMessage({
+                    type: 'MINECRAFT_AUTH_ERROR',
+                    error: 'No authentication data received from Microsoft'
+                }, window.location.origin);
+            }
+            setTimeout(() => window.close(), 3000);
         }
     </script>
 </body>
