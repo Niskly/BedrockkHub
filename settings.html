@@ -40,7 +40,7 @@
         }
         .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-13px); }
         .brand-title { font-weight: 800; letter-spacing: .6px; }
-        .nav-actions { display: flex; gap: .6rem; }
+        .nav-actions { display: flex; align-items: center; gap: .6rem; }
         .btn { padding: .6rem 1rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; }
         .ghost { border-color: var(--border); background: transparent; color: var(--text); }
         .primary { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: white; box-shadow: var(--shadow-brand); }
@@ -57,7 +57,6 @@
         .tab-btn.active, .tab-btn:hover { background: var(--bg-2); color: var(--text); }
         .tab-content { display: none; flex-grow: 1; }
         .tab-content.active { display: block; }
-
         .card { background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px; }
         .card-header { padding: 1.5rem; border-bottom: 1px solid var(--border); }
         .card-body { padding: 1.5rem; }
@@ -94,49 +93,32 @@
             <div id="nav-actions" class="nav-actions"></div>
         </div>
     </header>
-
     <main class="container" id="settings-container">
         <div class="settings-layout">
             <aside class="tabs">
-                <button class="tab-btn active" data-tab="profile">
-                    <i class="fa-solid fa-user-pen"></i> Profile
-                </button>
-                <button class="tab-btn" data-tab="account">
-                    <i class="fa-solid fa-shield-halved"></i> Account
-                </button>
+                <button class="tab-btn active" data-tab="profile"><i class="fa-solid fa-user-pen"></i> Profile</button>
+                <button class="tab-btn" data-tab="account"><i class="fa-solid fa-shield-halved"></i> Account</button>
             </aside>
-
             <div class="content-container">
                 <section id="profile-tab" class="tab-content active">
                     <div class="card">
-                        <div class="card-header">
-                            <h1>Profile Settings</h1>
-                            <p class="tiny">This information will be displayed publicly.</p>
-                        </div>
+                        <div class="card-header"><h1>Profile Settings</h1><p class="tiny">This information will be displayed publicly.</p></div>
                         <form id="profile-form">
                             <div class="card-body">
-                                <div class="form-group">
-                                    <label for="bio">Bio</label>
-                                    <textarea id="bio" placeholder="Tell us a little about yourself..."></textarea>
-                                </div>
-                                <div class="form-group">
-                                    <label for="discord_url">Discord URL</label>
-                                    <input type="text" id="discord_url" placeholder="https://discord.gg/your-server">
-                                </div>
-                                <div class="form-group">
-                                    <label for="spotify_url">Spotify Profile URL</label>
-                                    <input type="text" id="spotify_url" placeholder="https://open.spotify.com/user/your-id">
-                                </div>
-                                 <div class="form-group">
-                                    <label for="profile_music_url">Profile Music (YouTube URL)</label>
-                                    <input type="text" id="profile_music_url" placeholder="https://www.youtube.com/watch?v=...">
-                                </div>
+                                <div class="form-group"><label for="bio">Bio</label><textarea id="bio" placeholder="Tell us a little about yourself..."></textarea></div>
+                                <div class="form-group"><label for="discord_url">Discord URL</label><input type="text" id="discord_url" placeholder="https://discord.gg/your-server"></div>
+                                <div class="form-group"><label for="spotify_url">Spotify Profile URL</label><input type="text" id="spotify_url" placeholder="https://open.spotify.com/user/your-id"></div>
+                                <div class="form-group"><label for="profile_music_url">Profile Music (YouTube URL)</label><input type="text" id="profile_music_url" placeholder="https://www.youtube.com/watch?v=..."></div>
                                 <div class="form-group" id="minecraft-link-container">
+                                    <label for="minecraft_username_input">Link Minecraft: Java Edition Account</label>
+                                    <div style="display: flex; gap: 10px;">
+                                        <input type="text" id="minecraft_username_input" placeholder="Enter your username...">
+                                        <button type="button" class="btn primary" id="link-minecraft-btn" style="width: auto;">Link</button>
                                     </div>
+                                    <p class="input-hint">This will display your Java Edition skin and username on your profile.</p>
+                                </div>
                             </div>
-                            <div class="card-footer">
-                                <button type="submit" class="btn primary">Save Changes</button>
-                            </div>
+                            <div class="card-footer"><button type="submit" class="btn primary">Save Changes</button></div>
                         </form>
                     </div>
                 </section>
@@ -162,81 +144,66 @@
 
         async function loadProfileData() {
             if (!currentUser) return;
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('bio, discord_url, spotify_url, profile_music_url, minecraft_username')
-                .eq('id', currentUser.id)
-                .single();
-            
-            if (data?.minecraft_username) {
-                mcLinkContainer.innerHTML = `
-                    <label>Minecraft Account</label>
-                    <div style="display: flex; align-items: center; background: var(--bg-2); padding: 0.5rem 1rem; border-radius: 10px;">
-                        <img src="https://crafatar.com/avatars/${data.minecraft_username}?size=32&overlay" style="border-radius: 4px; width: 32px; height: 32px; margin-right: 10px;">
-                        <span style="font-weight: 600;">Linked as ${data.minecraft_username}</span>
-                    </div>
-                `;
-            } else {
-                mcLinkContainer.innerHTML = `
-                    <label>Link Minecraft Account</label>
-                    <button type="button" class="btn ghost" id="link-minecraft-btn" style="width: 100%; justify-content: center;">
-                        <i class="fa-brands fa-microsoft"></i> Link with Microsoft
-                    </button>
-                    <p class="input-hint">Link your Java/Bedrock account to display your skin and username.</p>
-                `;
-                document.getElementById('link-minecraft-btn').addEventListener('click', handleLink);
-            }
-
+            const { data, error } = await supabase.from('profiles').select('bio, discord_url, spotify_url, profile_music_url, minecraft_username').eq('id', currentUser.id).single();
+            if (error && error.code !== 'PGRST116') { console.error("Error loading profile:", error); return; }
             if (data) {
                 document.getElementById('bio').value = data.bio || '';
                 document.getElementById('discord_url').value = data.discord_url || '';
                 document.getElementById('spotify_url').value = data.spotify_url || '';
                 document.getElementById('profile_music_url').value = data.profile_music_url || '';
+                if (data.minecraft_username) {
+                    mcLinkContainer.innerHTML = `
+                        <label>Minecraft Account</label>
+                        <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-2); padding: 0.5rem 1rem; border-radius: 10px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                               <img src="https://crafatar.com/avatars/${data.minecraft_username}?size=32&overlay" style="border-radius: 4px; width: 32px; height: 32px;">
+                               <span style="font-weight: 600;">Linked as ${data.minecraft_username}</span>
+                            </div>
+                            <button type="button" id="unlink-mc-btn" class="btn" style="background: var(--danger); color: white; padding: 4px 8px; font-size: 12px;">Unlink</button>
+                        </div>
+                    `;
+                    document.getElementById('unlink-mc-btn').addEventListener('click', handleUnlink);
+                } else {
+                    document.getElementById('link-minecraft-btn')?.addEventListener('click', handleLink);
+                }
             }
         }
 
         async function handleLink() {
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'azure',
-                options: {
-                    scopes: 'XboxLive.signin offline_access',
-                    redirectTo: window.location.href
-                }
-            });
-            if (error) {
-                showToast('Failed to start Microsoft login: ' + error.message, 'error');
+            const usernameInput = document.getElementById('minecraft_username_input');
+            const username = usernameInput.value;
+            if (!username) return showToast('Please enter a Minecraft username.', 'error');
+            const linkBtn = document.getElementById('link-minecraft-btn');
+            linkBtn.disabled = true;
+            linkBtn.textContent = 'Linking...';
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) throw new Error('You must be logged in to link an account.');
+                const response = await fetch('/api/link-minecraft', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+                    body: JSON.stringify({ minecraft_username: username })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.details || 'Failed to link account.');
+                showToast('Minecraft account linked successfully!');
+                await loadProfileData(); // Refresh the UI
+            } catch (error) {
+                showToast(error.message, 'error');
+                linkBtn.disabled = false;
+                linkBtn.textContent = 'Link';
             }
         }
 
-        async function handleMinecraftLinkCallback() {
-            const hash = window.location.hash;
-            if (hash.includes('provider_token=')) {
-                mcLinkContainer.innerHTML = `<p class="tiny">Finalizing link, please wait...</p>`;
-                
-                const params = new URLSearchParams(hash.substring(1));
-                const provider_token = params.get('provider_token');
-
-                try {
-                    const { data: { session } } = await supabase.auth.getSession();
-                    if (!session) throw new Error('You must be logged in.');
-
-                    const response = await fetch('/api/link-minecraft', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-                        body: JSON.stringify({ provider_token: provider_token })
-                    });
-                    
-                    const result = await response.json();
-                    if (!response.ok) {
-                        throw new Error(result.details || 'Failed to link account.');
-                    }
-                    showToast('Minecraft account linked successfully!');
-                } catch (error) {
-                    showToast(error.message, 'error');
-                } finally {
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                    await loadProfileData(); // Refresh the UI
-                }
+        async function handleUnlink() {
+            if (!confirm('Are you sure you want to unlink your Minecraft account?')) return;
+            try {
+                const { error } = await supabase.from('profiles').update({ minecraft_username: null, minecraft_uuid: null }).eq('id', currentUser.id);
+                if (error) throw error;
+                showToast('Account unlinked successfully.');
+                window.location.reload();
+            } catch (error) {
+                showToast('Failed to unlink account: ' + error.message, 'error');
             }
         }
 
@@ -246,11 +213,9 @@
                 currentUser = user;
                 document.getElementById('settings-container').classList.add('loaded');
                 await loadProfileData();
-                await handleMinecraftLinkCallback(); // Check for callback after user is loaded
             }
         });
 
-        // --- Other event listeners and simple functions ---
         document.getElementById('profile-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const updates = { bio: document.getElementById('bio').value, discord_url: document.getElementById('discord_url').value, spotify_url: document.getElementById('spotify_url').value, profile_music_url: document.getElementById('profile_music_url').value };
