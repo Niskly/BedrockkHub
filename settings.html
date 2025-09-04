@@ -3,324 +3,123 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Settings - MCHub</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
-      --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
-      --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
-      --danger: #ef4444; --success: #22c55e;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      margin: 0; background-color: var(--bg-0); color: var(--text);
-      font: 500 15px/1.6 Inter, sans-serif; min-height: 100vh;
-    }
-    body::before {
-      content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg');
-      background-size: cover; filter: blur(8px); opacity: 0.25; z-index: -1;
-    }
-    a { color: inherit; text-decoration: none; }
-    header {
-      position: sticky; top: 0; z-index: 50;
-      backdrop-filter: saturate(1.2) blur(10px);
-      background: rgba(12, 12, 12, 0.7);
-      border-bottom: 1px solid var(--border);
-    }
-    .nav {
-      max-width: 1200px; margin: 0 auto; padding: 14px 18px;
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap;
-    }
-    .brand {
-      display: flex; align-items: center; gap: .8rem; min-width: 0;
-    }
-    .brand-badge {
-      height: 44px; width: 44px; border-radius: 12px;
-      display: grid; place-items: center;
-      background: linear-gradient(135deg, var(--brand-2), var(--brand-1));
-      box-shadow: var(--shadow-brand);
-    }
-    .brand-icon-custom {
-      width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-13px);
-    }
-    .brand-title { font-weight: 800; letter-spacing: .6px; }
-    .nav-actions { display: flex; gap: .6rem; }
-    .btn {
-      padding: .6rem 1rem; border-radius: 12px; font-weight: 700;
-      display: inline-flex; align-items: center; justify-content: center;
-      gap: .55rem; cursor: pointer; border: 1px solid transparent;
-    }
-    .ghost { border-color: var(--border); background: transparent; color: var(--text); }
-    .primary {
-      background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
-      color: white; box-shadow: var(--shadow-brand);
-    }
-    .tiny { font-size: 12px; color: var(--muted); }
-    .container {
-      max-width: 800px; margin: 2rem auto; padding: 0 1rem;
-      opacity: 0; transition: opacity 0.3s;
-    }
-    .container.loaded { opacity: 1; }
-    .settings-layout { display: flex; gap: 2rem; align-items: flex-start; }
-    .tabs {
-      display: flex; flex-direction: column; gap: 0.5rem;
-      flex-shrink: 0; width: 200px;
-    }
-    .tab-btn {
-      padding: 0.75rem 1rem; border-radius: 10px; background: transparent; border: none;
-      color: var(--muted); font: 600 15px/1.4 Inter, sans-serif; text-align: left;
-      display: flex; align-items: center; gap: 10px; cursor: pointer;
-    }
-    .tab-btn.active, .tab-btn:hover { background: var(--bg-2); color: var(--text); }
-    .tab-content { display: none; flex-grow: 1; }
-    .tab-content.active { display: block; }
-    .card { background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px; }
-    .card-header { padding: 1.5rem; border-bottom: 1px solid var(--border); }
-    .card-body { padding: 1.5rem; }
-    .card-footer {
-      padding: 1rem 1.5rem; border-top: 1px solid var(--border);
-      display: flex; justify-content: flex-end;
-    }
-    h1 { font-size: 1.8rem; font-weight: 800; margin: 0; }
-    .form-group { margin-bottom: 1.5rem; }
-    label { display: block; margin-bottom: .5rem; font-weight: 600; color: var(--muted); }
-    input[type="text"], input[type="email"], input[type="password"], textarea {
-      width: 100%; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border);
-      background: var(--bg-2); color: var(--text); font-size: 1rem;
-    }
-    textarea { resize: vertical; min-height: 120px; }
-    .input-hint { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
-    #toast-container {
-      position: fixed; top: 80px; right: 20px; z-index: 1000;
-      display: flex; flex-direction: column; gap: 10px;
-    }
-    .toast {
-      padding: 12px 18px; border-radius: 8px; color: white; font-weight: 700;
-      display: flex; align-items: center; gap: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards;
-    }
-    .toast.success { background: var(--success); }
-    .toast.error { background: var(--danger); }
-    @keyframes slideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-  </style>
+  <title>Settings | MCHub</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="https://kit.fontawesome.com/your-kit-id.js" crossorigin="anonymous"></script>
 </head>
 <body>
-  <div id="toast-container"></div>
-  <header>
-    <div class="nav">
-      <a class="brand" href="/">
-        <div class="brand-badge">
-          <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
-        </div>
-        <div>
-          <div class="brand-title">MCHUB</div>
-          <div class="tiny">Minecraft Bedrock • community</div>
-        </div>
-      </a>
-      <div id="nav-actions" class="nav-actions"></div>
-    </div>
-  </header>
+  <nav>
+    <div id="nav-actions"></div>
+  </nav>
 
-  <main class="container" id="settings-container">
-    <div class="settings-layout">
-      <aside class="tabs">
-        <button class="tab-btn active" data-tab="profile">
-          <i class="fa-solid fa-user-pen"></i> Profile
-        </button>
-        <button class="tab-btn" data-tab="account">
-          <i class="fa-solid fa-shield-halved"></i> Account
-        </button>
-      </aside>
-
-      <div class="content-container">
-        <section id="profile-tab" class="tab-content active">
-          <div class="card">
-            <div class="card-header">
-              <h1>Profile Settings</h1>
-              <p class="tiny">This information will be displayed publicly.</p>
-            </div>
-            <form id="profile-form">
-              <div class="card-body">
-                <div class="form-group">
-                  <label for="bio">Bio</label>
-                  <textarea id="bio" placeholder="Tell us a little about yourself..."></textarea>
-                </div>
-                <div class="form-group">
-                  <label for="discord_url">Discord URL</label>
-                  <input type="text" id="discord_url" placeholder="https://discord.gg/your-server">
-                </div>
-                <div class="form-group">
-                  <label for="spotify_url">Spotify Profile URL</label>
-                  <input type="text" id="spotify_url" placeholder="https://open.spotify.com/user/your-id">
-                </div>
-                <div class="form-group">
-                  <label for="profile_music_url">Profile Music (YouTube URL)</label>
-                  <input type="text" id="profile_music_url" placeholder="https://www.youtube.com/watch?v=...">
-                </div>
-                <div class="form-group" id="minecraft-link-container"></div>
-              </div>
-              <div class="card-footer">
-                <button type="submit" class="btn primary">Save Changes</button>
-              </div>
-            </form>
-          </div>
-        </section>
-      </div>
+  <main>
+    <h1>Account Settings</h1>
+    <div id="link-status"></div>
+    <button id="link-microsoft-btn" class="btn primary">Link Microsoft Account</button>
+    <div id="linked-info" style="display: none;">
+      <p><strong>IGN:</strong> <span id="ign-display"></span></p>
+      <img id="skin-preview" alt="Minecraft Skin" />
     </div>
   </main>
 
   <script type="module">
     import { supabase } from './supabase-client.js';
 
-    let currentUser = null;
-
-    function showToast(message, type = 'success') {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      toast.className = `toast ${type}`;
-      toast.innerHTML = (type === 'success'
-        ? '<i class="fa-solid fa-circle-check"></i>'
-        : '<i class="fa-solid fa-circle-exclamation"></i>') + ` ${message}`;
-      container.appendChild(toast);
-      setTimeout(() => { toast.remove(); }, 4000);
-    }
-
-    const mcLinkContainer = document.getElementById('minecraft-link-container');
-
-    async function loadProfileData() {
-      if (!currentUser) return;
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('bio, discord_url, spotify_url, profile_music_url, minecraft_username, minecraft_uuid')
-        .eq('id', currentUser.id)
-        .single();
-
-      if (error) {
-        showToast('Failed to load profile data', 'error');
-        return;
-      }
-
-      if (data?.minecraft_username && data?.minecraft_uuid) {
-        mcLinkContainer.innerHTML = `
-          <label>Minecraft Account</label>
-          <div style="display: flex; align-items: center; background: var(--bg-2); padding: 0.5rem 1rem; border-radius: 10px;">
-            <img src="https://crafatar.com/avatars/${data.minecraft_uuid}?size=32&overlay" style="border-radius: 4px; width: 32px; height: 32px; margin-right: 10px;">
-            <span style="font-weight: 600;">Linked as ${data.minecraft_username}</span>
-          </div>
-        `;
-      } else {
-        mcLinkContainer.innerHTML = `
-          <label>Link Minecraft Account</label>
-          <button type="button" class="btn ghost" id="link-minecraft-btn" style="width: 100%; justify-content: center;">
-            <i class="fa-brands fa-microsoft"></i> Link with Microsoft
-          </button>
-          <p class="input-hint">Link your Java/Bedrock account to display your skin and username.</p>
-        `;
-        document.getElementById('link-minecraft-btn').addEventListener('click', handleLink);
-      }
-
-      document.getElementById('bio').value = data.bio || '';
-      document.getElementById('discord_url').value = data.discord_url || '';
-      document.getElementById('spotify_url').value = data.spotify_url || '';
-      document.getElementById('profile_music_url').value = data.profile_music_url || '';
-    }
-
     async function handleLink() {
+      sessionStorage.setItem('isLinkingMicrosoft', 'true');
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
         options: {
-          scopes: 'XboxLive.signin offline_access',
-          redirectTo: window.location.href
+          redirectTo: `${location.origin}/settings.html`
         }
       });
       if (error) {
-        showToast('Failed to start Microsoft login: ' + error.message, 'error');
+        console.error('OAuth error:', error.message);
       }
     }
+
+    document.getElementById('link-microsoft-btn').addEventListener('click', handleLink);
 
     async function handleMinecraftLinkCallback() {
-      const hash = window.location.hash;
-      if (hash.includes('provider_token=')) {
-        mcLinkContainer.innerHTML = `<p class="tiny">Finalizing link, please wait...</p>`;
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const errorCode = hashParams.get('error_code');
+      const errorDesc = hashParams.get('error_description');
 
-        const params = new URLSearchParams(hash.substring(1));
-        const provider_token = params.get('provider_token');
-
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (!session) throw new Error('You must be logged in.');
-
-          const response = await fetch('/api/link-minecraft', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session.access_token}`
-            },
-            body: JSON.stringify({ provider_token })
-          });
-
-          const result = await response.json();
-          if (!response.ok) {
-            throw new Error(result.details || 'Failed to link account.');
-          }
-
-          showToast(`Linked as ${result.minecraft_username}`);
-        } catch (error) {
-          showToast(error.message, 'error');
-        } finally {
-          window.history.replaceState({}, document.title, window.location.pathname);
-          await loadProfileData();
-        }
+      if (errorCode) {
+        document.getElementById('link-status').textContent = `Error: ${decodeURIComponent(errorDesc)}`;
+        sessionStorage.removeItem('isLinkingMicrosoft');
+        return;
       }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        document.getElementById('link-status').textContent = 'No active session found.';
+        sessionStorage.removeItem('isLinkingMicrosoft');
+        return;
+      }
+
+      const userId = session.user.id;
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('username, ign, skin_url')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        document.getElementById('link-status').textContent = 'Failed to fetch profile.';
+        console.error(error);
+        sessionStorage.removeItem('isLinkingMicrosoft');
+        return;
+      }
+
+      if (profile.ign && profile.skin_url) {
+        document.getElementById('linked-info').style.display = 'block';
+        document.getElementById('ign-display').textContent = profile.ign;
+        document.getElementById('skin-preview').src = profile.skin_url;
+        document.getElementById('link-status').textContent = 'Microsoft account linked successfully!';
+      } else {
+        document.getElementById('link-status').textContent = 'Microsoft account linked, but no IGN/skin found.';
+      }
+
+      sessionStorage.removeItem('isLinkingMicrosoft');
     }
 
-    window.addEventListener('load', handleMinecraftLinkCallback);
+    handleMinecraftLinkCallback();
+  </script>  <script type="module" src="/auth.js"></script>
 
-    document.addEventListener('auth-ready', async (e) => {
-      const user = e.detail.user;
-      if (user) {
-        currentUser = user;
-        document.getElementById('settings-container').classList.add('loaded');
-        await loadProfileData();
-      }
-    });
-
-    document.getElementById('profile-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const updates = {
-        bio: document.getElementById('bio').value,
-        discord_url: document.getElementById('discord_url').value,
-        spotify_url: document.getElementById('spotify_url').value,
-        profile_music_url: document.getElementById('profile_music_url').value
-      };
-      const { error } = await supabase.from('profiles').update(updates).eq('id', currentUser.id);
-      if (error) {
-        showToast("Error saving profile: " + error.message, "error");
-      } else {
-        showToast("Profile saved successfully!");
-      }
-    });
-
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    const tabContents = document.querySelectorAll('.tab-content');
-    tabButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        tabButtons.forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-        const tabId = button.dataset.tab;
-        tabContents.forEach(content => {
-          content.classList.toggle('active', content.id === `${tabId}-tab`);
-        });
-      });
-    });
-  </script>
-  <script type="module" src="/auth.js"></script>
+  <style>
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 6px;
+      font-size: 14px;
+      z-index: 1000;
+      opacity: 0.95;
+    }
+    .toast.error {
+      background: #d9534f;
+    }
+    .btn.primary {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn.primary:hover {
+      background-color: #0056b3;
+    }
+    #linked-info img {
+      max-width: 64px;
+      margin-top: 8px;
+      border-radius: 4px;
+    }
+  </style>
 </body>
 </html>
