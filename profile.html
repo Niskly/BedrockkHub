@@ -59,7 +59,6 @@
         
         .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
         
-        /* --- PROFILE HEADER --- */
         .profile-header {
             background: var(--bg-1);
             border-radius: 18px;
@@ -95,7 +94,6 @@
         .social-links a { font-size: 1.5rem; color: var(--muted); transition: color 0.2s; }
         .social-links a:hover { color: var(--text); }
         
-        /* --- PROFILE CONTENT --- */
         .profile-content {
             display: grid;
             grid-template-columns: 1fr 300px;
@@ -106,9 +104,10 @@
         .card-body { padding: 1.5rem; }
         h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; }
         
-        #skin-viewer { width: 100%; height: 400px; }
+        #skin-viewer { width: 100%; height: 400px; cursor: grab; }
         .packs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
-        .pack-card { background: var(--bg-2); border-radius: 12px; overflow: hidden; }
+        .pack-card { background: var(--bg-2); border-radius: 12px; overflow: hidden; transition: transform 0.2s; }
+        .pack-card:hover { transform: translateY(-4px); }
         .pack-card img { width: 100%; height: 120px; object-fit: cover; }
         .pack-card-info { padding: 1rem; }
         .pack-card-info h4 { margin: 0; font-size: 1rem; }
@@ -145,8 +144,8 @@
         const profileContainer = document.getElementById('profile-container');
 
         function renderProfile(profile, packs) {
-            const defaultBanner = 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/default-banner.png'; // A default placeholder
-            const defaultAvatar = 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/default-avatar.png'; // A default placeholder
+            const defaultBanner = 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/default-banner.png';
+            const defaultAvatar = 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/default-avatar.png';
             
             const joinDate = new Date(profile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
@@ -159,8 +158,8 @@
                             <h1>${profile.username}</h1>
                             <p class="tiny">Member since ${joinDate}</p>
                             <div class="social-links">
-                                ${profile.discord_url ? `<a href="${profile.discord_url}" target="_blank"><i class="fa-brands fa-discord"></i></a>` : ''}
-                                ${profile.spotify_url ? `<a href="${profile.spotify_url}" target="_blank"><i class="fa-brands fa-spotify"></i></a>` : ''}
+                                ${profile.discord_url ? `<a href="${profile.discord_url}" target="_blank" title="Discord"><i class="fa-brands fa-discord"></i></a>` : ''}
+                                ${profile.spotify_url ? `<a href="${profile.spotify_url}" target="_blank" title="Spotify"><i class="fa-brands fa-spotify"></i></a>` : ''}
                             </div>
                         </div>
                     </div>
@@ -178,13 +177,13 @@
                                 <h3>Texture Packs</h3>
                                 <div class="packs-grid" id="packs-grid">
                                     ${packs.length > 0 ? packs.map(pack => `
-                                        <div class="pack-card">
+                                        <a href="/texturepacks" class="pack-card">
                                             <img src="${pack.icon_url || 'https://placehold.co/300x200/1c1c1c/e8eefc?text=No+Icon'}" alt="${pack.name} icon">
                                             <div class="pack-card-info">
                                                 <h4>${pack.name}</h4>
-                                                <p class="tiny">${pack.download_count || 0} Downloads</p>
+                                                <p class="tiny">${(pack.download_count || 0).toLocaleString()} Downloads</p>
                                             </div>
-                                        </div>
+                                        </a>
                                     `).join('') : '<p class="tiny">This user hasn\'t uploaded any packs yet.</p>'}
                                 </div>
                             </div>
@@ -202,9 +201,8 @@
                 </div>
             `;
             
-            // Initialize 3D skin viewer
             if (profile.minecraft_uuid) {
-                 document.getElementById('skin-username').textContent = `Username: ${profile.minecraft_username || 'N/A'}`; // Assuming you add minecraft_username
+                document.getElementById('skin-username').textContent = `${profile.minecraft_username}`;
                 let skinViewer = new skinview3d.SkinViewer({
                     canvas: document.getElementById("skin-viewer"),
                     width: 260,
@@ -212,6 +210,7 @@
                     uuid: profile.minecraft_uuid
                 });
                 skinViewer.animation = new skinview3d.WalkingAnimation();
+                skinViewer.controls.enableRotate = true;
             } else {
                  document.getElementById('skin-viewer').innerHTML = '<p class="tiny" style="text-align: center; padding: 2rem 0;">Minecraft account not linked.</p>';
             }
@@ -226,19 +225,17 @@
                 return;
             }
 
-            // 1. Fetch user profile data
             const { data: profile, error: profileError } = await supabase
                 .from('profiles')
                 .select('*')
-                .eq('username', username)
+                .ilike('username', username) // CASE-INSENSITIVE FIX
                 .single();
 
             if (profileError || !profile) {
-                profileContainer.innerHTML = '<div class="not-found">User not found.</div>';
+                profileContainer.innerHTML = `<div class="not-found">User "${username}" not found.</div>`;
                 return;
             }
 
-            // 2. Fetch user's uploaded packs
             const { data: packs, error: packsError } = await supabase
                 .from('packs')
                 .select('*')
@@ -257,3 +254,4 @@
     <script type="module" src="/auth.js"></script>
 </body>
 </html>
+
