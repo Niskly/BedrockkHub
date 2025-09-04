@@ -218,7 +218,7 @@
                 linkBtn.innerHTML = '<div class="spinner-sm"></div> Connecting...';
 
                 // Use standard Microsoft scopes that don't require Partner Center
-                const clientId = 'b96b9812-ddfa-4cf6-94f3-9a78068acd9b'; // You need to replace this with your actual client ID
+                const clientId = 'YOUR_AZURE_AD_CLIENT_ID'; // You need to replace this with your actual client ID
                 const redirectUri = encodeURIComponent(window.location.origin + '/minecraft-callback.html');
                 const scopes = encodeURIComponent('https://graph.microsoft.com/User.Read offline_access');
                 
@@ -246,14 +246,21 @@
                             const { data: { session } } = await supabase.auth.getSession();
                             if (!session) throw new Error('You must be logged in to MCHub.');
                             
+                            // Add timeout to the fetch request
+                            const controller = new AbortController();
+                            const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout
+                            
                             const response = await fetch('/api/link-minecraft', {
                                 method: 'POST',
                                 headers: { 
                                     'Content-Type': 'application/json', 
                                     'Authorization': `Bearer ${session.access_token}` 
                                 },
-                                body: JSON.stringify({ provider_token: event.data.accessToken })
+                                body: JSON.stringify({ provider_token: event.data.accessToken }),
+                                signal: controller.signal
                             });
+                            
+                            clearTimeout(timeoutId);
                             
                             const result = await response.json();
                             if (!response.ok) throw new Error(result.details || 'Failed to link account.');
@@ -261,7 +268,11 @@
                             showToast(`Minecraft account "${result.minecraft_username}" linked successfully!`);
                             await loadProfileData();
                         } catch (error) {
-                            showToast('Failed to link account: ' + error.message, 'error');
+                            if (error.name === 'AbortError') {
+                                showToast('Request timed out - the linking process is taking too long. Please try again.', 'error');
+                            } else {
+                                showToast('Failed to link account: ' + error.message, 'error');
+                            }
                         }
                     } else if (event.data.type === 'MINECRAFT_AUTH_ERROR') {
                         popup.close();
