@@ -9,7 +9,7 @@ function renderUserDropdown(profile) {
     const avatarContent = profile.avatar_url ? `<img src="${profile.avatar_url}" alt="User Avatar" class="nav-avatar-img">` : `<div class="nav-avatar-default"><i class="fa-solid fa-user"></i></div>`;
     navActions.innerHTML = `
         <a class="btn ghost" href="/"><i class="fa-solid fa-house"></i> Home</a>
-        <a class="btn ghost" href="/texturepacks"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
+        <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
         <div class="user-dropdown">
             <button class="user-menu-btn">${avatarContent}<span>${profile.username}</span><i class="fa-solid fa-chevron-down"></i></button>
             <div class="dropdown-content">
@@ -29,13 +29,13 @@ function renderUserDropdown(profile) {
 function renderLoginButton() {
     navActions.innerHTML = `
         <a class="btn ghost" href="/"><i class="fa-solid fa-house"></i> Home</a>
-        <a class="btn ghost" href="/texturepacks"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
+        <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
         <a class="btn primary" href="/login.html"><i class="fa-solid fa-right-to-bracket"></i> Login</a>`;
 }
 
 // --- THIS IS THE NEW, UNIFIED AUTH LOGIC ---
 async function initializeAuth() {
-    const protectedPages = ['/settings', '/profile']; // Add any other pages that require login
+    const protectedPages = ['/settings', '/profile'];
     const publicAuthPages = ['/login', '/signup', '/verify', '/forgot-password', '/update-password', '/complete-profile'];
     const currentPath = window.location.pathname;
     
@@ -90,7 +90,6 @@ async function initializeAuth() {
         renderLoginButton();
     }
     
-    // Announce that authentication is ready and pass the user/profile data
     document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user, profile } }));
 }
 
