@@ -314,44 +314,6 @@
             }
         });
         
-        async function handleMinecraftLinkCallback() {
-            const hash = window.location.hash;
-            if (hash.includes('provider_token=') || hash.includes('access_token=')) {
-                
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session) return;
-                
-                const params = new URLSearchParams(hash.substring(1));
-                const provider_token = params.get('provider_token');
-
-                if (!provider_token) return;
-
-                mcLinkContainer.innerHTML = `<p class="tiny">Finalizing link, please wait...</p>`;
-                
-                try {
-                    const response = await fetch('/api/link-minecraft', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${session.access_token}`
-                        },
-                        body: JSON.stringify({ provider_token: provider_token })
-                    });
-                    const result = await response.json();
-                    if (!response.ok) {
-                        throw new Error(result.details || 'Failed to link account.');
-                    }
-                    showToast('Minecraft account linked successfully!');
-                } catch (error) {
-                    showToast(error.message, 'error');
-                } finally {
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                    await loadProfileData();
-                }
-            }
-        }
-
-        // --- NEW INITIALIZATION LOGIC ---
         // This page now waits for auth.js to give the "all clear" signal
         document.addEventListener('auth-ready', async (e) => {
             const user = e.detail.user;
@@ -359,7 +321,6 @@
                 currentUser = user;
                 document.getElementById('settings-container').classList.add('loaded'); // Show content
                 await loadProfileData();
-                await handleMinecraftLinkCallback();
             }
         });
     </script>
