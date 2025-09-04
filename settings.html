@@ -198,14 +198,11 @@
     </main>
 
 <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-    const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Import the single, shared supabase client
+    import { supabase } from './supabase-client.js';
 
     let currentUser = null;
 
-    // ... (showToast, tab logic, loadProfileData, forms are unchanged)
     function showToast(message, type = 'success') {
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
@@ -259,8 +256,6 @@
         const { error } = await supabase.auth.updateUser({ password: newPassword });
         if (error) { showToast("Error updating password: " + error.message, "error"); } else { showToast("Password updated successfully!"); e.target.reset(); }
     });
-
-
     document.getElementById('link-minecraft-btn').addEventListener('click', async () => {
         sessionStorage.setItem('isLinkingMicrosoft', 'true');
         const { error } = await supabase.auth.linkIdentity({
@@ -276,24 +271,18 @@
     async function handleMinecraftLinkCallback() {
         const hash = window.location.hash;
         if ((hash.includes('provider_token=') || hash.includes('access_token=')) && sessionStorage.getItem('isLinkingMicrosoft') === 'true') {
-            // --- DEBUG LOG ---
-            console.log('%c SETTINGS.JS: Starting Minecraft callback.', 'background: cyan; color: black; font-weight: bold;');
-
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
                 sessionStorage.removeItem('isLinkingMicrosoft');
                 return;
             }
-            
             const params = new URLSearchParams(hash.substring(1));
             const provider_token = params.get('provider_token');
             if (!provider_token) {
                 sessionStorage.removeItem('isLinkingMicrosoft');
                 return;
             }
-
             mcLinkContainer.innerHTML = `<p class="tiny">Finalizing link, please wait...</p>`;
-            
             try {
                 const response = await fetch('/api/link-minecraft', {
                     method: 'POST',
@@ -306,15 +295,12 @@
             } catch (error) {
                 showToast(error.message, 'error');
             } finally {
-                // --- DEBUG LOG ---
-                console.log('%c SETTINGS.JS: FINISHED Minecraft callback. Removing flag now.', 'background: cyan; color: black; font-weight: bold;');
                 sessionStorage.removeItem('isLinkingMicrosoft');
                 window.history.replaceState({}, document.title, window.location.pathname);
                 await loadProfileData();
             }
         }
     }
-
     document.addEventListener('auth-ready', async (e) => {
         const user = e.detail.user;
         if (user) {
