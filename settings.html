@@ -207,15 +207,6 @@
 
         let currentUser = null;
 
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = (type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-exclamation"></i>') + ` ${message}`;
-            container.appendChild(toast);
-            setTimeout(() => { toast.remove(); }, 4000);
-        }
-
         const tabButtons = document.querySelectorAll('.tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
         tabButtons.forEach(button => {
@@ -276,9 +267,9 @@
             const { error } = await supabase.from('profiles').update(updates).eq('id', currentUser.id);
 
             if (error) {
-                showToast("Error saving profile: " + error.message, "error");
+                window.showToast("Error saving profile: " + error.message, "error");
             } else {
-                showToast("Profile saved successfully!");
+                window.showToast("Profile saved successfully!");
             }
             submitBtn.disabled = false;
         });
@@ -288,14 +279,14 @@
             const newPassword = document.getElementById('new_password').value;
             const confirmPassword = document.getElementById('confirm_password').value;
 
-            if (newPassword !== confirmPassword) { return showToast("Passwords do not match.", "error"); }
-            if (newPassword.length < 6) { return showToast("Password must be at least 6 characters.", "error"); }
+            if (newPassword !== confirmPassword) { return window.showToast("Passwords do not match.", "error"); }
+            if (newPassword.length < 6) { return window.showToast("Password must be at least 6 characters.", "error"); }
 
             const { error } = await supabase.auth.updateUser({ password: newPassword });
             if (error) {
-                showToast("Error updating password: " + error.message, "error");
+                window.showToast("Error updating password: " + error.message, "error");
             } else {
-                showToast("Password updated successfully!");
+                window.showToast("Password updated successfully!");
                 e.target.reset();
             }
         });
@@ -310,7 +301,7 @@
             });
 
             if (error) {
-                showToast('Failed to start Microsoft login: ' + error.message, 'error');
+                window.showToast('Failed to start Microsoft login: ' + error.message, 'error');
             }
         });
         
