@@ -38,13 +38,14 @@
         h1 {
             font-size: 1.8rem;
             font-weight: 800;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.5rem; /* Reduced */
         }
         .form-group {
             margin-bottom: 1.2rem;
             text-align: left;
         }
-        label { display: block; margin-bottom: .5rem; font-weight: 600; color: var(--muted); }
+        label { display: flex; align-items: center; gap: 8px; margin-bottom: .5rem; font-weight: 600; color: var(--muted); }
+        label i { font-size: 0.9em; }
         
         .username-input-container {
             display: flex; align-items: center; gap: 10px;
@@ -55,7 +56,6 @@
             flex-grow: 1; background: transparent; border: none; color: var(--text);
             font-size: 1rem; padding: .75rem 1rem; outline: none;
         }
-        /* --- FIX FOR AUTOFILL STYLES --- */
         input:-webkit-autofill,
         input:-webkit-autofill:hover, 
         input:-webkit-autofill:focus, 
@@ -71,15 +71,23 @@
         .taken { color: #ef4444; }
         .validation-error { color: #f9a8d4; font-size: 0.85rem; font-weight: 600; margin-top: 8px; }
         
+        /* --- NEW RED DOB SELECTOR STYLES --- */
         .dob-selectors { display: flex; gap: 10px; }
         .dob-selectors select {
             width: 100%; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border);
             background: var(--bg-2); color: var(--text); font-size: 1rem; appearance: none;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a8b3cf' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
             background-position: right 0.5rem center;
             background-repeat: no-repeat;
             background-size: 1.5em 1.5em;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
+        .dob-selectors select:focus {
+            outline: none;
+            border-color: var(--brand-1);
+            box-shadow: 0 0 0 3px rgba(222, 33, 42, .4);
+        }
+
 
         .avatar-upload { display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
         .avatar-preview {
@@ -94,7 +102,7 @@
         #avatar-input { display: none; }
         .btn {
             padding: .75rem 1.5rem; border-radius: 12px; font-weight: 700; cursor: pointer;
-            border: 1px solid transparent; width: 100%;
+            border: 1px solid transparent; width: 100%; display: inline-flex; justify-content: center; align-items: center; gap: 8px;
         }
         .primary {
             background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: white; box-shadow: var(--shadow-brand);
@@ -134,6 +142,24 @@
         }
         .cropper-face { border-radius: 50% !important; }
         .cropper-bg { background-image: none !important; }
+        
+        /* --- NEW PROGRESS BAR STYLES --- */
+        .progress-bar-container {
+            width: 100%; background: var(--bg-2); border-radius: 99px; height: 10px;
+            margin-bottom: 1rem; overflow: hidden;
+        }
+        .progress-bar-fill {
+            width: 100%; height: 100%; background: var(--brand-1);
+            border-radius: 99px;
+        }
+        .progress-label { font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 1.5rem; }
+        
+        /* --- BUTTON SPINNER --- */
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .spinner {
+            width: 1em; height: 1em; border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite;
+        }
     </style>
 </head>
 <body>
@@ -160,8 +186,14 @@
 
     <div class="main-content">
         <div class="card">
-            <h1>Almost there!</h1>
-            <p class="muted" style="margin-top:-1rem; margin-bottom: 1.5rem;">Let's set up your profile.</p>
+            <!-- NEW PROGRESS BAR AND WELCOME -->
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill"></div>
+            </div>
+            <div class="progress-label">Step 3 of 3: Create Profile</div>
+            <h1>Welcome to MCHub!</h1>
+            <p class="muted" style="margin-top:-1rem; margin-bottom: 1.5rem;">Let's get you set up.</p>
+            
             <form id="profile-form">
                 <div class="avatar-upload">
                     <div class="avatar-preview" id="avatar-preview"><i class="fa-solid fa-user"></i></div>
@@ -169,7 +201,7 @@
                     <input type="file" id="avatar-input" accept="image/png, image/jpeg, image/gif">
                 </div>
                 <div class="form-group">
-                    <label for="username">Username</label>
+                    <label for="username"><i class="fa-solid fa-at"></i> Username</label>
                     <div class="username-input-container">
                         <input type="text" id="username" required minlength="3" maxlength="16" placeholder="Length 3-16">
                         <span id="availability-status"></span>
@@ -177,7 +209,7 @@
                     <div id="username-error" class="validation-error"></div>
                 </div>
                 <div class="form-group">
-                    <label for="dob-month">Date of Birth</label>
+                    <label for="dob-month"><i class="fa-solid fa-cake-candles"></i> Date of Birth</label>
                     <div class="dob-selectors">
                         <select id="dob-month" required><option value="" disabled selected>Month</option></select>
                         <select id="dob-day" required><option value="" disabled selected>Day</option></select>
@@ -225,8 +257,7 @@
         function populateDateSelectors() {
             const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
             months.forEach((month, i) => {
-                const option = new Option(month, i + 1);
-                dobMonth.add(option);
+                dobMonth.add(new Option(month, i + 1));
             });
             for (let i = 1; i <= 31; i++) {
                 dobDay.add(new Option(i, i));
@@ -330,6 +361,16 @@
             cropModal.style.display = 'none';
             if (cropper) cropper.destroy();
         });
+        
+        function showToast(message, type = 'error') {
+            const container = document.getElementById('toast-container');
+            if(!container) return; 
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 4000);
+        }
 
         document.getElementById('profile-form').addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -340,25 +381,38 @@
             const day = dobDay.value;
             const year = dobYear.value;
             if (!month || !day || !year) {
-                return alert('Please select your full date of birth.');
+                return showToast('Please select your full date of birth.');
             }
-            const dob = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            
+            // --- NEW AGE VALIDATION ---
+            const minAge = 13;
+            const dob = new Date(year, month - 1, day);
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const m = today.getMonth() - dob.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+                age--;
+            }
+            if (age < minAge) {
+                return showToast(`You must be at least ${minAge} years old to sign up.`);
+            }
+            const dobString = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             
             if (statusEl.classList.contains('taken') || !usernameRegex.test(username) || username.length < 3 || username.length > 16) {
-                alert('Please fix the errors before submitting.');
-                return;
+                return showToast('Please fix the errors with your username before submitting.');
             }
             
+            const originalBtnContent = submitBtn.innerHTML;
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Saving...';
+            submitBtn.innerHTML = '<div class="spinner"></div>';
 
             if (croppedAvatarBlob) {
                 const filePath = `${currentUser.id}/${Date.now()}.png`;
                 const { data, error: uploadError } = await supabase.storage.from('avatars').upload(filePath, croppedAvatarBlob);
                 if (uploadError) {
-                    alert('Error uploading avatar: ' + uploadError.message);
+                    showToast('Error uploading avatar: ' + uploadError.message);
                     submitBtn.disabled = false;
-                    submitBtn.textContent = 'Complete Profile';
+                    submitBtn.innerHTML = originalBtnContent;
                     return;
                 }
                 const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(data.path);
@@ -367,14 +421,14 @@
 
             const { error: updateError } = await supabase.from('profiles').update({
                 username: username,
-                date_of_birth: dob,
+                date_of_birth: dobString,
                 avatar_url: avatarUrl
             }).eq('id', currentUser.id);
 
             if (updateError) {
-                alert('Error updating profile: ' + updateError.message);
+                showToast('Error updating profile: ' + updateError.message);
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Complete Profile';
+                submitBtn.innerHTML = originalBtnContent;
             } else {
                 document.getElementById('success-overlay').style.display = 'flex';
                 setTimeout(() => {
