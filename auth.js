@@ -5,7 +5,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const navActions = document.getElementById('nav-actions');
 
-// This function is defined globally so the settings page can use it
+// This function is now globally available for other scripts to use
 window.showToast = function(message, type = 'success') {
     const container = document.getElementById('toast-container') || document.body;
     const toast = document.createElement('div');
@@ -43,46 +43,14 @@ function renderLoginButton() {
         <a class="btn primary" href="/login.html"><i class="fa-solid fa-right-to-bracket"></i> Login</a>`;
 }
 
-async function handleMinecraftLink(session) {
-    if (session?.provider_token && session.user.app_metadata.provider === 'azure') {
-        const mcLinkContainer = document.getElementById('minecraft-link-container');
-        if (mcLinkContainer) {
-            mcLinkContainer.innerHTML = `<p class="tiny">Finalizing link, please wait...</p>`;
-        }
-        try {
-            const response = await fetch('/api/link-minecraft', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.access_token}`
-                },
-                body: JSON.stringify({ provider_token: session.provider_token })
-            });
-            const result = await response.json();
-            if (!response.ok) {
-                throw new Error(result.details || 'Failed to link account.');
-            }
-            showToast('Minecraft account linked successfully!');
-        } catch (error) {
-            showToast(error.message, 'error');
-        } finally {
-            window.history.replaceState({}, document.title, window.location.pathname);
-            await initializeAuth(); // Re-run to refresh UI
-        }
-        return true; // Signal that we handled a link event
-    }
-    return false; // No link event was handled
-}
-
-async function initializeAuth() {
+// The main function that orchestrates everything
+async function handleAuthStateChange(session) {
     const protectedPages = ['/settings.html', '/profile.html'];
     const publicAuthPages = ['/login.html', '/signup.html', '/verify.html', '/forgot-password.html', '/update-password.html', '/complete-profile.html'];
     const currentPath = window.location.pathname;
-    
+
     const isProtectedPage = protectedPages.some(page => currentPath.endsWith(page));
     const isPublicAuthPage = publicAuthPages.some(page => currentPath.endsWith(page));
-
-    const { data: { session } } = await supabase.auth.getSession();
 
     if (!session) {
         if (isProtectedPage) {
@@ -118,15 +86,10 @@ async function initializeAuth() {
     document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user } }));
 }
 
-// --- INITIALIZE AND LISTEN FOR CHANGES ---
-document.addEventListener('DOMContentLoaded', initializeAuth);
 
+// --- INITIALIZE AND LISTEN ---
+// This is now the ONLY part of the script that runs automatically.
 supabase.auth.onAuthStateChange(async (_event, session) => {
-    // onAuthStateChange fires after a redirect. This is where we handle the linking.
-    const linked = await handleMinecraftLink(session);
-    if (!linked) {
-        // If it wasn't a link event, just run the normal auth check.
-        await initializeAuth();
-    }
+    await handleAuthStateChange(session);
 });
 
