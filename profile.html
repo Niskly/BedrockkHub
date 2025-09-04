@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Profile - MCHub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/three@0.130.1/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/skinview3d@2.1.2/dist/skinview3d.bundle.js"></script>
+    <style>
+        :root {
+            --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
+            --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
+            --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
+            --danger: #ef4444; --success: #22c55e;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            margin: 0; background-color: var(--bg-0); color: var(--text);
+            font: 500 15px/1.6 Inter, sans-serif; min-height: 100vh;
+        }
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg');
+            background-size: cover; filter: blur(8px); opacity: 0.25; z-index: -1;
+        }
+        a { color: inherit; text-decoration: none; }
+        header {
+            position: sticky; top: 0; z-index: 50;
+            backdrop-filter: saturate(1.2) blur(10px);
+            background: rgba(12, 12, 12, 0.7);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav { max-width: 1200px; margin: 0 auto; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+        .brand { display: flex; align-items: center; gap: .8rem; }
+        .brand-badge {
+            height: 44px; width: 44px; border-radius: 12px;
+            display: grid; place-items: center;
+            background: linear-gradient(135deg, var(--brand-2), var(--brand-1));
+            box-shadow: var(--shadow-brand);
+        }
+        .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-13px); }
+        .brand-title { font-weight: 800; letter-spacing: .6px; }
+        .nav-actions { display: flex; gap: .6rem; }
+        .btn { padding: .6rem 1rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; }
+        .ghost { border-color: var(--border); background: transparent; color: var(--text); }
+        .primary { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: white; box-shadow: var(--shadow-brand); }
+        .tiny { font-size: 12px; color: var(--muted); }
+        .user-dropdown { position: relative; display: inline-block; }
+        .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
+        .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+        .nav-avatar-default { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-0); display: flex; align-items: center; justify-content: center; }
+        .user-menu-btn .fa-chevron-down { font-size: 0.8em; transition: transform 0.2s; }
+        .dropdown-content { display: none; position: absolute; right: 0; top: 110%; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; }
+        .dropdown-content.show { display: block; }
+        .dropdown-content a { color: var(--muted); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 600; }
+        .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
+        
+        .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+        
+        /* --- PROFILE HEADER --- */
+        .profile-header {
+            background: var(--bg-1);
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        .profile-banner {
+            height: 250px;
+            background-color: var(--bg-2);
+            background-size: cover;
+            background-position: center;
+        }
+        .profile-details {
+            padding: 1.5rem;
+            display: flex;
+            align-items: flex-end;
+            gap: 1.5rem;
+            margin-top: -80px;
+            position: relative;
+        }
+        .profile-avatar {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--bg-1);
+            flex-shrink: 0;
+        }
+        .profile-info h1 { font-size: 2rem; margin: 0; font-weight: 800; }
+        .profile-info .tiny { margin-bottom: 0.5rem; }
+        .social-links { display: flex; gap: 1rem; margin-top: 0.5rem; }
+        .social-links a { font-size: 1.5rem; color: var(--muted); transition: color 0.2s; }
+        .social-links a:hover { color: var(--text); }
+        
+        /* --- PROFILE CONTENT --- */
+        .profile-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+        .card { background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px; }
+        .card-body { padding: 1.5rem; }
+        h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; }
+        
+        #skin-viewer { width: 100%; height: 400px; }
+        .packs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+        .pack-card { background: var(--bg-2); border-radius: 12px; overflow: hidden; }
+        .pack-card img { width: 100%; height: 120px; object-fit: cover; }
+        .pack-card-info { padding: 1rem; }
+        .pack-card-info h4 { margin: 0; font-size: 1rem; }
+        
+        .loading, .not-found { text-align: center; padding: 4rem; font-size: 1.2rem; color: var(--muted); }
+
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav">
+            <a class="brand" href="/">
+                <div class="brand-badge">
+                    <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
+                </div>
+                <div>
+                    <div class="brand-title">MCHUB</div>
+                    <div class="tiny">Minecraft Bedrock • community</div>
+                </div>
+            </a>
+            <div id="nav-actions" class="nav-actions"></div>
+        </div>
+    </header>
+
+    <main class="container" id="profile-container">
+        <div class="loading">Loading Profile...</div>
+    </main>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const profileContainer = document.getElementById('profile-container');
+
+        function renderProfile(profile, packs) {
+            const defaultBanner = 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/default-banner.png'; // A default placeholder
+            const defaultAvatar = 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/default-avatar.png'; // A default placeholder
+            
+            const joinDate = new Date(profile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+            profileContainer.innerHTML = `
+                <div class="profile-header">
+                    <div class="profile-banner" style="background-image: url('${profile.banner_url || defaultBanner}')"></div>
+                    <div class="profile-details">
+                        <img src="${profile.avatar_url || defaultAvatar}" alt="${profile.username}'s avatar" class="profile-avatar">
+                        <div class="profile-info">
+                            <h1>${profile.username}</h1>
+                            <p class="tiny">Member since ${joinDate}</p>
+                            <div class="social-links">
+                                ${profile.discord_url ? `<a href="${profile.discord_url}" target="_blank"><i class="fa-brands fa-discord"></i></a>` : ''}
+                                ${profile.spotify_url ? `<a href="${profile.spotify_url}" target="_blank"><i class="fa-brands fa-spotify"></i></a>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-content">
+                    <div class="main-column">
+                        <div class="card">
+                            <div class="card-body">
+                                <h3>About Me</h3>
+                                <p>${profile.bio || 'This user hasn\'t written a bio yet.'}</p>
+                            </div>
+                        </div>
+                        <div class="card" style="margin-top: 2rem;">
+                            <div class="card-body">
+                                <h3>Texture Packs</h3>
+                                <div class="packs-grid" id="packs-grid">
+                                    ${packs.length > 0 ? packs.map(pack => `
+                                        <div class="pack-card">
+                                            <img src="${pack.icon_url || 'https://placehold.co/300x200/1c1c1c/e8eefc?text=No+Icon'}" alt="${pack.name} icon">
+                                            <div class="pack-card-info">
+                                                <h4>${pack.name}</h4>
+                                                <p class="tiny">${pack.download_count || 0} Downloads</p>
+                                            </div>
+                                        </div>
+                                    `).join('') : '<p class="tiny">This user hasn\'t uploaded any packs yet.</p>'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <aside class="side-column">
+                        <div class="card">
+                            <div class="card-body">
+                                <h3>Minecraft Skin</h3>
+                                <div id="skin-viewer"></div>
+                                <p class="tiny" id="skin-username" style="text-align: center; margin-top: 1rem; font-weight: 600;"></p>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            `;
+            
+            // Initialize 3D skin viewer
+            if (profile.minecraft_uuid) {
+                 document.getElementById('skin-username').textContent = `Username: ${profile.minecraft_username || 'N/A'}`; // Assuming you add minecraft_username
+                let skinViewer = new skinview3d.SkinViewer({
+                    canvas: document.getElementById("skin-viewer"),
+                    width: 260,
+                    height: 350,
+                    uuid: profile.minecraft_uuid
+                });
+                skinViewer.animation = new skinview3d.WalkingAnimation();
+            } else {
+                 document.getElementById('skin-viewer').innerHTML = '<p class="tiny" style="text-align: center; padding: 2rem 0;">Minecraft account not linked.</p>';
+            }
+        }
+
+        async function loadPage() {
+            const params = new URLSearchParams(window.location.search);
+            const username = params.get('user');
+
+            if (!username) {
+                profileContainer.innerHTML = '<div class="not-found">No user specified.</div>';
+                return;
+            }
+
+            // 1. Fetch user profile data
+            const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('username', username)
+                .single();
+
+            if (profileError || !profile) {
+                profileContainer.innerHTML = '<div class="not-found">User not found.</div>';
+                return;
+            }
+
+            // 2. Fetch user's uploaded packs
+            const { data: packs, error: packsError } = await supabase
+                .from('packs')
+                .select('*')
+                .eq('user_id', profile.id)
+                .order('created_at', { ascending: false });
+
+            if (packsError) {
+                console.error("Error fetching packs:", packsError);
+            }
+
+            renderProfile(profile, packs || []);
+        }
+
+        document.addEventListener('DOMContentLoaded', loadPage);
+    </script>
+    <script type="module" src="/auth.js"></script>
+</body>
+</html>
