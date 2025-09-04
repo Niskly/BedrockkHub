@@ -210,7 +210,7 @@
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${message}`;
+            toast.innerHTML = (type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-exclamation"></i>') + ` ${message}`;
             container.appendChild(toast);
             setTimeout(() => { toast.remove(); }, 4000);
         }
@@ -303,16 +303,13 @@
             }
         });
 
-        // --- NEW MINECRAFT LINKING LOGIC ---
+        // --- NEW, SIMPLIFIED MINECRAFT LINKING LOGIC ---
         document.getElementById('link-minecraft-btn').addEventListener('click', async () => {
-             const { data: { session } } = await supabase.auth.getSession();
-             if (!session) return showToast("You must be logged in.", "error");
-
-            const { data, error } = await supabase.auth.linkIdentity({
+            const { error } = await supabase.auth.linkIdentity({
                 provider: 'azure',
                 options: {
                     scopes: 'XboxLive.signin offline_access',
-                    redirectTo: window.location.href
+                    redirectTo: window.location.href, // Redirect back to this page
                 },
             });
 
@@ -320,20 +317,21 @@
                 showToast('Failed to start Microsoft login: ' + error.message, 'error');
             }
         });
-        
+
         async function handleMinecraftLinkCallback() {
-            // This code runs when the page loads after returning from Microsoft
-            const { data: { session } } = await supabase.auth.getSession();
-            
-            // We check for a specific hash parameter that Supabase adds after an OAuth redirect
             const hash = window.location.hash;
-            if (hash.includes('provider_token=') && session) {
-                 mcLinkContainer.innerHTML = `<p class="tiny">Linking account, please wait...</p>`;
+            if (hash.includes('provider_token=') || hash.includes('access_token=')) {
                 
-                // Extract the provider token from the URL hash
-                const params = new URLSearchParams(hash.substring(1)); // remove the '#'
+                // Get the current user's session token to authorize our API call
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) return;
+                
+                // Extract the provider token from the URL
+                const params = new URLSearchParams(hash.substring(1));
                 const provider_token = params.get('provider_token');
 
+                mcLinkContainer.innerHTML = `<p class="tiny">Finalizing link, please wait...</p>`;
+                
                 try {
                     const response = await fetch('/api/link-minecraft', {
                         method: 'POST',
@@ -351,9 +349,8 @@
                 } catch (error) {
                     showToast(error.message, 'error');
                 } finally {
-                    // Clean the URL to remove the auth tokens
                     window.history.replaceState({}, document.title, window.location.pathname);
-                    await loadProfileData(); 
+                    await loadProfileData();
                 }
             }
         }
