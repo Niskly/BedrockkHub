@@ -209,33 +209,6 @@
             }
         }
 
-        // Initialize MSAL for direct Microsoft authentication
-        async function initializeMSAL() {
-            // Load MSAL library
-            const script = document.createElement('script');
-            script.src = 'https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js';
-            document.head.appendChild(script);
-            
-            return new Promise((resolve) => {
-                script.onload = () => {
-                    const msalConfig = {
-                        auth: {
-                            clientId: '00000000-0000-0000-0000-000000000000', // You need to get this from Azure AD
-                            authority: 'https://login.microsoftonline.com/consumers',
-                            redirectUri: window.location.origin + '/settings.html'
-                        },
-                        cache: {
-                            cacheLocation: 'sessionStorage',
-                            storeAuthStateInCookie: false,
-                        }
-                    };
-
-                    msalInstance = new msal.PublicClientApplication(msalConfig);
-                    resolve();
-                };
-            });
-        }
-
         async function handleMicrosoftLink() {
             const linkBtn = document.getElementById('link-minecraft-btn');
             const originalContent = linkBtn.innerHTML;
@@ -244,13 +217,19 @@
                 linkBtn.disabled = true;
                 linkBtn.innerHTML = '<div class="spinner-sm"></div> Connecting...';
 
-                // Alternative approach: Use a popup for Microsoft auth
+                // Use standard Microsoft scopes that don't require Partner Center
+                const clientId = 'YOUR_AZURE_AD_CLIENT_ID'; // You need to replace this with your actual client ID
+                const redirectUri = encodeURIComponent(window.location.origin + '/minecraft-callback.html');
+                const scopes = encodeURIComponent('https://graph.microsoft.com/User.Read offline_access');
+                
                 const authUrl = `https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize?` +
-                    `client_id=00000000-0000-0000-0000-000000000000&` + // Replace with your Azure AD app ID
-                    `response_type=code&` +
-                    `redirect_uri=${encodeURIComponent(window.location.origin + '/minecraft-callback.html')}&` +
-                    `scope=${encodeURIComponent('XboxLive.signin offline_access')}&` +
-                    `state=${encodeURIComponent(JSON.stringify({ returnUrl: window.location.href }))}`;
+                    `client_id=${clientId}&` +
+                    `response_type=token&` +
+                    `redirect_uri=${redirectUri}&` +
+                    `scope=${scopes}&` +
+                    `response_mode=fragment&` +
+                    `state=${encodeURIComponent(JSON.stringify({ returnUrl: window.location.href }))}&` +
+                    `nonce=${Date.now()}`;
 
                 // Open popup window
                 const popup = window.open(authUrl, 'minecraft-auth', 'width=500,height=600,scrollbars=yes,resizable=yes');
@@ -265,7 +244,7 @@
                         
                         try {
                             const { data: { session } } = await supabase.auth.getSession();
-                            if (!session) throw new Error('You must be logged in.');
+                            if (!session) throw new Error('You must be logged in to MCHub.');
                             
                             const response = await fetch('/api/link-minecraft', {
                                 method: 'POST',
@@ -279,7 +258,7 @@
                             const result = await response.json();
                             if (!response.ok) throw new Error(result.details || 'Failed to link account.');
                             
-                            showToast('Minecraft account linked successfully!');
+                            showToast(`Minecraft account "${result.minecraft_username}" linked successfully!`);
                             await loadProfileData();
                         } catch (error) {
                             showToast('Failed to link account: ' + error.message, 'error');
@@ -304,12 +283,9 @@
                 }, 1000);
 
             } catch (error) {
-                showToAuth('Failed to start Microsoft authentication: ' + error.message, 'error');
-            } finally {
-                if (!linkBtn.disabled) {
-                    linkBtn.disabled = false;
-                    linkBtn.innerHTML = originalContent;
-                }
+                showToast('Failed to start Microsoft authentication: ' + error.message, 'error');
+                linkBtn.disabled = false;
+                linkBtn.innerHTML = originalContent;
             }
         }
 
