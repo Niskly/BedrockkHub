@@ -305,62 +305,65 @@
 
         // --- NEW MINECRAFT LINKING LOGIC ---
         document.getElementById('link-minecraft-btn').addEventListener('click', async () => {
-            const { data, error } = await supabase.auth.signInWithOAuth({
+             const { data: { session } } = await supabase.auth.getSession();
+             if (!session) return showToast("You must be logged in.", "error");
+
+            const { data, error } = await supabase.auth.linkIdentity({
                 provider: 'azure',
                 options: {
                     scopes: 'XboxLive.signin offline_access',
                     redirectTo: window.location.href
                 },
             });
+
             if (error) {
                 showToast('Failed to start Microsoft login: ' + error.message, 'error');
             }
         });
         
-        // This function handles the logic after returning from Microsoft
-        async function handleMinecraftLink() {
-             const { data: { session } } = await supabase.auth.getSession();
+        async function handleMinecraftLinkCallback() {
+            // This code runs when the page loads after returning from Microsoft
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            // We check for a specific hash parameter that Supabase adds after an OAuth redirect
+            const hash = window.location.hash;
+            if (hash.includes('provider_token=') && session) {
+                 mcLinkContainer.innerHTML = `<p class="tiny">Linking account, please wait...</p>`;
+                
+                // Extract the provider token from the URL hash
+                const params = new URLSearchParams(hash.substring(1)); // remove the '#'
+                const provider_token = params.get('provider_token');
 
-             // We only proceed if there is a provider_token, which only happens after an OAuth login.
-             if (session && session.provider_token) {
-                // Check if the provider is Azure (Microsoft), to avoid firing on Google login
-                if (session.user.app_metadata.provider === 'azure') {
-                    mcLinkContainer.innerHTML = `<p class="tiny">Linking account, please wait...</p>`;
-                    try {
-                        const response = await fetch('/api/link-minecraft', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${session.access_token}`
-                            },
-                            body: JSON.stringify({ provider_token: session.provider_token })
-                        });
-                        const result = await response.json();
-                        if (!response.ok) {
-                            throw new Error(result.details || 'Failed to link account.');
-                        }
-                        showToast('Minecraft account linked successfully!');
-                    } catch (error) {
-                        showToast(error.message, 'error');
-                    } finally {
-                        // Clean the URL to remove the auth tokens
-                        window.history.replaceState({}, document.title, window.location.pathname);
-                        // Reload the profile data to show the new username or the old button on failure
-                        await loadProfileData(); 
+                try {
+                    const response = await fetch('/api/link-minecraft', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.access_token}`
+                        },
+                        body: JSON.stringify({ provider_token: provider_token })
+                    });
+                    const result = await response.json();
+                    if (!response.ok) {
+                        throw new Error(result.details || 'Failed to link account.');
                     }
+                    showToast('Minecraft account linked successfully!');
+                } catch (error) {
+                    showToast(error.message, 'error');
+                } finally {
+                    // Clean the URL to remove the auth tokens
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    await loadProfileData(); 
                 }
-             }
+            }
         }
-
 
         document.addEventListener('DOMContentLoaded', async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 currentUser = user;
                 await loadProfileData();
-                await handleMinecraftLink(); // Check if we need to handle a redirect on page load
-            } else {
-                // This page is protected by auth.js, so this should not happen, but it's good practice.
+                await handleMinecraftLinkCallback();
             }
         });
     </script>
