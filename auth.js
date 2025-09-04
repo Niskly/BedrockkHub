@@ -5,6 +5,15 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const navActions = document.getElementById('nav-actions');
 
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container') || document.body;
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = (type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-exclamation"></i>') + ` ${message}`;
+    container.appendChild(toast);
+    setTimeout(() => { toast.remove(); }, 4000);
+}
+
 function renderUserDropdown(profile) {
     const avatarContent = profile.avatar_url ? `<img src="${profile.avatar_url}" alt="User Avatar" class="nav-avatar-img">` : `<div class="nav-avatar-default"><i class="fa-solid fa-user"></i></div>`;
     navActions.innerHTML = `
@@ -33,7 +42,36 @@ function renderLoginButton() {
         <a class="btn primary" href="/login.html"><i class="fa-solid fa-right-to-bracket"></i> Login</a>`;
 }
 
-// --- THIS IS THE NEW, UNIFIED AUTH LOGIC ---
+async function handleMinecraftLink(session) {
+    if (session?.provider_token && session.user.app_metadata.provider === 'azure') {
+        const mcLinkContainer = document.getElementById('minecraft-link-container');
+        if (mcLinkContainer) {
+            mcLinkContainer.innerHTML = `<p class="tiny">Finalizing link, please wait...</p>`;
+        }
+        try {
+            const response = await fetch('/api/link-minecraft', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({ provider_token: session.provider_token })
+            });
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.details || 'Failed to link account.');
+            }
+            showToast('Minecraft account linked successfully!');
+        } catch (error) {
+            showToast(error.message, 'error');
+        } finally {
+            window.history.replaceState({}, document.title, window.location.pathname);
+            // After handling, re-run the whole auth flow to refresh the UI state
+            await initializeAuth();
+        }
+    }
+}
+
 async function initializeAuth() {
     const protectedPages = ['/settings', '/profile'];
     const publicAuthPages = ['/login', '/signup', '/verify', '/forgot-password', '/update-password', '/complete-profile'];
@@ -45,7 +83,6 @@ async function initializeAuth() {
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
     if (sessionError) {
-        console.error("Error getting session:", sessionError);
         if (isProtectedPage) window.location.replace('/login.html');
         else renderLoginButton();
         return;
@@ -57,7 +94,7 @@ async function initializeAuth() {
         } else {
             renderLoginButton();
         }
-        document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user: null, profile: null } }));
+        document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user: null } }));
         return;
     }
 
@@ -65,10 +102,9 @@ async function initializeAuth() {
     const { data: profile, error: profileError } = await supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single();
     
     if (profileError && profileError.code !== 'PGRST116') {
-        console.error("Error getting profile:", profileError);
         await supabase.auth.signOut();
         renderLoginButton();
-        document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user: null, profile: null } }));
+        document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user: null } }));
         return;
     }
 
@@ -90,13 +126,18 @@ async function initializeAuth() {
         renderLoginButton();
     }
     
-    document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user, profile } }));
+    document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user } }));
 }
 
-// RUN THE AUTH GUARD
-initializeAuth();
+// --- INITIALIZE AND LISTEN FOR CHANGES ---
+document.addEventListener('DOMContentLoaded', initializeAuth);
 
-supabase.auth.onAuthStateChange((_event, session) => {
-    initializeAuth();
+supabase.auth.onAuthStateChange(async (_event, session) => {
+    if (_event === 'SIGNED_IN') {
+        // This is the key: if the sign-in event has a provider token, it's a social link. Handle it.
+        await handleMinecraftLink(session);
+    }
+    // Re-run the main auth check to ensure UI is always correct
+    await initializeAuth();
 });
 
