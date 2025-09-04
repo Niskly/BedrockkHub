@@ -45,7 +45,7 @@ function renderLoginButton() {
 
 // --- THIS IS THE NEW, UNIFIED AUTH LOGIC ---
 supabase.auth.onAuthStateChange(async (event, session) => {
-    // This listener is now the single source of truth.
+    // This listener is the single source of truth.
     // It runs on initial page load and on every auth change.
 
     // First, handle the special case of returning from a Microsoft link
@@ -71,14 +71,14 @@ supabase.auth.onAuthStateChange(async (event, session) => {
         } catch (error) {
             window.showToast(error.message, 'error');
         } finally {
-            // Clean the URL and let the rest of the script re-evaluate the user's state
+            // Clean the URL to remove auth tokens from view
             window.history.replaceState({}, document.title, window.location.pathname);
+            // After linking, we must re-run the logic to get the fresh profile state
+            // The onAuthStateChange will fire again, so we just need to let it continue.
         }
     }
 
-    // Now, run the master guard logic every time
-    const { data: { session: currentSession } } = await supabase.auth.getSession();
-    
+    // Now, run the master guard logic using the session from the event
     const protectedPages = ['/settings.html', '/profile.html'];
     const publicAuthPages = ['/login.html', '/signup.html', '/verify.html', '/forgot-password.html', '/update-password.html', '/complete-profile.html'];
     const currentPath = window.location.pathname;
@@ -86,7 +86,7 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     const isProtectedPage = protectedPages.some(page => currentPath.endsWith(page));
     const isPublicAuthPage = publicAuthPages.some(page => currentPath.endsWith(page));
 
-    if (!currentSession) {
+    if (!session) {
         if (isProtectedPage) {
             window.location.replace('/login.html');
             return;
@@ -96,7 +96,7 @@ supabase.auth.onAuthStateChange(async (event, session) => {
         return;
     }
 
-    const user = currentSession.user;
+    const user = session.user;
     const { data: profile } = await supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single();
     
     const isProfileComplete = profile && profile.username;
