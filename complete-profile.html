@@ -217,7 +217,7 @@
         const saveCropBtn = document.getElementById('save-crop-btn');
         const zoomInBtn = document.getElementById('zoom-in-btn');
         const zoomOutBtn = document.getElementById('zoom-out-btn');
-        const rotateBtn = document.getElementById('rotate-btn'); // NEW
+        const rotateBtn = document.getElementById('rotate-btn');
         const dobMonth = document.getElementById('dob-month');
         const dobDay = document.getElementById('dob-day');
         const dobYear = document.getElementById('dob-year');
@@ -244,12 +244,12 @@
                 currentUser = user;
                 const { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).single();
                 if (profile && profile.username) {
-                    window.location.replace('/'); // FIX for back button
+                    window.location.replace('/');
                 } else {
                     mainContent.style.display = 'flex';
                 }
             } else {
-                window.location.replace('/login.html'); // FIX for back button
+                window.location.replace('/login.html');
             }
         });
         
@@ -317,7 +317,7 @@
         
         zoomInBtn.addEventListener('click', () => cropper && cropper.zoom(0.1));
         zoomOutBtn.addEventListener('click', () => cropper && cropper.zoom(-0.1));
-        rotateBtn.addEventListener('click', () => cropper && cropper.rotate(90)); // NEW
+        rotateBtn.addEventListener('click', () => cropper && cropper.rotate(90));
 
         saveCropBtn.addEventListener('click', () => {
             if (!cropper) return;
@@ -378,10 +378,11 @@
             } else {
                 document.getElementById('success-overlay').style.display = 'flex';
                 setTimeout(() => {
-                    window.location.replace('/'); // FIX for back button
+                    window.location.replace('/');
                 }, 2500);
             }
         });
     </script>
 </body>
 </html>
+
