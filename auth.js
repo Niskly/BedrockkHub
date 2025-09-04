@@ -5,7 +5,8 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const navActions = document.getElementById('nav-actions');
 
-function showToast(message, type = 'success') {
+// This function is defined globally so the settings page can use it
+window.showToast = function(message, type = 'success') {
     const container = document.getElementById('toast-container') || document.body;
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
@@ -66,48 +67,36 @@ async function handleMinecraftLink(session) {
             showToast(error.message, 'error');
         } finally {
             window.history.replaceState({}, document.title, window.location.pathname);
-            // After handling, re-run the whole auth flow to refresh the UI state
-            await initializeAuth();
+            await initializeAuth(); // Re-run to refresh UI
         }
+        return true; // Signal that we handled a link event
     }
+    return false; // No link event was handled
 }
 
 async function initializeAuth() {
-    const protectedPages = ['/settings', '/profile'];
-    const publicAuthPages = ['/login', '/signup', '/verify', '/forgot-password', '/update-password', '/complete-profile'];
+    const protectedPages = ['/settings.html', '/profile.html'];
+    const publicAuthPages = ['/login.html', '/signup.html', '/verify.html', '/forgot-password.html', '/update-password.html', '/complete-profile.html'];
     const currentPath = window.location.pathname;
     
-    const isProtectedPage = protectedPages.some(page => currentPath.includes(page));
-    const isPublicAuthPage = publicAuthPages.some(page => currentPath.includes(page));
+    const isProtectedPage = protectedPages.some(page => currentPath.endsWith(page));
+    const isPublicAuthPage = publicAuthPages.some(page => currentPath.endsWith(page));
 
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-    if (sessionError) {
-        if (isProtectedPage) window.location.replace('/login.html');
-        else renderLoginButton();
-        return;
-    }
+    const { data: { session } } = await supabase.auth.getSession();
 
     if (!session) {
         if (isProtectedPage) {
             window.location.replace('/login.html');
-        } else {
-            renderLoginButton();
+            return;
         }
-        document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user: null } }));
-        return;
-    }
-
-    const user = session.user;
-    const { data: profile, error: profileError } = await supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single();
-    
-    if (profileError && profileError.code !== 'PGRST116') {
-        await supabase.auth.signOut();
         renderLoginButton();
         document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user: null } }));
         return;
     }
 
+    const user = session.user;
+    const { data: profile } = await supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single();
+    
     const isProfileComplete = profile && profile.username;
 
     if (isProfileComplete && isPublicAuthPage) {
@@ -133,11 +122,11 @@ async function initializeAuth() {
 document.addEventListener('DOMContentLoaded', initializeAuth);
 
 supabase.auth.onAuthStateChange(async (_event, session) => {
-    if (_event === 'SIGNED_IN') {
-        // This is the key: if the sign-in event has a provider token, it's a social link. Handle it.
-        await handleMinecraftLink(session);
+    // onAuthStateChange fires after a redirect. This is where we handle the linking.
+    const linked = await handleMinecraftLink(session);
+    if (!linked) {
+        // If it wasn't a link event, just run the normal auth check.
+        await initializeAuth();
     }
-    // Re-run the main auth check to ensure UI is always correct
-    await initializeAuth();
 });
 
