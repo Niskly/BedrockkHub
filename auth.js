@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
@@ -14,6 +13,8 @@ function renderUserDropdown(profile) {
         <div class="user-dropdown">
             <button class="user-menu-btn">${avatarContent}<span>${profile.username}</span><i class="fa-solid fa-chevron-down"></i></button>
             <div class="dropdown-content">
+                <!-- THIS IS THE NEW LINK -->
+                <a href="/profile.html?user=${profile.username}"><i class="fa-solid fa-user"></i> My Profile</a>
                 <a href="/settings"><i class="fa-solid fa-cog"></i> Settings</a>
                 <a href="#" id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
             </div>
@@ -33,7 +34,6 @@ function renderLoginButton() {
         <a class="btn primary" href="/login"><i class="fa-solid fa-right-to-bracket"></i> Login</a>`;
 }
 
-// --- THIS IS THE NEW, UNIFIED AUTH LOGIC ---
 async function initializeAuth() {
     const publicAuthPages = ['/login', '/signup', '/verify', '/forgot-password', '/update-password', '/complete-profile'];
     const currentPath = window.location.pathname;
@@ -54,28 +54,26 @@ async function initializeAuth() {
 
     const user = session.user;
     const { data: profile, error: profileError } = await supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single();
-
-    if (profileError && profileError.code !== 'PGRST116') { // Ignore "no rows found" error for new users
+    
+    if (profileError && profileError.code !== 'PGRST116') {
         console.error("Error getting profile:", profileError);
-        await supabase.auth.signOut();
+        await supabase.auth.signOut(); 
         renderLoginButton();
         return;
     }
 
     const isProfileComplete = profile && profile.username;
 
-    // --- REDIRECT LOGIC ---
     if (isProfileComplete && isPublicAuthPage) {
         window.location.replace('/');
-        return;
+        return; 
     }
     
     if (!isProfileComplete && !isPublicAuthPage) {
         window.location.replace('/complete-profile');
-        return;
+        return; 
     }
 
-    // --- RENDER UI LOGIC ---
     if (isProfileComplete) {
         renderUserDropdown(profile);
     } else {
@@ -83,10 +81,9 @@ async function initializeAuth() {
     }
 }
 
-// Run the initialization
 document.addEventListener('DOMContentLoaded', initializeAuth);
 
-// Also listen for any future changes
 supabase.auth.onAuthStateChange((_event, session) => {
     initializeAuth();
 });
+
