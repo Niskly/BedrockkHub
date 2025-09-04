@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 
+// IMPORTANT: Use the Service Role Key here for admin-level access
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY 
 );
 
 export default async function handler(req, res) {
@@ -11,6 +12,21 @@ export default async function handler(req, res) {
   }
 
   try {
+    // 1. Get the user from the authorization header
+    const token = req.headers.authorization.split(' ')[1];
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+
+    if (userError || !user) {
+        return res.status(401).json({ error: 'Unauthorized: You must be logged in to upload.' });
+    }
+    
+    // Check if the user is an admin
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+    if (!profile || profile.role !== 'admin') {
+         return res.status(403).json({ error: 'Forbidden: You do not have permission to upload.' });
+    }
+
+    // 2. Proceed with the upload, now with the user's ID
     const { name, color, tags, filename, resolution, version, description, icon_url } = req.body;
 
     if (!name || !filename) {
@@ -21,7 +37,17 @@ export default async function handler(req, res) {
 
     const { data, error } = await supabase
       .from('packs')
-      .insert([{ name, color, tags: tagsString, filename, resolution, version, description, icon_url }])
+      .insert([{ 
+          name, 
+          color, 
+          tags: tagsString, 
+          filename, 
+          resolution, 
+          version, 
+          description, 
+          icon_url,
+          user_id: user.id // <-- ADD THIS LINE
+        }])
       .select()
       .single();
 
