@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Use the Service Role Key for admin-level access
+// Use the Service Role Key for admin-level access from environment variables
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -13,14 +13,13 @@ export default async function handler(req, res) {
 
   try {
     // --- Step 1: Authenticate the MCHub User ---
-    // Get the user's session from their browser token to make sure they're logged into our site
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ error: 'Unauthorized: No MCHub token provided' });
 
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     if (userError || !user) return res.status(401).json({ error: 'Unauthorized: Invalid MCHub token' });
 
-    // --- Step 2: Begin the Token Chain with the Microsoft Token ---
+    // --- Step 2: Begin the Token Chain with the Microsoft Token from the client ---
     const { provider_token } = req.body;
     if (!provider_token) {
       return res.status(400).json({ error: 'Microsoft access token is required.' });
@@ -57,7 +56,7 @@ export default async function handler(req, res) {
             }
         })
     });
-    if (!xstsResponse.ok) throw new Error('Failed to get XSTS token.');
+    if (!xstsResponse.ok) throw new Error('Failed to get XSTS token from Xbox services.');
     const xstsData = await xstsResponse.json();
     const xstsToken = xstsData.Token;
     const userHash = xstsData.DisplayClaims.xui[0].uhs;
@@ -78,11 +77,9 @@ export default async function handler(req, res) {
     const minecraftProfileResponse = await fetch('https://api.minecraftservices.com/minecraft/profile', {
       headers: { 'Authorization': `Bearer ${minecraftAccessToken}` }
     });
-
     if (!minecraftProfileResponse.ok) {
       throw new Error('Failed to fetch Minecraft profile. The Microsoft account may not own Minecraft.');
     }
-
     const minecraftProfile = await minecraftProfileResponse.json();
     const minecraft_uuid = minecraftProfile.id;
     const minecraft_username = minecraftProfile.name;
@@ -92,13 +89,12 @@ export default async function handler(req, res) {
       .from('profiles')
       .update({ minecraft_uuid, minecraft_username })
       .eq('id', user.id);
-
     if (updateError) throw updateError;
 
     res.status(200).json({ message: 'Minecraft account linked successfully!', minecraft_username });
 
   } catch (error) {
-    console.error('Error in link-minecraft function:', error);
+    console.error('Error in link-minecraft function:', error.message);
     res.status(500).json({ error: 'Failed to link Minecraft account', details: error.message });
   }
 }
