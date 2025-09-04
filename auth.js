@@ -5,19 +5,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const navActions = document.getElementById('nav-actions');
 
-// This function is now globally available for other scripts to use
-window.showToast = function(message, type = 'success') {
-    const container = document.getElementById('toast-container') || document.body;
-    if (!container) return;
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.innerHTML = (type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-exclamation"></i>') + ` ${message}`;
-    container.appendChild(toast);
-    setTimeout(() => { toast.remove(); }, 4000);
-}
-
 function renderUserDropdown(profile) {
-    if (!navActions) return;
     const avatarContent = profile.avatar_url ? `<img src="${profile.avatar_url}" alt="User Avatar" class="nav-avatar-img">` : `<div class="nav-avatar-default"><i class="fa-solid fa-user"></i></div>`;
     navActions.innerHTML = `
         <a class="btn ghost" href="/"><i class="fa-solid fa-house"></i> Home</a>
@@ -39,62 +27,57 @@ function renderUserDropdown(profile) {
 }
 
 function renderLoginButton() {
-    if (!navActions) return;
     navActions.innerHTML = `
         <a class="btn ghost" href="/"><i class="fa-solid fa-house"></i> Home</a>
         <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
         <a class="btn primary" href="/login.html"><i class="fa-solid fa-right-to-bracket"></i> Login</a>`;
 }
 
-// --- THIS IS THE NEW, UNIFIED AUTH LOGIC ---
-supabase.auth.onAuthStateChange(async (event, session) => {
-    // This listener is the single source of truth.
-    // It runs on initial page load and on every auth change.
-
-    if (event === 'SIGNED_IN' && session?.provider_token && session.user.app_metadata.provider === 'azure') {
-        const mcLinkContainer = document.getElementById('minecraft-link-container');
-        if (mcLinkContainer) {
-            mcLinkContainer.innerHTML = `<p class="tiny">Finalizing link, please wait...</p>`;
-        }
-        try {
-            const response = await fetch('/api/link-minecraft', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-                body: JSON.stringify({ provider_token: session.provider_token })
-            });
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.details || 'Failed to link account.');
-            window.showToast('Minecraft account linked successfully!');
-        } catch (error) {
-            window.showToast(error.message, 'error');
-        } finally {
-            window.history.replaceState({}, document.title, window.location.pathname);
-            // After linking, onAuthStateChange fires again automatically, so we just let it run to refresh the state.
-        }
-    }
-
-    const { data: { session: currentSession } } = await supabase.auth.getSession();
-    
-    const protectedPages = ['/settings.html', '/profile.html'];
+async function initializeAuth() {
+    const protectedPages = ['/settings.html', '/profile.html']; // Be more specific with .html
     const publicAuthPages = ['/login.html', '/signup.html', '/verify.html', '/forgot-password.html', '/update-password.html', '/complete-profile.html'];
     const currentPath = window.location.pathname;
-
+    
     const isProtectedPage = protectedPages.some(page => currentPath.endsWith(page));
     const isPublicAuthPage = publicAuthPages.some(page => currentPath.endsWith(page));
 
-    if (!currentSession) {
-        if (isProtectedPage) {
-            window.location.replace('/login.html');
-            return;
-        }
-        renderLoginButton();
-        document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user: null } }));
+    // --- THE FIX IS HERE ---
+    // Check if a linking process is in progress.
+    const isLinking = sessionStorage.getItem('isLinkingMicrosoft') === 'true';
+
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+    if (sessionError) {
+        console.error("Error getting session:", sessionError);
+        if (isProtectedPage) window.location.replace('/login.html');
+        else renderLoginButton();
+        document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user: null, profile: null } }));
         return;
     }
 
-    const user = currentSession.user;
-    const { data: profile } = await supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single();
+    if (!session) {
+        // If the page is protected AND we are NOT in the middle of linking, redirect.
+        // This prevents the redirect from happening right after returning from Microsoft.
+        if (isProtectedPage && !isLinking) {
+            window.location.replace('/login.html');
+        } else {
+            renderLoginButton();
+        }
+        document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user: null, profile: null } }));
+        return;
+    }
+
+    const user = session.user;
+    const { data: profile, error: profileError } = await supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single();
     
+    if (profileError && profileError.code !== 'PGRST116') {
+        console.error("Error getting profile:", profileError);
+        await supabase.auth.signOut();
+        renderLoginButton();
+        document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user: null, profile: null } }));
+        return;
+    }
+
     const isProfileComplete = profile && profile.username;
 
     if (isProfileComplete && isPublicAuthPage) {
@@ -102,7 +85,7 @@ supabase.auth.onAuthStateChange(async (event, session) => {
         return;
     }
     
-    if (!isProfileComplete && !isPublicAuthPage) {
+    if (!isProfileComplete && !currentPath.endsWith('/complete-profile.html') && !isPublicAuthPage) {
         window.location.replace('/complete-profile.html');
         return;
     }
@@ -113,6 +96,19 @@ supabase.auth.onAuthStateChange(async (event, session) => {
         renderLoginButton();
     }
     
-    document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user } }));
-});
+    // Dispatch the event so other pages (like settings.html) know the user is loaded.
+    document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user, profile } }));
+}
 
+// RUN THE AUTH GUARD ON INITIAL LOAD
+initializeAuth();
+
+// RERUN IT WHEN THE AUTH STATE CHANGES (e.g., login, logout)
+supabase.auth.onAuthStateChange((_event, session) => {
+    // We don't need to re-run the whole thing here on every single change,
+    // especially since we handle redirects inside initializeAuth.
+    // A page reload triggered by login/logout is often cleaner.
+    // However, for SPA-like behavior, initializeAuth() is correct.
+    console.log('Auth state changed:', _event, session);
+    initializeAuth();
+});
