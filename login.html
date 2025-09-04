@@ -31,6 +31,7 @@
             backdrop-filter: saturate(1.2) blur(10px);
             background: rgba(12, 12, 12, 0.7);
             border-bottom: 1px solid var(--border);
+            transition: opacity 0.3s ease-in-out;
         }
         .nav { max-width: 1200px; margin: 0 auto; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
         .brand { display: flex; align-items: center; gap: .8rem; }
@@ -68,6 +69,10 @@
             width: 24px; height: 24px; border: 3px solid var(--border);
             border-top: 3px solid var(--brand-1); border-radius: 50%;
             animation: spin 1s linear infinite;
+        }
+        .spinner-sm {
+            width: 1.2em; height: 1.2em; border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .brand-icon {
@@ -112,6 +117,10 @@
             width: 100%;
             padding: .75rem 1.5rem;
             border-radius: 999px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
         }
         .sub-text { color: var(--muted); margin-top: 1.2rem; }
         .sub-text a { color: var(--brand-1); font-weight: 700; }
@@ -144,7 +153,7 @@
     </style>
 </head>
 <body>
-    <header>
+    <header id="main-header">
         <div class="nav">
             <a class="brand" href="/">
                 <div class="brand-badge">
@@ -166,7 +175,7 @@
             <div class="brand-icon">
                 <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon">
             </div>
-            <h1>Login</h1>
+            <h1>Welcome Back!</h1>
             <form id="login-form">
                 <div class="form-group">
                     <label for="email">Email:</label>
@@ -217,6 +226,7 @@
 
         const loginCard = document.getElementById('login-card');
         const redirectOverlay = document.getElementById('redirect-overlay');
+        const mainHeader = document.getElementById('main-header');
 
         function showToast(message, type = 'error') {
             const container = document.getElementById('toast-container');
@@ -240,19 +250,33 @@
 
         document.getElementById('login-form').addEventListener('submit', async (event) => {
             event.preventDefault();
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalBtnContent = submitBtn.innerHTML;
+
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="spinner-sm"></div>';
+            mainHeader.style.opacity = '0';
             loginCard.classList.add('hidden');
             redirectOverlay.classList.add('visible');
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const { error } = await supabase.auth.signInWithPassword({ email, password });
+            
             if (error) {
                 showToast('Incorrect email or password');
+                // Revert UI on error
                 loginCard.classList.remove('hidden');
                 redirectOverlay.classList.remove('visible');
+                mainHeader.style.opacity = '1';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnContent;
             }
         });
 
         document.getElementById('google-login-btn').addEventListener('click', async () => {
+            mainHeader.style.opacity = '0';
             loginCard.classList.add('hidden');
             redirectOverlay.classList.add('visible');
             await supabase.auth.signInWithOAuth({
@@ -265,3 +289,4 @@
     <script type="module" src="/auth.js"></script>
 </body>
 </html>
+
