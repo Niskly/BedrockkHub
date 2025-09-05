@@ -18,7 +18,8 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             margin: 0; background-color: var(--bg-0); color: var(--text);
-            font: 500 14px/1.6 Inter, sans-serif; min-height: 100vh;
+            font: 500 14px/1.6 Inter, sans-serif;
+            min-height: 100vh;
         }
         body::before {
             content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -43,6 +44,7 @@
         .btn.primary:hover { transform: scale(1.05); }
         .tiny { font-size: 11px; color: var(--muted); }
         
+        /* GENERAL UTILITIES & LOADING SPINNER */
         .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
         .glassy { background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid var(--border); }
         .not-found { text-align: center; padding: 4rem; font-size: 1.2rem; color: var(--muted); }
@@ -50,6 +52,7 @@
         .spinner { width: 48px; height: 48px; border: 5px solid var(--border); border-bottom-color: var(--brand-1); border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* PROFILE HEADER */
         .profile-header { border-radius: 16px; margin-bottom: 2rem; overflow: hidden; position: relative; }
         .profile-banner { height: 220px; background-size: cover; background-position: center; }
         .profile-banner::after { content: ''; position: absolute; bottom: 65px; left: 0; right: 0; height: 80px; background: rgba(18, 18, 18, 0.8); border-bottom: 1px solid var(--border); -webkit-mask: radial-gradient(circle at 50% -25px, transparent 110px, black 111px); mask: radial-gradient(circle at 50% -25px, transparent 110px, black 111px); }
@@ -63,34 +66,34 @@
         .profile-main-top-row { display: flex; align-items: center; gap: 1.5rem; }
         .profile-bio { color: var(--muted); margin-top: 1rem; max-width: 500px; line-height: 1.5; font-size: 13px; }
         .header-stats { display: flex; gap: 1.2rem; align-items: center; }
-        .stat-item { text-align: left; }
+        .stat-item { text-align: left; display: flex; align-items: center; gap: 6px;}
         .stat-item span { font-size: 1rem; font-weight: 700; color: var(--text); }
-        .stat-item label { font-size: 0.75rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-left: 0.4rem; }
+        .stat-item label { font-size: 0.75rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
         
+        /* 2-COLUMN LAYOUT */
         .profile-content-grid { display: grid; grid-template-columns: 300px 1fr; gap: 1.5rem; align-items: flex-start; }
         .card { border-radius: 16px; }
         .card-body { padding: 1.2rem; }
         h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; }
         
+        /* MINECRAFT SKIN CARD */
         .edition-switcher { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
         .edition-switcher .btn { flex-grow: 1; padding: 0.6rem; }
         #skin-viewer-container { width: 100%; height: 320px; display: grid; place-items: center; cursor: grab; }
         .skin-username-display { text-align: center; margin-top: 0.8rem; font-weight: 600; font-size: 1rem; }
         #edition-tag { font-size: 0.75em; padding: 2px 6px; border-radius: 5px; background: var(--brand-1); color: white; font-weight: 700; margin-left: 0.5rem; }
 
+        /* PACKS CARD */
         .packs-header { display: flex; justify-content: space-between; align-items: center; }
         .upload-btn { height: 36px; width: 36px; border-radius: 10px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); color: white; font-size: 1rem; transition: all 0.2s ease; cursor: pointer; }
         .upload-btn:hover { transform: scale(1.1); }
-        .packs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 1.2rem; }
-        .pack-card { background: var(--bg-1); border-radius: 16px; overflow: hidden; transition: all 0.2s; }
+        .packs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 1.2rem; }
+        .pack-card { background: var(--bg-1); border-radius: 16px; overflow: hidden; transition: all 0.2s; border: 1px solid transparent; }
         .pack-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.2); box-shadow: 0 28px 75px rgba(0, 0, 0, .65); }
-        
-        /* NEW STYLES FOR ADVANCED PACK CARD */
-        .thumb { height: 140px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-        .pack-card .thumb { border-bottom-color: var(--border) !important; }
+        .thumb { height: 120px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
         .thumb .pack-icon-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; filter: blur(8px) brightness(0.7); transform: scale(1.1); }
-        .thumb .pack-icon { position: relative; width: 90px; height: 90px; border-radius: 8px; object-fit: cover; z-index: 1; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
-        .thumb .glyph { height: 68px; width: 68px; border-radius: 14px; display: grid; place-items: center; color: white; }
+        .thumb .pack-icon { position: relative; width: 80px; height: 80px; border-radius: 8px; object-fit: cover; z-index: 1; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
+        .thumb .glyph { height: 60px; width: 60px; border-radius: 14px; display: grid; place-items: center; color: white; }
         .content { padding: 14px; }
         .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
         .badge { font-size: 12px; padding: .25rem .55rem; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-2); color: white; font-weight: 700; text-transform: capitalize;}
@@ -113,12 +116,20 @@
         .file-upload-area i { font-size: 32px; margin-bottom: 12px; color: var(--brand-1); }
         .file-hint { margin-top: 6px; color: var(--muted); }
         #status-message { margin-top: 1rem; color: var(--muted); min-height: 1.5em; }
+        
+        /* MEDIA QUERIES FOR RESPONSIVENESS */
+        @media (max-width: 1024px) { .profile-content-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .packs-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 500px) { .packs-grid { grid-template-columns: 1fr; } .profile-main-top-row { flex-direction: column; align-items: flex-start; gap: 0.5rem; } }
     </style>
 </head>
 <body>
     <header>
         <div class="nav">
-            <a class="brand" href="/"><div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div><div><div class="brand-title">MCHUB</div><div class="tiny">Minecraft Bedrock • community</div></div></a>
+            <a class="brand" href="/">
+                <div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div>
+                <div><div class="brand-title">MCHUB</div><div class="tiny">Minecraft Bedrock • community</div></div>
+            </a>
             <div id="nav-actions"></div>
         </div>
     </header>
@@ -155,6 +166,16 @@
         const profileContainer = document.getElementById('profile-container');
         let skinViewer;
 
+        const packFileInput = document.getElementById('pack-file-input');
+        packFileInput?.addEventListener('change', () => {
+            const file = packFileInput.files[0];
+            const limit = 50 * 1024 * 1024; // 50MB in bytes
+            if (file && file.size > limit) {
+                alert('Texture pack is too large! The maximum size is 50MB.');
+                packFileInput.value = '';
+            }
+        });
+        
         // --- HELPER FUNCTIONS ---
         function escapeHtml(str) { return String(str||"").replace(/[&<>"']/g, m => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" })[m]); }
         function capitalizeFirst(str) { return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : ""; }
@@ -171,11 +192,11 @@
 
         // --- RENDER FUNCTIONS ---
         function renderPackCard(p) {
-            const COLORS = [{key: 'gray',hex: '#6b7280'}]; // Add other colors if needed for the default glyph
+            const COLORS = [{key: 'gray',hex: '#6b7280'}];
             const colorKey = p.color || 'gray';
             const color = COLORS.find(c => c.key === colorKey)?.hex || '#6b7280';
             const card = document.createElement('div');
-            card.className = 'card pack-card';
+            card.className = 'pack-card';
 
             let thumbContent, thumbBackgroundStyle;
             if (p.icon_url) {
@@ -196,7 +217,7 @@
                         </div>
                         <h4>${escapeHtml(p.name)}</h4>
                         <div class="meta">
-                            ${(p.tags||[]).map(t=>`<span class="badge">${escapeHtml(capitalizeFirst(t))}</span>`).join('')}
+                             ${(p.tags||[]).map(t=>`<span class="badge">${escapeHtml(capitalizeFirst(t))}</span>`).join('')}
                         </div>
                     </div>
                 </a>`;
@@ -214,7 +235,7 @@
                 : `<div class="pfp-placeholder"><span>${safeUsername.charAt(0).toUpperCase()}</span></div>`;
             
             profileContainer.innerHTML = `
-                <div class="profile-header glassy"><div class="profile-banner" style="background-image: url('${profile.banner_url || defaultBanner}')"></div><div class="profile-details"><div class="profile-meta"><div class="profile-avatar-wrapper">${pfpHtml}</div><div class="profile-main-info"><div class="profile-main-top-row"><h1>${safeUsername}</h1><div class="header-stats"><div class="stat-item"><span>${(profile.view_count || 0).toLocaleString()}</span><label>Views</label></div><div class="stat-item"><span id="follower-count">${(profile.followers_count || 0).toLocaleString()}</span><label>Followers</label></div><div class="stat-item"><span>${(profile.following_count || 0).toLocaleString()}</span><label>Following</label></div></div></div><p class="profile-bio">${safeBio}</p></div></div><div class="profile-actions"><button class="btn primary follow-btn"><i class="fa-solid fa-user-plus"></i> Follow</button></div></div></div>
+                <div class="profile-header glassy"><div class="profile-banner" style="background-image: url('${profile.banner_url || defaultBanner}')"></div><div class="profile-details"><div class="profile-meta"><div class="profile-avatar-wrapper">${pfpHtml}</div><div class="profile-main-info"><div class="profile-main-top-row"><h1>${safeUsername}</h1><div class="header-stats"><div class="stat-item"><i class="fa-solid fa-eye"></i><span>${(profile.view_count || 0).toLocaleString()}</span></div><div class="stat-item"><i class="fa-solid fa-users"></i><span id="follower-count">${(profile.followers_count || 0).toLocaleString()}</span></div><div class="stat-item"><i class="fa-solid fa-user-plus"></i><span>${(profile.following_count || 0).toLocaleString()}</span></div></div></div><p class="profile-bio">${safeBio}</p></div></div><div class="profile-actions"><button class="btn primary follow-btn"><i class="fa-solid fa-user-plus"></i> Follow</button></div></div></div>
                 <div class="profile-content-grid">
                     <div id="minecraft-container"><div class="card glassy"><div class="card-body"><div class="edition-switcher"><button id="show-java" class="btn ghost active">Java</button><button id="show-bedrock" class="btn ghost">Bedrock</button></div><div id="skin-viewer-container"></div><p class="skin-username-display"><span id="skin-gamertag">${safeMinecraftUsername}</span><span id="edition-tag"></span></p></div></div></div>
                     <div id="packs-container"><div class="card glassy"><div class="card-body"><div class="packs-header"><h3>Texture Packs</h3><div class="upload-btn" title="Upload new pack"><i class="fa-solid fa-plus"></i></div></div><div class="packs-grid" id="packs-grid-placeholder"></div></div></div></div>
@@ -228,7 +249,7 @@
                 packsGridEl.innerHTML = `<p class="tiny">This user hasn't uploaded any packs yet.</p>`;
             }
         }
-
+        
         // --- EVENT LISTENER & MODAL SETUP ---
         async function setupEventListeners(profile, currentUser) {
             document.getElementById('show-java')?.addEventListener('click', () => updateMinecraftViewer('java', profile));
@@ -244,7 +265,7 @@
             let currentFollowers = profile.followers_count || 0;
 
             function updateButtonState() {
-                followerCountSpan.textContent = currentFollowers.toLocaleString();
+                if (followerCountSpan) followerCountSpan.textContent = currentFollowers.toLocaleString();
                 if (isFollowing) {
                     followButton.innerHTML = `<i class="fa-solid fa-user-check"></i> Following`;
                     followButton.classList.remove('primary');
@@ -325,7 +346,7 @@
                     if (fileError) throw fileError;
                     const { data: { publicUrl: fileUrl } } = supabase.storage.from('pack_files').getPublicUrl(filePath);
                     statusMessage.textContent = 'Finalizing...';
-                    let { error: dbError } = await supabase.from('packs').insert({ user_id: currentUser.id, name: packName, icon_url: iconUrl, file_url: fileUrl });
+                    let { error: dbError } = await supabase.from('packs').insert({ user_id: currentUser.id, name: packName, icon_url: iconUrl, file_url: fileUrl, created_at: new Date() });
                     if (dbError) throw dbError;
                     statusMessage.textContent = 'Success!';
                     closeModal();
@@ -390,7 +411,7 @@
                 const { data: { user: currentUser } } = await supabase.auth.getUser();
                 const { data: profile, error: profileError } = await supabase.from('profiles').select('*').ilike('username', username).single();
                 if (profileError || !profile) { profileContainer.innerHTML = `<div class="not-found">User "${username}" not found.</div>`; return; }
-                if (!currentUser || currentUser.id !== profile.id) {
+                if (currentUser && currentUser.id !== profile.id) {
                     supabase.rpc('increment_view_count', { profile_id_to_update: profile.id }).then();
                 }
                 const { data: packs, error: packsError } = await supabase.from('packs').select('*').eq('user_id', profile.id).order('created_at', { ascending: false });
@@ -407,5 +428,6 @@
         
         document.addEventListener('DOMContentLoaded', loadPage);
     </script>
+    <script type="module" src="/auth.js"></script>
 </body>
 </html>
