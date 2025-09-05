@@ -1,69 +1,91 @@
-import { supabase } from './supabase-client.js';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const navActions = document.getElementById('nav-actions');
 
 function renderUserDropdown(profile) {
-    const avatarContent = profile.avatar_url ? `<img src="${profile.avatar_url}" alt="User Avatar" class="nav-avatar-img">` : `<div class="nav-avatar-default"><i class="fa-solid fa-user"></i></div>`;
+    const avatarContent = profile.avatar_url 
+        ? `<img src="${profile.avatar_url}" alt="User Avatar" class="nav-avatar-img">` 
+        : `<div class="nav-avatar-default"><i class="fa-solid fa-user"></i></div>`;
+    
     navActions.innerHTML = `
         <a class="btn ghost" href="/"><i class="fa-solid fa-house"></i> Home</a>
         <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
         <div class="user-dropdown">
-            <button class="user-menu-btn" style="display: flex; align-items: center; gap: 10px; background: none; border: none; color: inherit; cursor: pointer; font-size: 15px; font-weight: 600;">
+            <button class="user-menu-btn">
                 ${avatarContent}
                 <span>${profile.username}</span>
                 <i class="fa-solid fa-chevron-down" style="font-size: .8em;"></i>
             </button>
-            <div class="dropdown-content" style="display: none; position: absolute; right: 0; background-color: var(--bg-1); min-width: 160px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 1; border-radius: 12px; overflow: hidden;">
-                <a href="/profile.html?user=${profile.username}" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: var(--muted);"><i class="fa-solid fa-user"></i> My Profile</a>
-                <a href="/settings.html" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: var(--muted);"><i class="fa-solid fa-cog"></i> Settings</a>
-                <a href="#" id="logout-btn" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: var(--muted);"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            <div class="dropdown-content">
+                <a href="/profile.html?user=${profile.username}"><i class="fa-solid fa-user"></i> My Profile</a>
+                <a href="/settings.html"><i class="fa-solid fa-cog"></i> Settings</a>
+                <a href="#" id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
             </div>
         </div>`;
 
-    const dropdown = navActions.querySelector('.user-dropdown');
-    const btn = dropdown.querySelector('.user-menu-btn');
-    const content = dropdown.querySelector('.dropdown-content');
+    const btn = navActions.querySelector('.user-menu-btn');
+    const content = navActions.querySelector('.dropdown-content');
 
-    btn.addEventListener('click', () => {
-        content.style.display = content.style.display === 'block' ? 'none' : 'block';
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        content.classList.toggle('show');
     });
 
     document.getElementById('logout-btn').addEventListener('click', async (e) => {
         e.preventDefault();
         await supabase.auth.signOut();
-        window.location.href = '/login.html';
+        window.location.href = '/';
     });
 }
 
 function renderLoginButton() {
     navActions.innerHTML = `
-        <a class="btn ghost" href="/">Home</a>
-        <a class="btn ghost" href="/texturepacks.html">Texture Packs</a>
-        <a class="btn primary" href="/login.html">Login</a>`;
+        <a class="btn ghost" href="/"><i class="fa-solid fa-house"></i> Home</a>
+        <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-paint-roller"></i> Texture Packs</a>
+        <a class="btn primary" href="/login.html"><i class="fa-solid fa-right-to-bracket"></i> Login</a>`;
 }
 
-async function initializeAuth() {
+async function handleAuthStateChange() {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-        if (window.location.pathname.endsWith('/settings.html')) {
-            window.location.replace('/login.html');
-        } else {
-            renderLoginButton();
-        }
-        document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user: null } }));
-        return;
-    }
+    
+    if (session) {
+        // User is logged in, check if their profile is complete
+        const { data: profile } = await supabase.from('profiles').select('username, avatar_url').eq('id', session.user.id).single();
 
-    const { data: profile } = await supabase.from('profiles').select('username, avatar_url').eq('id', session.user.id).single();
-    if (profile) {
-        renderUserDropdown(profile);
+        // THIS IS THE NEW REDIRECTION LOGIC
+        if (profile && !profile.username) {
+            // Profile exists but is incomplete (no username)
+            if (!window.location.pathname.endsWith('/complete-profile.html')) {
+                window.location.replace('/complete-profile.html');
+            }
+        } else if (profile) {
+            // Profile is complete, render the normal user menu
+            renderUserDropdown(profile);
+        } else {
+             // This case is unlikely if you have a trigger, but is a good fallback.
+             if (!window.location.pathname.endsWith('/complete-profile.html')) {
+                window.location.replace('/complete-profile.html');
+            }
+        }
     } else {
+        // User is not logged in, show login button
         renderLoginButton();
     }
-    document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user: session.user } }));
 }
 
-initializeAuth();
+
+// --- INITIAL LOAD AND EVENT LISTENERS ---
+handleAuthStateChange();
 supabase.auth.onAuthStateChange((_event, session) => {
-    initializeAuth();
+    handleAuthStateChange();
+});
+
+// Close dropdown if clicked outside
+window.addEventListener('click', (event) => {
+    if (!event.target.closest('.user-dropdown')) {
+        document.querySelector('.dropdown-content.show')?.classList.remove('show');
+    }
 });
