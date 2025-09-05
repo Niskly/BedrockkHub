@@ -41,45 +41,18 @@
         .btn { padding: .5rem 1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
         
         /* --- NAVBAR BUTTON STYLES --- */
-        .nav-actions { 
-            display: flex; 
-            gap: .6rem; 
-            align-items: center; /* This is the alignment fix */
-        }
-        .btn.ghost { 
-            border-color: var(--border); 
-            background: transparent; 
-            color: var(--text); 
-        }
-        .btn.primary {
-            background: linear-gradient(90deg, var(--brand-1), var(--brand-2));
-            box-shadow: 0 10px 30px rgba(222, 33, 42, .22);
-            color: white;
-        }
+        .nav-actions { display: flex; gap: .6rem; align-items: center; }
+        .btn.ghost { border-color: var(--border); background: transparent; color: var(--text); }
+        .btn.primary { background: linear-gradient(90deg, var(--brand-1), var(--brand-2)); box-shadow: 0 10px 30px rgba(222, 33, 42, .22); color: white; }
         .user-dropdown { position: relative; display: inline-block; }
-        .user-menu-btn {
-            background: var(--bg-2); border: 1px solid var(--border); color: var(--text);
-            padding: 8px 12px; border-radius: 12px; display: flex; align-items: center;
-            gap: 10px; cursor: pointer; font-weight: 600;
-        }
+        .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
         .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
-        .nav-avatar-default {
-            width: 28px; height: 28px; border-radius: 50%; background: var(--bg-0);
-            display: flex; align-items: center; justify-content: center;
-        }
+        .nav-avatar-default { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-0); display: flex; align-items: center; justify-content: center; }
         .user-menu-btn .fa-chevron-down { font-size: 0.8em; transition: transform 0.2s; }
         .user-menu-btn:hover { border-color: var(--border-strong); }
-        .dropdown-content {
-            display: none; position: absolute; right: 0; top: 110%;
-            background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px;
-            min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10;
-            overflow: hidden;
-        }
+        .dropdown-content { display: none; position: absolute; right: 0; top: 110%; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; }
         .dropdown-content.show { display: block; }
-        .dropdown-content a {
-            color: var(--muted); padding: 12px 16px; text-decoration: none;
-            display: flex; align-items: center; gap: 10px; font-weight: 600;
-        }
+        .dropdown-content a { color: var(--muted); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 600; }
         .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
         .tiny { font-size: 11px; color: var(--muted); }
         
@@ -91,12 +64,23 @@
         .spinner { width: 48px; height: 48px; border: 5px solid var(--border); border-bottom-color: var(--brand-1); border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* PROFILE HEADER */
+        /* --- UPDATED PROFILE HEADER --- */
         .profile-header { border-radius: 16px; margin-bottom: 2rem; overflow: hidden; position: relative; }
         .profile-banner { height: 220px; background-size: cover; background-position: center; }
-        .profile-banner::after { content: ''; position: absolute; bottom: 65px; left: 0; right: 0; height: 80px; background: rgba(18, 18, 18, 0.8); border-bottom: 1px solid var(--border); -webkit-mask: radial-gradient(circle at 50% -25px, transparent 110px, black 111px); mask: radial-gradient(circle at 50% -25px, transparent 110px, black 111px); }
-        .profile-details { padding: 1rem 1.5rem; display: flex; align-items: flex-end; justify-content: space-between; position: relative; z-index: 2; }
-        .profile-meta { display: flex; align-items: center; gap: 1.5rem; margin-top: -100px; }
+        .profile-details {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 2;
+        }
+        .profile-meta {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: -80px; /* Avatar overlaps the banner */
+        }
         .profile-avatar-wrapper { flex-shrink: 0; }
         .profile-avatar { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #161616; }
         .pfp-placeholder { width: 140px; height: 140px; border-radius: 50%; border: 4px solid #161616; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); }
@@ -136,7 +120,7 @@
         .content { padding: 14px; }
         .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
         .badge { font-size: 12px; padding: .25rem .55rem; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-2); color: white; font-weight: 700; text-transform: capitalize;}
-        .pack-stats-top { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--muted); }
+        .pack-stats-top { display: flex; justify-content: space-between; margin-bottom: 8px; color: var(--muted); font-size: 12px; }
         
         /* MODAL STYLES */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
@@ -216,6 +200,11 @@
         });
         
         // --- HELPER FUNCTIONS ---
+        function sanitizeFileName(name) {
+            const noColorCodes = name.replace(/§[0-9a-fklmnor]/g, '');
+            const withUnderscores = noColorCodes.replace(/\s+/g, '_');
+            return withUnderscores.replace(/[^a-zA-Z0-9-._]/g, '');
+        }
         function escapeHtml(str) { return String(str||"").replace(/[&<>"']/g, m => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" })[m]); }
         function capitalizeFirst(str) { return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : ""; }
         function formatDate(dateString) { if(!dateString) return ""; const d = new Date(dateString); return `${d.getDate()}/${d.getMonth()+1}/${String(d.getFullYear()).slice(-2)}`; }
@@ -301,10 +290,9 @@
             const { data } = await supabase.from('followers').select('*', { count: 'exact' }).eq('follower_id', currentUser.id).eq('following_id', profile.id);
             let isFollowing = data && data.length > 0;
             const followerCountSpan = document.getElementById('follower-count');
-            let currentFollowers = profile.followers_count || 0;
 
-            function updateButtonState() {
-                if (followerCountSpan) followerCountSpan.textContent = currentFollowers.toLocaleString();
+            function updateButtonState(count) {
+                if (followerCountSpan) followerCountSpan.textContent = count.toLocaleString();
                 if (isFollowing) {
                     followButton.innerHTML = `<i class="fa-solid fa-user-check"></i> Following`;
                     followButton.classList.remove('primary');
@@ -313,15 +301,26 @@
                     followButton.classList.add('primary');
                 }
             }
-            updateButtonState();
+            updateButtonState(profile.followers_count || 0);
 
             followButton.addEventListener('click', async () => {
                 followButton.disabled = true;
                 const rpcToCall = isFollowing ? 'unfollow_user' : 'follow_user';
-                const { error } = await supabase.rpc(rpcToCall, { [`user_to_${isFollowing ? 'unfollow' : 'follow'}_id`]: profile.id });
-                if (error) { console.error(`Error:`, error); alert(`Could not perform action.`); }
-                else { currentFollowers += isFollowing ? -1 : 1; isFollowing = !isFollowing; updateButtonState(); }
-                followButton.disabled = false;
+                const { error: rpcError } = await supabase.rpc(rpcToCall, { [`user_to_${isFollowing ? 'unfollow' : 'follow'}_id`]: profile.id });
+                if (rpcError) {
+                    console.error(`Error:`, rpcError);
+                    alert(`Could not perform action.`);
+                    followButton.disabled = false;
+                } else {
+                    const { data: updatedProfile, error: fetchError } = await supabase.from('profiles').select('followers_count').eq('id', profile.id).single();
+                    if (fetchError) {
+                        console.error('Error fetching updated count:', fetchError);
+                    } else {
+                        isFollowing = !isFollowing;
+                        updateButtonState(updatedProfile.followers_count || 0);
+                    }
+                    followButton.disabled = false;
+                }
             });
         }
         
@@ -380,7 +379,8 @@
                         iconUrl = data.publicUrl;
                     }
                     statusMessage.textContent = 'Uploading pack file...';
-                    const filePath = `${currentUser.id}/${Date.now()}_${packFile.name}`;
+                    const sanitizedName = sanitizeFileName(packFile.name);
+                    const filePath = `${currentUser.id}/${Date.now()}_${sanitizedName}`;
                     let { error: fileError } = await supabase.storage.from('pack_files').upload(filePath, packFile);
                     if (fileError) throw fileError;
                     const { data: { publicUrl: fileUrl } } = supabase.storage.from('pack_files').getPublicUrl(filePath);
