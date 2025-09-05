@@ -39,6 +39,7 @@
         .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-11px); }
         .brand-title { font-weight: 800; letter-spacing: .6px; font-size: 15px; }
         .btn { padding: .5rem 1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         
         /* NAVBAR BUTTON STYLES */
         .nav-actions { display: flex; gap: .6rem; align-items: center; }
@@ -64,14 +65,15 @@
         .spinner { width: 48px; height: 48px; border: 5px solid var(--border); border-bottom-color: var(--brand-1); border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- RESTORED PROFILE HEADER --- */
+        /* --- FIXED PROFILE HEADER --- */
         .profile-header { border-radius: 16px; margin-bottom: 2rem; overflow: hidden; position: relative; }
         .profile-banner { height: 220px; background-size: cover; background-position: center; }
         .profile-banner::after { /* The banner cutout effect */
-            content: ''; position: absolute; bottom: 65px; left: 0; right: 0; height: 80px;
+            content: ''; position: absolute; bottom: 70px; /* Aligns with the PFP's vertical center */
+            left: 0; right: 0; height: 80px;
             background: rgba(18, 18, 18, 0.8); border-bottom: 1px solid var(--border);
-            -webkit-mask: radial-gradient(circle at 50% -25px, transparent 110px, black 111px);
-            mask: radial-gradient(circle at 50% -25px, transparent 110px, black 111px);
+            -webkit-mask: radial-gradient(circle at 50% 1px, transparent 73px, black 74px);
+            mask: radial-gradient(circle at 50% 1px, transparent 73px, black 74px);
         }
         .profile-details {
             padding: 1rem 1.5rem; display: flex; align-items: flex-end; justify-content: space-between;
@@ -235,7 +237,7 @@
                         </div>
                         <h4>${escapeHtml(p.name)}</h4>
                         <div class="meta">
-                             ${(p.tags||[]).map(t=>`<span class="badge">${escapeHtml(capitalizeFirst(t))}</span>`).join('')}
+                            ${(p.tags||[]).map(t=>`<span class="badge">${escapeHtml(capitalizeFirst(t))}</span>`).join('')}
                         </div>
                     </div>
                 </a>`;
@@ -253,10 +255,52 @@
                 : `<div class="pfp-placeholder"><span>${safeUsername.charAt(0).toUpperCase()}</span></div>`;
             
             profileContainer.innerHTML = `
-                <div class="profile-header glassy"><div class="profile-banner" style="background-image: url('${profile.banner_url || defaultBanner}')"></div><div class="profile-details"><div class="profile-meta"><div class="profile-avatar-wrapper">${pfpHtml}</div><div class="profile-main-info"><div class="profile-main-top-row"><h1>${safeUsername}</h1><div class="header-stats"><div class="stat-item"><i class="fa-solid fa-eye"></i><span>${(profile.view_count || 0).toLocaleString()}</span></div><div class="stat-item"><i class="fa-solid fa-users"></i><span id="follower-count">0</span></div><div class="stat-item"><i class="fa-solid fa-user-plus"></i><span>0</span></div></div></div><p class="profile-bio">${safeBio}</p></div></div><div class="profile-actions" style="display: none;"><button class="btn primary follow-btn"><i class="fa-solid fa-user-plus"></i> Follow</button></div></div></div>
+                <div class="profile-header glassy">
+                    <div class="profile-banner" style="background-image: url('${profile.banner_url || defaultBanner}')"></div>
+                    <div class="profile-details">
+                        <div class="profile-meta">
+                            <div class="profile-avatar-wrapper">${pfpHtml}</div>
+                            <div class="profile-main-info">
+                                <div class="profile-main-top-row">
+                                    <h1>${safeUsername}</h1>
+                                    <div class="header-stats">
+                                        <div class="stat-item"><i class="fa-solid fa-eye"></i><span>${(profile.view_count || 0).toLocaleString()}</span></div>
+                                        <div class="stat-item"><i class="fa-solid fa-users"></i><span id="follower-count">${(profile.followers_count || 0).toLocaleString()}</span></div>
+                                        <div class="stat-item"><i class="fa-solid fa-user-plus"></i><span id="following-count">${(profile.following_count || 0).toLocaleString()}</span></div>
+                                    </div>
+                                </div>
+                                <p class="profile-bio">${safeBio}</p>
+                            </div>
+                        </div>
+                        <div class="profile-actions">
+                            <button class="btn primary follow-btn"><i class="fa-solid fa-user-plus"></i> Follow</button>
+                        </div>
+                    </div>
+                </div>
                 <div class="profile-content-grid">
-                    <div id="minecraft-container"><div class="card glassy"><div class="card-body"><div class="edition-switcher"><button id="show-java" class="btn ghost active">Java</button><button id="show-bedrock" class="btn ghost">Bedrock</button></div><div id="skin-viewer-container"></div><p class="skin-username-display"><span id="skin-gamertag">${safeMinecraftUsername}</span><span id="edition-tag"></span></p></div></div></div>
-                    <div id="packs-container"><div class="card glassy"><div class="card-body"><div class="packs-header"><h3>Texture Packs</h3><div class="upload-btn" title="Upload new pack"><i class="fa-solid fa-plus"></i></div></div><div class="packs-grid" id="packs-grid-placeholder"></div></div></div></div>
+                    <div id="minecraft-container">
+                        <div class="card glassy">
+                            <div class="card-body">
+                                <div class="edition-switcher">
+                                    <button id="show-java" class="btn ghost active">Java</button>
+                                    <button id="show-bedrock" class="btn ghost">Bedrock</button>
+                                </div>
+                                <div id="skin-viewer-container"></div>
+                                <p class="skin-username-display"><span id="skin-gamertag">${safeMinecraftUsername}</span><span id="edition-tag"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="packs-container">
+                        <div class="card glassy">
+                            <div class="card-body">
+                                <div class="packs-header">
+                                    <h3>Texture Packs</h3>
+                                    <div class="upload-btn" title="Upload new pack"><i class="fa-solid fa-plus"></i></div>
+                                </div>
+                                <div class="packs-grid" id="packs-grid-placeholder"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
             
@@ -269,6 +313,68 @@
         }
         
         // --- EVENT LISTENER & MODAL SETUP ---
+        async function setupFollowSystem(profile, currentUser) {
+            const followButton = document.querySelector('.follow-btn');
+            const profileActionsContainer = document.querySelector('.profile-actions');
+
+            if (!profileActionsContainer || !followButton) return;
+
+            // Hide follow button if not logged in or viewing your own profile
+            if (!currentUser || currentUser.id === profile.id) {
+                profileActionsContainer.style.display = 'none';
+                return;
+            } else {
+                 profileActionsContainer.style.display = 'block';
+            }
+
+            // Check initial follow state
+            const { data, error: checkError } = await supabase.from('followers').select('*').eq('follower_id', currentUser.id).eq('following_id', profile.id);
+            if (checkError) { console.error('Error checking follow status:', checkError); return; }
+
+            let isFollowing = data && data.length > 0;
+            const followerCountSpan = document.getElementById('follower-count');
+
+            function updateButtonState(count) {
+                if (followerCountSpan) followerCountSpan.textContent = count.toLocaleString();
+                if (isFollowing) {
+                    followButton.innerHTML = `<i class="fa-solid fa-user-check"></i> Following`;
+                    followButton.classList.remove('primary');
+                } else {
+                    followButton.innerHTML = `<i class="fa-solid fa-user-plus"></i> Follow`;
+                    followButton.classList.add('primary');
+                }
+            }
+            updateButtonState(profile.followers_count || 0);
+
+            followButton.addEventListener('click', async () => {
+                followButton.disabled = true;
+                const rpcToCall = isFollowing ? 'unfollow_user' : 'follow_user';
+                const rpcParams = { [`user_to_${isFollowing ? 'unfollow' : 'follow'}_id`]: profile.id };
+
+                const { error: rpcError } = await supabase.rpc(rpcToCall, rpcParams);
+
+                if (rpcError) {
+                    console.error(`RPC Error:`, rpcError);
+                    alert(`Could not perform action. Please try again.`);
+                } else {
+                    // Action succeeded, now fetch the TRUE counts from the database
+                    const { data: updatedProfile, error: fetchError } = await supabase
+                        .from('profiles')
+                        .select('followers_count')
+                        .eq('id', profile.id)
+                        .single();
+
+                    if (fetchError) {
+                        console.error('Error fetching updated counts:', fetchError);
+                    } else {
+                        isFollowing = !isFollowing;
+                        updateButtonState(updatedProfile.followers_count);
+                    }
+                }
+                followButton.disabled = false;
+            });
+        }
+        
         function setupModal(profile, currentUser) {
             const modalOverlay = document.getElementById('upload-modal-overlay');
             const openModalBtn = document.querySelector('.upload-btn');
@@ -403,6 +509,7 @@
                 renderDashboard(profile, packs || []);
                 setupMinecraftViewer(profile);
                 setupModal(profile, currentUser);
+                setupFollowSystem(profile, currentUser); // Add this call
             } catch (error) {
                 console.error("Critical error:", error);
                 profileContainer.innerHTML = `<div class="not-found">An error occurred.</div>`;
