@@ -40,7 +40,7 @@
         .brand-title { font-weight: 800; letter-spacing: .6px; font-size: 15px; }
         .btn { padding: .5rem 1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
         
-        /* --- NAVBAR BUTTON STYLES --- */
+        /* NAVBAR BUTTON STYLES */
         .nav-actions { display: flex; gap: .6rem; align-items: center; }
         .btn.ghost { border-color: var(--border); background: transparent; color: var(--text); }
         .btn.primary { background: linear-gradient(90deg, var(--brand-1), var(--brand-2)); box-shadow: 0 10px 30px rgba(222, 33, 42, .22); color: white; }
@@ -67,7 +67,7 @@
         /* --- RESTORED PROFILE HEADER --- */
         .profile-header { border-radius: 16px; margin-bottom: 2rem; overflow: hidden; position: relative; }
         .profile-banner { height: 220px; background-size: cover; background-position: center; }
-        .profile-banner::after {
+        .profile-banner::after { /* The banner cutout effect */
             content: ''; position: absolute; bottom: 65px; left: 0; right: 0; height: 80px;
             background: rgba(18, 18, 18, 0.8); border-bottom: 1px solid var(--border);
             -webkit-mask: radial-gradient(circle at 50% -25px, transparent 110px, black 111px);
@@ -79,7 +79,7 @@
         }
         .profile-meta {
             display: flex; align-items: center; gap: 1.5rem;
-            margin-top: -100px; /* This brings the avatar and name back up */
+            margin-top: -100px; /* Pulls the avatar and info up */
         }
         .profile-avatar-wrapper { flex-shrink: 0; }
         .profile-avatar { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #161616; }
@@ -120,7 +120,7 @@
         .content { padding: 14px; }
         .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
         .badge { font-size: 12px; padding: .25rem .55rem; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-2); color: white; font-weight: 700; text-transform: capitalize;}
-        .pack-stats-top { display: flex; justify-content: space-between; margin-bottom: 8px; color: var(--muted); font-size: 12px; }
+        .pack-stats-top { display: flex; justify-content: space-between; margin-bottom: 8px; color: var(--muted); font-size: 11px; font-weight: 400; } /* Smaller, not-bold text */
         
         /* MODAL STYLES */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
@@ -189,16 +189,6 @@
         const profileContainer = document.getElementById('profile-container');
         let skinViewer;
 
-        const packFileInput = document.getElementById('pack-file-input');
-        packFileInput?.addEventListener('change', () => {
-            const file = packFileInput.files[0];
-            const limit = 50 * 1024 * 1024; // 50MB in bytes
-            if (file && file.size > limit) {
-                alert('Texture pack is too large! The maximum size is 50MB.');
-                packFileInput.value = '';
-            }
-        });
-        
         // --- HELPER FUNCTIONS ---
         function sanitizeFileName(name) {
             const noColorCodes = name.replace(/§[0-9a-fklmnor]/g, '');
@@ -263,7 +253,7 @@
                 : `<div class="pfp-placeholder"><span>${safeUsername.charAt(0).toUpperCase()}</span></div>`;
             
             profileContainer.innerHTML = `
-                <div class="profile-header glassy"><div class="profile-banner" style="background-image: url('${profile.banner_url || defaultBanner}')"></div><div class="profile-details"><div class="profile-meta"><div class="profile-avatar-wrapper">${pfpHtml}</div><div class="profile-main-info"><div class="profile-main-top-row"><h1>${safeUsername}</h1><div class="header-stats"><div class="stat-item"><i class="fa-solid fa-eye"></i><span>${(profile.view_count || 0).toLocaleString()}</span></div><div class="stat-item"><i class="fa-solid fa-users"></i><span id="follower-count">${(profile.followers_count || 0).toLocaleString()}</span></div><div class="stat-item"><i class="fa-solid fa-user-plus"></i><span>${(profile.following_count || 0).toLocaleString()}</span></div></div></div><p class="profile-bio">${safeBio}</p></div></div><div class="profile-actions"><button class="btn primary follow-btn"><i class="fa-solid fa-user-plus"></i> Follow</button></div></div></div>
+                <div class="profile-header glassy"><div class="profile-banner" style="background-image: url('${profile.banner_url || defaultBanner}')"></div><div class="profile-details"><div class="profile-meta"><div class="profile-avatar-wrapper">${pfpHtml}</div><div class="profile-main-info"><div class="profile-main-top-row"><h1>${safeUsername}</h1><div class="header-stats"><div class="stat-item"><i class="fa-solid fa-eye"></i><span>${(profile.view_count || 0).toLocaleString()}</span></div><div class="stat-item"><i class="fa-solid fa-users"></i><span id="follower-count">0</span></div><div class="stat-item"><i class="fa-solid fa-user-plus"></i><span>0</span></div></div></div><p class="profile-bio">${safeBio}</p></div></div><div class="profile-actions" style="display: none;"><button class="btn primary follow-btn"><i class="fa-solid fa-user-plus"></i> Follow</button></div></div></div>
                 <div class="profile-content-grid">
                     <div id="minecraft-container"><div class="card glassy"><div class="card-body"><div class="edition-switcher"><button id="show-java" class="btn ghost active">Java</button><button id="show-bedrock" class="btn ghost">Bedrock</button></div><div id="skin-viewer-container"></div><p class="skin-username-display"><span id="skin-gamertag">${safeMinecraftUsername}</span><span id="edition-tag"></span></p></div></div></div>
                     <div id="packs-container"><div class="card glassy"><div class="card-body"><div class="packs-header"><h3>Texture Packs</h3><div class="upload-btn" title="Upload new pack"><i class="fa-solid fa-plus"></i></div></div><div class="packs-grid" id="packs-grid-placeholder"></div></div></div></div>
@@ -279,50 +269,6 @@
         }
         
         // --- EVENT LISTENER & MODAL SETUP ---
-        async function setupEventListeners(profile, currentUser) {
-            document.getElementById('show-java')?.addEventListener('click', () => updateMinecraftViewer('java', profile));
-            document.getElementById('show-bedrock')?.addEventListener('click', () => updateMinecraftViewer('bedrock', profile));
-            const followButton = document.querySelector('.follow-btn');
-            if (!followButton) return;
-            if (!currentUser || currentUser.id === profile.id) {
-                followButton.style.display = 'none'; return;
-            }
-
-            const { data } = await supabase.from('followers').select('follower_id', { count: 'exact' }).eq('follower_id', currentUser.id).eq('following_id', profile.id);
-            let isFollowing = data && data.length > 0;
-            const followerCountSpan = document.getElementById('follower-count');
-
-            function updateButtonState(count) {
-                if (followerCountSpan) followerCountSpan.textContent = count.toLocaleString();
-                if (isFollowing) {
-                    followButton.innerHTML = `<i class="fa-solid fa-user-check"></i> Following`;
-                    followButton.classList.remove('primary');
-                } else {
-                    followButton.innerHTML = `<i class="fa-solid fa-user-plus"></i> Follow`;
-                    followButton.classList.add('primary');
-                }
-            }
-            updateButtonState(profile.followers_count || 0);
-
-            followButton.addEventListener('click', async () => {
-                followButton.disabled = true;
-                const rpcToCall = isFollowing ? 'unfollow_user' : 'follow_user';
-                
-                const { data: newCount, error: rpcError } = await supabase.rpc(rpcToCall, { 
-                    [`user_to_${isFollowing ? 'unfollow' : 'follow'}_id`]: profile.id 
-                });
-                
-                if (rpcError) {
-                    console.error(`Error:`, rpcError);
-                    alert(`Could not perform action.`);
-                } else {
-                    isFollowing = !isFollowing;
-                    updateButtonState(newCount);
-                }
-                followButton.disabled = false;
-            });
-        }
-        
         function setupModal(profile, currentUser) {
             const modalOverlay = document.getElementById('upload-modal-overlay');
             const openModalBtn = document.querySelector('.upload-btn');
@@ -455,7 +401,6 @@
                 const { data: packs, error: packsError } = await supabase.from('packs').select('*').eq('user_id', profile.id).order('created_at', { ascending: false });
                 if (packsError) console.error(packsError);
                 renderDashboard(profile, packs || []);
-                setupEventListeners(profile, currentUser);
                 setupMinecraftViewer(profile);
                 setupModal(profile, currentUser);
             } catch (error) {
@@ -469,5 +414,3 @@
     <script type="module" src="/auth.js"></script>
 </body>
 </html>
-
-make it like texturepacks.html but it should be profile.html lmao
