@@ -80,6 +80,19 @@
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .spinner-sm { width: 1.2em; height: 1.2em; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .warning-box {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+        .warning-box i {
+            color: var(--danger);
+            margin-right: 8px;
+        }
     </style>
 </head>
 <body>
@@ -122,7 +135,6 @@
     <script type="module">
         import { supabase } from './supabase-client.js';
         let currentUser = null;
-        let msalInstance = null;
 
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
@@ -131,31 +143,6 @@
             toast.innerHTML = (type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-exclamation"></i>') + ` ${message}`;
             container.appendChild(toast);
             setTimeout(() => { toast.remove(); }, 4000);
-        }
-
-        // Check for OAuth errors in URL and clear them
-        function handleOAuthErrors() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const error = urlParams.get('error');
-            
-            if (error) {
-                let errorMessage = 'Failed to link Microsoft account';
-                const errorDescription = urlParams.get('error_description');
-                
-                if (errorDescription) {
-                    if (errorDescription.includes('exchange external code')) {
-                        errorMessage = 'Microsoft authentication failed. Please try again.';
-                    } else {
-                        errorMessage = decodeURIComponent(errorDescription);
-                    }
-                }
-                
-                showToast(errorMessage, 'error');
-                
-                // Clear the error from URL without affecting the session
-                const cleanUrl = window.location.pathname;
-                window.history.replaceState({}, document.title, cleanUrl);
-            }
         }
 
         const mcLinkContainer = document.getElementById('minecraft-link-container');
@@ -184,6 +171,15 @@
                     <button type="button" class="btn ghost" id="link-minecraft-btn" style="width: 100%; justify-content: center;">
                         <i class="fa-brands fa-microsoft"></i> Link with Microsoft
                     </button>
+                    <div class="warning-box">
+                        <i class="fa-solid fa-info-circle"></i>
+                        <strong>Before linking:</strong>
+                        <ul style="margin: 8px 0 0 24px; padding: 0;">
+                            <li>Use a personal Microsoft account (not work/school)</li>
+                            <li>Ensure you have an Xbox account (free at xbox.com)</li>
+                            <li>Make sure you own Minecraft Java or Bedrock Edition</li>
+                        </ul>
+                    </div>
                     <p class="input-hint">Link your Microsoft account that owns Minecraft to display your skin and username.</p>
                 `;
                 document.getElementById('link-minecraft-btn').addEventListener('click', handleMicrosoftLink);
@@ -217,19 +213,19 @@
                 linkBtn.disabled = true;
                 linkBtn.innerHTML = '<div class="spinner-sm"></div> Connecting...';
 
-                // Use standard Microsoft scopes that don't require Partner Center
-                const clientId = 'b96b9812-ddfa-4cf6-94f3-9a78068acd9b'; // You need to replace this with your actual client ID
+                // IMPORTANT: Update this with your actual Azure App Registration Client ID
+                const clientId = 'b96b9812-ddfa-4cf6-94f3-9a78068acd9b'; // Replace with your actual client ID
                 const redirectUri = encodeURIComponent(window.location.origin + '/minecraft-callback.html');
-                const scopes = encodeURIComponent('https://graph.microsoft.com/User.Read offline_access');
                 
-                const authUrl = `https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize?` +
+                // Use XboxLive.signin scope for Xbox authentication
+                const scopes = encodeURIComponent('XboxLive.signin offline_access');
+                
+                const authUrl = `https://login.live.com/oauth20_authorize.srf?` +
                     `client_id=${clientId}&` +
                     `response_type=token&` +
                     `redirect_uri=${redirectUri}&` +
                     `scope=${scopes}&` +
-                    `response_mode=fragment&` +
-                    `state=${encodeURIComponent(JSON.stringify({ returnUrl: window.location.href }))}&` +
-                    `nonce=${Date.now()}`;
+                    `state=${encodeURIComponent(JSON.stringify({ returnUrl: window.location.href }))}`;
 
                 // Open popup window
                 const popup = window.open(authUrl, 'minecraft-auth', 'width=500,height=600,scrollbars=yes,resizable=yes');
@@ -246,9 +242,8 @@
                             const { data: { session } } = await supabase.auth.getSession();
                             if (!session) throw new Error('You must be logged in to MCHub.');
                             
-                            // Add timeout to the fetch request
                             const controller = new AbortController();
-                            const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout
+                            const timeoutId = setTimeout(() => controller.abort(), 45000);
                             
                             const response = await fetch('/api/link-minecraft', {
                                 method: 'POST',
@@ -263,21 +258,33 @@
                             clearTimeout(timeoutId);
                             
                             const result = await response.json();
-                            if (!response.ok) throw new Error(result.details || 'Failed to link account.');
+                            if (!response.ok) {
+                                // Provide helpful guidance based on the error
+                                if (result.details?.includes('Xbox')) {
+                                    throw new Error(result.details + ' Visit xbox.com to create a free Xbox account.');
+                                } else {
+                                    throw new Error(result.details || 'Failed to link account.');
+                                }
+                            }
                             
                             showToast(`Minecraft account "${result.minecraft_username}" linked successfully!`);
                             await loadProfileData();
                         } catch (error) {
                             if (error.name === 'AbortError') {
-                                showToast('Request timed out - the linking process is taking too long. Please try again.', 'error');
+                                showToast('Request timed out. Please try again.', 'error');
                             } else {
-                                showToast('Failed to link account: ' + error.message, 'error');
+                                showToast(error.message, 'error');
                             }
+                        } finally {
+                            linkBtn.disabled = false;
+                            linkBtn.innerHTML = originalContent;
                         }
                     } else if (event.data.type === 'MINECRAFT_AUTH_ERROR') {
                         popup.close();
                         window.removeEventListener('message', handleMessage);
-                        showToast('Microsoft authentication failed: ' + event.data.error, 'error');
+                        showToast('Authentication failed: ' + event.data.error, 'error');
+                        linkBtn.disabled = false;
+                        linkBtn.innerHTML = originalContent;
                     }
                 };
 
@@ -294,61 +301,9 @@
                 }, 1000);
 
             } catch (error) {
-                showToast('Failed to start Microsoft authentication: ' + error.message, 'error');
+                showToast('Failed to start authentication: ' + error.message, 'error');
                 linkBtn.disabled = false;
                 linkBtn.innerHTML = originalContent;
-            }
-        }
-
-        // Handle the callback from Microsoft auth (if using redirect method)
-        async function handleMinecraftLinkCallback() {
-            const hash = window.location.hash;
-            const urlParams = new URLSearchParams(window.location.search);
-            
-            // Handle different callback scenarios
-            if (hash.includes('access_token=') || urlParams.has('code')) {
-                mcLinkContainer.innerHTML = `<p class="tiny"><i class="fa-solid fa-spinner fa-spin"></i> Finalizing Minecraft link, please wait...</p>`;
-                
-                try {
-                    let accessToken = null;
-                    
-                    if (hash.includes('access_token=')) {
-                        // Direct access token (less secure, but simpler)
-                        const params = new URLSearchParams(hash.substring(1));
-                        accessToken = params.get('access_token');
-                    } else if (urlParams.has('code')) {
-                        // Authorization code (more secure)
-                        const code = urlParams.get('code');
-                        // You would need to exchange the code for an access token
-                        // This requires a server-side endpoint
-                        throw new Error('Authorization code flow not implemented yet');
-                    }
-                    
-                    if (!accessToken) throw new Error('No access token received');
-                    
-                    const { data: { session } } = await supabase.auth.getSession();
-                    if (!session) throw new Error('You must be logged in.');
-                    
-                    const response = await fetch('/api/link-minecraft', {
-                        method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json', 
-                            'Authorization': `Bearer ${session.access_token}` 
-                        },
-                        body: JSON.stringify({ provider_token: accessToken })
-                    });
-                    
-                    const result = await response.json();
-                    if (!response.ok) throw new Error(result.details || 'Failed to link account.');
-                    
-                    showToast('Minecraft account linked successfully!');
-                } catch (error) {
-                    showToast('Failed to link Minecraft account: ' + error.message, 'error');
-                } finally {
-                    // Clean up URL
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                    await loadProfileData();
-                }
             }
         }
 
@@ -357,12 +312,7 @@
             if (user) {
                 currentUser = user;
                 document.getElementById('settings-container').classList.add('loaded');
-                
-                // Handle any OAuth errors first
-                handleOAuthErrors();
-                
                 await loadProfileData();
-                await handleMinecraftLinkCallback();
             }
         });
         
@@ -377,27 +327,4 @@
                 
                 const { error } = await supabase
                     .from('profiles')
-                    .update({ bio: document.getElementById('bio').value })
-                    .eq('id', currentUser.id);
-                
-                if (error) throw error;
-                showToast("Profile saved successfully!");
-            } catch (error) {
-                showToast("Error saving profile: " + error.message, "error");
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalContent;
-            }
-        });
-        
-        const tabButtons = document.querySelectorAll('.tab-btn');
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                document.querySelector('.tab-btn.active').classList.remove('active');
-                button.classList.add('active');
-            });
-        });
-    </script>
-    <script type="module" src="/auth.js"></script>
-</body>
-</html>
+                    .update({ bio:
