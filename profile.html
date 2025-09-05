@@ -151,9 +151,15 @@
 
         function renderDashboard(profile, packs) {
             const defaultBanner = 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/default-banner.png';
+            
+            // --- FIX IS HERE ---
+            // Sanitize text inputs to prevent them from breaking the HTML string
+            const safeUsername = profile.username?.replace(/`/g, "'") || "Unnamed";
+            const safeBio = profile.bio?.replace(/`/g, "'") || "This user hasn't written a bio yet.";
+            
             const pfpHtml = profile.avatar_url
-                ? `<img src="${profile.avatar_url}" alt="${profile.username}'s avatar" class="profile-avatar">`
-                : `<div class="pfp-placeholder"><span>${profile.username.charAt(0).toUpperCase()}</span></div>`;
+                ? `<img src="${profile.avatar_url}" alt="${safeUsername}'s avatar" class="profile-avatar">`
+                : `<div class="pfp-placeholder"><span>${safeUsername.charAt(0).toUpperCase()}</span></div>`;
 
             profileContainer.innerHTML = `
                 <div class="profile-header glassy">
@@ -163,14 +169,14 @@
                             <div class="profile-avatar-wrapper">${pfpHtml}</div>
                             <div class="profile-main-info">
                                 <div class="profile-main-top-row">
-                                    <h1>${profile.username}</h1>
+                                    <h1>${safeUsername}</h1>
                                     <div class="header-stats">
                                         <div class="stat-item"><span>${(profile.view_count || 0).toLocaleString()}</span><label>Views</label></div>
                                         <div class="stat-item"><span>${(profile.followers_count || 0).toLocaleString()}</span><label>Followers</label></div>
                                         <div class="stat-item"><span>${(profile.following_count || 0).toLocaleString()}</span><label>Following</label></div>
                                     </div>
                                 </div>
-                                <p class="profile-bio">${profile.bio || 'This user hasn\\'t written a bio yet.'}</p>
+                                <p class="profile-bio">${safeBio}</p>
                             </div>
                         </div>
                         <div class="profile-actions">
