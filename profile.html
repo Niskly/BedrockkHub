@@ -152,11 +152,9 @@
         function renderDashboard(profile, packs) {
             const defaultBanner = 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/default-banner.png';
             
-            // --- FIX IS HERE ---
-            // Sanitize all text inputs to prevent them from breaking the HTML string
             const safeUsername = profile.username?.replace(/`/g, "'") || "Unnamed";
             const safeBio = profile.bio?.replace(/`/g, "'") || "This user hasn't written a bio yet.";
-            const safeMinecraftUsername = profile.minecraft_username?.replace(/`/g, "'") || "Not Linked"; // <-- ADDED THIS LINE
+            const safeMinecraftUsername = profile.minecraft_username?.replace(/`/g, "'") || "Not Linked";
 
             const pfpHtml = profile.avatar_url
                 ? `<img src="${profile.avatar_url}" alt="${safeUsername}'s avatar" class="profile-avatar">`
@@ -204,11 +202,14 @@
                                     <a href="/upload" class="upload-btn" title="Upload new pack"><i class="fa-solid fa-plus"></i></a>
                                 </div>
                                 <div class="packs-grid">
-                                    ${packs.length > 0 ? packs.map(pack => `
+                                    ${packs.length > 0 ? packs.map(pack => {
+                                        const safePackName = pack.name?.replace(/`/g, "'") || 'Untitled Pack';
+                                        return `
                                         <a href="/texturepacks" class="pack-card">
-                                            <img src="${pack.icon_url || 'https://placehold.co/300x200/1c1c1c/e8eefc?text=No+Icon'}" alt="${pack.name}" title="${pack.name}">
-                                            <div class="pack-card-info"><h4>${pack.name}</h4><p class="tiny">${(pack.download_count || 0).toLocaleString()} Downloads</p></div>
-                                        </a>`).join('') : '<p class="tiny">This user hasn\\'t uploaded any packs yet.</p>'}
+                                            <img src="${pack.icon_url || 'https://placehold.co/300x200/1c1c1c/e8eefc?text=No+Icon'}" alt="${safePackName}" title="${safePackName}">
+                                            <div class="pack-card-info"><h4>${safePackName}</h4><p class="tiny">${(pack.download_count || 0).toLocaleString()} Downloads</p></div>
+                                        </a>`;
+                                    }).join('') : '<p class="tiny">This user hasn\\'t uploaded any packs yet.</p>'}
                                 </div>
                             </div>
                         </div>
@@ -238,6 +239,7 @@
             const bedrockBtn = document.getElementById('show-bedrock');
             container.innerHTML = ''; 
 
+            // --- THIS IS THE FINAL FIX ---
             const safeMinecraftUsername = profile.minecraft_username?.replace(/`/g, "'") || "Not Linked";
 
             let id, username, tag;
