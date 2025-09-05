@@ -69,7 +69,7 @@
         .profile-header { border-radius: 16px; margin-bottom: 2rem; overflow: hidden; position: relative; }
         .profile-banner { height: 220px; background-size: cover; background-position: center; }
         .profile-banner::after { /* The banner cutout effect */
-            content: ''; position: absolute; bottom: 70px; /* Aligns with the PFP's vertical center */
+            content: ''; position: absolute; bottom: 150px; /* Aligns with the PFP's vertical center */
             left: 0; right: 0; height: 80px;
             background: rgba(18, 18, 18, 0.8); border-bottom: 1px solid var(--border);
             -webkit-mask: radial-gradient(circle at 50% 1px, transparent 73px, black 74px);
@@ -122,7 +122,7 @@
         .content { padding: 14px; }
         .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
         .badge { font-size: 12px; padding: .25rem .55rem; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-2); color: white; font-weight: 700; text-transform: capitalize;}
-        .pack-stats-top { display: flex; justify-content: space-between; margin-bottom: 8px; color: var(--muted); font-size: 11px; font-weight: 400; } /* Smaller, not-bold text */
+        .pack-stats-top { display: flex; justify-content: space-between; margin-bottom: 8px; color: var(--muted); font-size: 7px; font-weight: 400; } /* Smaller, not-bold text */
         
         /* MODAL STYLES */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
