@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BedrockHub - Minecraft Bedrock Texture Packs</title>
+    <title>MCHub - Minecraft Bedrock Texture Packs</title>
     <meta name="description" content="Discover and download the best Minecraft Bedrock texture packs. Join our community of creators and players sharing amazing content." />
-    <meta name="author" content="BedrockHub" />
+    <meta name="author" content="MCHub" />
     <meta name="keywords" content="minecraft, bedrock, texture packs, resource packs, minecraft bedrock edition" />
 
-    <meta property="og:title" content="BedrockHub - Minecraft Bedrock Texture Packs" />
+    <meta property="og:title" content="MCHub - Minecraft Bedrock Texture Packs" />
     <meta property="og:description" content="Discover and download the best Minecraft Bedrock texture packs. Join our community of creators and players." />
     <meta property="og:type" content="website" />
 
@@ -554,14 +554,13 @@
         <div class="nav">
             <a class="brand" href="/">
                 <div class="brand-badge">
-                    <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="BedrockHub Icon" class="brand-icon-custom">
+                    <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
                 </div>
                 <div>
-                    <div class="brand-title">BEDROCKHUB</div>
+                    <div class="brand-title">MCHUB</div>
                     <div class="tiny">Minecraft Bedrock • community</div>
                 </div>
             </a>
-            <!-- This div is now a placeholder filled by auth.js -->
             <div class="nav-actions" id="nav-actions"></div>
         </div>
     </header>
@@ -627,7 +626,7 @@
         <section class="container community">
            <div style="padding: 3rem;">
                 <h2 class="glowing-title">
-                    <span class="grad">Join the BedrockHub Community</span>
+                    <span class="grad">Join the MCHub Community</span>
                 </h2>
                 <p class="muted" style="margin-bottom: 2rem;">Connect with players, discover amazing texturepacks, and be part of the largest Bedrock texture pack community.</p>
                 
@@ -667,7 +666,7 @@
                 <a href="/contact">Contact</a>
                 <a href="https://discord.gg/KtafawJZxM" target="_blank">Discord</a>
             </div>
-            <p class="muted">© 2024 BedrockHub. All rights reserved.</p>
+            <p class="muted">© 2024 MCHub. All rights reserved.</p>
             <p class="tiny">Made with ❤️ for the Minecraft Bedrock community</p>
         </div>
     </footer>
@@ -678,6 +677,10 @@
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // --- THIS IS THE FIX ---
+        // 1. Paste your Admin User ID here
+        const ADMIN_USER_ID = '7ae6fa34-9960-4b06-81be-ae28e8fb8e71';
 
         const COLORS = [
             {key: 'red', hex: '#de212a'}, 
@@ -726,9 +729,12 @@
             if (!grid) return;
 
             try {
+                // --- THIS IS THE FIX ---
+                // 2. The query is now filtered by your admin ID
                 const { data, error } = await supabase
                     .from('packs')
                     .select('*')
+                    .eq('user_id', ADMIN_USER_ID) // Filter by the admin user ID
                     .order('created_at', { ascending: false })
                     .limit(4);
 
@@ -790,7 +796,6 @@
         init();
     </script>
     
-    <!-- NEW SCRIPT for Authentication -->
     <script type="module" src="/auth.js"></script>
 </body>
 </html>
