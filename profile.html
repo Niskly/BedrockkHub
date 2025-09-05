@@ -18,8 +18,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             margin: 0; background-color: var(--bg-0); color: var(--text);
-            font: 500 14px/1.6 Inter, sans-serif;
-            min-height: 100vh;
+            font: 500 14px/1.6 Inter, sans-serif; min-height: 100vh;
         }
         body::before {
             content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -82,13 +81,22 @@
         .packs-header { display: flex; justify-content: space-between; align-items: center; }
         .upload-btn { height: 36px; width: 36px; border-radius: 10px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); color: white; font-size: 1rem; transition: all 0.2s ease; cursor: pointer; }
         .upload-btn:hover { transform: scale(1.1); }
-        .packs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin-top: 1.2rem; }
-        .pack-card { background: var(--bg-2); border-radius: 10px; overflow: hidden; transition: transform 0.2s; }
-        .pack-card:hover { transform: translateY(-4px); }
-        .pack-card img { width: 100%; height: 110px; object-fit: cover; }
-        .pack-card-info { padding: 0.8rem; }
-        .pack-card-info h4 { margin: 0; font-size: 0.9rem; }
+        .packs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 1.2rem; }
+        .pack-card { background: var(--bg-1); border-radius: 16px; overflow: hidden; transition: all 0.2s; }
+        .pack-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.2); box-shadow: 0 28px 75px rgba(0, 0, 0, .65); }
         
+        /* NEW STYLES FOR ADVANCED PACK CARD */
+        .thumb { height: 140px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+        .pack-card .thumb { border-bottom-color: var(--border) !important; }
+        .thumb .pack-icon-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; filter: blur(8px) brightness(0.7); transform: scale(1.1); }
+        .thumb .pack-icon { position: relative; width: 90px; height: 90px; border-radius: 8px; object-fit: cover; z-index: 1; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
+        .thumb .glyph { height: 68px; width: 68px; border-radius: 14px; display: grid; place-items: center; color: white; }
+        .content { padding: 14px; }
+        .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+        .badge { font-size: 12px; padding: .25rem .55rem; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-2); color: white; font-weight: 700; text-transform: capitalize;}
+        .pack-stats-top { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--muted); }
+        
+        /* MODAL STYLES */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
         .modal-overlay.active { opacity: 1; visibility: visible; }
         .modal-content { padding: 2rem; border-radius: 16px; width: 100%; max-width: 500px; position: relative; transform: scale(0.95); transition: transform 0.3s ease; }
@@ -96,6 +104,7 @@
         .modal-close-btn { position: absolute; top: 10px; right: 15px; background: none; border: none; color: var(--muted); font-size: 2.5rem; line-height: 1; cursor: pointer; }
         .modal-content h2 { margin-bottom: 1.5rem; font-size: 1.5rem; }
 
+        /* FORM STYLES */
         .form-group { margin-bottom: 1rem; }
         .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
         .form-group input { width: 100%; padding: 0.75rem; background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: inherit; font-size: 1rem; }
@@ -146,16 +155,54 @@
         const profileContainer = document.getElementById('profile-container');
         let skinViewer;
 
-        const packFileInput = document.getElementById('pack-file-input');
-        packFileInput?.addEventListener('change', () => {
-            const file = packFileInput.files[0];
-            const limit = 50 * 1024 * 1024; // 50MB in bytes
-            if (file && file.size > limit) {
-                alert('Texture pack is too large! The maximum size is 50MB.');
-                packFileInput.value = '';
+        // --- HELPER FUNCTIONS ---
+        function escapeHtml(str) { return String(str||"").replace(/[&<>"']/g, m => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" })[m]); }
+        function capitalizeFirst(str) { return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : ""; }
+        function formatDate(dateString) { if(!dateString) return ""; const d = new Date(dateString); return `${d.getDate()}/${d.getMonth()+1}/${String(d.getFullYear()).slice(-2)}`; }
+        function shade(color, percent) {
+            let R = parseInt(color.substring(1,3),16), G = parseInt(color.substring(3,5),16), B = parseInt(color.substring(5,7),16);
+            R = parseInt(R*(100+percent)/100); G = parseInt(G*(100+percent)/100); B = parseInt(B*(100+percent)/100);
+            R = (R<255)?R:255; G = (G<255)?G:255; B = (B<255)?B:255;
+            const RR = ((R.toString(16).length==1)?"0"+R.toString(16):R.toString(16));
+            const GG = ((G.toString(16).length==1)?"0"+G.toString(16):G.toString(16));
+            const BB = ((B.toString(16).length==1)?"0"+B.toString(16):B.toString(16));
+            return `#${RR}${GG}${BB}`;
+        }
+
+        // --- RENDER FUNCTIONS ---
+        function renderPackCard(p) {
+            const COLORS = [{key: 'gray',hex: '#6b7280'}]; // Add other colors if needed for the default glyph
+            const colorKey = p.color || 'gray';
+            const color = COLORS.find(c => c.key === colorKey)?.hex || '#6b7280';
+            const card = document.createElement('div');
+            card.className = 'card pack-card';
+
+            let thumbContent, thumbBackgroundStyle;
+            if (p.icon_url) {
+                thumbContent = `<div class="pack-icon-bg" style="background-image: url('${p.icon_url}');"></div><img class="pack-icon" src="${p.icon_url}" alt="${escapeHtml(p.name)} Icon">`;
+                thumbBackgroundStyle = `background: linear-gradient(135deg,#1f2937,#0f172a);`;
+            } else {
+                thumbContent = `<div class="glyph" style="background:${color}"><i class="fa-solid fa-cube"></i></div>`;
+                thumbBackgroundStyle = `background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})`;
             }
-        });
-        
+
+            card.innerHTML = `
+                <a href="#" style="text-decoration: none; color: inherit;">
+                    <div class="thumb" style="${thumbBackgroundStyle}">${thumbContent}</div>
+                    <div class="content">
+                        <div class="pack-stats-top">
+                            <div class="stat-item"><i class="fa-solid fa-download"></i><span>${(p.download_count || 0).toLocaleString()}</span></div>
+                            <div class="stat-item"><i class="fa-solid fa-calendar-day"></i><span>${formatDate(p.created_at)}</span></div>
+                        </div>
+                        <h4>${escapeHtml(p.name)}</h4>
+                        <div class="meta">
+                            ${(p.tags||[]).map(t=>`<span class="badge">${escapeHtml(capitalizeFirst(t))}</span>`).join('')}
+                        </div>
+                    </div>
+                </a>`;
+            return card;
+        }
+
         function renderDashboard(profile, packs) {
             const safeUsername = profile.username?.replace(/`/g, "'") || "Unnamed";
             const safeBio = profile.bio?.replace(/`/g, "'") || "This user hasn't written a bio yet.";
@@ -166,32 +213,38 @@
                 ? `<img src="${profile.avatar_url}" alt="${safeUsername}'s avatar" class="profile-avatar">`
                 : `<div class="pfp-placeholder"><span>${safeUsername.charAt(0).toUpperCase()}</span></div>`;
             
-            const packsHtml = packs.length > 0 ? packs.map(pack => {
-                const safePackName = pack.name?.replace(/`/g, "'") || 'Untitled Pack';
-                return `<a href="#" class="pack-card"><img src="${pack.icon_url || 'https://placehold.co/300x200/1c1c1c/e8eefc?text=No+Icon'}" alt="${safePackName}" title="${safePackName}"><div class="pack-card-info"><h4>${safePackName}</h4><p class="tiny">${(pack.download_count || 0).toLocaleString()} Downloads</p></div></a>`;
-            }).join('') : `<p class="tiny">This user hasn't uploaded any packs yet.</p>`;
-
             profileContainer.innerHTML = `
-                <div class="profile-header glassy"><div class="profile-banner" style="background-image: url('${profile.banner_url || defaultBanner}')"></div><div class="profile-details"><div class="profile-meta"><div class="profile-avatar-wrapper">${pfpHtml}</div><div class="profile-main-info"><div class="profile-main-top-row"><h1>${safeUsername}</h1><div class="header-stats"><div class="stat-item"><span>${(profile.view_count || 0).toLocaleString()}</span><label>Views</label></div><div class="stat-item"><span>${(profile.followers_count || 0).toLocaleString()}</span><label>Followers</label></div><div class="stat-item"><span>${(profile.following_count || 0).toLocaleString()}</span><label>Following</label></div></div></div><p class="profile-bio">${safeBio}</p></div></div><div class="profile-actions"><button class="btn primary follow-btn"><i class="fa-solid fa-user-plus"></i> Follow</button></div></div></div>
+                <div class="profile-header glassy"><div class="profile-banner" style="background-image: url('${profile.banner_url || defaultBanner}')"></div><div class="profile-details"><div class="profile-meta"><div class="profile-avatar-wrapper">${pfpHtml}</div><div class="profile-main-info"><div class="profile-main-top-row"><h1>${safeUsername}</h1><div class="header-stats"><div class="stat-item"><span>${(profile.view_count || 0).toLocaleString()}</span><label>Views</label></div><div class="stat-item"><span id="follower-count">${(profile.followers_count || 0).toLocaleString()}</span><label>Followers</label></div><div class="stat-item"><span>${(profile.following_count || 0).toLocaleString()}</span><label>Following</label></div></div></div><p class="profile-bio">${safeBio}</p></div></div><div class="profile-actions"><button class="btn primary follow-btn"><i class="fa-solid fa-user-plus"></i> Follow</button></div></div></div>
                 <div class="profile-content-grid">
                     <div id="minecraft-container"><div class="card glassy"><div class="card-body"><div class="edition-switcher"><button id="show-java" class="btn ghost active">Java</button><button id="show-bedrock" class="btn ghost">Bedrock</button></div><div id="skin-viewer-container"></div><p class="skin-username-display"><span id="skin-gamertag">${safeMinecraftUsername}</span><span id="edition-tag"></span></p></div></div></div>
-                    <div id="packs-container"><div class="card glassy"><div class="card-body"><div class="packs-header"><h3>Texture Packs</h3><div class="upload-btn" title="Upload new pack"><i class="fa-solid fa-plus"></i></div></div><div class="packs-grid">${packsHtml}</div></div></div></div>
+                    <div id="packs-container"><div class="card glassy"><div class="card-body"><div class="packs-header"><h3>Texture Packs</h3><div class="upload-btn" title="Upload new pack"><i class="fa-solid fa-plus"></i></div></div><div class="packs-grid" id="packs-grid-placeholder"></div></div></div></div>
                 </div>
             `;
+            
+            const packsGridEl = document.getElementById('packs-grid-placeholder');
+            if (packs.length > 0) {
+                packs.forEach(pack => packsGridEl.appendChild(renderPackCard(pack)));
+            } else {
+                packsGridEl.innerHTML = `<p class="tiny">This user hasn't uploaded any packs yet.</p>`;
+            }
         }
 
+        // --- EVENT LISTENER & MODAL SETUP ---
         async function setupEventListeners(profile, currentUser) {
             document.getElementById('show-java')?.addEventListener('click', () => updateMinecraftViewer('java', profile));
             document.getElementById('show-bedrock')?.addEventListener('click', () => updateMinecraftViewer('bedrock', profile));
             const followButton = document.querySelector('.follow-btn');
             if (!followButton) return;
             if (!currentUser || currentUser.id === profile.id) {
-                followButton.style.display = 'none';
-                return;
+                followButton.style.display = 'none'; return;
             }
             const { data } = await supabase.from('followers').select('*', { count: 'exact' }).eq('follower_id', currentUser.id).eq('following_id', profile.id);
             let isFollowing = data && data.length > 0;
+            const followerCountSpan = document.getElementById('follower-count');
+            let currentFollowers = profile.followers_count || 0;
+
             function updateButtonState() {
+                followerCountSpan.textContent = currentFollowers.toLocaleString();
                 if (isFollowing) {
                     followButton.innerHTML = `<i class="fa-solid fa-user-check"></i> Following`;
                     followButton.classList.remove('primary');
@@ -201,12 +254,13 @@
                 }
             }
             updateButtonState();
+
             followButton.addEventListener('click', async () => {
                 followButton.disabled = true;
                 const rpcToCall = isFollowing ? 'unfollow_user' : 'follow_user';
                 const { error } = await supabase.rpc(rpcToCall, { [`user_to_${isFollowing ? 'unfollow' : 'follow'}_id`]: profile.id });
                 if (error) { console.error(`Error:`, error); alert(`Could not perform action.`); }
-                else { isFollowing = !isFollowing; updateButtonState(); }
+                else { currentFollowers += isFollowing ? -1 : 1; isFollowing = !isFollowing; updateButtonState(); }
                 followButton.disabled = false;
             });
         }
@@ -286,25 +340,17 @@
             });
         }
         
-        async function loadPage() {
-            try {
-                const username = new URLSearchParams(window.location.search).get('user');
-                if (!username) { profileContainer.innerHTML = `<div class="not-found">No user specified.</div>`; return; }
-                const { data: { user: currentUser } } = await supabase.auth.getUser();
-                const { data: profile, error: profileError } = await supabase.from('profiles').select('*').ilike('username', username).single();
-                if (profileError || !profile) { profileContainer.innerHTML = `<div class="not-found">User "${username}" not found.</div>`; return; }
-                const { data: packs, error: packsError } = await supabase.from('packs').select('*').eq('user_id', profile.id);
-                if (packsError) console.error(packsError);
-                renderDashboard(profile, packs || []);
-                setupEventListeners(profile, currentUser);
-                setupMinecraftViewer(profile);
-                setupModal(profile, currentUser);
-            } catch (error) {
-                console.error("Critical error:", error);
-                profileContainer.innerHTML = `<div class="not-found">An error occurred.</div>`;
+        // --- MINECRAFT SKIN VIEWER FUNCTIONS ---
+        function setupMinecraftViewer(profile) {
+            document.getElementById('show-java')?.addEventListener('click', () => updateMinecraftViewer('java', profile));
+            document.getElementById('show-bedrock')?.addEventListener('click', () => updateMinecraftViewer('bedrock', profile));
+            if (profile.minecraft_uuid) updateMinecraftViewer('java', profile);
+            else if (profile.minecraft_xuid) updateMinecraftViewer('bedrock', profile);
+            else {
+                const container = document.getElementById('skin-viewer-container');
+                if (container) container.innerHTML = '<p class="tiny">No Minecraft account linked.</p>';
             }
         }
-        
         function updateMinecraftViewer(edition, profile) {
             const container = document.getElementById('skin-viewer-container');
             if (!container) return;
@@ -336,14 +382,26 @@
             skinViewer.controls.enableRotate = true;
         }
 
-        function setupMinecraftViewer(profile) {
-             document.getElementById('show-java')?.addEventListener('click', () => updateMinecraftViewer('java', profile));
-            document.getElementById('show-bedrock')?.addEventListener('click', () => updateMinecraftViewer('bedrock', profile));
-            if (profile.minecraft_uuid) updateMinecraftViewer('java', profile);
-            else if (profile.minecraft_xuid) updateMinecraftViewer('bedrock', profile);
-            else {
-                const container = document.getElementById('skin-viewer-container');
-                if (container) container.innerHTML = '<p class="tiny">No Minecraft account linked.</p>';
+        // --- MAIN PAGE LOAD FUNCTION ---
+        async function loadPage() {
+            try {
+                const username = new URLSearchParams(window.location.search).get('user');
+                if (!username) { profileContainer.innerHTML = `<div class="not-found">No user specified.</div>`; return; }
+                const { data: { user: currentUser } } = await supabase.auth.getUser();
+                const { data: profile, error: profileError } = await supabase.from('profiles').select('*').ilike('username', username).single();
+                if (profileError || !profile) { profileContainer.innerHTML = `<div class="not-found">User "${username}" not found.</div>`; return; }
+                if (!currentUser || currentUser.id !== profile.id) {
+                    supabase.rpc('increment_view_count', { profile_id_to_update: profile.id }).then();
+                }
+                const { data: packs, error: packsError } = await supabase.from('packs').select('*').eq('user_id', profile.id).order('created_at', { ascending: false });
+                if (packsError) console.error(packsError);
+                renderDashboard(profile, packs || []);
+                setupEventListeners(profile, currentUser);
+                setupMinecraftViewer(profile);
+                setupModal(profile, currentUser);
+            } catch (error) {
+                console.error("Critical error:", error);
+                profileContainer.innerHTML = `<div class="not-found">An error occurred.</div>`;
             }
         }
         
