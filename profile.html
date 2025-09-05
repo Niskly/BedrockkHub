@@ -64,7 +64,7 @@
         .pfp-placeholder span { font-size: 5rem; font-weight: 800; color: white; }
         .profile-main-info h1 { font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, var(--brand-1), #ff525a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-fill-color: transparent; }
         .profile-main-top-row { display: flex; align-items: center; gap: 1.5rem; }
-        .profile-bio { color: var(--muted); margin-top: 1rem; max-width: 500px; line-height: 1.5; font-size: 13px; }
+        .profile-bio { color: var(--muted); margin-top: 1.5rem; max-width: 500px; line-height: 1.5; font-size: 13px; }
         .header-stats { display: flex; gap: 1.2rem; align-items: center; }
         .stat-item { text-align: left; display: flex; align-items: center; gap: 6px;}
         .stat-item span { font-size: 1rem; font-weight: 700; color: var(--text); }
@@ -124,10 +124,20 @@
         
         /* --- NAVBAR DROPDOWN CSS --- */
         .user-dropdown { position: relative; display: inline-block; }
-        .user-menu-btn {
-            background: var(--bg-2); border: 1px solid var(--border); color: var(--text);
-            padding: 8px 12px; border-radius: 12px; display: flex; align-items: center;
-            gap: 10px; cursor: pointer; font-weight: 600;
+/* Add this to your main <style> block */
+.user-menu-btn {
+    background: var(--bg-2); 
+    border: 1px solid var(--border); 
+    color: var(--text);
+    /* This padding now matches the other buttons */
+    padding: .5rem 1rem; 
+    border-radius: 10px; 
+    display: flex; 
+    align-items: center;
+    gap: 10px; 
+    cursor: pointer; 
+    font-weight: 600;
+}
         }
         .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
         .nav-avatar-default {
