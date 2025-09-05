@@ -45,10 +45,55 @@
             align-items: center;
             gap: .6rem;
         }
-        .btn { padding: .6rem 1rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; }
+        .btn { 
+            padding: .6rem 1rem; 
+            border-radius: 12px; 
+            font-weight: 700; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: .55rem; 
+            cursor: pointer; 
+            border: 1px solid transparent; 
+            background: none;
+            color: inherit;
+            font-family: inherit;
+            font-size: inherit;
+        }
         .ghost { border-color: var(--border); background: transparent; color: var(--text); }
+        .ghost:hover { border-color: rgba(255, 255, 255, .2); background: rgba(255, 255, 255, 0.05); }
         .primary { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: white; box-shadow: var(--shadow-brand); }
+        .primary:hover { transform: translateY(-1px); box-shadow: 0 16px 40px rgba(222, 33, 42, .35); }
+        .primary:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
         .tiny { font-size: 12px; color: var(--muted); }
+        
+        /* User dropdown styles */
+        .user-dropdown { position: relative; display: inline-block; }
+        .user-menu-btn {
+            background: var(--bg-2); border: 1px solid var(--border); color: var(--text);
+            padding: 8px 12px; border-radius: 12px; display: flex; align-items: center;
+            gap: 10px; cursor: pointer; font-weight: 600;
+        }
+        .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+        .nav-avatar-default {
+            width: 28px; height: 28px; border-radius: 50%; background: var(--bg-0);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .user-menu-btn .fa-chevron-down { font-size: 0.8em; transition: transform 0.2s; }
+        .user-menu-btn:hover { border-color: rgba(255, 255, 255, .2); }
+        .dropdown-content {
+            display: none; position: absolute; right: 0; top: 110%;
+            background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px;
+            min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10;
+            overflow: hidden;
+        }
+        .dropdown-content.show { display: block; }
+        .dropdown-content a {
+            color: var(--muted); padding: 12px 16px; text-decoration: none;
+            display: flex; align-items: center; gap: 10px; font-weight: 600;
+        }
+        .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
+        
         .container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; opacity: 0; transition: opacity 0.3s; }
         .container.loaded { opacity: 1; }
         .settings-layout { display: flex; gap: 2rem; align-items: flex-start; }
@@ -68,17 +113,37 @@
         h1 { font-size: 1.8rem; font-weight: 800; margin: 0; }
         .form-group { margin-bottom: 1.5rem; }
         label { display: block; margin-bottom: .5rem; font-weight: 600; color: var(--muted); }
-        input[type="text"], textarea {
+        input[type="text"], input[type="url"], textarea {
             width: 100%; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border);
-            background: var(--bg-2); color: var(--text); font-size: 1rem;
+            background: var(--bg-2); color: var(--text); font-size: 1rem; font-family: inherit;
         }
+        textarea { min-height: 100px; resize: vertical; }
         .input-hint { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
         #toast-container { position: fixed; top: 80px; right: 20px; z-index: 1000; }
-        .toast { padding: 12px 18px; border-radius: 8px; color: white; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; margin-bottom: 10px; }
+        .toast { 
+            padding: 12px 18px; 
+            border-radius: 8px; 
+            color: white; 
+            font-weight: 700; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4); 
+            animation: slideIn 0.3s ease-out forwards; 
+            margin-bottom: 10px; 
+        }
         .toast.success { background: var(--success); }
         .toast.error { background: var(--danger); }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .spinner-sm { width: 1.2em; height: 1.2em; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        .spinner-sm { 
+            width: 1.2em; 
+            height: 1.2em; 
+            border: 2px solid rgba(255,255,255,0.3); 
+            border-top-color: white; 
+            border-radius: 50%; 
+            animation: spin 0.8s linear infinite; 
+            display: inline-block;
+        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .warning-box {
             background: rgba(239, 68, 68, 0.1);
@@ -92,6 +157,31 @@
         .warning-box i {
             color: var(--danger);
             margin-right: 8px;
+        }
+        .minecraft-linked {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-2);
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+        .minecraft-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .minecraft-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            image-rendering: pixelated;
+        }
+        
+        @media (max-width: 768px) {
+            .settings-layout { flex-direction: column; }
+            .tabs { width: 100%; flex-direction: row; overflow-x: auto; }
         }
     </style>
 </head>
@@ -111,89 +201,156 @@
             <div id="nav-actions" class="nav-actions"></div>
         </div>
     </header>
+    
     <main class="container" id="settings-container">
         <div class="settings-layout">
             <aside class="tabs">
-                <button class="tab-btn active" data-tab="profile"><i class="fa-solid fa-user-pen"></i> Profile</button>
+                <button class="tab-btn active" data-tab="profile">
+                    <i class="fa-solid fa-user-pen"></i> Profile
+                </button>
             </aside>
+            
             <div class="content-container">
                 <section id="profile-tab" class="tab-content active">
                     <div class="card">
-                        <div class="card-header"><h1>Profile Settings</h1><p class="tiny">This information will be displayed publicly.</p></div>
+                        <div class="card-header">
+                            <h1>Profile Settings</h1>
+                            <p class="tiny">This information will be displayed publicly.</p>
+                        </div>
                         <form id="profile-form">
                             <div class="card-body">
-                                <div class="form-group"><label for="bio">Bio</label><textarea id="bio" placeholder="Tell us a little about yourself..."></textarea></div>
-                                <div class="form-group" id="minecraft-link-container"></div>
+                                <div class="form-group">
+                                    <label for="bio">Bio</label>
+                                    <textarea id="bio" placeholder="Tell us a little about yourself..." maxlength="500"></textarea>
+                                    <p class="input-hint">A short description about yourself. Max 500 characters.</p>
+                                </div>
+                                
+                                <div class="form-group" id="minecraft-link-container">
+                                    <!-- This will be populated dynamically -->
+                                </div>
                             </div>
-                            <div class="card-footer"><button type="submit" class="btn primary">Save Changes</button></div>
+                            <div class="card-footer">
+                                <button type="submit" class="btn primary">Save Changes</button>
+                            </div>
                         </form>
                     </div>
                 </section>
             </div>
         </div>
     </main>
+
     <script type="module">
         import { supabase } from './supabase-client.js';
+        
         let currentUser = null;
+        let isLoading = false;
 
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            toast.innerHTML = (type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-exclamation"></i>') + ` ${message}`;
+            const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> ${message}`;
             container.appendChild(toast);
-            setTimeout(() => { toast.remove(); }, 4000);
+            setTimeout(() => toast.remove(), 4000);
         }
-
-        const mcLinkContainer = document.getElementById('minecraft-link-container');
 
         async function loadProfileData() {
             if (!currentUser) return;
-            const { data, error } = await supabase.from('profiles').select('bio, minecraft_username, minecraft_uuid').eq('id', currentUser.id).single();
             
-            if (data?.minecraft_username) {
-                mcLinkContainer.innerHTML = `
-                    <label>Minecraft Account</label>
-                    <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-2); padding: 0.75rem 1rem; border-radius: 10px;">
-                        <div style="display: flex; align-items: center;">
-                            <img src="https://crafatar.com/avatars/${data.minecraft_uuid || data.minecraft_username}?size=32&overlay" style="border-radius: 4px; width: 32px; height: 32px; margin-right: 10px;">
-                            <span style="font-weight: 600;">Linked as ${data.minecraft_username}</span>
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('bio, minecraft_username, minecraft_uuid')
+                    .eq('id', currentUser.id)
+                    .single();
+                
+                if (error) {
+                    console.error('Error loading profile:', error);
+                    showToast('Failed to load profile data', 'error');
+                    return;
+                }
+                
+                // Set bio value
+                if (data?.bio) {
+                    document.getElementById('bio').value = data.bio;
+                }
+                
+                // Render Minecraft section
+                const mcContainer = document.getElementById('minecraft-link-container');
+                
+                if (data?.minecraft_username && data?.minecraft_uuid) {
+                    // Account is linked
+                    mcContainer.innerHTML = `
+                        <label>Minecraft Account</label>
+                        <div class="minecraft-linked">
+                            <div class="minecraft-info">
+                                <img src="https://crafatar.com/avatars/${data.minecraft_uuid}?size=32&overlay" 
+                                     alt="${data.minecraft_username}" 
+                                     class="minecraft-avatar">
+                                <span style="font-weight: 600;">Linked as ${data.minecraft_username}</span>
+                            </div>
+                            <button type="button" class="btn ghost" id="unlink-minecraft-btn" 
+                                    style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                                <i class="fa-solid fa-unlink"></i> Unlink
+                            </button>
                         </div>
-                        <button type="button" class="btn ghost" id="unlink-minecraft-btn" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
-                            <i class="fa-solid fa-unlink"></i> Unlink
+                    `;
+                    
+                    // Add unlink handler
+                    document.getElementById('unlink-minecraft-btn')?.addEventListener('click', unlinkMinecraft);
+                } else {
+                    // No account linked
+                    mcContainer.innerHTML = `
+                        <label>Link Minecraft Account</label>
+                        <button type="button" class="btn ghost" id="link-minecraft-btn" 
+                                style="width: 100%; justify-content: center;">
+                            <i class="fa-brands fa-microsoft"></i> Link with Microsoft
                         </button>
-                    </div>
-                `;
-                document.getElementById('unlink-minecraft-btn').addEventListener('click', unlinkMinecraft);
-            } else {
-                mcLinkContainer.innerHTML = `
-                    <label>Link Minecraft Account</label>
-                    <button type="button" class="btn ghost" id="link-minecraft-btn" style="width: 100%; justify-content: center;">
-                        <i class="fa-brands fa-microsoft"></i> Link with Microsoft
-                    </button>
-                    <div class="warning-box">
-                        <i class="fa-solid fa-info-circle"></i>
-                        <strong>Before linking:</strong>
-                        <ul style="margin: 8px 0 0 24px; padding: 0;">
-                            <li>Use a personal Microsoft account (not work/school)</li>
-                            <li>Ensure you have an Xbox account (free at xbox.com)</li>
-                            <li>Make sure you own Minecraft Java or Bedrock Edition</li>
-                        </ul>
-                    </div>
-                    <p class="input-hint">Link your Microsoft account that owns Minecraft to display your skin and username.</p>
-                `;
-                document.getElementById('link-minecraft-btn').addEventListener('click', handleMicrosoftLink);
-            }
-            if (data) {
-                document.getElementById('bio').value = data.bio || '';
+                        <div class="warning-box">
+                            <i class="fa-solid fa-info-circle"></i>
+                            <strong>Before linking:</strong>
+                            <ul style="margin: 8px 0 0 24px; padding: 0;">
+                                <li>Use a personal Microsoft account (not work/school)</li>
+                                <li>Ensure you have an Xbox account (free at xbox.com)</li>
+                                <li>Make sure you own Minecraft Java or Bedrock Edition</li>
+                            </ul>
+                        </div>
+                        <p class="input-hint">
+                            Link your Microsoft account that owns Minecraft to display your skin and username.
+                        </p>
+                    `;
+                    
+                    // Add link handler
+                    document.getElementById('link-minecraft-btn')?.addEventListener('click', handleMicrosoftLink);
+                }
+                
+            } catch (err) {
+                console.error('Unexpected error:', err);
+                showToast('An unexpected error occurred', 'error');
             }
         }
 
         async function unlinkMinecraft() {
+            if (isLoading) return;
+            
+            if (!confirm('Are you sure you want to unlink your Minecraft account?')) {
+                return;
+            }
+            
+            isLoading = true;
+            const btn = document.getElementById('unlink-minecraft-btn');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<div class="spinner-sm"></div>';
+            btn.disabled = true;
+            
             try {
                 const { error } = await supabase
                     .from('profiles')
-                    .update({ minecraft_username: null, minecraft_uuid: null })
+                    .update({ 
+                        minecraft_username: null, 
+                        minecraft_uuid: null 
+                    })
                     .eq('id', currentUser.id);
                 
                 if (error) throw error;
@@ -201,23 +358,29 @@
                 showToast('Minecraft account unlinked successfully!');
                 await loadProfileData();
             } catch (error) {
+                console.error('Unlink error:', error);
                 showToast('Failed to unlink account: ' + error.message, 'error');
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+            } finally {
+                isLoading = false;
             }
         }
 
         async function handleMicrosoftLink() {
+            if (isLoading) return;
+            
             const linkBtn = document.getElementById('link-minecraft-btn');
             const originalContent = linkBtn.innerHTML;
             
+            isLoading = true;
+            linkBtn.disabled = true;
+            linkBtn.innerHTML = '<div class="spinner-sm"></div> Connecting...';
+            
             try {
-                linkBtn.disabled = true;
-                linkBtn.innerHTML = '<div class="spinner-sm"></div> Connecting...';
-
-                // IMPORTANT: Update this with your actual Azure App Registration Client ID
-                const clientId = 'b96b9812-ddfa-4cf6-94f3-9a78068acd9b'; // Replace with your actual client ID
+                // Your Azure App Client ID
+                const clientId = 'b96b9812-ddfa-4cf6-94f3-9a78068acd9b';
                 const redirectUri = encodeURIComponent(window.location.origin + '/minecraft-callback.html');
-                
-                // Use XboxLive.signin scope for Xbox authentication
                 const scopes = encodeURIComponent('XboxLive.signin offline_access');
                 
                 const authUrl = `https://login.live.com/oauth20_authorize.srf?` +
@@ -227,8 +390,16 @@
                     `scope=${scopes}&` +
                     `state=${encodeURIComponent(JSON.stringify({ returnUrl: window.location.href }))}`;
 
-                // Open popup window
-                const popup = window.open(authUrl, 'minecraft-auth', 'width=500,height=600,scrollbars=yes,resizable=yes');
+                // Open popup
+                const popup = window.open(
+                    authUrl, 
+                    'minecraft-auth', 
+                    'width=500,height=600,scrollbars=yes,resizable=yes'
+                );
+                
+                if (!popup) {
+                    throw new Error('Popup blocked. Please allow popups for this site.');
+                }
                 
                 // Listen for message from popup
                 const handleMessage = async (event) => {
@@ -239,92 +410,120 @@
                         window.removeEventListener('message', handleMessage);
                         
                         try {
+                            linkBtn.innerHTML = '<div class="spinner-sm"></div> Linking account...';
+                            
                             const { data: { session } } = await supabase.auth.getSession();
                             if (!session) throw new Error('You must be logged in to MCHub.');
-                            
-                            const controller = new AbortController();
-                            const timeoutId = setTimeout(() => controller.abort(), 45000);
                             
                             const response = await fetch('/api/link-minecraft', {
                                 method: 'POST',
                                 headers: { 
-                                    'Content-Type': 'application/json', 
-                                    'Authorization': `Bearer ${session.access_token}` 
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${session.access_token}`
                                 },
-                                body: JSON.stringify({ provider_token: event.data.accessToken }),
-                                signal: controller.signal
+                                body: JSON.stringify({ 
+                                    provider_token: event.data.accessToken 
+                                })
                             });
                             
-                            clearTimeout(timeoutId);
-                            
                             const result = await response.json();
+                            
                             if (!response.ok) {
-                                // Provide helpful guidance based on the error
-                                if (result.details?.includes('Xbox')) {
-                                    throw new Error(result.details + ' Visit xbox.com to create a free Xbox account.');
-                                } else {
-                                    throw new Error(result.details || 'Failed to link account.');
-                                }
+                                throw new Error(result.details || 'Failed to link account.');
                             }
                             
                             showToast(`Minecraft account "${result.minecraft_username}" linked successfully!`);
                             await loadProfileData();
+                            
                         } catch (error) {
-                            if (error.name === 'AbortError') {
-                                showToast('Request timed out. Please try again.', 'error');
-                            } else {
-                                showToast(error.message, 'error');
-                            }
+                            console.error('Link error:', error);
+                            showToast(error.message, 'error');
                         } finally {
                             linkBtn.disabled = false;
                             linkBtn.innerHTML = originalContent;
+                            isLoading = false;
                         }
+                        
                     } else if (event.data.type === 'MINECRAFT_AUTH_ERROR') {
                         popup.close();
                         window.removeEventListener('message', handleMessage);
                         showToast('Authentication failed: ' + event.data.error, 'error');
                         linkBtn.disabled = false;
                         linkBtn.innerHTML = originalContent;
+                        isLoading = false;
                     }
                 };
 
                 window.addEventListener('message', handleMessage);
                 
-                // Handle popup being closed manually
+                // Check if popup is closed
                 const checkClosed = setInterval(() => {
                     if (popup.closed) {
                         clearInterval(checkClosed);
                         window.removeEventListener('message', handleMessage);
                         linkBtn.disabled = false;
                         linkBtn.innerHTML = originalContent;
+                        isLoading = false;
                     }
                 }, 1000);
-
+                
             } catch (error) {
-                showToast('Failed to start authentication: ' + error.message, 'error');
+                console.error('Auth error:', error);
+                showToast(error.message, 'error');
                 linkBtn.disabled = false;
                 linkBtn.innerHTML = originalContent;
+                isLoading = false;
             }
         }
 
+        // Handle profile form submission
+        document.getElementById('profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (isLoading) return;
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalContent = submitBtn.innerHTML;
+            
+            isLoading = true;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="spinner-sm"></div> Saving...';
+            
+            try {
+                const bio = document.getElementById('bio').value.trim();
+                
+                const { error } = await supabase
+                    .from('profiles')
+                    .update({ bio })
+                    .eq('id', currentUser.id);
+                
+                if (error) throw error;
+                
+                showToast('Profile updated successfully!');
+            } catch (error) {
+                console.error('Save error:', error);
+                showToast('Failed to save changes: ' + error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalContent;
+                isLoading = false;
+            }
+        });
+
+        // Initialize when auth is ready
         document.addEventListener('auth-ready', async (e) => {
             const user = e.detail.user;
             if (user) {
                 currentUser = user;
                 document.getElementById('settings-container').classList.add('loaded');
                 await loadProfileData();
+            } else {
+                // User not logged in, auth.js will redirect
+                console.log('User not authenticated');
             }
         });
-        
-        document.getElementById('profile-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            const originalContent = submitBtn.innerHTML;
-            
-            try {
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<div class="spinner-sm"></div> Saving...';
-                
-                const { error } = await supabase
-                    .from('profiles')
-                    .update({ bio:
+    </script>
+    
+    <script type="module" src="/auth.js"></script>
+</body>
+</html>
