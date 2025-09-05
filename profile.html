@@ -131,7 +131,7 @@
                     <div class="tiny">Minecraft Bedrock • community</div>
                 </div>
             </a>
-            </div>
+        </div>
     </header>
 
     <main class="container" id="profile-container">
@@ -153,10 +153,11 @@
             const defaultBanner = 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/default-banner.png';
             
             // --- FIX IS HERE ---
-            // Sanitize text inputs to prevent them from breaking the HTML string
+            // Sanitize all text inputs to prevent them from breaking the HTML string
             const safeUsername = profile.username?.replace(/`/g, "'") || "Unnamed";
             const safeBio = profile.bio?.replace(/`/g, "'") || "This user hasn't written a bio yet.";
-            
+            const safeMinecraftUsername = profile.minecraft_username?.replace(/`/g, "'") || "Not Linked"; // <-- ADDED THIS LINE
+
             const pfpHtml = profile.avatar_url
                 ? `<img src="${profile.avatar_url}" alt="${safeUsername}'s avatar" class="profile-avatar">`
                 : `<div class="pfp-placeholder"><span>${safeUsername.charAt(0).toUpperCase()}</span></div>`;
@@ -191,7 +192,7 @@
                             <div class="card-body">
                                 <div class="edition-switcher"><button id="show-java" class="btn ghost active">Java</button><button id="show-bedrock" class="btn ghost">Bedrock</button></div>
                                 <div id="skin-viewer-container"></div>
-                                <p class="skin-username-display"><span id="skin-gamertag">${profile.minecraft_username || 'Not Linked'}</span><span id="edition-tag"></span></p>
+                                <p class="skin-username-display"><span id="skin-gamertag">${safeMinecraftUsername}</span><span id="edition-tag"></span></p>
                             </div>
                         </div>
                     </div>
@@ -205,7 +206,7 @@
                                 <div class="packs-grid">
                                     ${packs.length > 0 ? packs.map(pack => `
                                         <a href="/texturepacks" class="pack-card">
-                                            <img src="${pack.icon_url || 'https://placehold.co/300x200/1c1c1c/e8eefc?text=No+Icon'}" alt="${pack.name} icon">
+                                            <img src="${pack.icon_url || 'https://placehold.co/300x200/1c1c1c/e8eefc?text=No+Icon'}" alt="${pack.name}" title="${pack.name}">
                                             <div class="pack-card-info"><h4>${pack.name}</h4><p class="tiny">${(pack.download_count || 0).toLocaleString()} Downloads</p></div>
                                         </a>`).join('') : '<p class="tiny">This user hasn\\'t uploaded any packs yet.</p>'}
                                 </div>
@@ -236,15 +237,18 @@
             const javaBtn = document.getElementById('show-java');
             const bedrockBtn = document.getElementById('show-bedrock');
             container.innerHTML = ''; 
+
+            const safeMinecraftUsername = profile.minecraft_username?.replace(/`/g, "'") || "Not Linked";
+
             let id, username, tag;
             if (edition === 'java' && profile.minecraft_uuid) {
-                id = profile.minecraft_uuid; username = profile.minecraft_username; tag = 'JAVA';
+                id = profile.minecraft_uuid; username = safeMinecraftUsername; tag = 'JAVA';
                 javaBtn.classList.add('active'); bedrockBtn.classList.remove('active');
             } else if (edition === 'bedrock' && profile.minecraft_xuid) {
-                container.innerHTML = `<p class="tiny" style="text-align:center;">Bedrock skin previews are not yet supported.<br>Username: ${profile.minecraft_username || 'N/A'}</p>`;
-                username = profile.minecraft_username; tag = 'BEDROCK';
+                container.innerHTML = `<p class="tiny" style="text-align:center;">Bedrock skin previews are not yet supported.<br>Username: ${safeMinecraftUsername}</p>`;
+                username = safeMinecraftUsername; tag = 'BEDROCK';
                 javaBtn.classList.remove('active'); bedrockBtn.classList.add('active');
-                gamertagEl.textContent = username || 'Not Linked'; editionTagEl.textContent = tag;
+                gamertagEl.textContent = username; editionTagEl.textContent = tag;
                 return;
             } else {
                 container.innerHTML = `<p class="tiny" style="text-align:center;">This user hasn't linked a ${edition} account.</p>`;
