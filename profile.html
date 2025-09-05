@@ -64,22 +64,22 @@
         .spinner { width: 48px; height: 48px; border: 5px solid var(--border); border-bottom-color: var(--brand-1); border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- UPDATED PROFILE HEADER --- */
+        /* --- RESTORED PROFILE HEADER --- */
         .profile-header { border-radius: 16px; margin-bottom: 2rem; overflow: hidden; position: relative; }
         .profile-banner { height: 220px; background-size: cover; background-position: center; }
+        .profile-banner::after {
+            content: ''; position: absolute; bottom: 65px; left: 0; right: 0; height: 80px;
+            background: rgba(18, 18, 18, 0.8); border-bottom: 1px solid var(--border);
+            -webkit-mask: radial-gradient(circle at 50% -25px, transparent 110px, black 111px);
+            mask: radial-gradient(circle at 50% -25px, transparent 110px, black 111px);
+        }
         .profile-details {
-            padding: 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: relative;
-            z-index: 2;
+            padding: 1rem 1.5rem; display: flex; align-items: flex-end; justify-content: space-between;
+            position: relative; z-index: 2;
         }
         .profile-meta {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            margin-top: -80px; /* Avatar overlaps the banner */
+            display: flex; align-items: center; gap: 1.5rem;
+            margin-top: -100px; /* This brings the avatar and name back up */
         }
         .profile-avatar-wrapper { flex-shrink: 0; }
         .profile-avatar { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #161616; }
@@ -287,7 +287,8 @@
             if (!currentUser || currentUser.id === profile.id) {
                 followButton.style.display = 'none'; return;
             }
-            const { data } = await supabase.from('followers').select('*', { count: 'exact' }).eq('follower_id', currentUser.id).eq('following_id', profile.id);
+
+            const { data } = await supabase.from('followers').select('follower_id', { count: 'exact' }).eq('follower_id', currentUser.id).eq('following_id', profile.id);
             let isFollowing = data && data.length > 0;
             const followerCountSpan = document.getElementById('follower-count');
 
@@ -306,21 +307,19 @@
             followButton.addEventListener('click', async () => {
                 followButton.disabled = true;
                 const rpcToCall = isFollowing ? 'unfollow_user' : 'follow_user';
-                const { error: rpcError } = await supabase.rpc(rpcToCall, { [`user_to_${isFollowing ? 'unfollow' : 'follow'}_id`]: profile.id });
+                
+                const { data: newCount, error: rpcError } = await supabase.rpc(rpcToCall, { 
+                    [`user_to_${isFollowing ? 'unfollow' : 'follow'}_id`]: profile.id 
+                });
+                
                 if (rpcError) {
                     console.error(`Error:`, rpcError);
                     alert(`Could not perform action.`);
-                    followButton.disabled = false;
                 } else {
-                    const { data: updatedProfile, error: fetchError } = await supabase.from('profiles').select('followers_count').eq('id', profile.id).single();
-                    if (fetchError) {
-                        console.error('Error fetching updated count:', fetchError);
-                    } else {
-                        isFollowing = !isFollowing;
-                        updateButtonState(updatedProfile.followers_count || 0);
-                    }
-                    followButton.disabled = false;
+                    isFollowing = !isFollowing;
+                    updateButtonState(newCount);
                 }
+                followButton.disabled = false;
             });
         }
         
@@ -470,3 +469,5 @@
     <script type="module" src="/auth.js"></script>
 </body>
 </html>
+
+make it like texturepacks.html but it should be profile.html lmao
