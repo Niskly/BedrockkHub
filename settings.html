@@ -14,95 +14,25 @@
             --danger: #ef4444; --success: #22c55e;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            margin: 0; background-color: var(--bg-0); color: var(--text);
-            font: 500 15px/1.6 Inter, sans-serif; min-height: 100vh;
-        }
-        body::before {
-            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg');
-            background-size: cover; filter: blur(8px); opacity: 0.25; z-index: -1;
-        }
+        body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 15px/1.6 Inter, sans-serif; min-height: 100vh; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg'); background-size: cover; filter: blur(8px); opacity: 0.25; z-index: -1; }
         a { color: inherit; text-decoration: none; }
-        header {
-            position: sticky; top: 0; z-index: 50;
-            backdrop-filter: saturate(1.2) blur(10px);
-            background: rgba(12, 12, 12, 0.7);
-            border-bottom: 1px solid var(--border);
-        }
+        header { position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(1.2) blur(10px); background: rgba(12, 12, 12, 0.7); border-bottom: 1px solid var(--border); }
         .nav { max-width: 1200px; margin: 0 auto; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
         .brand { display: flex; align-items: center; gap: .8rem; }
-        .brand-badge {
-            height: 44px; width: 44px; border-radius: 12px;
-            display: grid; place-items: center;
-            background: linear-gradient(135deg, var(--brand-2), var(--brand-1));
-            box-shadow: var(--shadow-brand);
-        }
+        .brand-badge { height: 44px; width: 44px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); }
         .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-13px); }
         .brand-title { font-weight: 800; letter-spacing: .6px; }
-        .nav-actions {
-            display: flex;
-            align-items: center;
-            gap: .6rem;
-        }
-        .btn { 
-            padding: .6rem 1rem; 
-            border-radius: 12px; 
-            font-weight: 700; 
-            display: inline-flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: .55rem; 
-            cursor: pointer; 
-            border: 1px solid transparent; 
-            background: none;
-            color: inherit;
-            font-family: inherit;
-            font-size: inherit;
-        }
-        .ghost { border-color: var(--border); background: transparent; color: var(--text); }
-        .ghost:hover { border-color: rgba(255, 255, 255, .2); background: rgba(255, 255, 255, 0.05); }
+        .nav-actions { display: flex; align-items: center; gap: .6rem; }
+        .btn { padding: .6rem 1rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; background: none; color: inherit; font-family: inherit; font-size: inherit; }
         .primary { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: white; box-shadow: var(--shadow-brand); }
-        .primary:hover { transform: translateY(-1px); box-shadow: 0 16px 40px rgba(222, 33, 42, .35); }
-        .primary:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .primary:disabled { opacity: 0.7; cursor: not-allowed; }
         .tiny { font-size: 12px; color: var(--muted); }
-        
-        /* User dropdown styles */
-        .user-dropdown { position: relative; display: inline-block; }
-        .user-menu-btn {
-            background: var(--bg-2); border: 1px solid var(--border); color: var(--text);
-            padding: 8px 12px; border-radius: 12px; display: flex; align-items: center;
-            gap: 10px; cursor: pointer; font-weight: 600;
-        }
-        .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
-        .nav-avatar-default {
-            width: 28px; height: 28px; border-radius: 50%; background: var(--bg-0);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .user-menu-btn .fa-chevron-down { font-size: 0.8em; transition: transform 0.2s; }
-        .user-menu-btn:hover { border-color: rgba(255, 255, 255, .2); }
-        .dropdown-content {
-            display: none; position: absolute; right: 0; top: 110%;
-            background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px;
-            min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10;
-            overflow: hidden;
-        }
-        .dropdown-content.show { display: block; }
-        .dropdown-content a {
-            color: var(--muted); padding: 12px 16px; text-decoration: none;
-            display: flex; align-items: center; gap: 10px; font-weight: 600;
-        }
-        .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
-        
         .container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; opacity: 0; transition: opacity 0.3s; }
         .container.loaded { opacity: 1; }
         .settings-layout { display: flex; gap: 2rem; align-items: flex-start; }
         .tabs { display: flex; flex-direction: column; gap: 0.5rem; flex-shrink: 0; width: 200px; }
-        .tab-btn {
-            padding: 0.75rem 1rem; border-radius: 10px; background: transparent; border: none;
-            color: var(--muted); font: 600 15px/1.4 Inter, sans-serif; text-align: left;
-            display: flex; align-items: center; gap: 10px; cursor: pointer;
-        }
+        .tab-btn { padding: 0.75rem 1rem; border-radius: 10px; background: transparent; border: none; color: var(--muted); font: 600 15px/1.4 Inter, sans-serif; text-align: left; display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .tab-btn.active, .tab-btn:hover { background: var(--bg-2); color: var(--text); }
         .tab-content { display: none; flex-grow: 1; }
         .tab-content.active { display: block; }
@@ -113,76 +43,18 @@
         h1 { font-size: 1.8rem; font-weight: 800; margin: 0; }
         .form-group { margin-bottom: 1.5rem; }
         label { display: block; margin-bottom: .5rem; font-weight: 600; color: var(--muted); }
-        input[type="text"], input[type="url"], textarea {
-            width: 100%; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border);
-            background: var(--bg-2); color: var(--text); font-size: 1rem; font-family: inherit;
-        }
-        textarea { min-height: 100px; resize: vertical; }
+        textarea { width: 100%; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text); font-size: 1rem; font-family: inherit; min-height: 100px; resize: vertical; }
         .input-hint { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
         #toast-container { position: fixed; top: 80px; right: 20px; z-index: 1000; }
-        .toast { 
-            padding: 12px 18px; 
-            border-radius: 8px; 
-            color: white; 
-            font-weight: 700; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4); 
-            animation: slideIn 0.3s ease-out forwards; 
-            margin-bottom: 10px; 
-        }
+        .toast { padding: 12px 18px; border-radius: 8px; color: white; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; margin-bottom: 10px; }
         .toast.success { background: var(--success); }
         .toast.error { background: var(--danger); }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .spinner-sm { 
-            width: 1.2em; 
-            height: 1.2em; 
-            border: 2px solid rgba(255,255,255,0.3); 
-            border-top-color: white; 
-            border-radius: 50%; 
-            animation: spin 0.8s linear infinite; 
-            display: inline-block;
-        }
+        .spinner-sm { width: 1.2em; height: 1.2em; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .warning-box {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            border-radius: 8px;
-            padding: 12px;
-            margin-top: 10px;
-            font-size: 0.85rem;
-            color: var(--text);
-        }
-        .warning-box i {
-            color: var(--danger);
-            margin-right: 8px;
-        }
-        .minecraft-linked {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: var(--bg-2);
-            padding: 0.75rem 1rem;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-        }
-        .minecraft-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .minecraft-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 4px;
-            image-rendering: pixelated;
-        }
-        
-        @media (max-width: 768px) {
-            .settings-layout { flex-direction: column; }
-            .tabs { width: 100%; flex-direction: row; overflow-x: auto; }
-        }
+        .bedrock-linked { display: flex; align-items: center; justify-content: space-between; background: var(--bg-2); padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid var(--border); }
+        .bedrock-info { display: flex; align-items: center; gap: 10px; }
+        .bedrock-gamerpic { width: 32px; height: 32px; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -190,13 +62,8 @@
     <header>
         <div class="nav">
             <a class="brand" href="/">
-                <div class="brand-badge">
-                    <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
-                </div>
-                <div>
-                    <div class="brand-title">MCHUB</div>
-                    <div class="tiny">Minecraft Bedrock • community</div>
-                </div>
+                <div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div>
+                <div><div class="brand-title">MCHUB</div><div class="tiny">Minecraft Bedrock • community</div></div>
             </a>
             <div id="nav-actions" class="nav-actions"></div>
         </div>
@@ -205,9 +72,7 @@
     <main class="container" id="settings-container">
         <div class="settings-layout">
             <aside class="tabs">
-                <button class="tab-btn active" data-tab="profile">
-                    <i class="fa-solid fa-user-pen"></i> Profile
-                </button>
+                <button class="tab-btn active" data-tab="profile"><i class="fa-solid fa-user-pen"></i> Profile</button>
             </aside>
             
             <div class="content-container">
@@ -215,7 +80,7 @@
                     <div class="card">
                         <div class="card-header">
                             <h1>Profile Settings</h1>
-                            <p class="tiny">This information will be displayed publicly.</p>
+                            <p class="tiny">This information will be displayed publicly on your profile.</p>
                         </div>
                         <form id="profile-form">
                             <div class="card-body">
@@ -224,10 +89,8 @@
                                     <textarea id="bio" placeholder="Tell us a little about yourself..." maxlength="500"></textarea>
                                     <p class="input-hint">A short description about yourself. Max 500 characters.</p>
                                 </div>
-                                
-                                <div class="form-group" id="minecraft-link-container">
-                                    <!-- This will be populated dynamically -->
-                                </div>
+                                <div class="form-group" id="bedrock-link-container">
+                                    </div>
                             </div>
                             <div class="card-footer">
                                 <button type="submit" class="btn primary">Save Changes</button>
@@ -240,8 +103,14 @@
     </main>
 
     <script type="module">
-        import { supabase } from './supabase-client.js';
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
+        // IMPORTANT: Paste the Public Key you got from OpenXBL here
+        const OPENXBL_PUBLIC_KEY = 'd396b4fc-75dc-2371-1a68-aa0b6665e135';
+
         let currentUser = null;
         let isLoading = false;
 
@@ -257,108 +126,65 @@
 
         async function loadProfileData() {
             if (!currentUser) return;
-            
             try {
                 const { data, error } = await supabase
                     .from('profiles')
-                    .select('bio, minecraft_username, minecraft_uuid')
+                    .select('bio, bedrock_gamertag, bedrock_gamerpic_url')
                     .eq('id', currentUser.id)
                     .single();
                 
-                if (error) {
-                    console.error('Error loading profile:', error);
-                    showToast('Failed to load profile data', 'error');
-                    return;
-                }
+                if (error) throw error;
                 
-                // Set bio value
-                if (data?.bio) {
-                    document.getElementById('bio').value = data.bio;
-                }
+                document.getElementById('bio').value = data.bio || '';
                 
-                // Render Minecraft section
-                const mcContainer = document.getElementById('minecraft-link-container');
-                
-                if (data?.minecraft_username && data?.minecraft_uuid) {
-                    // Account is linked
-                    mcContainer.innerHTML = `
-                        <label>Minecraft Account</label>
-                        <div class="minecraft-linked">
-                            <div class="minecraft-info">
-                                <img src="https://crafatar.com/avatars/${data.minecraft_uuid}?size=32&overlay" 
-                                     alt="${data.minecraft_username}" 
-                                     class="minecraft-avatar">
-                                <span style="font-weight: 600;">Linked as ${data.minecraft_username}</span>
+                const bedrockContainer = document.getElementById('bedrock-link-container');
+                if (data.bedrock_gamertag) {
+                    bedrockContainer.innerHTML = `
+                        <label>Bedrock Account</label>
+                        <div class="bedrock-linked">
+                            <div class="bedrock-info">
+                                <img src="${data.bedrock_gamerpic_url}" alt="${data.bedrock_gamertag}" class="bedrock-gamerpic">
+                                <span style="font-weight: 600;">Linked as ${data.bedrock_gamertag}</span>
                             </div>
-                            <button type="button" class="btn ghost" id="unlink-minecraft-btn" 
-                                    style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                            <button type="button" class="btn" id="unlink-bedrock-btn" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
                                 <i class="fa-solid fa-unlink"></i> Unlink
                             </button>
-                        </div>
-                    `;
-                    
-                    // Add unlink handler
-                    document.getElementById('unlink-minecraft-btn')?.addEventListener('click', unlinkMinecraft);
+                        </div>`;
+                    document.getElementById('unlink-bedrock-btn').addEventListener('click', unlinkBedrockAccount);
                 } else {
-                    // No account linked
-                    mcContainer.innerHTML = `
-                        <label>Link Minecraft Account</label>
-                        <button type="button" class="btn ghost" id="link-minecraft-btn" 
-                                style="width: 100%; justify-content: center;">
-                            <i class="fa-brands fa-microsoft"></i> Link with Microsoft
+                    bedrockContainer.innerHTML = `
+                        <label>Link Bedrock Account</label>
+                        <button type="button" class="btn" id="link-bedrock-btn" style="width: 100%; justify-content: center; background-color: #107C10;">
+                            <i class="fa-brands fa-xbox"></i> Link with Xbox Live
                         </button>
-                        <div class="warning-box">
-                            <i class="fa-solid fa-info-circle"></i>
-                            <strong>Before linking:</strong>
-                            <ul style="margin: 8px 0 0 24px; padding: 0;">
-                                <li>Use a personal Microsoft account (not work/school)</li>
-                                <li>Ensure you have an Xbox account (free at xbox.com)</li>
-                                <li>Make sure you own Minecraft Java or Bedrock Edition</li>
-                            </ul>
-                        </div>
-                        <p class="input-hint">
-                            Link your Microsoft account that owns Minecraft to display your skin and username.
-                        </p>
-                    `;
-                    
-                    // Add link handler
-                    document.getElementById('link-minecraft-btn')?.addEventListener('click', handleMicrosoftLink);
+                        <p class="input-hint">Link your Xbox Live account to display your Gamertag and Gamerpic.</p>`;
+                    document.getElementById('link-bedrock-btn').addEventListener('click', handleBedrockLink);
                 }
-                
             } catch (err) {
-                console.error('Unexpected error:', err);
-                showToast('An unexpected error occurred', 'error');
+                console.error('Error loading profile:', err);
+                showToast('Failed to load profile data', 'error');
             }
         }
 
-        async function unlinkMinecraft() {
-            if (isLoading) return;
-            
-            if (!confirm('Are you sure you want to unlink your Minecraft account?')) {
-                return;
-            }
+        async function unlinkBedrockAccount() {
+            if (isLoading || !confirm('Are you sure you want to unlink your Bedrock account?')) return;
             
             isLoading = true;
-            const btn = document.getElementById('unlink-minecraft-btn');
+            const btn = document.getElementById('unlink-bedrock-btn');
             const originalContent = btn.innerHTML;
             btn.innerHTML = '<div class="spinner-sm"></div>';
             btn.disabled = true;
-            
+
             try {
-                const { error } = await supabase
-                    .from('profiles')
-                    .update({ 
-                        minecraft_username: null, 
-                        minecraft_uuid: null 
-                    })
-                    .eq('id', currentUser.id);
-                
+                const { error } = await supabase.from('profiles').update({
+                    xuid: null,
+                    bedrock_gamertag: null,
+                    bedrock_gamerpic_url: null
+                }).eq('id', currentUser.id);
                 if (error) throw error;
-                
-                showToast('Minecraft account unlinked successfully!');
+                showToast('Bedrock account unlinked successfully!');
                 await loadProfileData();
             } catch (error) {
-                console.error('Unlink error:', error);
                 showToast('Failed to unlink account: ' + error.message, 'error');
                 btn.innerHTML = originalContent;
                 btn.disabled = false;
@@ -367,141 +193,67 @@
             }
         }
 
-        async function handleMicrosoftLink() {
-            if (isLoading) return;
-            
-            const linkBtn = document.getElementById('link-minecraft-btn');
-            const originalContent = linkBtn.innerHTML;
-            
-            isLoading = true;
-            linkBtn.disabled = true;
-            linkBtn.innerHTML = '<div class="spinner-sm"></div> Connecting...';
-            
-            try {
-                // Your Azure App Client ID
-                const clientId = 'b96b9812-ddfa-4cf6-94f3-9a78068acd9b';
-                const redirectUri = encodeURIComponent(window.location.origin + '/minecraft-callback.html');
-                const scopes = encodeURIComponent('XboxLive.signin offline_access');
-                
-                const authUrl = `https://login.live.com/oauth20_authorize.srf?` +
-                    `client_id=${clientId}&` +
-                    `response_type=token&` +
-                    `redirect_uri=${redirectUri}&` +
-                    `scope=${scopes}&` +
-                    `state=${encodeURIComponent(JSON.stringify({ returnUrl: window.location.href }))}`;
+        function handleBedrockLink() {
+            const authUrl = `https://xbl.io/app/auth/${OPENXBL_PUBLIC_KEY}`;
+            const popup = window.open(authUrl, 'bedrock-auth', 'width=500,height=650');
 
-                // Open popup
-                const popup = window.open(
-                    authUrl, 
-                    'minecraft-auth', 
-                    'width=500,height=600,scrollbars=yes,resizable=yes'
-                );
+            const handleMessage = async (event) => {
+                if (event.origin !== window.location.origin || event.data.type !== 'BEDROCK_AUTH_SUCCESS') return;
                 
-                if (!popup) {
-                    throw new Error('Popup blocked. Please allow popups for this site.');
-                }
-                
-                // Listen for message from popup
-                const handleMessage = async (event) => {
-                    if (event.origin !== window.location.origin) return;
+                popup.close();
+                window.removeEventListener('message', handleMessage);
+
+                const linkBtn = document.getElementById('link-bedrock-btn');
+                const originalContent = linkBtn.innerHTML;
+                linkBtn.disabled = true;
+                linkBtn.innerHTML = '<div class="spinner-sm"></div> Verifying...';
+
+                try {
+                    const hashParams = new URLSearchParams(event.data.hash.substring(1));
+                    const xblToken = hashParams.get('token');
+
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session) throw new Error('You must be logged in.');
+
+                    const response = await fetch('/api/link-bedrock', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            mchub_token: session.access_token,
+                            xbl_token: xblToken
+                        })
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.details);
                     
-                    if (event.data.type === 'MINECRAFT_AUTH_SUCCESS') {
-                        popup.close();
-                        window.removeEventListener('message', handleMessage);
-                        
-                        try {
-                            linkBtn.innerHTML = '<div class="spinner-sm"></div> Linking account...';
-                            
-                            const { data: { session } } = await supabase.auth.getSession();
-                            if (!session) throw new Error('You must be logged in to MCHub.');
-                            
-                            const response = await fetch('/api/link-minecraft', {
-                                method: 'POST',
-                                headers: { 
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${session.access_token}`
-                                },
-                                body: JSON.stringify({ 
-                                    provider_token: event.data.accessToken 
-                                })
-                            });
-                            
-                            const result = await response.json();
-                            
-                            if (!response.ok) {
-                                throw new Error(result.details || 'Failed to link account.');
-                            }
-                            
-                            showToast(`Minecraft account "${result.minecraft_username}" linked successfully!`);
-                            await loadProfileData();
-                            
-                        } catch (error) {
-                            console.error('Link error:', error);
-                            showToast(error.message, 'error');
-                        } finally {
-                            linkBtn.disabled = false;
-                            linkBtn.innerHTML = originalContent;
-                            isLoading = false;
-                        }
-                        
-                    } else if (event.data.type === 'MINECRAFT_AUTH_ERROR') {
-                        popup.close();
-                        window.removeEventListener('message', handleMessage);
-                        showToast('Authentication failed: ' + event.data.error, 'error');
-                        linkBtn.disabled = false;
-                        linkBtn.innerHTML = originalContent;
-                        isLoading = false;
-                    }
-                };
-
-                window.addEventListener('message', handleMessage);
-                
-                // Check if popup is closed
-                const checkClosed = setInterval(() => {
-                    if (popup.closed) {
-                        clearInterval(checkClosed);
-                        window.removeEventListener('message', handleMessage);
-                        linkBtn.disabled = false;
-                        linkBtn.innerHTML = originalContent;
-                        isLoading = false;
-                    }
-                }, 1000);
-                
-            } catch (error) {
-                console.error('Auth error:', error);
-                showToast(error.message, 'error');
-                linkBtn.disabled = false;
-                linkBtn.innerHTML = originalContent;
-                isLoading = false;
-            }
+                    showToast(`Account "${result.bedrock_gamertag}" linked successfully!`);
+                    await loadProfileData();
+                } catch (error) {
+                    console.error('Link error:', error);
+                    showToast(error.message, 'error');
+                    linkBtn.disabled = false;
+                    linkBtn.innerHTML = originalContent;
+                }
+            };
+            window.addEventListener('message', handleMessage);
         }
 
-        // Handle profile form submission
         document.getElementById('profile-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             if (isLoading) return;
-            
+
             const submitBtn = e.target.querySelector('button[type="submit"]');
             const originalContent = submitBtn.innerHTML;
-            
             isLoading = true;
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<div class="spinner-sm"></div> Saving...';
-            
+
             try {
                 const bio = document.getElementById('bio').value.trim();
-                
-                const { error } = await supabase
-                    .from('profiles')
-                    .update({ bio })
-                    .eq('id', currentUser.id);
-                
+                const { error } = await supabase.from('profiles').update({ bio }).eq('id', currentUser.id);
                 if (error) throw error;
-                
                 showToast('Profile updated successfully!');
             } catch (error) {
-                console.error('Save error:', error);
                 showToast('Failed to save changes: ' + error.message, 'error');
             } finally {
                 submitBtn.disabled = false;
@@ -510,20 +262,19 @@
             }
         });
 
-        // Initialize when auth is ready
-        document.addEventListener('auth-ready', async (e) => {
+        // Initialize when auth.js is ready
+        document.addEventListener('auth-ready', (e) => {
             const user = e.detail.user;
             if (user) {
                 currentUser = user;
                 document.getElementById('settings-container').classList.add('loaded');
-                await loadProfileData();
+                loadProfileData();
             } else {
-                // User not logged in, auth.js will redirect
-                console.log('User not authenticated');
+                // If user is not logged in, auth.js handles redirection
+                console.log('User not authenticated, redirecting...');
             }
         });
     </script>
-    
     <script type="module" src="/auth.js"></script>
 </body>
 </html>
