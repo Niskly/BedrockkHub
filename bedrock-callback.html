@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Linking Bedrock Account</title>
+    <style>
+        body { font-family: sans-serif; background: #1c1c1c; color: #e8eefc; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .container { text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Processing...</h2>
+        <p>Please wait while we link your Bedrock account.</p>
+    </div>
+    <script>
+        // Send the URL hash containing the token back to the main window
+        if (window.opener) {
+            window.opener.postMessage({
+                type: 'BEDROCK_AUTH_SUCCESS',
+                hash: window.location.hash
+            }, window.location.origin);
+        }
+    </script>
+</body>
+</html>
