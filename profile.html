@@ -24,28 +24,42 @@
         .brand-badge { height: 40px; width: 40px; border-radius: 10px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); }
         .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-11px); }
         .brand-title { font-weight: 800; letter-spacing: .6px; font-size: 15px; }
+        .nav-actions { display: flex; align-items: center; gap: 0.6rem; }
         .btn { padding: .5rem 1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn.primary { background: linear-gradient(90deg, var(--brand-1), var(--brand-2)); box-shadow: 0 10px 30px rgba(222, 33, 42, .22); color: white; }
+        .btn.ghost { border-color: var(--border); background: transparent; color: var(--text); }
         .tiny { font-size: 11px; color: var(--muted); }
+        
+        /* Corrected User Dropdown Styles */
+        .user-dropdown { position: relative; display: inline-block; }
+        .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
+        .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+        .nav-avatar-default { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-0); display: flex; align-items: center; justify-content: center; }
+        .user-menu-btn .fa-chevron-down { font-size: 0.8em; }
+        .user-menu-btn:hover { border-color: var(--border-strong); }
+        .dropdown-content { display: none; position: absolute; right: 0; top: 110%; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; }
+        .dropdown-content.show { display: block; }
+        .dropdown-content a { color: var(--muted); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 600; }
+        .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
+
         .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
-        .glassy { background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid var(--border); }
+        .glassy { background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); border: 1px solid var(--border); }
         .not-found { text-align: center; padding: 4rem; font-size: 1.2rem; color: var(--muted); }
         .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; min-height: 60vh; color: var(--muted); }
-        .spinner { width: 48px; height: 48px; border: 5px solid var(--border); border-bottom-color: var(--brand-1); border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; }
+        .spinner { width: 48px; height: 48px; border: 5px solid var(--border); border-bottom-color: var(--brand-1); border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .profile-header { border-radius: 16px; margin-bottom: 2rem; overflow: hidden; position: relative; }
         .profile-banner { height: 220px; background-size: cover; background-position: center; }
         .profile-banner::after { content: ''; position: absolute; bottom: 70px; left: 0; right: 0; height: 80px; background: rgba(18, 18, 18, 0.8); border-bottom: 1px solid var(--border); -webkit-mask: radial-gradient(circle at 50% 1px, transparent 73px, black 74px); mask: radial-gradient(circle at 50% 1px, transparent 73px, black 74px); }
-        .profile-details { padding: 1rem 1.5rem; display: flex; align-items: flex-end; justify-content: space-between; position: relative; z-index: 2; }
+        .profile-details { padding: 1rem 1.5rem; display: flex; align-items: flex-end; justify-content: space-between; position: relative; z-index: 2; flex-wrap: wrap; gap: 1rem; }
         .profile-meta { display: flex; align-items: center; gap: 1.5rem; margin-top: -100px; }
-        .profile-avatar-wrapper { flex-shrink: 0; }
         .profile-avatar { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #161616; }
         .pfp-placeholder { width: 140px; height: 140px; border-radius: 50%; border: 4px solid #161616; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); }
         .pfp-placeholder span { font-size: 5rem; font-weight: 800; color: white; }
         .profile-main-info h1 { font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, var(--brand-1), #ff525a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .profile-main-top-row { display: flex; align-items: center; gap: 1.5rem; }
-        .profile-bio { color: var(--muted); margin-top: 1.5rem; max-width: 500px; line-height: 1.5; font-size: 13px; }
+        .profile-bio { color: var(--muted); margin-top: 0.5rem; max-width: 500px; line-height: 1.5; font-size: 13px; }
         .header-stats { display: flex; gap: 1.2rem; align-items: center; }
         .stat-item { text-align: left; display: flex; align-items: center; gap: 6px;}
         .stat-item span { font-size: 1rem; font-weight: 700; color: var(--text); }
@@ -57,8 +71,11 @@
         .bedrock-gamerpic { width: 128px; height: 128px; border-radius: 8px; border: 2px solid var(--border); }
         .bedrock-gamertag { font-size: 1.2rem; font-weight: 700; }
         .packs-header { display: flex; justify-content: space-between; align-items: center; }
-        .upload-btn { height: 36px; width: 36px; border-radius: 10px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); color: white; font-size: 1rem; transition: all 0.2s ease; cursor: pointer; }
-        .packs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; margin-top: 1.2rem; }
+        .upload-btn { height: 36px; width: 36px; border-radius: 10px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); color: white; font-size: 1rem; cursor: pointer; }
+        
+        /* --- THIS IS THE FIX --- */
+        /* Corrected styles for the packs grid */
+        .packs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 1.2rem; }
         .pack-card { background: var(--bg-1); border-radius: 16px; overflow: hidden; transition: all 0.2s; border: 1px solid transparent; }
         .pack-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.2); box-shadow: 0 10px 30px rgba(0, 0, 0, .4); }
         .thumb { height: 120px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
@@ -89,16 +106,14 @@
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const profileContainer = document.getElementById('profile-container');
 
-        // --- RENDER FUNCTIONS ---
         function renderPackCard(p) {
-            // This function can remain the same as your previous version
             const card = document.createElement('div');
             card.className = 'pack-card';
             let thumbContent;
             if (p.icon_url) {
                 thumbContent = `<div class="pack-icon-bg" style="background-image: url('${p.icon_url}');"></div><img class="pack-icon" src="${p.icon_url}" alt="${p.name} Icon">`;
             } else {
-                thumbContent = `<div class="thumb" style="background:#2c2c2c"><i class="fa-solid fa-cube fa-2x"></i></div>`;
+                thumbContent = `<div style="width:100%; height:100%; display:grid; place-items:center; background:#2c2c2c"><i class="fa-solid fa-cube fa-2x"></i></div>`;
             }
             card.innerHTML = `<a href="#">
                 <div class="thumb">${thumbContent}</div>
@@ -123,6 +138,8 @@
                 bedrockHtml = `<p class="tiny" style="text-align:center;">No Bedrock account linked.</p>`;
             }
 
+            // --- THIS IS THE FIX ---
+            // Re-added the follower counts, following count, and follow button HTML
             profileContainer.innerHTML = `
                 <div class="profile-header glassy">
                     <div class="profile-banner" style="background-image: url('${profile.banner_url || 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/default-banner.png'}')"></div>
@@ -135,6 +152,7 @@
                                     <div class="header-stats">
                                         <div class="stat-item"><i class="fa-solid fa-eye"></i><span>${(profile.view_count || 0).toLocaleString()}</span></div>
                                         <div class="stat-item"><i class="fa-solid fa-users"></i><span id="follower-count">${(profile.followers_count || 0).toLocaleString()}</span></div>
+                                        <div class="stat-item"><i class="fa-solid fa-user-plus"></i><span id="following-count">${(profile.following_count || 0).toLocaleString()}</span></div>
                                     </div>
                                 </div>
                                 <p class="profile-bio">${profile.bio || "This user hasn't written a bio yet."}</p>
@@ -176,7 +194,6 @@
             }
         }
         
-        // --- EVENT LISTENERS & LOGIC ---
         async function setupFollowSystem(profile, currentUser) {
             const followButton = document.querySelector('.follow-btn');
             const profileActionsContainer = document.querySelector('.profile-actions');
@@ -232,11 +249,9 @@
                 renderDashboard(profile, packs || []);
                 await setupFollowSystem(profile, currentUser);
 
-                // Show upload button if the logged-in user is viewing their own profile
                 if (currentUser && currentUser.id === profile.id) {
                     const uploadBtn = document.querySelector('.upload-btn');
                     if (uploadBtn) uploadBtn.style.display = 'grid';
-                    // We can also re-add the modal setup logic here if needed
                 }
 
             } catch (error) {
