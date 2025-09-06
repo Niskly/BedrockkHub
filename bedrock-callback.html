@@ -1,128 +1,176 @@
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase Admin Client
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
-
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ details: 'Method Not Allowed' });
-  }
-
-  try {
-    console.log('Link-bedrock API called');
-    const { mchub_token, xbl_token } = req.body;
-    
-    if (!mchub_token || !xbl_token) {
-      console.log('Missing required tokens');
-      return res.status(400).json({ details: 'MCHub token and OpenXBL token are required.' });
-    }
-
-    // 1. Authenticate the MCHub user
-    console.log('Authenticating MCHub user...');
-    const { data: { user }, error: userError } = await supabase.auth.getUser(mchub_token);
-    if (userError || !user) {
-      console.error('User authentication failed:', userError);
-      return res.status(401).json({ details: 'Invalid MCHub user token.' });
-    }
-    console.log('MCHub user authenticated:', user.id);
-
-    // 2. Use the OpenXBL token to get the user's account info
-    console.log('Fetching Xbox Live profile...');
-    const accountResponse = await fetch('https://xbl.io/api/v2/account', {
-      method: 'GET',
-      headers: {
-        'X-Authorization': process.env.OPENXBL_API_KEY,
-        'X-Contract': '5',
-        'Authorization': `XBL3.0 x=${xbl_token}`,
-        'Accept': 'application/json'
-      }
-    });
-
-    if (!accountResponse.ok) {
-      const errorText = await accountResponse.text();
-      console.error('OpenXBL API error:', accountResponse.status, errorText);
-      
-      if (accountResponse.status === 401) {
-        throw new Error('Xbox Live authentication expired. Please try linking again.');
-      } else if (accountResponse.status === 403) {
-        throw new Error('Xbox Live account access denied. Please check your privacy settings.');
-      } else {
-        throw new Error(`Failed to fetch Xbox Live profile. Status: ${accountResponse.status}`);
-      }
-    }
-    
-    const accountData = await accountResponse.json();
-    console.log('OpenXBL response received, processing...');
-    
-    const profileUser = accountData.profileUsers?.[0];
-    if (!profileUser) {
-      console.error('No profile user found in response:', accountData);
-      throw new Error('No Xbox Live profile found for this user.');
-    }
-
-    const xuid = profileUser.id;
-    const bedrockGamertag = profileUser.settings?.find(s => s.id === 'Gamertag')?.value;
-    const bedrockGamepicUrl = profileUser.settings?.find(s => s.id === 'GameDisplayPicRaw')?.value;
-
-    console.log('Profile data extracted:', { xuid, bedrockGamertag });
-
-    if (!xuid || !bedrockGamertag) {
-      console.error('Missing essential profile data:', { xuid, bedrockGamertag });
-      throw new Error('Could not retrieve essential profile data (XUID or Gamertag).');
-    }
-
-    // 3. Check if this Xbox account is already linked to another MCHub user
-    console.log('Checking for existing links...');
-    const { data: existingLink, error: linkCheckError } = await supabase
-      .from('profiles')
-      .select('id, username')
-      .eq('xuid', xuid)
-      .neq('id', user.id)
-      .single();
-
-    if (linkCheckError && linkCheckError.code !== 'PGRST116') { // PGRST116 = no rows found
-      console.error('Error checking existing links:', linkCheckError);
-      throw new Error('Database error while checking existing links.');
-    }
-
-    if (existingLink) {
-      console.log('Xbox account already linked to:', existingLink.username);
-      throw new Error(`This Xbox account is already linked to another MCHub user: ${existingLink.username}`);
-    }
-
-    // 4. Update the user's profile in Supabase
-    console.log('Updating user profile...');
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({
-        xuid,
-        bedrock_gamertag: bedrockGamertag,
-        bedrock_gamerpic_url: bedrockGamepicUrl || null
-      })
-      .eq('id', user.id);
-
-    if (updateError) {
-      console.error('Database update error:', updateError);
-      throw updateError;
-    }
-
-    console.log('Profile updated successfully');
-
-    // 5. Return success
-    res.status(200).json({
-      message: 'Bedrock account linked successfully!',
-      bedrock_gamertag: bedrockGamertag,
-      bedrock_gamerpic_url: bedrockGamepicUrl
-    });
-
-  } catch (error) {
-    console.error('Error in link-bedrock function:', error);
-    res.status(500).json({ 
-      details: error.message || 'An internal server error occurred.',
-      timestamp: new Date().toISOString()
-    });
-  }
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Linking Bedrock Account</title>
+    <style>
+        body { 
+            font-family: sans-serif; 
+            background: #1c1c1c; 
+            color: #e8eefc; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
+        .container { 
+            text-align: center; 
+            padding: 2rem;
+            background: rgba(44, 44, 44, 0.8);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            max-width: 400px;
+        }
+        .success { color: #22c55e; }
+        .error { color: #ef4444; }
+        .spinner { 
+            width: 32px; 
+            height: 32px; 
+            border: 3px solid rgba(255, 255, 255, 0.3); 
+            border-top-color: #de212a; 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+            margin: 0 auto 1rem; 
+        }
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+        .icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        h2 {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="spinner"></div>
+        <h2>Processing...</h2>
+        <p id="status">Please wait while we link your Bedrock account.</p>
+    </div>
+    <script>
+        const statusEl = document.getElementById('status');
+        const spinnerEl = document.querySelector('.spinner');
+        
+        function updateStatus(message, type = 'info') {
+            statusEl.textContent = message;
+            statusEl.className = type;
+            
+            if (type === 'success') {
+                spinnerEl.innerHTML = '<div class="icon">✓</div>';
+                spinnerEl.classList.remove('spinner');
+                spinnerEl.style.color = '#22c55e';
+            } else if (type === 'error') {
+                spinnerEl.innerHTML = '<div class="icon">✗</div>';
+                spinnerEl.classList.remove('spinner');
+                spinnerEl.style.color = '#ef4444';
+            }
+        }
+        
+        function extractTokenFromUrl() {
+            // Try both hash and query parameters
+            const hash = window.location.hash.substring(1);
+            const search = window.location.search.substring(1);
+            
+            console.log('URL hash:', hash);
+            console.log('URL search:', search);
+            
+            // Parse hash parameters
+            const hashParams = new URLSearchParams(hash);
+            // Parse query parameters  
+            const searchParams = new URLSearchParams(search);
+            
+            // Look for token in both locations
+            const token = hashParams.get('token') || 
+                         hashParams.get('access_token') || 
+                         searchParams.get('token') || 
+                         searchParams.get('access_token') ||
+                         searchParams.get('code');
+                         
+            console.log('Extracted token:', token ? 'Found' : 'Not found');
+            return token;
+        }
+        
+        function handleCallback() {
+            try {
+                console.log('Processing callback...');
+                console.log('Full URL:', window.location.href);
+                
+                // Check for error parameters first
+                const urlParams = new URLSearchParams(window.location.search);
+                const error = urlParams.get('error');
+                const errorMsg = urlParams.get('msg') || urlParams.get('error_description');
+                
+                if (error) {
+                    console.error('OAuth error:', error, errorMsg);
+                    updateStatus(`Authentication failed: ${errorMsg || error}`, 'error');
+                    if (window.opener) {
+                        window.opener.postMessage({
+                            type: 'BEDROCK_AUTH_ERROR',
+                            error: error,
+                            message: errorMsg || error
+                        }, window.location.origin);
+                    }
+                    setTimeout(() => window.close(), 3000);
+                    return;
+                }
+                
+                // Extract the token
+                const token = extractTokenFromUrl();
+                
+                if (!token) {
+                    console.error('No token found in URL');
+                    updateStatus('No authentication token found in response', 'error');
+                    if (window.opener) {
+                        window.opener.postMessage({
+                            type: 'BEDROCK_AUTH_ERROR',
+                            error: 'no_token',
+                            message: 'No authentication token found'
+                        }, window.location.origin);
+                    }
+                    setTimeout(() => window.close(), 3000);
+                    return;
+                }
+                
+                console.log('Token found, sending to parent window');
+                updateStatus('Authentication successful! Closing window...', 'success');
+                
+                // Send the token back to the parent window
+                if (window.opener) {
+                    window.opener.postMessage({
+                        type: 'BEDROCK_AUTH_SUCCESS',
+                        token: token,
+                        hash: window.location.hash,
+                        search: window.location.search
+                    }, window.location.origin);
+                } else {
+                    console.warn('No opener window found');
+                }
+                
+                // Close the popup after a short delay
+                setTimeout(() => window.close(), 1500);
+                
+            } catch (error) {
+                console.error('Callback error:', error);
+                updateStatus(`Processing error: ${error.message}`, 'error');
+                if (window.opener) {
+                    window.opener.postMessage({
+                        type: 'BEDROCK_AUTH_ERROR',
+                        error: 'callback_error',
+                        message: error.message
+                    }, window.location.origin);
+                }
+                setTimeout(() => window.close(), 3000);
+            }
+        }
+        
+        // Run when page loads
+        console.log('Bedrock callback page loaded');
+        handleCallback();
+    </script>
+</body>
+</html>
