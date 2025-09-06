@@ -11,7 +11,7 @@
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
             --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
             --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
-            --danger: #ef4444; --success: #22c55e;
+            --danger: #ef4444; --success: #22c55e; --border-strong: rgba(255, 255, 255, .2);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 15px/1.6 Inter, sans-serif; min-height: 100vh; }
@@ -28,6 +28,35 @@
         .primary { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: white; box-shadow: var(--shadow-brand); }
         .primary:disabled { opacity: 0.7; cursor: not-allowed; }
         .tiny { font-size: 12px; color: var(--muted); }
+        
+        /* --- THIS IS THE FIX --- */
+        /* User Dropdown Styles */
+        .user-dropdown { position: relative; display: inline-block; }
+        .user-menu-btn {
+            background: var(--bg-2); border: 1px solid var(--border); color: var(--text);
+            padding: 8px 12px; border-radius: 12px; display: flex; align-items: center;
+            gap: 10px; cursor: pointer; font-weight: 600;
+        }
+        .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+        .nav-avatar-default {
+            width: 28px; height: 28px; border-radius: 50%; background: var(--bg-0);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .user-menu-btn .fa-chevron-down { font-size: 0.8em; transition: transform 0.2s; }
+        .user-menu-btn:hover { border-color: var(--border-strong); }
+        .dropdown-content {
+            display: none; position: absolute; right: 0; top: 110%;
+            background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px;
+            min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10;
+            overflow: hidden;
+        }
+        .dropdown-content.show { display: block; }
+        .dropdown-content a {
+            color: var(--muted); padding: 12px 16px; text-decoration: none;
+            display: flex; align-items: center; gap: 10px; font-weight: 600;
+        }
+        .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
+
         .container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; opacity: 0; transition: opacity 0.3s; }
         .container.loaded { opacity: 1; }
         .settings-layout { display: flex; gap: 2rem; align-items: flex-start; }
@@ -58,223 +87,153 @@
     </style>
 </head>
 <body>
-    <div id="toast-container"></div>
-    <header>
-        <div class="nav">
-            <a class="brand" href="/">
-                <div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div>
-                <div><div class="brand-title">MCHUB</div><div class="tiny">Minecraft Bedrock • community</div></div>
-            </a>
-            <div id="nav-actions" class="nav-actions"></div>
-        </div>
-    </header>
-    
-    <main class="container" id="settings-container">
-        <div class="settings-layout">
-            <aside class="tabs">
-                <button class="tab-btn active" data-tab="profile"><i class="fa-solid fa-user-pen"></i> Profile</button>
-            </aside>
-            
-            <div class="content-container">
-                <section id="profile-tab" class="tab-content active">
-                    <div class="card">
-                        <div class="card-header">
-                            <h1>Profile Settings</h1>
-                            <p class="tiny">This information will be displayed publicly on your profile.</p>
-                        </div>
-                        <form id="profile-form">
-                            <div class="card-body">
-                                <div class="form-group">
-                                    <label for="bio">Bio</label>
-                                    <textarea id="bio" placeholder="Tell us a little about yourself..." maxlength="500"></textarea>
-                                    <p class="input-hint">A short description about yourself. Max 500 characters.</p>
-                                </div>
-                                <div class="form-group" id="bedrock-link-container">
-                                    </div>
-                            </div>
-                            <div class="card-footer">
-                                <button type="submit" class="btn primary">Save Changes</button>
-                            </div>
-                        </form>
-                    </div>
-                </section>
-            </div>
-        </div>
-    </main>
-
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        // IMPORTANT: Paste the Public Key you got from OpenXBL here
-        const OPENXBL_PUBLIC_KEY = 'd396b4fc-75dc-2371-1a68-aa0b6665e135';
-
-        let currentUser = null;
-        let isLoading = false;
-
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
-            toast.innerHTML = `<i class="fa-solid ${icon}"></i> ${message}`;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 4000);
-        }
-
-        async function loadProfileData() {
-            if (!currentUser) return;
-            try {
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .select('bio, bedrock_gamertag, bedrock_gamerpic_url')
-                    .eq('id', currentUser.id)
-                    .single();
-                
-                if (error) throw error;
-                
-                document.getElementById('bio').value = data.bio || '';
-                
-                const bedrockContainer = document.getElementById('bedrock-link-container');
-                if (data.bedrock_gamertag) {
-                    bedrockContainer.innerHTML = `
-                        <label>Bedrock Account</label>
-                        <div class="bedrock-linked">
-                            <div class="bedrock-info">
-                                <img src="${data.bedrock_gamerpic_url}" alt="${data.bedrock_gamertag}" class="bedrock-gamerpic">
-                                <span style="font-weight: 600;">Linked as ${data.bedrock_gamertag}</span>
-                            </div>
-                            <button type="button" class="btn" id="unlink-bedrock-btn" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
-                                <i class="fa-solid fa-unlink"></i> Unlink
-                            </button>
-                        </div>`;
-                    document.getElementById('unlink-bedrock-btn').addEventListener('click', unlinkBedrockAccount);
-                } else {
-                    bedrockContainer.innerHTML = `
-                        <label>Link Bedrock Account</label>
-                        <button type="button" class="btn" id="link-bedrock-btn" style="width: 100%; justify-content: center; background-color: #107C10;">
-                            <i class="fa-brands fa-xbox"></i> Link with Xbox Live
-                        </button>
-                        <p class="input-hint">Link your Xbox Live account to display your Gamertag and Gamerpic.</p>`;
-                    document.getElementById('link-bedrock-btn').addEventListener('click', handleBedrockLink);
-                }
-            } catch (err) {
-                console.error('Error loading profile:', err);
-                showToast('Failed to load profile data', 'error');
-            }
-        }
-
-        async function unlinkBedrockAccount() {
-            if (isLoading || !confirm('Are you sure you want to unlink your Bedrock account?')) return;
-            
-            isLoading = true;
-            const btn = document.getElementById('unlink-bedrock-btn');
-            const originalContent = btn.innerHTML;
-            btn.innerHTML = '<div class="spinner-sm"></div>';
-            btn.disabled = true;
-
-            try {
-                const { error } = await supabase.from('profiles').update({
-                    xuid: null,
-                    bedrock_gamertag: null,
-                    bedrock_gamerpic_url: null
-                }).eq('id', currentUser.id);
-                if (error) throw error;
-                showToast('Bedrock account unlinked successfully!');
-                await loadProfileData();
-            } catch (error) {
-                showToast('Failed to unlink account: ' + error.message, 'error');
-                btn.innerHTML = originalContent;
-                btn.disabled = false;
-            } finally {
-                isLoading = false;
-            }
-        }
-
-        function handleBedrockLink() {
-            const authUrl = `https://xbl.io/app/auth/${OPENXBL_PUBLIC_KEY}`;
-            const popup = window.open(authUrl, 'bedrock-auth', 'width=500,height=650');
-
-            const handleMessage = async (event) => {
-                if (event.origin !== window.location.origin || event.data.type !== 'BEDROCK_AUTH_SUCCESS') return;
-                
-                popup.close();
-                window.removeEventListener('message', handleMessage);
-
-                const linkBtn = document.getElementById('link-bedrock-btn');
-                const originalContent = linkBtn.innerHTML;
-                linkBtn.disabled = true;
-                linkBtn.innerHTML = '<div class="spinner-sm"></div> Verifying...';
-
-                try {
-                    const hashParams = new URLSearchParams(event.data.hash.substring(1));
-                    const xblToken = hashParams.get('token');
-
-                    const { data: { session } } = await supabase.auth.getSession();
-                    if (!session) throw new Error('You must be logged in.');
-
-                    const response = await fetch('/api/link-bedrock', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            mchub_token: session.access_token,
-                            xbl_token: xblToken
-                        })
-                    });
-                    const result = await response.json();
-                    if (!response.ok) throw new Error(result.details);
-                    
-                    showToast(`Account "${result.bedrock_gamertag}" linked successfully!`);
-                    await loadProfileData();
-                } catch (error) {
-                    console.error('Link error:', error);
-                    showToast(error.message, 'error');
-                    linkBtn.disabled = false;
-                    linkBtn.innerHTML = originalContent;
-                }
-            };
-            window.addEventListener('message', handleMessage);
-        }
-
-        document.getElementById('profile-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (isLoading) return;
-
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            const originalContent = submitBtn.innerHTML;
-            isLoading = true;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<div class="spinner-sm"></div> Saving...';
-
-            try {
-                const bio = document.getElementById('bio').value.trim();
-                const { error } = await supabase.from('profiles').update({ bio }).eq('id', currentUser.id);
-                if (error) throw error;
-                showToast('Profile updated successfully!');
-            } catch (error) {
-                showToast('Failed to save changes: ' + error.message, 'error');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalContent;
-                isLoading = false;
-            }
-        });
-
-        // Initialize when auth.js is ready
-        document.addEventListener('auth-ready', (e) => {
-            const user = e.detail.user;
-            if (user) {
-                currentUser = user;
-                document.getElementById('settings-container').classList.add('loaded');
-                loadProfileData();
-            } else {
-                // If user is not logged in, auth.js handles redirection
-                console.log('User not authenticated, redirecting...');
-            }
-        });
-    </script>
-    <script type="module" src="/auth.js"></script>
+    <div id="toast-container"></div><header><div class="nav"><a class="brand" href="/"><div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div><div><div class="brand-title">MCHUB</div><div class="tiny">Minecraft Bedrock • community</div></div></a><div id="nav-actions" class="nav-actions"></div></div></header><main class="container" id="settings-container"><div class="settings-layout"><aside class="tabs"><button class="tab-btn active" data-tab="profile"><i class="fa-solid fa-user-pen"></i> Profile</button></aside><div class="content-container"><section id="profile-tab" class="tab-content active"><div class="card"><div class="card-header"><h1>Profile Settings</h1><p class="tiny">This information will be displayed publicly on your profile.</p></div><form id="profile-form"><div class="card-body"><div class="form-group"><label for="bio">Bio</label><textarea id="bio" placeholder="Tell us a little about yourself..." maxlength="500"></textarea><p class="input-hint">A short description about yourself. Max 500 characters.</p></div><div class="form-group" id="bedrock-link-container"></div></div><div class="card-footer"><button type="submit" class="btn primary">Save Changes</button></div></form></div></section></div></div></main><script type="module">import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const OPENXBL_PUBLIC_KEY = 'd396b4fc-75dc-2371-1a68-aa0b6665e135';
+        let currentUser = null;
+        let isLoading = false;
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+        async function loadProfileData() {
+            if (!currentUser) return;
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('bio, bedrock_gamertag, bedrock_gamerpic_url')
+                    .eq('id', currentUser.id)
+                    .single();
+                if (error) throw error;
+                document.getElementById('bio').value = data.bio || '';
+                const bedrockContainer = document.getElementById('bedrock-link-container');
+                if (data.bedrock_gamertag) {
+                    bedrockContainer.innerHTML = `
+                        <label>Bedrock Account</label>
+                        <div class="bedrock-linked">
+                            <div class="bedrock-info">
+                                <img src="${data.bedrock_gamerpic_url}" alt="${data.bedrock_gamertag}" class="bedrock-gamerpic">
+                                <span style="font-weight: 600;">Linked as ${data.bedrock_gamertag}</span>
+                            </div>
+                            <button type="button" class="btn" id="unlink-bedrock-btn" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                                <i class="fa-solid fa-unlink"></i> Unlink
+                            </button>
+                        </div>`;
+                    document.getElementById('unlink-bedrock-btn').addEventListener('click', unlinkBedrockAccount);
+                } else {
+                    bedrockContainer.innerHTML = `
+                        <label>Link Bedrock Account</label>
+                        <button type="button" class="btn" id="link-bedrock-btn" style="width: 100%; justify-content: center; background-color: #107C10;">
+                            <i class="fa-brands fa-xbox"></i> Link with Xbox Live
+                        </button>
+                        <p class="input-hint">Link your Xbox Live account to display your Gamertag and Gamerpic.</p>`;
+                    document.getElementById('link-bedrock-btn').addEventListener('click', handleBedrockLink);
+                }
+            } catch (err) {
+                console.error('Error loading profile:', err);
+                showToast('Failed to load profile data', 'error');
+            }
+        }
+        async function unlinkBedrockAccount() {
+            if (isLoading || !confirm('Are you sure you want to unlink your Bedrock account?')) return;
+            isLoading = true;
+            const btn = document.getElementById('unlink-bedrock-btn');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<div class="spinner-sm"></div>';
+            btn.disabled = true;
+            try {
+                const { error } = await supabase.from('profiles').update({
+                    xuid: null,
+                    bedrock_gamertag: null,
+                    bedrock_gamerpic_url: null
+                }).eq('id', currentUser.id);
+                if (error) throw error;
+                showToast('Bedrock account unlinked successfully!');
+                await loadProfileData();
+            } catch (error) {
+                showToast('Failed to unlink account: ' + error.message, 'error');
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+            } finally {
+                isLoading = false;
+            }
+        }
+        function handleBedrockLink() {
+            const authUrl = `https://xbl.io/app/auth/${OPENXBL_PUBLIC_KEY}`;
+            const popup = window.open(authUrl, 'bedrock-auth', 'width=500,height=650');
+            const handleMessage = async (event) => {
+                if (event.origin !== window.location.origin || event.data.type !== 'BEDROCK_AUTH_SUCCESS') return;
+                popup.close();
+                window.removeEventListener('message', handleMessage);
+                const linkBtn = document.getElementById('link-bedrock-btn');
+                const originalContent = linkBtn.innerHTML;
+                linkBtn.disabled = true;
+                linkBtn.innerHTML = '<div class="spinner-sm"></div> Verifying...';
+                try {
+                    const hashParams = new URLSearchParams(event.data.hash.substring(1));
+                    const xblToken = hashParams.get('token');
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session) throw new Error('You must be logged in.');
+                    const response = await fetch('/api/link-bedrock', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            mchub_token: session.access_token,
+                            xbl_token: xblToken
+                        })
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.details);
+                    showToast(`Account "${result.bedrock_gamertag}" linked successfully!`);
+                    await loadProfileData();
+                } catch (error) {
+                    console.error('Link error:', error);
+                    showToast(error.message, 'error');
+                    linkBtn.disabled = false;
+                    linkBtn.innerHTML = originalContent;
+                }
+            };
+            window.addEventListener('message', handleMessage);
+        }
+        document.getElementById('profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (isLoading) return;
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalContent = submitBtn.innerHTML;
+            isLoading = true;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="spinner-sm"></div> Saving...';
+            try {
+                const bio = document.getElementById('bio').value.trim();
+                const { error } = await supabase.from('profiles').update({ bio }).eq('id', currentUser.id);
+                if (error) throw error;
+                showToast('Profile updated successfully!');
+            } catch (error) {
+                showToast('Failed to save changes: ' + error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalContent;
+                isLoading = false;
+            }
+        });
+        document.addEventListener('auth-ready', (e) => {
+            const user = e.detail.user;
+            if (user) {
+                currentUser = user;
+                document.getElementById('settings-container').classList.add('loaded');
+                loadProfileData();
+            } else {
+                console.log('User not authenticated, redirecting...');
+            }
+        });
+    </script>
+    <script type="module" src="/auth.js"></script>
 </body>
 </html>
