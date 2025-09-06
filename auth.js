@@ -11,7 +11,11 @@ function renderUserDropdown(profile) {
         : `<div class="nav-avatar-default"><i class="fa-solid fa-user"></i></div>`;
     
     if (navActions) {
+        // --- THIS IS THE FIX ---
+        // Added the Home and Texture Pack links before the user dropdown
         navActions.innerHTML = `
+            <a class="btn ghost" href="/">Home</a>
+            <a class="btn ghost" href="/texturepacks.html">Texture Packs</a>
             <div class="user-dropdown">
                 <button class="user-menu-btn">
                     ${avatarContent}
@@ -44,6 +48,7 @@ function renderUserDropdown(profile) {
 function renderLoginButtons() {
     if (navActions) {
         navActions.innerHTML = `
+            <a class="btn ghost" href="/">Home</a>
             <a class="btn ghost" href="/texturepacks.html">Texture Packs</a>
             <a class="btn primary" href="/login.html">Login</a>`;
     }
@@ -51,33 +56,17 @@ function renderLoginButtons() {
 
 async function handleAuthState() {
     try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-        if (sessionError) {
-            console.error("Error getting session:", sessionError);
-            renderLoginButtons();
-            return;
-        }
+        const { data: { session } } = await supabase.auth.getSession();
 
         if (session) {
-            const { data: profile, error: profileError } = await supabase
+            const { data: profile } = await supabase
                 .from('profiles')
                 .select('username, avatar_url')
                 .eq('id', session.user.id)
                 .single();
 
-            if (profileError) {
-                console.error("Error fetching profile:", profileError);
-                // Even if profile fails, user is logged in, so maybe sign them out or show an error state
-                await supabase.auth.signOut();
-                renderLoginButtons();
-                return;
-            }
-
             if (profile && profile.username) {
                 renderUserDropdown(profile);
-                // **THIS IS THE FIX**: Send the signal that auth is ready
-                document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user: session.user } }));
             } else {
                  if (!window.location.pathname.endsWith('/complete-profile.html')) {
                     window.location.replace('/complete-profile.html');
@@ -85,12 +74,13 @@ async function handleAuthState() {
             }
         } else {
             renderLoginButtons();
-            // **THIS IS THE FIX**: Also send the signal when not logged in, so pages can react
-            document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user: null } }));
         }
+        // Dispatch the auth-ready event regardless of login state
+        document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user: session?.user || null } }));
     } catch (e) {
-        console.error("Critical error in handleAuthState:", e);
+        console.error("Error in handleAuthState:", e);
         renderLoginButtons();
+        document.dispatchEvent(new CustomEvent('auth-ready', { detail: { user: null } }));
     }
 }
 
@@ -98,11 +88,11 @@ async function handleAuthState() {
 handleAuthState();
 
 // Listen for future changes
-supabase.auth.onAuthStateChange((event, session) => {
+supabase.auth.onAuthStateChange(() => {
     handleAuthState();
 });
 
-// Global listener to close dropdown when clicking outside
+// Global listener to close dropdown
 window.addEventListener('click', (event) => {
     if (navActions && !event.target.closest('.user-dropdown')) {
         const content = navActions.querySelector('.dropdown-content.show');
