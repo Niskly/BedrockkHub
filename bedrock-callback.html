@@ -62,29 +62,25 @@
             
             if (type === 'success') {
                 spinnerEl.innerHTML = '<div class="icon">✓</div>';
-                spinnerEl.classList.remove('spinner');
+                spinnerEl.style.animation = 'none';
                 spinnerEl.style.color = '#22c55e';
             } else if (type === 'error') {
                 spinnerEl.innerHTML = '<div class="icon">✗</div>';
-                spinnerEl.classList.remove('spinner');
+                spinnerEl.style.animation = 'none';
                 spinnerEl.style.color = '#ef4444';
             }
         }
         
         function extractTokenFromUrl() {
-            // Try both hash and query parameters
             const hash = window.location.hash.substring(1);
             const search = window.location.search.substring(1);
             
             console.log('URL hash:', hash);
             console.log('URL search:', search);
             
-            // Parse hash parameters
             const hashParams = new URLSearchParams(hash);
-            // Parse query parameters  
             const searchParams = new URLSearchParams(search);
             
-            // Look for token in both locations
             const token = hashParams.get('token') || 
                          hashParams.get('access_token') || 
                          searchParams.get('token') || 
@@ -98,9 +94,6 @@
         function handleCallback() {
             try {
                 console.log('Processing callback...');
-                console.log('Full URL:', window.location.href);
-                
-                // Check for error parameters first
                 const urlParams = new URLSearchParams(window.location.search);
                 const error = urlParams.get('error');
                 const errorMsg = urlParams.get('msg') || urlParams.get('error_description');
@@ -119,7 +112,6 @@
                     return;
                 }
                 
-                // Extract the token
                 const token = extractTokenFromUrl();
                 
                 if (!token) {
@@ -139,19 +131,15 @@
                 console.log('Token found, sending to parent window');
                 updateStatus('Authentication successful! Closing window...', 'success');
                 
-                // Send the token back to the parent window
                 if (window.opener) {
                     window.opener.postMessage({
                         type: 'BEDROCK_AUTH_SUCCESS',
-                        token: token,
-                        hash: window.location.hash,
-                        search: window.location.search
+                        token: token
                     }, window.location.origin);
                 } else {
                     console.warn('No opener window found');
                 }
                 
-                // Close the popup after a short delay
                 setTimeout(() => window.close(), 1500);
                 
             } catch (error) {
@@ -168,7 +156,6 @@
             }
         }
         
-        // Run when page loads
         console.log('Bedrock callback page loaded');
         handleCallback();
     </script>
