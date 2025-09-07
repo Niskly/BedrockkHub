@@ -87,9 +87,6 @@
         .thumb .pack-icon-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; filter: blur(8px) brightness(0.7); transform: scale(1.1); }
         .thumb .pack-icon { position: relative; width: 80px; height: 80px; border-radius: 8px; object-fit: cover; z-index: 1; }
         .content { padding: 14px; }
-
-        /* Updated navigation to show followers/following in user dropdown */
-        .user-stats { margin-left: auto; display: flex; align-items: center; gap: 1rem; font-size: 11px; color: var(--muted); }
     </style>
 </head>
 <body>
@@ -139,7 +136,7 @@
             if (profile.bedrock_gamertag) {
                 bedrockHtml = `
                     <div class="bedrock-display">
-                        <img src="${profile.bedrock_gamerpic_url}" alt="${profile.bedrock_gamertag}" class="bedrock-gamerpic">
+                        <img src="${profile.bedrock_gamerpic_url || 'https://placehold.co/128x128/1c1c1c/de212a?text=XB'}" alt="${profile.bedrock_gamertag}" class="bedrock-gamerpic">
                         <span class="bedrock-gamertag">${profile.bedrock_gamertag}</span>
                     </div>`;
             } else {
@@ -220,8 +217,15 @@
                 return;
             }
 
-            const { data } = await supabase.from('followers').select('*').eq('follower_id', currentUser.id).eq('following_id', profile.id);
-            let isFollowing = data && data.length > 0;
+            // Check if currently following
+            const { data } = await supabase
+                .from('followers')
+                .select('*')
+                .eq('follower_id', currentUser.id)
+                .eq('following_id', profile.id)
+                .single();
+                
+            let isFollowing = data !== null;
             
             function updateButtonState(newFollowerCount) {
                 document.getElementById('follower-count').textContent = newFollowerCount.toLocaleString();
@@ -240,15 +244,39 @@
 
             followButton.addEventListener('click', async () => {
                 followButton.disabled = true;
-                const rpcToCall = isFollowing ? 'unfollow_user' : 'follow_user';
-                const rpcParams = isFollowing ? { user_to_unfollow_id: profile.id } : { user_to_follow_id: profile.id };
-
-                await supabase.rpc(rpcToCall, rpcParams);
                 
-                const { data: updatedProfile } = await supabase.from('profiles').select('followers_count').eq('id', profile.id).single();
+                try {
+                    if (isFollowing) {
+                        // Unfollow
+                        await supabase
+                            .from('followers')
+                            .delete()
+                            .eq('follower_id', currentUser.id)
+                            .eq('following_id', profile.id);
+                    } else {
+                        // Follow
+                        await supabase
+                            .from('followers')
+                            .insert([{
+                                follower_id: currentUser.id,
+                                following_id: profile.id
+                            }]);
+                    }
+                    
+                    // Get updated count
+                    const { data: updatedProfile } = await supabase
+                        .from('profiles')
+                        .select('followers_count')
+                        .eq('id', profile.id)
+                        .single();
+                    
+                    isFollowing = !isFollowing;
+                    updateButtonState(updatedProfile?.followers_count || 0);
+                    
+                } catch (error) {
+                    console.error('Follow error:', error);
+                }
                 
-                isFollowing = !isFollowing;
-                updateButtonState(updatedProfile.followers_count);
                 followButton.disabled = false;
             });
         }
@@ -263,34 +291,51 @@
 
                 const { data: { user: currentUser } } = await supabase.auth.getUser();
                 
-                // Fixed profile lookup
-                let { data: profile, error: profileError } = await supabase
+                console.log('Looking for user:', username);
+                
+                // Get profile by username
+                const { data: profile, error: profileError } = await supabase
                     .from('profiles')
                     .select('*')
                     .eq('username', username)
                     .single();
                     
-                if (profileError || !profile) { 
+                if (profileError) { 
                     console.error("Profile fetch error:", profileError);
                     profileContainer.innerHTML = `<div class="not-found">User "${username}" not found.</div>`; 
                     return; 
                 }
 
+                if (!profile) {
+                    profileContainer.innerHTML = `<div class="not-found">User "${username}" not found.</div>`; 
+                    return;
+                }
+
+                console.log('Found profile:', profile);
+
                 // Increment view count if viewing someone else's profile
                 if (currentUser && currentUser.id !== profile.id) {
-                    supabase.rpc('increment_view_count', { profile_id_to_update: profile.id }).then();
+                    const { error } = await supabase.rpc('increment_view_count', { 
+                        profile_id_to_update: profile.id 
+                    });
+                    if (error) console.error('View count error:', error);
                 }
                 
+                // Get user's packs
                 const { data: packs, error: packsError } = await supabase
                     .from('packs')
                     .select('*')
                     .eq('user_id', profile.id)
                     .order('created_at', { ascending: false });
                     
-                if (packsError) console.error(packsError);
+                if (packsError) console.error('Packs error:', packsError);
                 
                 renderDashboard(profile, packs || [], currentUser);
-                await setupFollowSystem(profile, currentUser);
+                
+                // Setup follow system if user is logged in
+                if (currentUser) {
+                    await setupFollowSystem(profile, currentUser);
+                }
 
                 // Show upload button for own profile
                 if (currentUser && currentUser.id === profile.id) {
@@ -307,7 +352,7 @@
         function renderUserDropdown(profile) {
             const avatarContent = profile.avatar_url 
                 ? `<img src="${profile.avatar_url}" alt="Avatar" class="nav-avatar-img">` 
-                : `<img src="https://placehold.co/28x28/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}" class="nav-avatar-img">`;
+                : `<div class="nav-avatar-default"><i class="fa-solid fa-user"></i></div>`;
             
             const navActions = document.getElementById('nav-actions');
             if (navActions) {
@@ -318,15 +363,11 @@
                         <button class="user-menu-btn">
                             ${avatarContent}
                             <span>${profile.username || 'User'}</span>
-                            <div class="user-stats">
-                                <span>${(profile.followers_count || 0).toLocaleString()} followers</span>
-                                <span>${(profile.following_count || 0).toLocaleString()} following</span>
-                            </div>
                             <i class="fa-solid fa-chevron-down"></i>
                         </button>
                         <div class="dropdown-content">
                             <a href="/profile.html?user=${profile.username}">
-                                <i class="fa-solid fa-user"></i> Profile
+                                <i class="fa-solid fa-user"></i> My Profile
                             </a>
                             <a href="/settings.html">
                                 <i class="fa-solid fa-cog"></i> Settings
@@ -373,16 +414,13 @@
                 navActions.innerHTML = `
                     <a class="btn ghost" href="/">Home</a>
                     <a class="btn ghost" href="/texturepacks.html">Texture Packs</a>
-                    <a class="btn primary" href="/login.html">
-                        <i class="fa-solid fa-sign-in-alt"></i>
-                        Login
-                    </a>
+                    <a class="btn primary" href="/login.html">Login</a>
                 `;
             }
         }
 
         // Initialize auth state and load profile
-        document.addEventListener('DOMContentLoaded', async () => {
+        async function initializePage() {
             try {
                 const { data: { session } } = await supabase.auth.getSession();
                 
@@ -401,18 +439,24 @@
                     renderLoginButtons();
                 }
                 
-                // Load the profile page
+                // Load the profile page regardless of auth state
                 await loadPage();
                 
             } catch (error) {
-                console.error('Auth state error:', error);
+                console.error('Initialization error:', error);
                 renderLoginButtons();
+                // Still try to load the profile page
                 await loadPage();
             }
-        });
+        }
+
+        // Start the initialization when DOM is ready
+        document.addEventListener('DOMContentLoaded', initializePage);
 
         // Listen for auth changes
         supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log('Auth state changed:', event);
+            
             if (event === 'SIGNED_OUT') {
                 renderLoginButtons();
             } else if (event === 'SIGNED_IN' && session) {
