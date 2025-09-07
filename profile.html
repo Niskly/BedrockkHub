@@ -271,13 +271,18 @@
             }
 
             // Check if currently following
-            const { data } = await supabase
+            const { count, error: checkError } = await supabase
                 .from('followers')
-                .select('created_at', { count: 'exact', head: true }) // More efficient check
+                .select('*', { count: 'exact', head: true })
                 .eq('follower_id', currentUser.id)
                 .eq('following_id', profile.id);
+
+            if (checkError) {
+                console.error("Failed to check follow status:", checkError);
+                return;
+            }
                 
-            let isFollowing = data && data.count > 0;
+            let isFollowing = count > 0;
             
             function updateButtonState(newFollowerCount) {
                 document.getElementById('follower-count').textContent = newFollowerCount.toLocaleString();
@@ -300,19 +305,21 @@
                 try {
                     if (isFollowing) {
                         // Unfollow
-                        await supabase
+                        const { error } = await supabase
                             .from('followers')
                             .delete()
                             .eq('follower_id', currentUser.id)
                             .eq('following_id', profile.id);
+                        if (error) throw error;
                     } else {
                         // Follow
-                        await supabase
+                        const { error } = await supabase
                             .from('followers')
                             .insert([{
                                 follower_id: currentUser.id,
                                 following_id: profile.id
                             }]);
+                        if (error) throw error;
                     }
                     
                     // Get updated count directly from our new, reliable VIEW
@@ -328,7 +335,7 @@
                     updateButtonState(updatedProfile?.followers_count || 0);
                     
                 } catch (error) {
-                    console.error('Follow error:', error);
+                    console.error('Follow/Unfollow error:', error);
                 }
                 
                 followButton.disabled = false;
@@ -339,7 +346,6 @@
             console.log('🔄 Loading profile page content...');
             
             try {
-                // Get username from URL
                 const username = new URLSearchParams(window.location.search).get('user');
                 if (!username) { 
                     showError('No User Specified', 'Please provide a username in the URL.', false); 
@@ -348,11 +354,11 @@
 
                 console.log('👤 Looking for user:', username);
 
-                // Get target profile from our new VIEW
+                // Get target profile using a case-insensitive lookup (.ilike)
                 const { data: profile, error: profileError } = await supabase
                     .from('profiles_with_counts')
                     .select('*')
-                    .eq('username', username)
+                    .ilike('username', username)
                     .single();
                 
                 if (profileError || !profile) {
@@ -396,7 +402,6 @@
                 
                 await setupFollowSystem(profile, currentUser);
 
-                // Show upload button for own profile
                 if (currentUser && currentUser.id === profile.id) {
                     const uploadBtn = document.querySelector('.upload-btn');
                     if (uploadBtn) uploadBtn.style.display = 'grid';
