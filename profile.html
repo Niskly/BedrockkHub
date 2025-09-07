@@ -64,6 +64,8 @@
         .stat-item .count { font-size: 1.1rem; font-weight: 700; color: var(--text); }
         .stat-item .label { font-size: .8rem; color: var(--muted); }
         
+        .profile-actions { display: flex; align-items: center; gap: 1rem; }
+        
         .social-links-container { position: absolute; bottom: 1.5rem; right: 1.5rem; display: flex; gap: 0.8rem; }
         .social-link { font-size: 1.2rem; color: var(--muted); transition: color .2s; }
         .social-link:hover { color: var(--text); }
@@ -85,6 +87,9 @@
         .thumb .pack-icon-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; filter: blur(8px) brightness(0.7); transform: scale(1.1); }
         .thumb .pack-icon { position: relative; width: 80px; height: 80px; border-radius: 8px; object-fit: cover; z-index: 1; }
         .content { padding: 14px; }
+
+        /* Updated navigation to show followers/following in user dropdown */
+        .user-stats { margin-left: auto; display: flex; align-items: center; gap: 1rem; font-size: 11px; color: var(--muted); }
     </style>
 </head>
 <body>
@@ -105,7 +110,7 @@
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MVg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const profileContainer = document.getElementById('profile-container');
 
@@ -125,7 +130,7 @@
             return card;
         }
 
-        function renderDashboard(profile, packs) {
+        function renderDashboard(profile, packs, currentUser) {
             const pfpHtml = profile.avatar_url
                 ? `<img src="${profile.avatar_url}" alt="${profile.username}'s avatar" class="profile-avatar">`
                 : `<div class="pfp-placeholder"><span>${(profile.username || '?').charAt(0).toUpperCase()}</span></div>`;
@@ -150,6 +155,14 @@
                 </div>
             `;
 
+            // Show follow button only if viewing another user's profile
+            const showFollowButton = currentUser && currentUser.id !== profile.id;
+            const profileActionsHtml = showFollowButton ? `
+                <div class="profile-actions">
+                    <button class="btn primary follow-btn"><i class="fa-solid fa-user-plus"></i> Follow</button>
+                </div>
+            ` : '';
+
             profileContainer.innerHTML = `
                 <div class="profile-header glassy">
                     <div class="profile-banner" style="background-image: url('${profile.banner_url || 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/default-banner.png'}')"></div>
@@ -166,9 +179,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="profile-actions" style="display: none;">
-                            <button class="btn primary follow-btn"><i class="fa-solid fa-user-plus"></i> Follow</button>
-                        </div>
+                        ${profileActionsHtml}
                         ${socialLinksHtml}
                     </div>
                 </div>
@@ -205,23 +216,15 @@
         
         async function setupFollowSystem(profile, currentUser) {
             const followButton = document.querySelector('.follow-btn');
-            const profileActionsContainer = document.querySelector('.profile-actions');
-            if (!profileActionsContainer || !followButton || !currentUser || currentUser.id === profile.id) {
-                if(profileActionsContainer) profileActionsContainer.style.display = 'none';
+            if (!followButton || !currentUser || currentUser.id === profile.id) {
                 return;
             }
-            profileActionsContainer.style.display = 'block';
 
             const { data } = await supabase.from('followers').select('*').eq('follower_id', currentUser.id).eq('following_id', profile.id);
             let isFollowing = data && data.length > 0;
             
-            function updateButtonState(newFollowerCount, newFollowingCount) {
+            function updateButtonState(newFollowerCount) {
                 document.getElementById('follower-count').textContent = newFollowerCount.toLocaleString();
-                // Update the current user's following count visually
-                const currentUserFollowingEl = document.getElementById('following-count');
-                if (currentUserFollowingEl && typeof newFollowingCount !== 'undefined') {
-                     currentUserFollowingEl.textContent = newFollowingCount.toLocaleString();
-                }
 
                 if (isFollowing) {
                     followButton.innerHTML = `<i class="fa-solid fa-user-check"></i> Following`;
@@ -253,29 +256,43 @@
         async function loadPage() {
             try {
                 const username = new URLSearchParams(window.location.search).get('user');
-                if (!username) { profileContainer.innerHTML = `<div class="not-found">No user specified.</div>`; return; }
+                if (!username) { 
+                    profileContainer.innerHTML = `<div class="not-found">No user specified.</div>`; 
+                    return; 
+                }
 
                 const { data: { user: currentUser } } = await supabase.auth.getUser();
                 
-                // --- THIS IS THE FIX ---
-                // Switched from .ilike() to .eq() for a precise, case-insensitive match (assuming CITEXT column)
-                let { data: profile, error: profileError } = await supabase.from('profiles').select('*').eq('username', username).single();
+                // Fixed profile lookup
+                let { data: profile, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('username', username)
+                    .single();
+                    
                 if (profileError || !profile) { 
                     console.error("Profile fetch error:", profileError);
                     profileContainer.innerHTML = `<div class="not-found">User "${username}" not found.</div>`; 
                     return; 
                 }
 
+                // Increment view count if viewing someone else's profile
                 if (currentUser && currentUser.id !== profile.id) {
                     supabase.rpc('increment_view_count', { profile_id_to_update: profile.id }).then();
                 }
                 
-                const { data: packs, error: packsError } = await supabase.from('packs').select('*').eq('user_id', profile.id).order('created_at', { ascending: false });
+                const { data: packs, error: packsError } = await supabase
+                    .from('packs')
+                    .select('*')
+                    .eq('user_id', profile.id)
+                    .order('created_at', { ascending: false });
+                    
                 if (packsError) console.error(packsError);
                 
-                renderDashboard(profile, packs || []);
+                renderDashboard(profile, packs || [], currentUser);
                 await setupFollowSystem(profile, currentUser);
 
+                // Show upload button for own profile
                 if (currentUser && currentUser.id === profile.id) {
                     const uploadBtn = document.querySelector('.upload-btn');
                     if (uploadBtn) uploadBtn.style.display = 'grid';
@@ -286,10 +303,131 @@
                 profileContainer.innerHTML = `<div class="not-found">An error occurred while loading the profile.</div>`;
             }
         }
+
+        function renderUserDropdown(profile) {
+            const avatarContent = profile.avatar_url 
+                ? `<img src="${profile.avatar_url}" alt="Avatar" class="nav-avatar-img">` 
+                : `<img src="https://placehold.co/28x28/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}" class="nav-avatar-img">`;
+            
+            const navActions = document.getElementById('nav-actions');
+            if (navActions) {
+                navActions.innerHTML = `
+                    <a class="btn ghost" href="/">Home</a>
+                    <a class="btn ghost" href="/texturepacks.html">Texture Packs</a>
+                    <div class="user-dropdown">
+                        <button class="user-menu-btn">
+                            ${avatarContent}
+                            <span>${profile.username || 'User'}</span>
+                            <div class="user-stats">
+                                <span>${(profile.followers_count || 0).toLocaleString()} followers</span>
+                                <span>${(profile.following_count || 0).toLocaleString()} following</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <div class="dropdown-content">
+                            <a href="/profile.html?user=${profile.username}">
+                                <i class="fa-solid fa-user"></i> Profile
+                            </a>
+                            <a href="/settings.html">
+                                <i class="fa-solid fa-cog"></i> Settings
+                            </a>
+                            <a href="#" id="logout-btn">
+                                <i class="fa-solid fa-sign-out-alt"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                `;
+
+                // Dropdown functionality
+                const btn = navActions.querySelector('.user-menu-btn');
+                const content = navActions.querySelector('.dropdown-content');
+
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    content.classList.toggle('show');
+                });
+
+                // Logout functionality
+                document.getElementById('logout-btn').addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    try {
+                        await supabase.auth.signOut();
+                        window.location.href = '/';
+                    } catch (error) {
+                        console.error('Logout error:', error);
+                    }
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.user-dropdown')) {
+                        content.classList.remove('show');
+                    }
+                });
+            }
+        }
+
+        function renderLoginButtons() {
+            const navActions = document.getElementById('nav-actions');
+            if (navActions) {
+                navActions.innerHTML = `
+                    <a class="btn ghost" href="/">Home</a>
+                    <a class="btn ghost" href="/texturepacks.html">Texture Packs</a>
+                    <a class="btn primary" href="/login.html">
+                        <i class="fa-solid fa-sign-in-alt"></i>
+                        Login
+                    </a>
+                `;
+            }
+        }
+
+        // Initialize auth state and load profile
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (session) {
+                    // Get current user profile for navigation
+                    const { data: currentProfile } = await supabase
+                        .from('profiles')
+                        .select('*')
+                        .eq('id', session.user.id)
+                        .single();
+                    
+                    if (currentProfile) {
+                        renderUserDropdown(currentProfile);
+                    }
+                } else {
+                    renderLoginButtons();
+                }
+                
+                // Load the profile page
+                await loadPage();
+                
+            } catch (error) {
+                console.error('Auth state error:', error);
+                renderLoginButtons();
+                await loadPage();
+            }
+        });
+
+        // Listen for auth changes
+        supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_OUT') {
+                renderLoginButtons();
+            } else if (event === 'SIGNED_IN' && session) {
+                const { data: currentProfile } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .single();
+                
+                if (currentProfile) {
+                    renderUserDropdown(currentProfile);
+                }
+            }
+        });
         
-        document.addEventListener('auth-ready', loadPage);
     </script>
-    <script type="module" src="/auth.js"></script>
 </body>
 </html>
-
