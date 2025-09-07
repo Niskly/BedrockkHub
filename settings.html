@@ -290,7 +290,7 @@
 
     <!-- Main Content -->
     <main class="container" id="settings-container">
-        <div class="loading-container"><div class="spinner"></div><p>Loading Settings...</p></div>
+        <div class="loading-container"><div class="spinner"></div><p>Authenticating...</p></div>
     </main>
 
     <!-- Cropper Modal -->
@@ -325,8 +325,8 @@
         </div>
     </div>
 
+    <!-- This script now only contains logic SPECIFIC to the settings page -->
     <script type="module">
-        // Initialize Supabase
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
@@ -335,7 +335,7 @@
         // Xbox/OpenXBL configuration
         const OPENXBL_PUBLIC_KEY = 'd396b4fc-75dc-2371-1a68-aa0b6665e135';
         
-        // Global state
+        // Global state for this page
         let currentUser, currentProfile, isProcessing = false;
         let avatarBlob, bannerBlob, cropper, cropCallback, confirmCallback;
         
@@ -1049,13 +1049,15 @@
                     async () => {
                         showLoading('Deleting account...');
                         try {
-                            // This would need to be implemented as an edge function
-                            // For now, just sign out
+                            // IMPORTANT: Secure account deletion requires a server-side (Edge) function.
+                            // This is a placeholder that only signs out the user.
+                            // const { error } = await supabase.functions.invoke('delete-user');
+                            // if (error) throw error;
                             await supabase.auth.signOut();
-                            showToast('Account deletion initiated', 'success');
+                            showToast('Account deletion initiated. You have been signed out.', 'success');
                             window.location.href = '/';
                         } catch (error) {
-                            showToast('Failed to delete account', 'error');
+                            showToast('Failed to delete account. ' + error.message, 'error');
                         } finally {
                             hideLoading();
                         }
@@ -1067,6 +1069,7 @@
         // === XBOX CONNECTION ===
         function renderXboxConnection(profile) {
             const container = document.getElementById('xbox-connection');
+            if(!container) return; // Guard clause if the element doesn't exist yet
             const btn = container.querySelector('#xbox-link-btn');
             
             if (profile.bedrock_gamertag) {
@@ -1076,11 +1079,16 @@
                         <i class="fa-brands fa-xbox" style="color: #107C10;"></i>
                         <span>Connected: ${profile.bedrock_gamertag}</span>
                     </div>
-                    <button type="button" class="unlink-btn" onclick="unlinkXboxConnection()">
+                    <button type="button" class="unlink-btn">
                         <i class="fa-solid fa-unlink"></i>
                         Disconnect
                     </button>
                 `;
+                // Add event listener for the new unlink button
+                btn.querySelector('.unlink-btn').addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent the main button click
+                    unlinkXboxConnection();
+                });
             } else {
                 btn.className = 'btn connection-btn';
                 btn.innerHTML = `
@@ -1094,6 +1102,7 @@
         }
 
         function initiateXboxConnection() {
+            // CRITICAL: You need a bedrock-callback.html file for this to work
             const authUrl = `https://xbl.io/app/auth/${OPENXBL_PUBLIC_KEY}?redirect_uri=${encodeURIComponent(window.location.origin + '/bedrock-callback.html')}`;
             const popup = window.open(authUrl, 'xbox-auth', 'width=600,height=700,scrollbars=yes,resizable=yes');
             
@@ -1117,6 +1126,7 @@
                 try {
                     const { data: { session } } = await supabase.auth.getSession();
                     
+                    // This calls our new serverless function
                     const response = await fetch('/api/link-bedrock', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -1146,8 +1156,8 @@
             window.addEventListener('message', handleMessage);
         }
 
-        window.unlinkXboxConnection = () => {
-            showConfirmation('Disconnect Xbox account? This action cannot be undone.', async () => {
+        function unlinkXboxConnection() {
+            showConfirmation('Disconnect Xbox account? This will remove your gamertag from your profile.', async () => {
                 showLoading('Disconnecting Xbox account...');
                 
                 try {
@@ -1178,22 +1188,14 @@
             console.log('Loading profile for user:', currentUser.id);
             
             try {
+                // The profile is passed from auth.js, but we re-fetch to get the absolute latest data
                 const { data: profileData, error: profileError } = await supabase
                     .from('profiles')
                     .select('*')
                     .eq('id', currentUser.id)
                     .single();
                 
-                if (profileError) {
-                    console.error('Profile loading error:', profileError);
-                    showToast('Failed to load profile data', 'error');
-                    return;
-                }
-                
-                if (!profileData) {
-                    showToast('Profile not found', 'error');
-                    return;
-                }
+                if (profileError) throw profileError;
                 
                 currentProfile = profileData;
                 console.log('Profile loaded successfully:', profileData);
@@ -1299,175 +1301,40 @@
             });
         });
 
-        // === USER DROPDOWN ===
-        function renderUserDropdown(profile) {
-            const avatarContent = profile.avatar_url 
-                ? `<img src="${profile.avatar_url}" alt="Avatar" class="nav-avatar-img">` 
-                : `<img src="https://placehold.co/28x28/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}" class="nav-avatar-img">`;
+        // === INITIALIZATION ===
+        // This is the main entry point for the page, listening for our custom auth event
+        document.addEventListener('auth-ready', async (event) => {
+            const { user, profile, error } = event.detail;
+
+            if (error || !user || !profile) {
+                console.error('Auth error or missing user/profile. Redirecting to login.');
+                // Redirect to login if auth fails or user/profile is missing
+                window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
+                return;
+            }
+
+            console.log('🚀 MCHub Settings Page Initializing...');
+            showLoading('Loading your settings...');
             
-            const navActions = document.getElementById('nav-actions');
-            if (navActions) {
-                navActions.innerHTML = `
-                    <a class="btn ghost" href="/">Home</a>
-                    <a class="btn ghost" href="/texturepacks.html">Texture Packs</a>
-                    <div class="user-dropdown">
-                        <button class="user-menu-btn">
-                            ${avatarContent}
-                            <span>${profile.username || 'User'}</span>
-                            <i class="fa-solid fa-chevron-down"></i>
-                        </button>
-                        <div class="dropdown-content">
-                            <a href="/profile.html?user=${profile.username}">
-                                <i class="fa-solid fa-user"></i> My Profile
-                            </a>
-                            <a href="/settings.html">
-                                <i class="fa-solid fa-cog"></i> Settings
-                            </a>
-                            <a href="#" id="logout-btn">
-                                <i class="fa-solid fa-sign-out-alt"></i> Logout
-                            </a>
-                        </div>
-                    </div>
-                `;
-
-                // Dropdown functionality
-                const btn = navActions.querySelector('.user-menu-btn');
-                const content = navActions.querySelector('.dropdown-content');
-
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    content.classList.toggle('show');
-                });
-
-                // Logout functionality
-                document.getElementById('logout-btn').addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    showLoading('Signing out...');
-                    
-                    try {
-                        await supabase.auth.signOut();
-                        window.location.href = '/';
-                    } catch (error) {
-                        console.error('Logout error:', error);
-                        hideLoading();
-                    }
-                });
-
-                // Close dropdown when clicking outside
-                document.addEventListener('click', (e) => {
-                    if (!e.target.closest('.user-dropdown')) {
-                        content.classList.remove('show');
-                    }
-                });
-            }
-        }
-
-        function renderLoginButtons() {
-            const navActions = document.getElementById('nav-actions');
-            if (navActions) {
-                navActions.innerHTML = `
-                    <a class="btn ghost" href="/">Home</a>
-                    <a class="btn ghost" href="/texturepacks.html">Texture Packs</a>
-                    <a class="btn primary" href="/login.html">
-                        <i class="fa-solid fa-sign-in-alt"></i>
-                        Login
-                    </a>
-                `;
-            }
-        }
-
-        // === AUTH STATE MANAGEMENT ===
-        async function handleAuthState() {
-            console.log('Handling auth state...');
+            currentUser = user;
+            currentProfile = profile;
             
             try {
-                // Get current session
-                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-                
-                if (sessionError) {
-                    console.error('Session error:', sessionError);
-                    throw sessionError;
-                }
-
-                if (session && session.user) {
-                    console.log('User authenticated:', session.user.id);
-                    currentUser = session.user;
-                    
-                    // Render settings page first
-                    renderSettingsPage();
-                    
-                    // Then load profile data
-                    await loadProfile();
-                    
-                    // Finally render navigation
-                    if (currentProfile) {
-                        renderUserDropdown(currentProfile);
-                    }
-                    
-                } else {
-                    console.log('No authenticated user, redirecting to login');
-                    // Redirect to login if not authenticated
-                    window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
-                    return;
-                }
-                
-            } catch (error) {
-                console.error('Auth state error:', error);
-                showToast('Authentication error. Please try signing in again.', 'error');
-                renderLoginButtons();
-                
-                // Redirect to login after a brief delay
-                setTimeout(() => {
-                    window.location.href = '/login.html';
-                }, 2000);
+                // Render the main settings page structure
+                renderSettingsPage();
+                // Then populate it with the latest user data
+                await loadProfile();
+                console.log('✅ Settings page initialized successfully');
+            } catch (initError) {
+                console.error('❌ Failed to initialize settings page:', initError);
+                showToast('Failed to initialize settings page', 'error');
             } finally {
                 hideLoading();
             }
-        }
-
-        // === INITIALIZATION ===
-        document.addEventListener('DOMContentLoaded', async () => {
-            console.log('🚀 MCHub Settings Page Initializing...');
-            
-            // Show loading immediately
-            showLoading('Initializing settings...');
-            
-            try {
-                // Initialize auth state
-                await handleAuthState();
-                
-                console.log('✅ Settings page initialized successfully');
-            } catch (error) {
-                console.error('❌ Failed to initialize settings page:', error);
-                showToast('Failed to initialize settings page', 'error');
-                hideLoading();
-            }
-            
-            // Listen for auth changes
-            supabase.auth.onAuthStateChange((event, session) => {
-                console.log('Auth state changed:', event);
-                
-                if (event === 'SIGNED_OUT') {
-                    window.location.href = '/';
-                } else if (event === 'SIGNED_IN' && session) {
-                    // Reload the page to refresh everything
-                    window.location.reload();
-                }
-            });
         });
 
-        // === WINDOW ERROR HANDLING ===
-        window.addEventListener('error', (e) => {
-            console.error('Global error:', e.error);
-            showToast('An unexpected error occurred', 'error');
-        });
-
-        window.addEventListener('unhandledrejection', (e) => {
-            console.error('Unhandled promise rejection:', e.reason);
-            showToast('An unexpected error occurred', 'error');
-        });
-
-        console.log('🔧 MCHub Settings Module Loaded');
     </script>
+    <!-- The centralized auth script is now included here -->
+    <script type="module" src="auth.js"></script>
 </body>
 </html>
