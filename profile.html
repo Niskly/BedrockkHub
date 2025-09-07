@@ -11,7 +11,7 @@
         :root {
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
             --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
-            --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
+            --brand-2: #b21a22; --shadow-brand: 0 12px D30px rgba(222, 33, 42, .22);
             --border-strong: rgba(255, 255, 255, .2);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -31,7 +31,6 @@
         .btn.ghost { border-color: var(--border); background: transparent; color: var(--text); }
         .tiny { font-size: 11px; color: var(--muted); }
         
-        /* Corrected User Dropdown Styles */
         .user-dropdown { position: relative; display: inline-block; }
         .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
         .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
@@ -49,20 +48,31 @@
         .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; min-height: 60vh; color: var(--muted); }
         .spinner { width: 48px; height: 48px; border: 5px solid var(--border); border-bottom-color: var(--brand-1); border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .profile-header { border-radius: 16px; margin-bottom: 2rem; overflow: hidden; position: relative; }
-        .profile-banner { height: 220px; background-size: cover; background-position: center; }
-        .profile-banner::after { content: ''; position: absolute; bottom: 70px; left: 0; right: 0; height: 80px; background: rgba(18, 18, 18, 0.8); border-bottom: 1px solid var(--border); -webkit-mask: radial-gradient(circle at 50% 1px, transparent 73px, black 74px); mask: radial-gradient(circle at 50% 1px, transparent 73px, black 74px); }
-        .profile-details { padding: 1rem 1.5rem; display: flex; align-items: flex-end; justify-content: space-between; position: relative; z-index: 2; flex-wrap: wrap; gap: 1rem; }
-        .profile-meta { display: flex; align-items: center; gap: 1.5rem; margin-top: -100px; }
-        .profile-avatar { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #161616; }
-        .pfp-placeholder { width: 140px; height: 140px; border-radius: 50%; border: 4px solid #161616; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); }
+
+        /* --- PROFILE HEADER REDESIGN --- */
+        .profile-header { border-radius: 16px; margin-bottom: 2rem; }
+        .profile-banner-container { height: 250px; background-size: cover; background-position: center; border-radius: 16px 16px 0 0; position: relative; border-bottom: 1px solid var(--border); }
+        .social-links { position: absolute; bottom: 1rem; right: 1rem; display: flex; gap: 0.75rem; }
+        .social-link { display: grid; place-items: center; width: 36px; height: 36px; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); color: white; border-radius: 8px; font-size: 1.1rem; transition: all 0.2s ease; }
+        .social-link:hover { background: var(--brand-1); transform: scale(1.1); }
+        
+        .profile-details { padding: 1rem 1.5rem 1.5rem; display: flex; flex-direction: column; position: relative; }
+        .profile-main { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; margin-top: -80px; }
+        .profile-meta { display: flex; align-items: flex-end; gap: 1.5rem; }
+        .profile-avatar { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 5px solid var(--bg-1); }
+        .pfp-placeholder { width: 140px; height: 140px; border-radius: 50%; border: 5px solid var(--bg-1); display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); }
         .pfp-placeholder span { font-size: 5rem; font-weight: 800; color: white; }
-        .profile-main-info h1 { font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, var(--brand-1), #ff525a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .profile-main-top-row { display: flex; align-items: center; gap: 1.5rem; }
-        .profile-bio { color: var(--muted); margin-top: 0.5rem; max-width: 500px; line-height: 1.5; font-size: 13px; }
-        .header-stats { display: flex; gap: 1.2rem; align-items: center; }
-        .stat-item { text-align: left; display: flex; align-items: center; gap: 6px;}
-        .stat-item span { font-size: 1rem; font-weight: 700; color: var(--text); }
+        
+        .profile-info h1 { font-size: 2.2rem; font-weight: 900; background: linear-gradient(135deg, var(--brand-1), #ff525a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1.1; }
+        .profile-info p { color: var(--muted); font-weight: 600; }
+        
+        .profile-actions { display: none; }
+        .profile-stats-bio { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+        .header-stats { display: flex; gap: 1.5rem; align-items: center; }
+        .stat-item { text-align: left; display: flex; align-items: center; gap: 8px; color: var(--muted); font-weight: 600; }
+        .stat-item span { font-size: 1.1rem; font-weight: 800; color: var(--text); }
+        .profile-bio { color: var(--muted); max-width: 600px; line-height: 1.5; font-size: 14px; }
+
         .profile-content-grid { display: grid; grid-template-columns: 300px 1fr; gap: 1.5rem; align-items: flex-start; }
         .card { border-radius: 16px; }
         .card-body { padding: 1.2rem; }
@@ -73,8 +83,6 @@
         .packs-header { display: flex; justify-content: space-between; align-items: center; }
         .upload-btn { height: 36px; width: 36px; border-radius: 10px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); color: white; font-size: 1rem; cursor: pointer; }
         
-        /* --- THIS IS THE FIX --- */
-        /* Corrected styles for the packs grid */
         .packs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 1.2rem; }
         .pack-card { background: var(--bg-1); border-radius: 16px; overflow: hidden; transition: all 0.2s; border: 1px solid transparent; }
         .pack-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.2); box-shadow: 0 10px 30px rgba(0, 0, 0, .4); }
@@ -106,6 +114,27 @@
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const profileContainer = document.getElementById('profile-container');
 
+        // --- NEW: Renders social link icons ---
+        function renderSocialLinks(socialLinks) {
+            if (!socialLinks) return '';
+            const iconMap = {
+                discord: 'fa-brands fa-discord',
+                spotify: 'fa-brands fa-spotify',
+                reddit: 'fa-brands fa-reddit-alien',
+                google: 'fa-brands fa-google',
+                website: 'fa-solid fa-globe' // Generic icon for other URLs
+            };
+            let html = '';
+            for (const [key, value] of Object.entries(socialLinks)) {
+                if (value) {
+                    const icon = iconMap[key] || iconMap.website;
+                    const url = key === 'discord' ? `https://discord.com/users/${value}` : value;
+                    html += `<a href="${url}" target="_blank" class="social-link" title="${key.charAt(0).toUpperCase() + key.slice(1)}"><i class="${icon}"></i></a>`;
+                }
+            }
+            return html;
+        }
+
         function renderPackCard(p) {
             const card = document.createElement('div');
             card.className = 'pack-card';
@@ -126,40 +155,41 @@
             const pfpHtml = profile.avatar_url
                 ? `<img src="${profile.avatar_url}" alt="${profile.username}'s avatar" class="profile-avatar">`
                 : `<div class="pfp-placeholder"><span>${(profile.username || '?').charAt(0).toUpperCase()}</span></div>`;
-
-            let bedrockHtml;
-            if (profile.bedrock_gamertag) {
-                bedrockHtml = `
-                    <div class="bedrock-display">
+            
+            const bedrockHtml = profile.bedrock_gamertag
+                ? `<div class="bedrock-display">
                         <img src="${profile.bedrock_gamerpic_url}" alt="${profile.bedrock_gamertag}" class="bedrock-gamerpic">
                         <span class="bedrock-gamertag">${profile.bedrock_gamertag}</span>
-                    </div>`;
-            } else {
-                bedrockHtml = `<p class="tiny" style="text-align:center;">No Bedrock account linked.</p>`;
-            }
+                   </div>`
+                : `<p class="tiny" style="text-align:center;">No Bedrock account linked.</p>`;
 
-            // --- THIS IS THE FIX ---
-            // Re-added the follower counts, following count, and follow button HTML
+            const socialLinksHtml = renderSocialLinks(profile.social_links);
+
             profileContainer.innerHTML = `
                 <div class="profile-header glassy">
-                    <div class="profile-banner" style="background-image: url('${profile.banner_url || 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/default-banner.png'}')"></div>
+                    <div class="profile-banner-container" style="background-image: url('${profile.banner_url || 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/default-banner.png'}')">
+                        <div class="social-links">${socialLinksHtml}</div>
+                    </div>
                     <div class="profile-details">
-                        <div class="profile-meta">
-                            <div class="profile-avatar-wrapper">${pfpHtml}</div>
-                            <div class="profile-main-info">
-                                <div class="profile-main-top-row">
+                        <div class="profile-main">
+                            <div class="profile-meta">
+                                ${pfpHtml}
+                                <div class="profile-info">
                                     <h1>${profile.username || 'Unnamed'}</h1>
-                                    <div class="header-stats">
-                                        <div class="stat-item"><i class="fa-solid fa-eye"></i><span>${(profile.view_count || 0).toLocaleString()}</span></div>
-                                        <div class="stat-item"><i class="fa-solid fa-users"></i><span id="follower-count">${(profile.followers_count || 0).toLocaleString()}</span></div>
-                                        <div class="stat-item"><i class="fa-solid fa-user-plus"></i><span id="following-count">${(profile.following_count || 0).toLocaleString()}</span></div>
-                                    </div>
+                                    <p>@${profile.username || 'unknown'}</p>
                                 </div>
-                                <p class="profile-bio">${profile.bio || "This user hasn't written a bio yet."}</p>
+                            </div>
+                            <div class="profile-actions">
+                                <button class="btn primary follow-btn"><i class="fa-solid fa-user-plus"></i> Follow</button>
                             </div>
                         </div>
-                        <div class="profile-actions" style="display: none;">
-                            <button class="btn primary follow-btn"><i class="fa-solid fa-user-plus"></i> Follow</button>
+                        <div class="profile-stats-bio">
+                            <div class="header-stats">
+                                <div class="stat-item"><span>${(profile.view_count || 0).toLocaleString()}</span> Views</div>
+                                <div class="stat-item"><span id="follower-count">${(profile.followers_count || 0).toLocaleString()}</span> Followers</div>
+                                <div class="stat-item"><span id="following-count">${(profile.following_count || 0).toLocaleString()}</span> Following</div>
+                            </div>
+                            <p class="profile-bio">${profile.bio || "This user hasn't written a bio yet."}</p>
                         </div>
                     </div>
                 </div>
@@ -203,28 +233,50 @@
             }
             profileActionsContainer.style.display = 'block';
 
-            const { data } = await supabase.from('followers').select('*').eq('follower_id', currentUser.id).eq('following_id', profile.id);
-            let isFollowing = data && data.length > 0;
+            const { data } = await supabase.from('followers').select('*').eq('follower_id', currentUser.id).eq('following_id', profile.id).maybeSingle();
+            let isFollowing = !!data;
             
-            function updateButtonState(count) {
-                document.getElementById('follower-count').textContent = count.toLocaleString();
+            function updateButtonState() {
                 if (isFollowing) {
                     followButton.innerHTML = `<i class="fa-solid fa-user-check"></i> Following`;
                     followButton.classList.remove('primary');
+                    followButton.classList.add('ghost');
                 } else {
                     followButton.innerHTML = `<i class="fa-solid fa-user-plus"></i> Follow`;
                     followButton.classList.add('primary');
+                    followButton.classList.remove('ghost');
                 }
             }
-            updateButtonState(profile.followers_count || 0);
+            updateButtonState();
 
             followButton.addEventListener('click', async () => {
                 followButton.disabled = true;
                 const rpcToCall = isFollowing ? 'unfollow_user' : 'follow_user';
-                await supabase.rpc(rpcToCall, { [`user_to_${isFollowing ? 'unfollow' : 'follow'}_id`]: profile.id });
-                const { data: updatedProfile } = await supabase.from('profiles').select('followers_count').eq('id', profile.id).single();
+                
+                // --- FIX: RPC calls should update both follower and following counts ---
+                // NOTE: For this to work, your Supabase RPC functions 'follow_user' and 'unfollow_user'
+                // must be updated to modify BOTH the target user's 'followers_count'
+                // AND the current user's 'following_count'.
+                const { error } = await supabase.rpc(rpcToCall, { user_id: profile.id });
+
+                if (error) {
+                    console.error('Follow/unfollow error:', error);
+                    followButton.disabled = false;
+                    return;
+                }
+
+                const followerCountEl = document.getElementById('follower-count');
+                let currentFollowers = parseInt(followerCountEl.textContent.replace(/,/g, ''), 10);
+                
                 isFollowing = !isFollowing;
-                updateButtonState(updatedProfile.followers_count);
+
+                if(isFollowing) {
+                    followerCountEl.textContent = (currentFollowers + 1).toLocaleString();
+                } else {
+                    followerCountEl.textContent = (currentFollowers - 1).toLocaleString();
+                }
+
+                updateButtonState();
                 followButton.disabled = false;
             });
         }
@@ -236,11 +288,28 @@
 
                 const { data: { user: currentUser } } = await supabase.auth.getUser();
                 
-                let { data: profile, error: profileError } = await supabase.from('profiles').select('*').ilike('username', username).single();
-                if (profileError || !profile) { profileContainer.innerHTML = `<div class="not-found">User "${username}" not found.</div>`; return; }
+                // Fetch profile with all counts
+                let { data: profile, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('*, followers_count:followers(count), following_count:following(count)')
+                    .ilike('username', username)
+                    .single();
+
+                if (profileError || !profile) { 
+                    console.error(profileError);
+                    profileContainer.innerHTML = `<div class="not-found">User "${username}" not found.</div>`; 
+                    return; 
+                }
+
+                // Temporary fix for count aggregation if needed. Replace with correct column names if they are different.
+                profile.followers_count = profile.followers_count?.[0]?.count ?? 0;
+                profile.following_count = profile.following_count?.[0]?.count ?? 0;
+
 
                 if (currentUser && currentUser.id !== profile.id) {
-                    supabase.rpc('increment_view_count', { profile_id_to_update: profile.id }).then();
+                    supabase.rpc('increment_view_count', { profile_id_to_update: profile.id }).then(({error}) => {
+                        if(error) console.error('View count error', error);
+                    });
                 }
                 
                 const { data: packs, error: packsError } = await supabase.from('packs').select('*').eq('user_id', profile.id).order('created_at', { ascending: false });
@@ -256,7 +325,7 @@
 
             } catch (error) {
                 console.error("Critical error:", error);
-                profileContainer.innerHTML = `<div class="not-found">An error occurred.</div>`;
+                profileContainer.innerHTML = `<div class="not-found">An error occurred while loading the profile.</div>`;
             }
         }
         
