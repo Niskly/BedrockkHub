@@ -20,7 +20,7 @@
         header { position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(1.2) blur(10px); background: rgba(12, 12, 12, 0.7); border-bottom: 1px solid var(--border); }
         .nav { max-width: 1200px; margin: 0 auto; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
         .brand { display: flex; align-items: center; gap: .8rem; }
-        .brand-badge { height: 44px; width: 44px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); }
+        .brand-badge { height: 44px; width: 44px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); flex-shrink: 0; }
         .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-13px); }
         .brand-title { font-weight: 800; letter-spacing: .6px; }
         .nav-actions { display: flex; align-items: center; gap: .6rem; }
@@ -29,7 +29,17 @@
         .btn:disabled { opacity: 0.7; cursor: not-allowed; }
         .tiny { font-size: 12px; color: var(--muted); }
         
-        /* New Styles for Settings Page */
+        /* --- FIX: User Dropdown styles added for navbar --- */
+        .user-dropdown { position: relative; display: inline-block; }
+        .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
+        .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+        .user-menu-btn .fa-chevron-down { font-size: 0.8em; }
+        .user-menu-btn:hover { border-color: var(--border-strong); }
+        .dropdown-content { display: none; position: absolute; right: 0; top: 110%; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; }
+        .dropdown-content.show { display: block; }
+        .dropdown-content a { color: var(--muted); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 600; }
+        .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
+
         .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; opacity: 0; transition: opacity 0.4s ease-out; }
         .container.loaded { opacity: 1; }
         .settings-layout { display: grid; grid-template-columns: 220px 1fr; gap: 2rem; align-items: flex-start; }
@@ -58,17 +68,16 @@
         .input-with-icon i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--muted); }
         .input-with-icon .input { padding-left: 2.5rem; }
         
-        /* File Upload Styles */
         .image-upload-container { display: flex; align-items: center; gap: 1.5rem; }
         .image-preview { border-radius: 50%; object-fit: cover; border: 3px solid var(--border); }
         .image-preview.avatar { width: 100px; height: 100px; }
         .image-preview.banner { width: 100%; height: 120px; border-radius: 10px; margin-bottom: 1rem; }
         .upload-actions { display: flex; flex-direction: column; gap: 0.5rem; }
         
-        /* Links Tab Styles */
         .social-link-group { display: flex; flex-direction: column; gap: 1rem; }
         .connection-btn { background: var(--bg-2); border: 1px solid var(--border); padding: .75rem 1rem; width: 100%; justify-content: flex-start; }
-        .connection-btn.linked { background: var(--success); color: white; border-color: var(--success); }
+        .connection-btn.linked { display: flex; align-items: center; justify-content: space-between; }
+        .connection-btn .unlink-btn { background: var(--danger); color: white; padding: .4rem .8rem; font-size: .8rem; }
         .connection-btn i { font-size: 1.2rem; width: 20px; text-align: center; margin-right: 10px; }
         
         #toast-container { position: fixed; top: 80px; right: 20px; z-index: 1000; }
@@ -123,7 +132,10 @@
                                 <div class="form-group">
                                     <label>Profile Banner</label>
                                     <img id="banner-preview" src="https://placehold.co/600x120/1c1c1c/a8b3cf?text=..." class="image-preview banner">
-                                    <button type="button" class="btn" onclick="document.getElementById('banner-upload').click();"><i class="fa-solid fa-upload"></i> Upload Banner</button>
+                                    <div style="display:flex; gap: 0.5rem; margin-top: 1rem;">
+                                        <button type="button" class="btn" onclick="document.getElementById('banner-upload').click();"><i class="fa-solid fa-upload"></i> Upload Banner</button>
+                                        <button type="button" class="btn" id="remove-banner-btn"><i class="fa-solid fa-trash"></i> Remove Banner</button>
+                                    </div>
                                     <input type="file" id="banner-upload" accept="image/png, image/jpeg" style="display: none;">
                                 </div>
                                 <div class="form-group">
@@ -138,7 +150,6 @@
                                 </div>
                             </div>
                             <div class="card-footer">
-                                <span id="profile-form-status" class="tiny"></span>
                                 <button type="submit" class="btn primary">Save Profile</button>
                             </div>
                         </div>
@@ -182,7 +193,6 @@
                                </div>
                             </div>
                              <div class="card-footer">
-                                 <span id="links-form-status" class="tiny"></span>
                                 <button type="submit" class="btn primary">Save Links</button>
                             </div>
                         </div>
@@ -242,14 +252,12 @@
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        // --- FIX: Re-added the OpenXBL Public Key ---
         const OPENXBL_PUBLIC_KEY = 'd396b4fc-75dc-2371-1a68-aa0b6665e135';
         
         let currentUser = null;
         let currentProfile = null;
         let isLoading = false;
         
-        // --- UTILITY FUNCTIONS ---
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -284,7 +292,6 @@
             });
         }
 
-        // --- TAB SWITCHING LOGIC ---
         const tabs = document.querySelectorAll('.tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
         tabs.forEach(tab => {
@@ -297,7 +304,6 @@
             });
         });
 
-        // --- DATA LOADING ---
         async function loadInitialData() {
             if (!currentUser) return;
             try {
@@ -324,7 +330,7 @@
             }
         }
 
-        // --- PROFILE TAB LOGIC (Image Uploads & Bio) ---
+        // --- PROFILE TAB LOGIC ---
         const avatarUpload = document.getElementById('avatar-upload');
         const bannerUpload = document.getElementById('banner-upload');
         let newAvatarFile = null;
@@ -339,89 +345,113 @@
             if (newBannerFile) document.getElementById('banner-preview').src = URL.createObjectURL(newBannerFile);
         });
         
-        document.getElementById('remove-avatar-btn').addEventListener('click', async () => { /* Logic to remove avatar */ });
+        // --- FIX: Added working remove avatar/banner logic ---
+        document.getElementById('remove-avatar-btn').addEventListener('click', async () => {
+             if (isLoading) return; isLoading = true;
+             try {
+                const { error } = await supabase.from('profiles').update({ avatar_url: null }).eq('id', currentUser.id);
+                if (error) throw error;
+                showToast('Avatar removed.');
+                await loadInitialData();
+            } catch(e) { showToast(e.message, 'error'); } finally { isLoading = false; }
+        });
+        document.getElementById('remove-banner-btn').addEventListener('click', async () => {
+             if (isLoading) return; isLoading = true;
+             try {
+                const { error } = await supabase.from('profiles').update({ banner_url: null }).eq('id', currentUser.id);
+                if (error) throw error;
+                showToast('Banner removed.');
+                await loadInitialData();
+            } catch(e) { showToast(e.message, 'error'); } finally { isLoading = false; }
+        });
 
         handleFormSubmit(document.getElementById('profile-form'), async () => {
-            let avatar_url = currentProfile.avatar_url;
-            let banner_url = currentProfile.banner_url;
-
+            let updates = { bio: document.getElementById('bio').value.trim() };
             if (newAvatarFile) {
                 const filePath = `public/${currentUser.id}/avatar-${Date.now()}`;
-                const { data, error } = await supabase.storage.from('avatars').upload(filePath, newAvatarFile);
+                const { data, error } = await supabase.storage.from('avatars').upload(filePath, newAvatarFile, { upsert: true });
                 if (error) throw new Error('Avatar upload failed: ' + error.message);
                 const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(data.path);
-                avatar_url = publicUrl;
+                updates.avatar_url = publicUrl;
             }
             if (newBannerFile) {
                 const filePath = `public/${currentUser.id}/banner-${Date.now()}`;
-                const { data, error } = await supabase.storage.from('banners').upload(filePath, newBannerFile);
+                const { data, error } = await supabase.storage.from('banners').upload(filePath, newBannerFile, { upsert: true });
                 if (error) throw new Error('Banner upload failed: ' + error.message);
                 const { data: { publicUrl } } = supabase.storage.from('banners').getPublicUrl(data.path);
-                banner_url = publicUrl;
+                updates.banner_url = publicUrl;
             }
 
-            const { error } = await supabase.from('profiles').update({
-                bio: document.getElementById('bio').value.trim(),
-                avatar_url,
-                banner_url
-            }).eq('id', currentUser.id);
+            const { error } = await supabase.from('profiles').update(updates).eq('id', currentUser.id);
             if (error) throw error;
             showToast('Profile updated successfully!');
+            newAvatarFile = null; newBannerFile = null;
             await loadInitialData();
         });
 
-        // --- LINKS TAB LOGIC (Social & Bedrock) ---
+        // --- LINKS TAB LOGIC ---
         function renderBedrockLinker(profile) {
             const container = document.getElementById('bedrock-link-container');
             if (profile.bedrock_gamertag) {
                  container.innerHTML = `
-                    <button type="button" class="btn connection-btn linked">
-                        <i class="fa-brands fa-xbox" style="color:white;"></i>
-                        Linked as ${profile.bedrock_gamertag}
-                    </button>`;
+                    <div class="btn connection-btn linked">
+                        <span><i class="fa-brands fa-xbox" style="color:white;"></i> Linked as ${profile.bedrock_gamertag}</span>
+                        <button type="button" class="btn unlink-btn" id="unlink-bedrock-btn"><i class="fa-solid fa-unlink"></i> Unlink</button>
+                    </div>`;
+                document.getElementById('unlink-bedrock-btn').addEventListener('click', unlinkBedrockAccount);
             } else {
                 container.innerHTML = `
                     <button type="button" class="btn connection-btn" id="link-bedrock-btn">
                          <i class="fa-brands fa-xbox" style="color:#107C10;"></i> Link Xbox Account
                     </button>`;
-                // --- FIX: Re-attached the event listener ---
                 document.getElementById('link-bedrock-btn').addEventListener('click', handleBedrockLink);
             }
         }
         
-        // --- FIX: Re-added the Bedrock linking logic ---
+        async function unlinkBedrockAccount() {
+            if (isLoading) return;
+            isLoading = true;
+            const btn = document.getElementById('unlink-bedrock-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<div class="spinner-sm"></div>`; btn.disabled = true;
+            try {
+                const { error } = await supabase.from('profiles').update({ xuid: null, bedrock_gamertag: null, bedrock_gamerpic_url: null }).eq('id', currentUser.id);
+                if (error) throw error;
+                showToast('Bedrock account unlinked!');
+                await loadInitialData();
+            } catch (error) {
+                showToast(error.message, 'error');
+                btn.innerHTML = originalText; btn.disabled = false;
+            } finally {
+                isLoading = false;
+            }
+        }
+
         function handleBedrockLink() {
             if (isLoading) return;
             const baseUrl = window.location.origin;
             const callbackUrl = `${baseUrl}/bedrock-callback.html`;
             const authUrl = `https://xbl.io/app/auth/${OPENXBL_PUBLIC_KEY}?redirect_uri=${encodeURIComponent(callbackUrl)}`;
             
-            const linkBtn = document.getElementById('link-bedrock-btn');
-            const originalContent = linkBtn.innerHTML;
-            
             const popup = window.open(authUrl, 'bedrock-auth', 'width=600,height=700');
-            if (!popup) {
-                showToast('Please allow popups for this site.', 'error');
-                return;
-            }
+            if (!popup) { showToast('Please allow popups for this site.', 'error'); return; }
 
             const handleMessage = async (event) => {
                 if (event.origin !== window.location.origin) return;
-                
                 window.removeEventListener('message', handleMessage);
+                const linkBtn = document.getElementById('link-bedrock-btn');
+                const originalContent = linkBtn.innerHTML;
                 isLoading = true;
                 linkBtn.disabled = true;
                 linkBtn.innerHTML = '<div class="spinner-sm"></div> Verifying...';
 
-                if (event.data.type === 'BEDROCK_AUTH_ERROR') {
-                    showToast(`Authentication failed: ${event.data.message}`, 'error');
+                if (event.data.type === 'BEDROCK_AUTH_ERROR' || event.data.type !== 'BEDROCK_AUTH_SUCCESS') {
+                    showToast(`Authentication failed: ${event.data.message || 'Unknown error.'}`, 'error');
+                    isLoading = false;
                     linkBtn.disabled = false;
                     linkBtn.innerHTML = originalContent;
-                    isLoading = false;
                     return;
                 }
-                
-                if (event.data.type !== 'BEDROCK_AUTH_SUCCESS') return;
                 
                 try {
                     const { data: { session } } = await supabase.auth.getSession();
@@ -430,12 +460,16 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ mchub_token: session.access_token, xbl_token: event.data.token })
                     });
+                    // --- FIX: Improved error handling from API ---
                     const result = await response.json();
-                    if (!response.ok) throw new Error(result.error || 'Failed to link account');
+                    if (!response.ok) throw new Error(result.details || result.error || 'Failed to link account');
+
                     showToast(`Account "${result.bedrock_gamertag}" linked successfully!`);
                     await loadInitialData();
                 } catch (error) {
                     showToast(error.message, 'error');
+                    linkBtn.disabled = false;
+                    linkBtn.innerHTML = originalContent;
                 } finally {
                     isLoading = false;
                 }
