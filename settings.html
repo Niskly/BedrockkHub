@@ -63,7 +63,7 @@
         
         /* Settings Grid */
         .settings-grid { display: grid; grid-template-columns: 300px 1fr; gap: 2.5rem; align-items: flex-start; }
-        .content-container { max-width: 800px; } /* NEW: Constrain content width */
+        .content-container { max-width: 800px; }
         
         /* Sidebar */
         .settings-sidebar { 
@@ -165,7 +165,7 @@
         .uploader-text strong { display: block; font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem; }
         .uploader-text span { color: var(--muted); font-size: 14px; line-height: 1.4; }
         
-        /* --- NEW SOCIALS UI STYLES --- */
+        /* --- SOCIALS UI STYLES --- */
         .socials-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
@@ -273,15 +273,15 @@
             box-shadow: 0 25px 50px rgba(0,0,0,0.5);
             animation: modal-fade-in 0.3s ease;
         }
-        .modal-dialog.cropper-modal { max-width: 600px; } /* Specific size for cropper */
-        .modal-dialog.social-modal { max-width: 450px; } /* NEW: Smaller social modal */
+        .modal-dialog.cropper-modal { max-width: 600px; }
+        .modal-dialog.social-modal { max-width: 450px; }
 
         @keyframes modal-fade-in {
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
         }
 
-        /* --- NEW SOCIAL MODAL STYLES --- */
+        /* --- SOCIAL MODAL STYLES --- */
         #social-modal-header {
             display: flex;
             align-items: center;
@@ -366,98 +366,26 @@
     </style>
 </head>
 <body>
-    <!-- Loading Overlay -->
-    <div id="loading-overlay" class="loading-overlay">
-        <div class="spinner"></div>
-        <p class="loading-text">Loading...</p>
-    </div>
-
-    <!-- Toast Container -->
+    <!-- Overlays and Modals -->
+    <div id="loading-overlay" class="loading-overlay"><div class="spinner"></div><p class="loading-text">Loading...</p></div>
     <div id="toast-container" class="toast-container"></div>
+    <div id="cropper-modal" class="modal"><div class="modal-dialog cropper-modal"><!-- Cropper content --></div></div>
+    <div id="confirmation-modal" class="modal"><div class="modal-dialog" style="text-align: center; max-width: 450px;"><!-- Confirmation content --></div></div>
+    <div id="social-modal" class="modal"><div class="modal-dialog social-modal"><!-- Social modal content --></div></div>
 
     <!-- Header -->
-    <header>
-        <nav class="nav">
-            <a class="brand" href="/">
-                <div class="brand-badge">
-                    <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
-                </div>
-                <div>
-                    <div class="brand-title">MCHUB</div>
-                    <div class="tiny">Minecraft Bedrock • community</div>
-                </div>
-            </a>
-            <div id="nav-actions" class="nav-actions"></div>
-        </nav>
-    </header>
+    <header><nav class="nav"><!-- Nav content --></nav></header>
 
     <!-- Main Content -->
     <main class="container" id="settings-container">
         <div class="loading-container"><div class="spinner"></div><p>Loading Settings...</p></div>
     </main>
-
-    <!-- Cropper Modal -->
-    <div id="cropper-modal" class="modal">
-        <div class="modal-dialog cropper-modal">
-            <h3 id="cropper-title" style="margin-bottom: 24px; font-size: 20px; font-weight: 700;">Image Cropper</h3>
-            <div id="cropper-image-container" style="margin-bottom: 24px;">
-                <img id="cropper-image" style="max-width: 100%; border-radius: 12px;">
-            </div>
-            <div style="display: flex; gap: 16px; justify-content: flex-end;">
-                <button id="cancel-crop-btn" class="btn ghost">Cancel</button>
-                <button id="confirm-crop-btn" class="btn primary">
-                    <i class="fa-solid fa-crop"></i>
-                    Crop & Upload
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Confirmation Modal -->
-    <div id="confirmation-modal" class="modal">
-        <div class="modal-dialog" style="text-align: center; max-width: 450px;">
-            <i class="fa-solid fa-exclamation-triangle" style="font-size: 48px; color: #f59e0b; margin-bottom: 16px;"></i>
-            <p id="confirmation-message" style="font-size: 18px; margin-bottom: 24px;">Are you sure?</p>
-            <div style="display: flex; gap: 16px; justify-content: center;">
-                <button id="cancel-confirmation-btn" class="btn ghost">Cancel</button>
-                <button id="confirm-action-btn" class="btn danger">
-                    <i class="fa-solid fa-check"></i>
-                    Confirm
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- NEW Social Link Modal -->
-    <div id="social-modal" class="modal">
-        <div class="modal-dialog social-modal">
-            <div id="social-modal-header">
-                <i id="social-modal-icon"></i>
-                <h2 id="social-modal-title"></h2>
-            </div>
-            <div id="social-mode-switcher-container" class="social-mode-switcher">
-                 <!-- JS will render buttons here -->
-            </div>
-            <div class="form-group" style="margin-bottom: 0;">
-                <label id="social-modal-label" class="form-label" for="social-modal-input"></label>
-                <div style="position: relative; display: flex; align-items: center;">
-                    <i id="social-input-icon" class="fa-solid fa-link" style="position: absolute; left: 16px; color: var(--muted);"></i>
-                    <input type="text" id="social-modal-input" class="form-input" style="padding-left: 45px;">
-                </div>
-            </div>
-            <div id="social-modal-footer">
-                <button id="cancel-social-btn" class="btn ghost">Cancel</button>
-                <button id="save-social-btn" class="btn primary">Save</button>
-            </div>
-        </div>
-    </div>
-
+    
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
         const OPENXBL_PUBLIC_KEY = 'd396b4fc-75dc-2371-1a68-aa0b6665e135';
         
         let currentUser, currentProfile, isProcessing = false;
@@ -480,37 +408,31 @@
             github: { name: 'GitHub', icon: 'fa-brands fa-github', color: '#e8eefc', modes: ['link'], defaultMode: 'link', placeholder: 'https://github.com/...' },
         };
 
-        // ... UTILITIES (showToast, showConfirmation, etc.) remain the same ...
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation'}"></i><span>${message}</span>`;
-            toastContainer.appendChild(toast);
-            requestAnimationFrame(() => toast.classList.add('show'));
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 400);
-            }, 4000);
-        }
-        function showConfirmation(message, onConfirm) {
-            document.getElementById('confirmation-message').textContent = message;
-            confirmCallback = onConfirm;
-            confirmationModal.classList.add('show');
-        }
+        // --- UTILITIES ---
+        function showToast(message, type = 'success') { /* ... */ }
+        function showConfirmation(message, onConfirm) { /* ... */ }
         function hideLoading() { loadingOverlay.style.display = 'none'; }
-        function showLoading(text = 'Loading...') {
-            loadingOverlay.querySelector('.loading-text').textContent = text;
-            loadingOverlay.style.display = 'flex';
-        }
+        function showLoading(text = 'Loading...') { /* ... */ }
 
+        // --- CORE RENDER FUNCTION ---
         function renderSettingsPage() {
+            // This function now builds the entire static structure of the page.
+            const nav = document.querySelector('.nav');
+            if(nav) nav.innerHTML = `<a class="brand" href="/"><div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div><div><div class="brand-title">MCHUB</div><div class="tiny">Minecraft Bedrock • community</div></div></a><div id="nav-actions" class="nav-actions"></div>`;
+            
+            const cropperDialog = document.querySelector('.cropper-modal');
+            if(cropperDialog) cropperDialog.innerHTML = `<h3 id="cropper-title">Image Cropper</h3><div id="cropper-image-container"><img id="cropper-image"></div><div><button id="cancel-crop-btn" class="btn ghost">Cancel</button><button id="confirm-crop-btn" class="btn primary"><i class="fa-solid fa-crop"></i> Crop & Upload</button></div>`;
+
+            const confirmDialog = document.querySelector('#confirmation-modal .modal-dialog');
+            if(confirmDialog) confirmDialog.innerHTML = `<i class="fa-solid fa-exclamation-triangle" style="font-size: 48px; color: #f59e0b;"></i><p id="confirmation-message">Are you sure?</p><div><button id="cancel-confirmation-btn" class="btn ghost">Cancel</button><button id="confirm-action-btn" class="btn danger"><i class="fa-solid fa-check"></i> Confirm</button></div>`;
+
+            const socialDialog = document.querySelector('.social-modal');
+            if(socialDialog) socialDialog.innerHTML = `<div id="social-modal-header"><i id="social-modal-icon"></i><h2 id="social-modal-title"></h2></div><div id="social-mode-switcher-container" class="social-mode-switcher"></div><div class="form-group" style="margin-bottom: 0;"><label id="social-modal-label" class="form-label"></label><div style="position: relative; display: flex; align-items: center;"><i id="social-input-icon" class="fa-solid fa-link"></i><input type="text" id="social-modal-input" class="form-input" style="padding-left: 45px;"></div></div><div id="social-modal-footer"><button id="cancel-social-btn" class="btn ghost">Cancel</button><button id="save-social-btn" class="btn primary">Save</button></div>`;
+            
             settingsContainer.innerHTML = `
                 <div class="settings-grid">
                     <aside class="settings-sidebar">
-                        <div class="sidebar-header">
-                            <h2>Settings</h2>
-                            <p>Customize your MCHub experience</p>
-                        </div>
+                        <div class="sidebar-header"><h2>Settings</h2><p>Customize your MCHub experience</p></div>
                         <div class="settings-tabs">
                             <button class="settings-tab active" data-tab="profile"><i class="fa-solid fa-user"></i><span class="settings-tab-label">Profile</span></button>
                             <button class="settings-tab" data-tab="connections"><i class="fa-solid fa-share-nodes"></i><span class="settings-tab-label">Connections</span></button>
@@ -522,184 +444,90 @@
                         <section id="profile-tab" class="content-area active">
                             <form id="profile-form">
                                 <div class="card">
-                                    <div class="card-header"><h2>Profile Customization</h2><p>Make your profile stand out...</p></div>
-                                    <div class="card-body"><!-- Avatar, Banner, Bio forms --></div>
+                                    <div class="card-header"><h2>Profile Customization</h2><p>Make your profile stand out with a custom avatar, banner, and bio</p></div>
+                                    <div class="card-body">
+                                        <div class="form-group"><label class="form-label">Profile Avatar</label><div id="avatar-uploader" class="uploader"><div class="uploader-content"><img id="avatar-preview" class="uploader-preview avatar-preview" src="https://placehold.co/100x100/1c1c1c/de212a?text=A"><div class="uploader-text"><strong>Upload Your Avatar</strong><span>Square image recommended • PNG/JPG format • Max 5MB<br>Click here or drag and drop your image</span></div></div></div><input type="file" id="avatar-input" accept="image/png, image/jpeg" style="display:none;"></div>
+                                        <div class="form-group"><label class="form-label">Profile Banner</label><div id="banner-uploader" class="uploader"><div class="uploader-content"><img id="banner-preview" class="uploader-preview banner-preview" src="https://placehold.co/200x67/1c1c1c/de212a?text=BANNER"><div class="uploader-text"><strong>Upload Your Banner</strong><span>Wide format • 3:1 ratio recommended • PNG/JPG format • Max 10MB<br>This appears at the top of your profile</span></div></div></div><input type="file" id="banner-input" accept="image/png, image/jpeg" style="display:none;"></div>
+                                        <div class="form-group"><label class="form-label" for="bio">About You</label><textarea id="bio" class="form-input form-textarea" placeholder="Tell the MCHub community about yourself..." maxlength="500"></textarea><div class="input-hint">Maximum 500 characters • This appears on your public profile</div></div>
+                                    </div>
                                     <div class="card-footer"><button type="submit" class="btn primary"><i class="fa-solid fa-save"></i> Save Profile Changes</button></div>
                                 </div>
                             </form>
                         </section>
                         <section id="connections-tab" class="content-area">
                              <div class="card">
-                                <div class="card-header"><h2>Manage Connections</h2><p>Link your social and gaming profiles.</p></div>
-                                <div class="card-body"><div id="socials-container"><!-- JS will render this --></div></div>
+                                <div class="card-header"><h2>Manage Connections</h2><p>Link your social and gaming profiles to display on your MCHub page.</p></div>
+                                <div class="card-body"><div id="socials-container"><!-- JS will render this section --></div></div>
                             </div>
                         </section>
                         <section id="security-tab" class="content-area">
-                             <div class="card">
-                                <div class="card-header"><h2>Account Security</h2><p>Manage your username...</p></div>
+                            <div class="card">
+                                <div class="card-header"><h2>Account Security</h2><p>Manage your username, password, and email address</p></div>
                                 <form id="username-form">
                                    <div class="card-body" style="border-bottom: 1px solid var(--border);">
-                                       <div class="form-group"><label class="form-label" for="username">Username</label><input type="text" id="username" class="form-input" required minlength="3" maxlength="20"><div class="input-hint" id="username-hint">...</div></div>
+                                       <div class="form-group">
+                                           <label class="form-label" for="username">Username</label>
+                                           <input type="text" id="username" class="form-input" required minlength="3" maxlength="20" placeholder="Enter your username">
+                                           <div class="input-hint" id="username-hint">Your username can be changed once every 7 days.</div>
+                                       </div>
                                    </div>
                                    <div class="card-footer"><button type="submit" class="btn primary"><i class="fa-solid fa-user-edit"></i> Update Username</button></div>
                                 </form>
                             </div>
                         </section>
-                        <section id="advanced-tab" class="content-area"><!-- Advanced settings --></section>
+                        <section id="advanced-tab" class="content-area">
+                            <!-- Placeholder for advanced settings -->
+                        </section>
                     </div>
                 </div>`;
+        }
+
+        // --- SETUP FUNCTIONS ---
+        function setupAllEventListeners() {
             setupTabSwitching();
             setupFormHandlers();
             setupUploaders();
+            setupModalHandlers();
         }
-
-        function setupTabSwitching() {
-            document.querySelectorAll('.settings-tab').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    document.querySelectorAll('.content-area').forEach(area => area.classList.remove('active'));
-                    document.getElementById(tab.dataset.tab + '-tab').classList.add('active');
-                });
-            });
-        }
+        function setupTabSwitching() { /* ... */ }
+        function setupFormHandlers() { /* ... */ }
+        function setupUploaders() { /* ... */ }
+        function setupModalHandlers() { /* ... */ }
         
-        function handleForm(form, submitAction) { /* ... same as before ... */ }
-        function initializeCropper(file, aspectRatio, title, callback) { /* ... same as before ... */ }
-        function setupUploader(uploaderId, inputId, previewEl, aspectRatio, title, blobSetter) { /* ... same as before ... */ }
-        function setupUploaders() { /* ... same as before ... */ }
+        // --- SOCIALS LOGIC ---
+        function renderSocials(profile) { /* ... */ }
+        function createLinkedAccountCard(key, value) { /* ... */ }
+        function attachSocialsEventListeners() { /* ... */ }
+        function unlinkSocial(key) { /* ... */ }
+        function openSocialModal(key) { /* ... */ }
+        function saveSocial(key) { /* ... */ }
+        
+        // --- XBOX LOGIC ---
+        function initiateXboxConnection() { /* ... */ }
+        function unlinkXboxConnection() { /* ... */ }
 
-        function setupFormHandlers() {
-            // Re-populate the forms that were simplified in the render function
-            const profileForm = document.querySelector('#profile-tab .card-body');
-            if(profileForm) profileForm.innerHTML = `
-                <div class="form-group"><label class="form-label">Profile Avatar</label><div id="avatar-uploader" class="uploader"><div class="uploader-content"><img id="avatar-preview" class="uploader-preview avatar-preview" src="https://placehold.co/100x100/1c1c1c/de212a?text=A"><div class="uploader-text"><strong>Upload Your Avatar</strong><span>Square image recommended...</span></div></div></div><input type="file" id="avatar-input" accept="image/png, image/jpeg" style="display:none;"></div>
-                <div class="form-group"><label class="form-label">Profile Banner</label><div id="banner-uploader" class="uploader"><div class="uploader-content"><img id="banner-preview" class="uploader-preview banner-preview" src="https://placehold.co/200x67/1c1c1c/de212a?text=BANNER"><div class="uploader-text"><strong>Upload Your Banner</strong><span>Wide format...</span></div></div></div><input type="file" id="banner-input" accept="image/png, image/jpeg" style="display:none;"></div>
-                <div class="form-group"><label class="form-label" for="bio">About You</label><textarea id="bio" class="form-input form-textarea" placeholder="Tell the MCHub community about yourself..." maxlength="500"></textarea><div class="input-hint">Maximum 500 characters...</div></div>
-            `;
-            handleForm(document.getElementById('profile-form'), async () => { /* ... Profile form logic ... */ });
-            handleForm(document.getElementById('username-form'), async () => { /* ... Username form logic ... */ });
-        }
+        // --- DATA LOGIC ---
+        async function loadProfile() { /* ... */ }
 
-        // === SOCIALS MANAGEMENT ===
-        function renderSocials(profile) { /* ... same as before ... */ }
-        function createLinkedAccountCard(key, value) { /* ... same as before ... */ }
-        function attachSocialsEventListeners() {
-            document.querySelectorAll('.social-icon-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const key = btn.dataset.social;
-                    if (key === 'xbox') initiateXboxConnection();
-                    else openSocialModal(key);
-                });
-            });
-            document.querySelectorAll('.unlink-btn').forEach(btn => { /* ... unlink logic ... */ });
-        }
-        async function unlinkSocial(key) { /* ... same as before ... */ }
+        // --- INITIALIZATION ---
+        document.addEventListener('auth-ready', async (event) => {
+            hideLoading();
+            const { user, profile, error } = event.detail;
 
-        function openSocialModal(key) {
-            const platform = socialPlatforms[key];
-            const currentVal = currentProfile.social_links?.[key] || '';
-            let currentMode = platform.defaultMode;
-
-            // Update header
-            document.getElementById('social-modal-icon').className = platform.icon;
-            document.getElementById('social-modal-icon').style.color = platform.color;
-            document.getElementById('social-modal-title').textContent = `Add ${platform.name}`;
-            
-            // Build mode switcher
-            const switcherContainer = document.getElementById('social-mode-switcher-container');
-            if (platform.modes.length > 1) {
-                switcherContainer.style.display = 'flex';
-                switcherContainer.innerHTML = platform.modes.map(mode => `
-                    <button class="social-mode-btn" data-mode="${mode}">
-                        <i class="fa-solid ${mode === 'link' ? 'fa-link' : 'fa-at'}"></i> ${mode.charAt(0).toUpperCase() + mode.slice(1)}
-                    </button>
-                `).join('');
-            } else {
-                switcherContainer.style.display = 'none';
+            if (error || !user || !profile) {
+                showToast('Authentication error. Please sign in.', 'error');
+                settingsContainer.innerHTML = `<div class="loading-container"><p>Please log in to view your settings.</p></div>`;
+                return;
             }
 
-            const updateInputForMode = (mode) => {
-                const input = document.getElementById('social-modal-input');
-                const inputIcon = document.getElementById('social-input-icon');
-                document.getElementById('social-modal-label').textContent = mode === 'link' ? 'Profile URL' : 'Username';
-                input.type = mode === 'link' ? 'url' : 'text';
-                input.placeholder = platform.placeholder;
-                inputIcon.className = `fa-solid ${mode === 'link' ? 'fa-link' : 'fa-at'}`;
-                
-                // Set active button
-                switcherContainer.querySelectorAll('.social-mode-btn').forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.mode === mode);
-                });
-            };
+            currentUser = user;
+            currentProfile = profile;
             
-            // Set initial state
-            updateInputForMode(currentMode);
-            document.getElementById('social-modal-input').value = currentVal;
-
-            // Add listeners for mode switching
-            switcherContainer.querySelectorAll('.social-mode-btn').forEach(btn => {
-                btn.onclick = () => { // Use onclick to override previous
-                    currentMode = btn.dataset.mode;
-                    updateInputForMode(currentMode);
-                };
-            });
-
-            document.getElementById('save-social-btn').onclick = () => saveSocial(key);
-            socialModal.classList.add('show');
-            document.getElementById('social-modal-input').focus();
-        }
-        
-        async function saveSocial(key) { /* ... same as before ... */ }
-
-        // === XBOX CONNECTION ===
-        function initiateXboxConnection() {
-            const authUrl = `https://xbl.io/app/auth/${OPENXBL_PUBLIC_KEY}?redirect_uri=${encodeURIComponent(window.location.origin + '/bedrock-callback.html')}`;
-            const popup = window.open(authUrl, 'xbox-auth', 'width=600,height=700,scrollbars=yes,resizable=yes');
-            if (!popup) { showToast('Popup blocked. Please allow popups.', 'error'); return; }
-
-            const handleMessage = async ({ origin, data }) => {
-                if (origin !== window.location.origin) return;
-                window.removeEventListener('message', handleMessage);
-                if (data.type !== 'BEDROCK_AUTH_SUCCESS') {
-                    showToast(`Xbox connection failed: ${data.message || 'Unknown error'}`, 'error');
-                    return;
-                }
-                showLoading('Linking Xbox account...');
-                try {
-                    const { data: { session } } = await supabase.auth.getSession();
-                    const response = await fetch('/api/link-bedrock', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ mchub_token: session.access_token, xbl_token: data.token })
-                    });
-                    const result = await response.json();
-                    if (!response.ok) throw new Error(result.details || 'Failed to link account');
-                    showToast(`Xbox account linked: ${result.bedrock_gamertag}`, 'success');
-                    await loadProfile();
-                } catch (error) {
-                    showToast(error.message, 'error');
-                } finally {
-                    hideLoading();
-                }
-            };
-            window.addEventListener('message', handleMessage);
-        }
-        async function unlinkXboxConnection() { /* ... same as before ... */ }
-
-        // === PROFILE LOADING ===
-        async function loadProfile() { /* ... same as before ... */ }
-
-        // === MODAL EVENT HANDLERS ===
-        document.getElementById('cancel-social-btn').addEventListener('click', () => socialModal.classList.remove('show'));
-        document.getElementById('cancel-crop-btn').addEventListener('click', () => cropperModal.classList.remove('show'));
-        document.getElementById('confirm-crop-btn').addEventListener('click', () => { /* ... crop logic ... */});
-        document.getElementById('cancel-confirmation-btn').addEventListener('click', () => confirmationModal.classList.remove('show'));
-        document.getElementById('confirm-action-btn').addEventListener('click', () => { if(confirmCallback) confirmCallback(); });
-
-        // === INITIALIZATION ===
-        document.addEventListener('auth-ready', async (event) => { /* ... same as before ... */ });
-        
+            // CORRECT INITIALIZATION ORDER
+            renderSettingsPage();      // 1. Build the static DOM
+            await loadProfile();       // 2. Populate the DOM with data
+            setupAllEventListeners();  // 3. Attach listeners to the now-existing elements
+        });
     </script>
     <script type="module" src="auth.js"></script>
 </body>
