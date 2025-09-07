@@ -217,6 +217,7 @@
         .linked-accounts-container {
             display: grid;
             gap: 1rem;
+            max-width: 500px; /* NEW: Constrain width */
         }
         .linked-account-card {
             display: flex;
@@ -463,7 +464,7 @@
 
         const socialPlatforms = {
             xbox: { name: 'Xbox Live', icon: 'fa-brands fa-xbox', color: '#107c10', type: 'oauth' },
-            discord: { name: 'Discord', icon: 'fa-brands fa-discord', color: '#5865F2', modes: ['text'], defaultMode: 'text', placeholder: 'your_username' },
+            discord: { name: 'Discord', icon: 'fa-brands fa-discord', color: '#5865F2', modes: ['text', 'link'], defaultMode: 'text', placeholder: 'your_username' },
             spotify: { name: 'Spotify', icon: 'fa-brands fa-spotify', color: '#1DB954', modes: ['link'], defaultMode: 'link', placeholder: 'https://open.spotify.com/user/...' },
             reddit: { name: 'Reddit', icon: 'fa-brands fa-reddit-alien', color: '#FF4500', modes: ['link'], defaultMode: 'link', placeholder: 'https://reddit.com/user/...' },
             youtube: { name: 'YouTube', icon: 'fa-brands fa-youtube', color: '#FF0000', modes: ['link'], defaultMode: 'link', placeholder: 'https://youtube.com/c/...' },
@@ -585,6 +586,7 @@
                 e.preventDefault();
                 if (isProcessing) return;
                 const submitBtn = form.querySelector('button[type="submit"]');
+                if (!submitBtn) return;
                 const originalContent = submitBtn.innerHTML;
                 isProcessing = true;
                 submitBtn.disabled = true;
@@ -601,8 +603,48 @@
         }
         
         function setupFormHandlers() {
-            handleForm(document.getElementById('profile-form'), async () => { /* ... Profile form logic ... */ });
-            handleForm(document.getElementById('username-form'), async () => { /* ... Username form logic ... */ });
+            handleForm(document.getElementById('profile-form'), async () => {
+                showLoading('Updating profile...');
+                try {
+                    let updates = { bio: document.getElementById('bio').value.trim() };
+                    if (avatarBlob) {
+                        const filePath = `public/${currentUser.id}/avatar-${Date.now()}.jpeg`;
+                        const { error } = await supabase.storage.from('avatars').upload(filePath, avatarBlob, { upsert: true });
+                        if (error) throw new Error('Avatar upload failed: ' + error.message);
+                        updates.avatar_url = supabase.storage.from('avatars').getPublicUrl(filePath).data.publicUrl;
+                    }
+                    if (bannerBlob) {
+                        const filePath = `public/${currentUser.id}/banner-${Date.now()}.jpeg`;
+                        const { error } = await supabase.storage.from('banners').upload(filePath, bannerBlob, { upsert: true });
+                        if (error) throw new Error('Banner upload failed: ' + error.message);
+                        updates.banner_url = supabase.storage.from('banners').getPublicUrl(filePath).data.publicUrl;
+                    }
+                    const { error: profileError } = await supabase.from('profiles').update(updates).eq('id', currentUser.id);
+                    if (profileError) throw profileError;
+                    showToast('Profile updated successfully!', 'success');
+                    avatarBlob = null;
+                    bannerBlob = null;
+                    await loadProfileAndPopulate();
+                } finally {
+                    hideLoading();
+                }
+            });
+
+            handleForm(document.getElementById('username-form'), async () => {
+                const newUsername = document.getElementById('username').value.trim().toLowerCase();
+                if (newUsername.length < 3) throw new Error('Username must be at least 3 characters');
+                if (newUsername === currentProfile.username) throw new Error('This is already your current username');
+                
+                const { data: existingUser } = await supabase.from('profiles').select('id').eq('username', newUsername).single();
+                if (existingUser) throw new Error('Username already exists');
+                
+                const { error } = await supabase.from('profiles').update({ username: newUsername, username_last_changed: new Date().toISOString() }).eq('id', currentUser.id);
+                if (error) throw error;
+                
+                showToast('Username updated successfully!', 'success');
+                await loadProfileAndPopulate();
+            });
+
             const deleteBtn = document.getElementById('delete-account-btn');
             if(deleteBtn) deleteBtn.addEventListener('click', () => { 
                 showConfirmation('Are you sure you want to delete your account? This is irreversible.', () => {
@@ -630,15 +672,24 @@
              const input = document.getElementById(inputId);
              if (!uploader || !input) return;
 
+             const handleFile = (file) => {
+                if(file && file.type.startsWith('image/')) {
+                    initializeCropper(file, aspectRatio, title, blobSetter);
+                }
+             }
+
              uploader.addEventListener('click', () => input.click());
-             input.addEventListener('change', (e) => {
-                 const file = e.target.files[0];
-                 if (file) initializeCropper(file, aspectRatio, title, blobSetter);
+             input.addEventListener('change', (e) => handleFile(e.target.files[0]));
+             uploader.addEventListener('dragover', (e) => { e.preventDefault(); uploader.classList.add('dragover'); });
+             uploader.addEventListener('dragleave', () => uploader.classList.remove('dragover'));
+             uploader.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploader.classList.remove('dragover');
+                handleFile(e.dataTransfer.files[0]);
              });
         }
 
         function initializeCropper(file, aspectRatio, title, callback) {
-             if (!file) return;
              const reader = new FileReader();
              reader.onload = (e) => {
                  document.getElementById('cropper-image').src = e.target.result;
@@ -647,10 +698,7 @@
                  if (cropper) cropper.destroy();
                  setTimeout(() => {
                      cropper = new Cropper(document.getElementById('cropper-image'), { 
-                        aspectRatio: aspectRatio, 
-                        viewMode: 1, 
-                        background: false, 
-                        autoCropArea: 0.9 
+                        aspectRatio: aspectRatio, viewMode: 1, background: false, autoCropArea: 0.9 
                      });
                  }, 100);
                  cropCallback = callback;
@@ -675,55 +723,38 @@
             document.getElementById('cancel-social-btn')?.addEventListener('click', () => socialModal.classList.remove('show'));
         }
 
-        // --- SOCIALS & XBOX LOGIC ---
         function renderSocials(profile) {
             const container = document.getElementById('socials-container');
             if (!container) return;
-
             const socialLinks = profile.social_links || {};
-
             const gridHtml = Object.entries(socialPlatforms).map(([key, platform]) => {
                 const isLinked = key === 'xbox' ? !!profile.bedrock_gamertag : !!socialLinks[key];
                 return `<button class="social-icon-btn ${isLinked ? 'linked' : ''}" data-social="${key}" title="Link ${platform.name}"><i class="${platform.icon}"></i></button>`;
             }).join('');
-
             let cardsHtml = '';
-            if (profile.bedrock_gamertag) {
-                cardsHtml += createLinkedAccountCard('xbox', profile.bedrock_gamertag);
-            }
+            if (profile.bedrock_gamertag) cardsHtml += createLinkedAccountCard('xbox', profile.bedrock_gamertag);
             for (const [key, value] of Object.entries(socialLinks)) {
-                if (value && socialPlatforms[key]) {
-                    cardsHtml += createLinkedAccountCard(key, value);
-                }
+                if (value && socialPlatforms[key]) cardsHtml += createLinkedAccountCard(key, value);
             }
-
             container.innerHTML = `
                 <div class="form-group"><label class="form-label">Link your profiles</label><div class="socials-grid">${gridHtml}</div></div>
                 <div class="form-group"><label class="form-label">Linked Accounts</label><div class="linked-accounts-container" id="linked-accounts-list">
                     ${cardsHtml || '<p class="tiny">No accounts linked yet. Click an icon above to add one.</p>'}
                 </div></div>`;
-            
             attachSocialsEventListeners();
         }
 
         function createLinkedAccountCard(key, value) {
             const platform = socialPlatforms[key];
-            return `
-                <div class="linked-account-card" data-social="${key}">
-                    <div class="linked-account-info"><i class="${platform.icon}" style="color: ${platform.color};"></i><span class="linked-account-value">${value}</span></div>
-                    <div class="linked-account-actions"><button class="unlink-btn" title="Unlink ${platform.name}"><i class="fa-solid fa-trash-can"></i></button></div>
-                </div>`;
+            return `<div class="linked-account-card" data-social="${key}"><div class="linked-account-info"><i class="${platform.icon}" style="color: ${platform.color};"></i><span class="linked-account-value">${value}</span></div><div class="linked-account-actions"><button class="unlink-btn" title="Unlink ${platform.name}"><i class="fa-solid fa-trash-can"></i></button></div></div>`;
         }
 
         function attachSocialsEventListeners(){
             document.querySelectorAll('.social-icon-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const key = btn.dataset.social;
-                    if (key === 'xbox') {
-                        initiateXboxConnection();
-                    } else {
-                        openSocialModal(key);
-                    }
+                    if (key === 'xbox') initiateXboxConnection();
+                    else openSocialModal(key);
                 });
             });
             document.querySelectorAll('.unlink-btn').forEach(btn => {
@@ -737,17 +768,29 @@
             });
         }
         
-        async function unlinkSocial(key) { /* ... */ }
+        async function unlinkSocial(key) {
+            showLoading(`Unlinking ${socialPlatforms[key].name}...`);
+            try {
+                const newSocials = { ...currentProfile.social_links };
+                delete newSocials[key];
+                const { error } = await supabase.from('profiles').update({ social_links: newSocials }).eq('id', currentUser.id);
+                if (error) throw error;
+                showToast(`${socialPlatforms[key].name} unlinked.`, 'success');
+                await loadProfileAndPopulate();
+            } catch (error) {
+                showToast(`Failed to unlink: ${error.message}`, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
 
         function openSocialModal(key) {
             const platform = socialPlatforms[key];
             const currentVal = currentProfile.social_links?.[key] || '';
             let currentMode = platform.defaultMode;
-
             document.getElementById('social-modal-icon').className = platform.icon;
             document.getElementById('social-modal-icon').style.color = platform.color;
             document.getElementById('social-modal-title').textContent = `Add ${platform.name}`;
-            
             const switcherContainer = document.getElementById('social-mode-switcher-container');
             if (platform.modes.length > 1) {
                 switcherContainer.style.display = 'flex';
@@ -755,7 +798,6 @@
             } else {
                 switcherContainer.style.display = 'none';
             }
-
             const updateInputForMode = (mode) => {
                 const input = document.getElementById('social-modal-input');
                 const inputIcon = document.getElementById('social-input-icon');
@@ -765,28 +807,39 @@
                 inputIcon.className = `fa-solid ${mode === 'link' ? 'fa-link' : 'fa-at'}`;
                 switcherContainer.querySelectorAll('.social-mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
             };
-            
             updateInputForMode(currentMode);
             document.getElementById('social-modal-input').value = currentVal;
-
             switcherContainer.querySelectorAll('.social-mode-btn').forEach(btn => {
-                btn.onclick = () => {
-                    currentMode = btn.dataset.mode;
-                    updateInputForMode(currentMode);
-                };
+                btn.onclick = () => { currentMode = btn.dataset.mode; updateInputForMode(currentMode); };
             });
-
             document.getElementById('save-social-btn').onclick = () => saveSocial(key);
             socialModal.classList.add('show');
             document.getElementById('social-modal-input').focus();
         }
         
-        async function saveSocial(key) { /* ... */ }
+        async function saveSocial(key) {
+            const input = document.getElementById('social-modal-input');
+            const value = input.value.trim();
+            if (!value) return showToast("Please enter a value.", 'error');
+            socialModal.classList.remove('show');
+            showLoading(`Saving ${socialPlatforms[key].name}...`);
+            try {
+                const newSocials = { ...currentProfile.social_links, [key]: value };
+                const { error } = await supabase.from('profiles').update({ social_links: newSocials }).eq('id', currentUser.id);
+                if (error) throw error;
+                showToast(`${socialPlatforms[key].name} linked successfully.`, 'success');
+                await loadProfileAndPopulate();
+            } catch (error) {
+                showToast(`Failed to save: ${error.message}`, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
 
         function initiateXboxConnection() {
             const authUrl = `https://xbl.io/app/auth/${OPENXBL_PUBLIC_KEY}?redirect_uri=${encodeURIComponent(window.location.origin + '/bedrock-callback.html')}`;
             const popup = window.open(authUrl, 'xbox-auth', 'width=600,height=700');
-            if (!popup) { showToast('Popup blocked. Please allow popups.', 'error'); return; }
+            if (!popup) { return showToast('Popup blocked. Please allow popups.', 'error'); }
             const handleMessage = async ({ origin, data }) => {
                 if (origin !== window.location.origin) return;
                 window.removeEventListener('message', handleMessage);
@@ -808,19 +861,29 @@
             window.addEventListener('message', handleMessage);
         }
         
-        async function unlinkXboxConnection() { /* ... */ }
+        async function unlinkXboxConnection() {
+            showLoading('Disconnecting Xbox account...');
+            try {
+                const { error } = await supabase.from('profiles').update({ xuid: null, bedrock_gamertag: null, bedrock_gamerpic_url: null }).eq('id', currentUser.id);
+                if (error) throw error;
+                showToast('Xbox account disconnected', 'success');
+                await loadProfileAndPopulate();
+            } catch (error) {
+                showToast(error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
 
         async function loadProfileAndPopulate() {
             try {
                 const { data: profileData, error } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
                 if (error) throw error;
                 currentProfile = profileData;
-
                 document.getElementById('avatar-preview').src = currentProfile.avatar_url || `https://placehold.co/100x100/1c1c1c/de212a?text=${currentProfile.username.charAt(0).toUpperCase()}`;
                 document.getElementById('banner-preview').src = currentProfile.banner_url || 'https://placehold.co/200x67/1c1c1c/de212a?text=BANNER';
                 document.getElementById('bio').value = currentProfile.bio || '';
                 document.getElementById('username').value = currentProfile.username || '';
-                
                 renderSocials(currentProfile);
             } catch (error) {
                 console.error('Failed to load profile data:', error);
