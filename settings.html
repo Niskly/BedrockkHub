@@ -1434,7 +1434,7 @@
             const popup = window.open(authUrl, 'xbox-neural-bridge', 'width=600,height=700,scrollbars=yes,resizable=yes');
             
             if (!popup) {
-                showNeuralToast('Neural popup blocked. Please allow popups for Xbox integration.', 'error');
+                showNeuralToast('Please allow popups for Xbox integration.', 'error');
                 return;
             }
             
@@ -1444,12 +1444,49 @@
                 window.removeEventListener('message', handleNeuralMessage);
                 
                 if (data.type !== 'BEDROCK_AUTH_SUCCESS') {
-                    showNeuralToast(`Xbox Neural Bridge failed: ${data.message || 'Unknown error'}`, 'error');
+                    showNeuralToast(`Xbox Bridge failed: ${data.message || 'Unknown error'}`, 'error');
                     return;
                 }
                 
-                showNeuralLoading('Establishing Neural Bridge...');
+                showNeuralLoading('Establishing Xbox Bridge...');
                 
+                try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    
+                    console.log('Sending Xbox link request with token:', data.token ? 'present' : 'missing');
+                    
+                    const response = await fetch('/api/link-bedrock', {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.access_token}` // Added proper auth header
+                        },
+                        body: JSON.stringify({
+                            mchub_token: session.access_token,
+                            xbl_token: data.token
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    console.log('Xbox link response:', result);
+                    
+                    if (!response.ok) {
+                        throw new Error(result.details || 'Failed to establish Xbox bridge');
+                    }
+                    
+                    showNeuralToast(`Xbox Bridge established: ${result.bedrock_gamertag}`, 'success');
+                    await loadNeuralProfile();
+                    
+                } catch (error) {
+                    console.error('Xbox bridge error:', error);
+                    showNeuralToast(error.message, 'error');
+                } finally {
+                    hideNeuralLoading();
+                }
+            };
+            
+            window.addEventListener('message', handleNeuralMessage);
+        }
                 try {
                     const { data: { session } } = await supabase.auth.getSession();
                     
