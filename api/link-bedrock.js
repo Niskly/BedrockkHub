@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     // This uses the public ANON key, which is safe and ensures correct user identification.
     const supabaseUserClient = createClient(
         process.env.SUPABASE_URL, 
-        process.env.SUPABASE_ANON_KEY // IMPORTANT: Add this to your Vercel environment variables
+        process.env.SUPABASE_ANON_KEY
     );
 
     // 3. Authenticate the MCHub user with the USER-LEVEL client
@@ -33,7 +33,7 @@ export default async function handler(req, res) {
       console.error('User authentication failed:', userError);
       return res.status(401).json({ details: 'Invalid or expired MCHub user token. Please sign in again.' });
     }
-    // Now, `user.id` is GUARANTEED to be the ID of the person making the request (e.g., "Tyl")
+    // Now, `user.id` is GUARANTEED to be the ID of the person making the request
 
     // 4. Use the OpenXBL token to get the user's account info (unchanged)
     const accountResponse = await fetch('https://xbl.io/api/v2/account', {
@@ -41,7 +41,7 @@ export default async function handler(req, res) {
         'X-Authorization': process.env.OPENXBL_API_KEY,
         'Authorization': `XBL3.0 x=${xbl_token}`,
         'Accept': 'application/json',
-        'x-contract-version': '5' // Best practice to include this
+        'x-contract-version': '5'
       }
     });
 
@@ -65,20 +65,24 @@ export default async function handler(req, res) {
       throw new Error('Could not retrieve essential profile data (XUID or Gamertag).');
     }
 
-    // 5. Check if this Xbox account is already linked using the ADMIN client
-    const { data: existingLink, error: linkCheckError } = await supabaseAdmin
+    // 5. Check if this Xbox account is already linked to a DIFFERENT user
+    // FIXED: Only check for OTHER users, not the current user
+    const { data: existingLinks, error: linkCheckError } = await supabaseAdmin
       .from('profiles')
       .select('id, username')
-      .eq('xuid', xuid)
-      .neq('id', user.id) // check against the CORRECT user id
-      .single();
+      .eq('xuid', xuid);
 
-    if (linkCheckError && linkCheckError.code !== 'PGRST116') {
+    if (linkCheckError) {
+      console.error('Database error while checking existing links:', linkCheckError);
       throw new Error('Database error while checking existing links.');
     }
 
-    if (existingLink) {
-      throw new Error(`This Xbox account is already linked to another MCHub user: ${existingLink.username}`);
+    // Filter out the current user from existing links
+    const otherUserLinks = existingLinks?.filter(link => link.id !== user.id) || [];
+
+    if (otherUserLinks.length > 0) {
+      const existingUser = otherUserLinks[0];
+      throw new Error(`This Xbox account is already linked to another MCHub user: ${existingUser.username}`);
     }
 
     // 6. Update the user's profile in Supabase using the ADMIN client
@@ -89,9 +93,10 @@ export default async function handler(req, res) {
         bedrock_gamertag: bedrockGamertag,
         bedrock_gamerpic_url: bedrockGamepicUrl || null
       })
-      .eq('id', user.id); // update the CORRECT user id
+      .eq('id', user.id);
 
     if (updateError) {
+      console.error('Profile update error:', updateError);
       throw updateError;
     }
 
