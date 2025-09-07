@@ -1,109 +1,4 @@
-// === FORM HANDLERS ===
-        function setupFormHandlers() {
-            // Profile Form
-            handleForm(document.getElementById('profile-form'), async () => {
-                showLoading('Updating profile...');
-                
-                let updates = {
-                    bio: document.getElementById('bio').value.trim()
-                };
-                
-                try {
-                    // Upload avatar if changed
-                    if (avatarBlob) {
-                        const filePath = `public/${currentUser.id}/avatar-${Date.now()}.jpeg`;
-                        const { error: avatarError } = await supabase.storage
-                            .from('avatars')
-                            .upload(filePath, avatarBlob, { upsert: true });
-                        
-                        if (avatarError) throw new Error('Avatar upload failed: ' + avatarError.message);
-                        
-                        updates.avatar_url = supabase.storage
-                            .from('avatars')
-                            .getPublicUrl(filePath).data.publicUrl;
-                    }
-                    
-                    // Upload banner if changed
-                    if (bannerBlob) {
-                        const filePath = `public/${currentUser.id}/banner-${Date.now()}.jpeg`;
-                        const { error: bannerError } = await supabase.storage
-                            .from('banners')
-                            .upload(filePath, bannerBlob, { upsert: true });
-                        
-                        if (bannerError) throw new Error('Banner upload failed: ' + bannerError.message);
-                        
-                        updates.banner_url = supabase.storage
-                            .from('banners')
-                            .getPublicUrl(filePath).data.publicUrl;
-                    }
-                    
-                    // Update profile
-                    const { error: profileError } = await supabase
-                        .from('profiles')
-                        .update(updates)
-                        .eq('id', currentUser.id);
-                    
-                    if (profileError) throw profileError;
-                    
-                    showToast('Profile updated successfully!', 'success');
-                    
-                    // Reset blobs
-                    avatarBlob = null;
-                    bannerBlob = null;
-                    
-                    // Reload profile data
-                    await loadProfile();
-                    
-                } finally {
-                    hideLoading();
-                }
-            });
-
-            // Username Form
-            handleForm(document.getElementById('username-form'), async () => {
-                const newUsername = document.getElementById('username').value.trim();
-                
-                if (newUsername.length < 3) {
-                    throw new Error('Username must be at least 3 characters');
-                }
-                
-                if (newUsername === currentProfile.username) {
-                    throw new Error('This is already your current username');
-                }
-                
-                const { error } = await supabase
-                    .from('profiles')
-                    .update({
-                        username: newUsername,
-                        username_last_changed: new Date().toISOString()
-                    })
-                    .eq('id', currentUser.id);
-                
-                if (error) {
-                    if (error.code === '23505') {
-                        throw new Error('Username already exists');
-                    }
-                    throw error;
-                }
-                
-                showToast('Username updated successfully!', 'success');
-                await loadProfile();
-            });
-
-            // Password Form
-            handleForm(document.getElementById('password-form'), async () => {
-                const newPassword = document.getElementById('new-password').value;
-                
-                if (newPassword.length < 6) {
-                    throw new Error('Password must be at least 6 characters');
-                }
-                
-                const { error } = await supabase.auth.updateUser({ password: newPassword });
-                
-                if (error) throw error;
-                
-                document.getElementById('new-password').value = '';
-                showToast('Password updated successfully!', <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -1183,8 +1078,6 @@
         // === AUTH STATE MANAGEMENT ===
         async function handleAuthState() {
             try {
-                showLoading('Loading settings...');
-                
                 const { data: { session } } = await supabase.auth.getSession();
 
                 if (session) {
@@ -1192,9 +1085,6 @@
                     
                     // Render settings page
                     renderSettingsPage();
-                    
-                    // Setup social icon selector
-                    setupSocialIconSelector();
                     
                     // Load profile data
                     await loadProfile();
@@ -1207,7 +1097,6 @@
                 } else {
                     // Redirect to login if not authenticated
                     window.location.href = '/login.html';
-                    return;
                 }
                 
             } catch (error) {
