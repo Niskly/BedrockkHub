@@ -69,6 +69,12 @@
         .social-links-container { position: absolute; bottom: 1.5rem; right: 1.5rem; display: flex; gap: 0.8rem; }
         .social-link { font-size: 1.2rem; color: var(--muted); transition: color .2s; }
         .social-link:hover { color: var(--text); }
+        .social-link.discord { color: #5865F2; }
+        .social-link.spotify { color: #1DB954; }
+        .social-link.reddit { color: #FF4500; }
+        .social-link.youtube { color: #FF0000; }
+        .social-link.twitter { color: #1DA1F2; }
+        .social-link.github { color: #333; }
 
         .profile-content-grid { display: grid; grid-template-columns: 300px 1fr; gap: 1.5rem; align-items: flex-start; }
         .card { border-radius: 16px; }
@@ -87,6 +93,15 @@
         .thumb .pack-icon-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; filter: blur(8px) brightness(0.7); transform: scale(1.1); }
         .thumb .pack-icon { position: relative; width: 80px; height: 80px; border-radius: 8px; object-fit: cover; z-index: 1; }
         .content { padding: 14px; }
+
+        .error-container { 
+            display: flex; flex-direction: column; align-items: center; 
+            justify-content: center; gap: 1.5rem; min-height: 50vh; 
+            text-align: center; color: var(--muted); 
+        }
+        .error-icon { font-size: 4rem; color: var(--brand-1); margin-bottom: 1rem; }
+        .error-title { font-size: 1.5rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+        .error-message { font-size: 1.1rem; line-height: 1.5; max-width: 500px; }
     </style>
 </head>
 <body>
@@ -111,6 +126,24 @@
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const profileContainer = document.getElementById('profile-container');
 
+        // Global state
+        let currentUser = null;
+        let currentProfile = null;
+        let targetProfile = null;
+
+        function showError(title, message, showRetry = true) {
+            profileContainer.innerHTML = `
+                <div class="error-container">
+                    <i class="fa-solid fa-exclamation-triangle error-icon"></i>
+                    <h2 class="error-title">${title}</h2>
+                    <p class="error-message">${message}</p>
+                    ${showRetry ? `<button class="btn primary" onclick="window.location.reload()">
+                        <i class="fa-solid fa-refresh"></i> Try Again
+                    </button>` : ''}
+                </div>
+            `;
+        }
+
         function renderPackCard(p) {
             const card = document.createElement('div');
             card.className = 'pack-card';
@@ -125,6 +158,33 @@
                 <div class="content"><h4 style="font-size:0.9rem; font-weight:600;">${p.name}</h4></div>
             </a>`;
             return card;
+        }
+
+        function renderSocialLinks(socialLinks) {
+            if (!socialLinks || typeof socialLinks !== 'object') return '';
+            
+            const platforms = [
+                { key: 'discord', icon: 'fa-brands fa-discord', class: 'discord', getUrl: (val) => `#` },
+                { key: 'spotify', icon: 'fa-brands fa-spotify', class: 'spotify', getUrl: (val) => val },
+                { key: 'reddit', icon: 'fa-brands fa-reddit-alien', class: 'reddit', getUrl: (val) => val },
+                { key: 'youtube', icon: 'fa-brands fa-youtube', class: 'youtube', getUrl: (val) => val },
+                { key: 'twitter', icon: 'fa-brands fa-twitter', class: 'twitter', getUrl: (val) => val.startsWith('@') ? `https://twitter.com/${val.slice(1)}` : val },
+                { key: 'github', icon: 'fa-brands fa-github', class: 'github', getUrl: (val) => val }
+            ];
+            
+            return platforms
+                .filter(platform => socialLinks[platform.key])
+                .map(platform => {
+                    const value = socialLinks[platform.key];
+                    const url = platform.getUrl(value);
+                    const target = platform.key === 'discord' ? '' : 'target="_blank"';
+                    const title = platform.key === 'discord' ? value : '';
+                    
+                    return `<a href="${url}" ${target} class="social-link ${platform.class}" title="${title}">
+                        <i class="${platform.icon}"></i>
+                    </a>`;
+                })
+                .join('');
         }
 
         function renderDashboard(profile, packs, currentUser) {
@@ -143,14 +203,7 @@
                 bedrockHtml = `<p class="tiny" style="text-align:center;">No Bedrock account linked.</p>`;
             }
 
-            const socialLinks = profile.social_links || {};
-            const socialLinksHtml = `
-                <div class="social-links-container">
-                    ${socialLinks.discord ? `<a href="#" class="social-link" title="${socialLinks.discord}"><i class="fa-brands fa-discord"></i></a>` : ''}
-                    ${socialLinks.spotify ? `<a href="${socialLinks.spotify}" target="_blank" class="social-link"><i class="fa-brands fa-spotify"></i></a>` : ''}
-                    ${socialLinks.reddit ? `<a href="${socialLinks.reddit}" target="_blank" class="social-link"><i class="fa-brands fa-reddit-alien"></i></a>` : ''}
-                </div>
-            `;
+            const socialLinksHtml = renderSocialLinks(profile.social_links);
 
             // Show follow button only if viewing another user's profile
             const showFollowButton = currentUser && currentUser.id !== profile.id;
@@ -177,7 +230,9 @@
                             </div>
                         </div>
                         ${profileActionsHtml}
-                        ${socialLinksHtml}
+                        <div class="social-links-container">
+                            ${socialLinksHtml}
+                        </div>
                     </div>
                 </div>
                 <div class="profile-content-grid">
@@ -281,55 +336,95 @@
             });
         }
         
-        async function loadPage() {
+        async function loadProfilePage() {
+            console.log('🔄 Loading profile page...');
+            
             try {
+                // Get username from URL
                 const username = new URLSearchParams(window.location.search).get('user');
                 if (!username) { 
-                    profileContainer.innerHTML = `<div class="not-found">No user specified.</div>`; 
+                    showError('No User Specified', 'Please provide a username in the URL.', false);
                     return; 
                 }
 
-                const { data: { user: currentUser } } = await supabase.auth.getUser();
+                console.log('👤 Looking for user:', username);
+
+                // Get current user session
+                const { data: { session } } = await supabase.auth.getSession();
+                currentUser = session?.user || null;
                 
-                console.log('Looking for user:', username);
+                // Get target profile by username with retry logic
+                let profile = null;
+                let retryCount = 0;
+                const maxRetries = 3;
                 
-                // Get profile by username
-                const { data: profile, error: profileError } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('username', username)
-                    .single();
+                while (!profile && retryCount < maxRetries) {
+                    console.log(`📦 Fetching profile for ${username} (attempt ${retryCount + 1}/${maxRetries})...`);
                     
-                if (profileError) { 
-                    console.error("Profile fetch error:", profileError);
-                    profileContainer.innerHTML = `<div class="not-found">User "${username}" not found.</div>`; 
-                    return; 
+                    const { data: profileData, error: profileError } = await supabase
+                        .from('profiles')
+                        .select('*')
+                        .eq('username', username)
+                        .single();
+                    
+                    if (profileError) {
+                        console.error(`Profile fetch error (attempt ${retryCount + 1}):`, profileError);
+                        
+                        if (profileError.code === 'PGRST116') {
+                            showError('User Not Found', `User "${username}" was not found.`, false);
+                            return;
+                        }
+                        
+                        retryCount++;
+                        if (retryCount < maxRetries) {
+                            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+                            continue;
+                        } else {
+                            showError('Loading Error', 'Failed to load user profile after multiple attempts.');
+                            return;
+                        }
+                    }
+                    
+                    if (profileData) {
+                        profile = profileData;
+                        console.log('✅ Profile loaded:', profile.username);
+                    }
                 }
 
                 if (!profile) {
-                    profileContainer.innerHTML = `<div class="not-found">User "${username}" not found.</div>`; 
+                    showError('Profile Not Found', `Could not find user "${username}".`, false);
                     return;
                 }
 
-                console.log('Found profile:', profile);
+                targetProfile = profile;
 
                 // Increment view count if viewing someone else's profile
                 if (currentUser && currentUser.id !== profile.id) {
-                    const { error } = await supabase.rpc('increment_view_count', { 
-                        profile_id_to_update: profile.id 
-                    });
-                    if (error) console.error('View count error:', error);
+                    try {
+                        const { error } = await supabase.rpc('increment_view_count', { 
+                            profile_id_to_update: profile.id 
+                        });
+                        if (error) console.error('View count error:', error);
+                    } catch (viewError) {
+                        console.error('View count increment failed:', viewError);
+                        // Don't fail the whole page for this
+                    }
                 }
                 
                 // Get user's packs
+                console.log('📦 Loading user packs...');
                 const { data: packs, error: packsError } = await supabase
                     .from('packs')
                     .select('*')
                     .eq('user_id', profile.id)
                     .order('created_at', { ascending: false });
                     
-                if (packsError) console.error('Packs error:', packsError);
+                if (packsError) {
+                    console.error('Packs error:', packsError);
+                    // Don't fail the whole page for pack loading errors
+                }
                 
+                console.log('🎨 Rendering profile dashboard...');
                 renderDashboard(profile, packs || [], currentUser);
                 
                 // Setup follow system if user is logged in
@@ -343,9 +438,11 @@
                     if (uploadBtn) uploadBtn.style.display = 'grid';
                 }
 
+                console.log('✅ Profile page loaded successfully');
+
             } catch (error) {
-                console.error("Critical error:", error);
-                profileContainer.innerHTML = `<div class="not-found">An error occurred while loading the profile.</div>`;
+                console.error("❌ Critical error loading profile:", error);
+                showError('Loading Error', 'An unexpected error occurred while loading the profile.');
             }
         }
 
@@ -419,58 +516,89 @@
             }
         }
 
-        // Initialize auth state and load profile
-        async function initializePage() {
+        // Initialize navigation
+        async function initializeNavigation() {
             try {
                 const { data: { session } } = await supabase.auth.getSession();
                 
                 if (session) {
                     // Get current user profile for navigation
-                    const { data: currentProfile } = await supabase
+                    const { data: navProfile } = await supabase
                         .from('profiles')
-                        .select('*')
+                        .select('username, avatar_url')
                         .eq('id', session.user.id)
                         .single();
                     
-                    if (currentProfile) {
-                        renderUserDropdown(currentProfile);
+                    if (navProfile) {
+                        renderUserDropdown(navProfile);
+                        currentProfile = navProfile;
                     }
                 } else {
                     renderLoginButtons();
                 }
                 
-                // Load the profile page regardless of auth state
-                await loadPage();
-                
             } catch (error) {
-                console.error('Initialization error:', error);
+                console.error('Navigation initialization error:', error);
                 renderLoginButtons();
-                // Still try to load the profile page
-                await loadPage();
             }
         }
 
-        // Start the initialization when DOM is ready
-        document.addEventListener('DOMContentLoaded', initializePage);
+        // === INITIALIZATION ===
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Profile page initializing...');
+            
+            try {
+                // Initialize navigation first
+                await initializeNavigation();
+                
+                // Then load the profile content
+                await loadProfilePage();
+                
+                console.log('✅ Profile page initialized successfully');
+            } catch (error) {
+                console.error('❌ Profile page initialization failed:', error);
+                showError('Initialization Error', 'Failed to initialize the profile page.');
+            }
+        });
 
         // Listen for auth changes
         supabase.auth.onAuthStateChange(async (event, session) => {
-            console.log('Auth state changed:', event);
+            console.log('🔄 Auth state changed:', event);
             
             if (event === 'SIGNED_OUT') {
                 renderLoginButtons();
+                currentUser = null;
+                currentProfile = null;
+                // Reload profile to update follow buttons, etc.
+                if (targetProfile) {
+                    renderDashboard(targetProfile, [], null);
+                }
             } else if (event === 'SIGNED_IN' && session) {
-                const { data: currentProfile } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', session.user.id)
-                    .single();
-                
-                if (currentProfile) {
-                    renderUserDropdown(currentProfile);
+                // Reinitialize navigation and reload profile
+                await initializeNavigation();
+                if (targetProfile) {
+                    currentUser = session.user;
+                    const { data: packs } = await supabase
+                        .from('packs')
+                        .select('*')
+                        .eq('user_id', targetProfile.id)
+                        .order('created_at', { ascending: false });
+                    
+                    renderDashboard(targetProfile, packs || [], currentUser);
+                    await setupFollowSystem(targetProfile, currentUser);
                 }
             }
         });
+
+        // Debug helpers
+        window.profileDebug = {
+            supabase,
+            currentUser,
+            currentProfile,
+            targetProfile,
+            loadProfilePage,
+            renderDashboard
+        };
         
     </script>
 </body>
