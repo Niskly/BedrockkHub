@@ -604,12 +604,25 @@
             handleForm(document.getElementById('profile-form'), async () => { /* ... Profile form logic ... */ });
             handleForm(document.getElementById('username-form'), async () => { /* ... Username form logic ... */ });
             const deleteBtn = document.getElementById('delete-account-btn');
-            if(deleteBtn) deleteBtn.addEventListener('click', () => { /* ... delete logic ... */ });
+            if(deleteBtn) deleteBtn.addEventListener('click', () => { 
+                showConfirmation('Are you sure you want to delete your account? This is irreversible.', () => {
+                    console.log("Deletion confirmed. (Needs server-side implementation)");
+                    showToast("Account deletion not yet implemented.", "warning");
+                });
+            });
         }
 
         function setupUploaders() {
-            setupUploader('avatar-uploader', 'avatar-input', document.getElementById('avatar-preview'), 1, 'Avatar', (blob) => avatarBlob = blob);
-            setupUploader('banner-uploader', 'banner-input', document.getElementById('banner-preview'), 3, 'Banner', (blob) => bannerBlob = blob);
+            setupUploader('avatar-uploader', 'avatar-input', document.getElementById('avatar-preview'), 1, 'Avatar', (blob) => {
+                const url = URL.createObjectURL(blob);
+                document.getElementById('avatar-preview').src = url;
+                avatarBlob = blob;
+            });
+            setupUploader('banner-uploader', 'banner-input', document.getElementById('banner-preview'), 3, 'Banner', (blob) => {
+                const url = URL.createObjectURL(blob);
+                document.getElementById('banner-preview').src = url;
+                bannerBlob = blob;
+            });
         }
 
         function setupUploader(uploaderId, inputId, previewEl, aspectRatio, title, blobSetter) {
@@ -622,7 +635,6 @@
                  const file = e.target.files[0];
                  if (file) initializeCropper(file, aspectRatio, title, blobSetter);
              });
-             // ... drag/drop listeners
         }
 
         function initializeCropper(file, aspectRatio, title, callback) {
@@ -634,7 +646,12 @@
                  cropperModal.classList.add('show');
                  if (cropper) cropper.destroy();
                  setTimeout(() => {
-                     cropper = new Cropper(document.getElementById('cropper-image'), { aspectRatio: aspectRatio, viewMode: 1 });
+                     cropper = new Cropper(document.getElementById('cropper-image'), { 
+                        aspectRatio: aspectRatio, 
+                        viewMode: 1, 
+                        background: false, 
+                        autoCropArea: 0.9 
+                     });
                  }, 100);
                  cropCallback = callback;
              };
@@ -645,7 +662,7 @@
             document.getElementById('cancel-crop-btn')?.addEventListener('click', () => cropperModal.classList.remove('show'));
             document.getElementById('confirm-crop-btn')?.addEventListener('click', () => {
                 if (!cropper) return;
-                cropper.getCroppedCanvas({ width: 1024, height: 1024 }).toBlob((blob) => {
+                cropper.getCroppedCanvas({ width: 1024, height: 1024, imageSmoothingQuality: 'high' }).toBlob((blob) => {
                     if (cropCallback) cropCallback(blob);
                     cropperModal.classList.remove('show');
                 }, 'image/jpeg', 0.92);
@@ -658,50 +675,164 @@
             document.getElementById('cancel-social-btn')?.addEventListener('click', () => socialModal.classList.remove('show'));
         }
 
-        // ... SOCIALS & XBOX logic functions (renderSocials, openSocialModal, initiateXboxConnection, etc.) ...
+        // --- SOCIALS & XBOX LOGIC ---
+        function renderSocials(profile) {
+            const container = document.getElementById('socials-container');
+            if (!container) return;
+
+            const socialLinks = profile.social_links || {};
+
+            const gridHtml = Object.entries(socialPlatforms).map(([key, platform]) => {
+                const isLinked = key === 'xbox' ? !!profile.bedrock_gamertag : !!socialLinks[key];
+                return `<button class="social-icon-btn ${isLinked ? 'linked' : ''}" data-social="${key}" title="Link ${platform.name}"><i class="${platform.icon}"></i></button>`;
+            }).join('');
+
+            let cardsHtml = '';
+            if (profile.bedrock_gamertag) {
+                cardsHtml += createLinkedAccountCard('xbox', profile.bedrock_gamertag);
+            }
+            for (const [key, value] of Object.entries(socialLinks)) {
+                if (value && socialPlatforms[key]) {
+                    cardsHtml += createLinkedAccountCard(key, value);
+                }
+            }
+
+            container.innerHTML = `
+                <div class="form-group"><label class="form-label">Link your profiles</label><div class="socials-grid">${gridHtml}</div></div>
+                <div class="form-group"><label class="form-label">Linked Accounts</label><div class="linked-accounts-container" id="linked-accounts-list">
+                    ${cardsHtml || '<p class="tiny">No accounts linked yet. Click an icon above to add one.</p>'}
+                </div></div>`;
+            
+            attachSocialsEventListeners();
+        }
+
+        function createLinkedAccountCard(key, value) {
+            const platform = socialPlatforms[key];
+            return `
+                <div class="linked-account-card" data-social="${key}">
+                    <div class="linked-account-info"><i class="${platform.icon}" style="color: ${platform.color};"></i><span class="linked-account-value">${value}</span></div>
+                    <div class="linked-account-actions"><button class="unlink-btn" title="Unlink ${platform.name}"><i class="fa-solid fa-trash-can"></i></button></div>
+                </div>`;
+        }
+
+        function attachSocialsEventListeners(){
+            document.querySelectorAll('.social-icon-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const key = btn.dataset.social;
+                    if (key === 'xbox') {
+                        initiateXboxConnection();
+                    } else {
+                        openSocialModal(key);
+                    }
+                });
+            });
+            document.querySelectorAll('.unlink-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const key = btn.closest('.linked-account-card').dataset.social;
+                    showConfirmation(`Unlink your ${socialPlatforms[key].name} account?`, () => {
+                        if (key === 'xbox') unlinkXboxConnection();
+                        else unlinkSocial(key);
+                    });
+                });
+            });
+        }
         
+        async function unlinkSocial(key) { /* ... */ }
+
+        function openSocialModal(key) {
+            const platform = socialPlatforms[key];
+            const currentVal = currentProfile.social_links?.[key] || '';
+            let currentMode = platform.defaultMode;
+
+            document.getElementById('social-modal-icon').className = platform.icon;
+            document.getElementById('social-modal-icon').style.color = platform.color;
+            document.getElementById('social-modal-title').textContent = `Add ${platform.name}`;
+            
+            const switcherContainer = document.getElementById('social-mode-switcher-container');
+            if (platform.modes.length > 1) {
+                switcherContainer.style.display = 'flex';
+                switcherContainer.innerHTML = platform.modes.map(mode => `<button class="social-mode-btn" data-mode="${mode}"><i class="fa-solid ${mode === 'link' ? 'fa-link' : 'fa-at'}"></i> ${mode.charAt(0).toUpperCase() + mode.slice(1)}</button>`).join('');
+            } else {
+                switcherContainer.style.display = 'none';
+            }
+
+            const updateInputForMode = (mode) => {
+                const input = document.getElementById('social-modal-input');
+                const inputIcon = document.getElementById('social-input-icon');
+                document.getElementById('social-modal-label').textContent = mode === 'link' ? 'Profile URL' : 'Username';
+                input.type = mode === 'link' ? 'url' : 'text';
+                input.placeholder = platform.placeholder;
+                inputIcon.className = `fa-solid ${mode === 'link' ? 'fa-link' : 'fa-at'}`;
+                switcherContainer.querySelectorAll('.social-mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
+            };
+            
+            updateInputForMode(currentMode);
+            document.getElementById('social-modal-input').value = currentVal;
+
+            switcherContainer.querySelectorAll('.social-mode-btn').forEach(btn => {
+                btn.onclick = () => {
+                    currentMode = btn.dataset.mode;
+                    updateInputForMode(currentMode);
+                };
+            });
+
+            document.getElementById('save-social-btn').onclick = () => saveSocial(key);
+            socialModal.classList.add('show');
+            document.getElementById('social-modal-input').focus();
+        }
+        
+        async function saveSocial(key) { /* ... */ }
+
+        function initiateXboxConnection() {
+            const authUrl = `https://xbl.io/app/auth/${OPENXBL_PUBLIC_KEY}?redirect_uri=${encodeURIComponent(window.location.origin + '/bedrock-callback.html')}`;
+            const popup = window.open(authUrl, 'xbox-auth', 'width=600,height=700');
+            if (!popup) { showToast('Popup blocked. Please allow popups.', 'error'); return; }
+            const handleMessage = async ({ origin, data }) => {
+                if (origin !== window.location.origin) return;
+                window.removeEventListener('message', handleMessage);
+                if (data.type !== 'BEDROCK_AUTH_SUCCESS') { return showToast(`Xbox connection failed: ${data.message || 'Unknown error'}`, 'error'); }
+                showLoading('Linking Xbox account...');
+                try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    const response = await fetch('/api/link-bedrock', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ mchub_token: session.access_token, xbl_token: data.token })
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.details || 'Failed to link account');
+                    showToast(`Xbox account linked: ${result.bedrock_gamertag}`, 'success');
+                    await loadProfileAndPopulate();
+                } catch (error) { showToast(error.message, 'error'); } finally { hideLoading(); }
+            };
+            window.addEventListener('message', handleMessage);
+        }
+        
+        async function unlinkXboxConnection() { /* ... */ }
+
         async function loadProfileAndPopulate() {
             try {
                 const { data: profileData, error } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
                 if (error) throw error;
                 currentProfile = profileData;
 
-                // Populate Profile Tab
                 document.getElementById('avatar-preview').src = currentProfile.avatar_url || `https://placehold.co/100x100/1c1c1c/de212a?text=${currentProfile.username.charAt(0).toUpperCase()}`;
                 document.getElementById('banner-preview').src = currentProfile.banner_url || 'https://placehold.co/200x67/1c1c1c/de212a?text=BANNER';
                 document.getElementById('bio').value = currentProfile.bio || '';
-                
-                // Populate Security Tab
                 document.getElementById('username').value = currentProfile.username || '';
                 
-                // Populate Connections Tab
                 renderSocials(currentProfile);
-
             } catch (error) {
                 console.error('Failed to load profile data:', error);
                 showToast('Could not load your settings.', 'error');
             }
         }
 
-        function renderSocials(profile) {
-            // ... same as before
-        }
-        function attachSocialsEventListeners(){
-            // ... same as before
-        }
-        function openSocialModal(key){
-            // ... same as before
-        }
-        function initiateXboxConnection(){
-            // ... same as before
-        }
-
-
         // --- INITIALIZATION ---
         document.addEventListener('auth-ready', async (event) => {
             const { user, profile, error } = event.detail;
 
-            if (error || !user) {
+            if (error || !user || !profile) {
                 settingsContainer.innerHTML = `<div class="loading-container"><p>Please log in to view your settings.</p></div>`;
                 return;
             }
