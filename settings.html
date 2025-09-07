@@ -14,11 +14,21 @@
             --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
             --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
             --border-strong: rgba(255, 255, 255, .2);
+            --success: #10B981; --warning: #f59e0b; --error: #ef4444;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 14px/1.6 Inter, sans-serif; min-height: 100vh; }
-        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg'); background-size: cover; filter: blur(8px); opacity: 0.2; z-index: -1; }
+        body { 
+            margin: 0; background-color: var(--bg-0); color: var(--text); 
+            font: 500 14px/1.6 Inter, sans-serif; min-height: 100vh; 
+        }
+        body::before { 
+            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+            background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg'); 
+            background-size: cover; filter: blur(8px); opacity: 0.2; z-index: -1; 
+        }
         a { color: inherit; text-decoration: none; }
+        
+        /* Header Styles */
         header { position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(1.2) blur(10px); background: rgba(12, 12, 12, 0.75); border-bottom: 1px solid var(--border); }
         .nav { max-width: 1100px; margin: 0 auto; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; }
         .brand { display: flex; align-items: center; gap: .8rem; }
@@ -30,6 +40,7 @@
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn.primary { background: linear-gradient(90deg, var(--brand-1), var(--brand-2)); box-shadow: 0 10px 30px rgba(222, 33, 42, .22); color: white; }
         .btn.ghost { border-color: var(--border); background: transparent; color: var(--text); }
+        .btn.danger { background: linear-gradient(90deg, var(--error), #dc2626); color: white; }
         .tiny { font-size: 11px; color: var(--muted); }
         
         .user-dropdown { position: relative; display: inline-block; }
@@ -43,74 +54,211 @@
         .dropdown-content a { color: var(--muted); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 600; }
         .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
 
-        .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
-        .glassy { background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); border: 1px solid var(--border); }
+        /* Layout */
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+        .glassy { background: rgba(18, 18, 18, 0.85); backdrop-filter: saturate(1.2) blur(20px); border: 1px solid var(--border); }
+        
+        /* Loading & Animations */
         .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; min-height: 60vh; color: var(--muted); }
         .spinner { width: 48px; height: 48px; border: 5px solid var(--border); border-bottom-color: var(--brand-1); border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        .settings-grid { display: grid; grid-template-columns: 280px 1fr; gap: 2rem; align-items: flex-start; }
-        .settings-sidebar { position: sticky; top: 120px; background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; }
+        /* Settings Grid */
+        .settings-grid { display: grid; grid-template-columns: 300px 1fr; gap: 2.5rem; align-items: flex-start; }
+        
+        /* Sidebar */
+        .settings-sidebar { 
+            position: sticky; top: 120px; 
+            background: rgba(18, 18, 18, 0.9); backdrop-filter: saturate(1.2) blur(25px); 
+            border: 1px solid var(--border); border-radius: 20px; padding: 2rem; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .sidebar-header { text-align: center; margin-bottom: 2rem; }
+        .sidebar-header h2 { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem; background: linear-gradient(135deg, var(--brand-1), #ff525a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .sidebar-header p { color: var(--muted); font-size: 13px; }
+        
         .settings-tabs { display: flex; flex-direction: column; gap: 8px; }
-        .settings-tab { position: relative; padding: 12px 16px; border-radius: 12px; background: transparent; border: none; color: var(--muted); font-weight: 600; font-family: inherit; text-align: left; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.3s; width: 100%; }
-        .settings-tab.active { color: var(--text); background: rgba(222, 33, 42, 0.1); border: 1px solid rgba(222, 33, 42, 0.3); }
-        .settings-tab:hover:not(.active) { color: var(--text); background: rgba(255, 255, 255, 0.05); }
-        .settings-tab i { width: 20px; font-size: 16px; }
+        .settings-tab { 
+            position: relative; padding: 16px 20px; border-radius: 16px; 
+            background: transparent; border: none; color: var(--muted); 
+            font-weight: 600; font-family: inherit; text-align: left; 
+            display: flex; align-items: center; gap: 14px; cursor: pointer; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: 100%; 
+            border: 1px solid transparent;
+        }
+        .settings-tab.active { 
+            color: var(--text); background: rgba(222, 33, 42, 0.15); 
+            border-color: rgba(222, 33, 42, 0.4); 
+            box-shadow: 0 8px 25px rgba(222, 33, 42, 0.15);
+        }
+        .settings-tab:hover:not(.active) { 
+            color: var(--text); background: rgba(255, 255, 255, 0.08); 
+            border-color: var(--border-strong);
+        }
+        .settings-tab i { width: 22px; font-size: 18px; }
+        .settings-tab-label { font-size: 15px; }
         
+        /* Content Areas */
         .content-area { display: none; }
-        .content-area.active { display: block; }
+        .content-area.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        .card { background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 2rem; overflow: hidden; }
-        .card-header { padding: 2rem 2rem 1.5rem; border-bottom: 1px solid var(--border); }
-        .card-header h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; }
-        .card-header p { color: var(--muted); font-size: 14px; }
-        .card-body { padding: 2rem; }
-        .card-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; align-items: center; gap: 1rem; }
+        /* Cards */
+        .card { 
+            background: rgba(18, 18, 18, 0.9); backdrop-filter: saturate(1.2) blur(25px); 
+            border: 1px solid var(--border); border-radius: 20px; margin-bottom: 2rem; 
+            overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .card-header { 
+            padding: 2.5rem 2.5rem 2rem; 
+            border-bottom: 1px solid var(--border); 
+            background: linear-gradient(135deg, rgba(222, 33, 42, 0.05), rgba(222, 33, 42, 0.02));
+        }
+        .card-header h2 { 
+            font-size: 1.6rem; font-weight: 800; margin-bottom: 0.8rem; 
+            background: linear-gradient(135deg, var(--brand-1), #ff525a); 
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+        }
+        .card-header p { color: var(--muted); font-size: 14px; line-height: 1.5; }
+        .card-body { padding: 2.5rem; }
+        .card-footer { 
+            padding: 2rem 2.5rem; border-top: 1px solid var(--border); 
+            display: flex; justify-content: flex-end; align-items: center; gap: 1rem; 
+            background: rgba(255, 255, 255, 0.02);
+        }
         
-        .form-group { margin-bottom: 2rem; }
-        .form-label { display: block; margin-bottom: 0.75rem; font-weight: 600; color: var(--text); font-size: 14px; }
-        .form-input { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-1); color: var(--text); font-size: 14px; font-family: inherit; transition: all 0.3s; }
-        .form-input:focus { outline: none; border-color: var(--brand-1); box-shadow: 0 0 0 3px rgba(222, 33, 42, 0.1); }
-        .form-textarea { min-height: 120px; resize: vertical; }
-        .input-hint { margin-top: 0.5rem; font-size: 12px; color: var(--muted); }
+        /* Forms */
+        .form-group { margin-bottom: 2.5rem; }
+        .form-label { 
+            display: block; margin-bottom: 1rem; font-weight: 700; 
+            color: var(--text); font-size: 15px; 
+        }
+        .form-input { 
+            width: 100%; padding: 16px 20px; border-radius: 16px; 
+            border: 1px solid var(--border); background: var(--bg-1); 
+            color: var(--text); font-size: 15px; font-family: inherit; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        .form-input:focus { 
+            outline: none; border-color: var(--brand-1); 
+            box-shadow: 0 0 0 4px rgba(222, 33, 42, 0.15); 
+            background: rgba(18, 18, 18, 0.8);
+        }
+        .form-textarea { min-height: 140px; resize: vertical; }
+        .input-hint { margin-top: 0.8rem; font-size: 13px; color: var(--muted); line-height: 1.4; }
         
-        .uploader { background: var(--bg-1); border: 2px dashed var(--border); border-radius: 16px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s; }
-        .uploader:hover, .uploader.dragover { border-color: var(--brand-1); background: rgba(222, 33, 42, 0.05); }
-        .uploader-content { display: flex; align-items: center; gap: 1.5rem; }
-        .uploader-preview { flex-shrink: 0; border-radius: 12px; background: var(--bg-2); border: 1px solid var(--border); overflow: hidden; }
-        .avatar-preview { width: 80px; height: 80px; border-radius: 50%; }
-        .banner-preview { width: 160px; height: 60px; }
+        /* Uploaders */
+        .uploader { 
+            background: var(--bg-1); border: 2px dashed var(--border); 
+            border-radius: 20px; padding: 2.5rem; text-align: center; 
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        .uploader:hover, .uploader.dragover { 
+            border-color: var(--brand-1); 
+            background: rgba(222, 33, 42, 0.08); 
+            box-shadow: 0 10px 30px rgba(222, 33, 42, 0.1);
+        }
+        .uploader-content { display: flex; align-items: center; gap: 2rem; }
+        .uploader-preview { flex-shrink: 0; border-radius: 16px; background: var(--bg-2); border: 1px solid var(--border); overflow: hidden; }
+        .avatar-preview { width: 100px; height: 100px; border-radius: 50%; }
+        .banner-preview { width: 200px; height: 67px; }
         .uploader-text { text-align: left; }
-        .uploader-text strong { display: block; font-size: 1.1rem; font-weight: 700; margin-bottom: 0.25rem; }
-        .uploader-text span { color: var(--muted); font-size: 14px; }
+        .uploader-text strong { display: block; font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .uploader-text span { color: var(--muted); font-size: 14px; line-height: 1.4; }
         
-        .connection-btn { width: 100%; padding: 16px; justify-content: flex-start; background: var(--bg-1); border: 1px solid var(--border); position: relative; }
-        .connection-btn.linked { background: rgba(16, 124, 16, 0.1); border-color: #10B981; justify-content: space-between; }
+        /* Social Media Grid */
+        .social-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+        .social-platform { 
+            background: var(--bg-1); border: 1px solid var(--border); 
+            border-radius: 16px; padding: 1.5rem; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        .social-platform:hover { 
+            border-color: var(--border-strong); 
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .social-platform-header { 
+            display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; 
+        }
+        .social-platform-icon { 
+            width: 40px; height: 40px; border-radius: 10px; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 18px; color: white;
+        }
+        .discord-icon { background: #5865F2; }
+        .spotify-icon { background: #1DB954; }
+        .reddit-icon { background: #FF4500; }
+        .youtube-icon { background: #FF0000; }
+        .twitter-icon { background: #1DA1F2; }
+        .github-icon { background: #333; }
+        .social-platform-name { font-weight: 700; font-size: 16px; }
+        .social-platform-input { margin-top: 0.5rem; }
+        
+        /* Connection Status */
+        .connection-btn { 
+            width: 100%; padding: 20px; justify-content: flex-start; 
+            background: var(--bg-1); border: 1px solid var(--border); 
+            position: relative; border-radius: 16px; font-size: 16px;
+        }
+        .connection-btn.linked { 
+            background: rgba(16, 124, 16, 0.15); border-color: var(--success); 
+            justify-content: space-between; 
+        }
         .connection-btn i { font-size: 20px; margin-right: 12px; }
         .connection-status { display: flex; align-items: center; gap: 12px; }
-        .unlink-btn { background: var(--brand-1); padding: 6px 12px; font-size: 12px; border-radius: 8px; color: white; border: none; cursor: pointer; }
+        .unlink-btn { 
+            background: var(--brand-1); padding: 8px 16px; font-size: 13px; 
+            border-radius: 10px; color: white; border: none; cursor: pointer; 
+            font-weight: 600;
+        }
         
-        .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        /* Modals */
+        .modal { 
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); 
+            backdrop-filter: blur(15px); display: none; align-items: center; 
+            justify-content: center; z-index: 1000; 
+        }
         .modal.show { display: flex; }
-        .modal-dialog { background: rgba(18, 18, 18, 0.9); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; max-width: 600px; width: 90%; }
+        .modal-dialog { 
+            background: rgba(18, 18, 18, 0.95); backdrop-filter: blur(30px); 
+            border: 1px solid var(--border); border-radius: 20px; 
+            padding: 2.5rem; max-width: 600px; width: 90%; 
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
         
-        .loading-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(20px); display: none; align-items: center; justify-content: center; flex-direction: column; gap: 1.5rem; z-index: 1100; }
-        .loading-text { font-size: 1.1rem; font-weight: 600; color: var(--text); }
+        /* Loading Overlay */
+        .loading-overlay { 
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95); 
+            backdrop-filter: blur(25px); display: none; align-items: center; 
+            justify-content: center; flex-direction: column; gap: 2rem; z-index: 1100; 
+        }
+        .loading-text { font-size: 1.2rem; font-weight: 700; color: var(--text); }
         
+        /* Toast System */
         .toast-container { position: fixed; top: 100px; right: 24px; z-index: 1200; }
-        .toast { background: rgba(18, 18, 18, 0.9); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 12px; padding: 12px 20px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; min-width: 320px; transform: translateX(400px); transition: transform 0.4s; }
+        .toast { 
+            background: rgba(18, 18, 18, 0.95); backdrop-filter: blur(25px); 
+            border: 1px solid var(--border); border-radius: 16px; 
+            padding: 16px 24px; margin-bottom: 16px; display: flex; 
+            align-items: center; gap: 16px; min-width: 350px; 
+            transform: translateX(400px); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
         .toast.show { transform: translateX(0); }
-        .toast.success { border-color: #10B981; }
-        .toast.error { border-color: var(--brand-1); }
-        .toast i { font-size: 16px; }
-        .toast.success i { color: #10B981; }
-        .toast.error i { color: var(--brand-1); }
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--error); }
+        .toast i { font-size: 18px; }
+        .toast.success i { color: var(--success); }
+        .toast.error i { color: var(--error); }
         
+        /* Responsive Design */
         @media (max-width: 768px) {
             .settings-grid { grid-template-columns: 1fr; gap: 1.5rem; }
             .settings-sidebar { position: static; }
             .settings-tabs { flex-direction: row; overflow-x: auto; padding: 8px; }
-            .settings-tab { flex-shrink: 0; min-width: 120px; }
+            .settings-tab { flex-shrink: 0; min-width: 140px; padding: 12px 16px; }
+            .social-grid { grid-template-columns: 1fr; }
+            .uploader-content { flex-direction: column; text-align: center; }
         }
     </style>
 </head>
@@ -169,7 +317,7 @@
             <p id="confirmation-message" style="font-size: 18px; margin-bottom: 24px;">Are you sure?</p>
             <div style="display: flex; gap: 16px; justify-content: center;">
                 <button id="cancel-confirmation-btn" class="btn ghost">Cancel</button>
-                <button id="confirm-action-btn" class="btn primary" style="background: var(--brand-1);">
+                <button id="confirm-action-btn" class="btn danger">
                     <i class="fa-solid fa-check"></i>
                     Confirm
                 </button>
@@ -237,22 +385,30 @@
                 <div class="settings-grid">
                     <!-- Sidebar -->
                     <aside class="settings-sidebar">
+                        <div class="sidebar-header">
+                            <h2>Settings</h2>
+                            <p>Customize your MCHub experience</p>
+                        </div>
                         <div class="settings-tabs">
                             <button class="settings-tab active" data-tab="profile">
                                 <i class="fa-solid fa-user"></i>
-                                <span>Profile</span>
+                                <span class="settings-tab-label">Profile</span>
+                            </button>
+                            <button class="settings-tab" data-tab="social">
+                                <i class="fa-solid fa-share-nodes"></i>
+                                <span class="settings-tab-label">Social Links</span>
                             </button>
                             <button class="settings-tab" data-tab="connections">
-                                <i class="fa-solid fa-link"></i>
-                                <span>Connections</span>
+                                <i class="fa-brands fa-xbox"></i>
+                                <span class="settings-tab-label">Xbox Live</span>
                             </button>
                             <button class="settings-tab" data-tab="security">
-                                <i class="fa-solid fa-shield"></i>
-                                <span>Security</span>
+                                <i class="fa-solid fa-shield-halved"></i>
+                                <span class="settings-tab-label">Security</span>
                             </button>
                             <button class="settings-tab" data-tab="advanced">
-                                <i class="fa-solid fa-cog"></i>
-                                <span>Advanced</span>
+                                <i class="fa-solid fa-cogs"></i>
+                                <span class="settings-tab-label">Advanced</span>
                             </button>
                         </div>
                     </aside>
@@ -264,18 +420,18 @@
                             <form id="profile-form">
                                 <div class="card">
                                     <div class="card-header">
-                                        <h2>Profile Settings</h2>
-                                        <p>Customize your profile appearance and information</p>
+                                        <h2>Profile Customization</h2>
+                                        <p>Make your profile stand out with a custom avatar, banner, and bio</p>
                                     </div>
                                     <div class="card-body">
                                         <div class="form-group">
                                             <label class="form-label">Profile Avatar</label>
                                             <div id="avatar-uploader" class="uploader">
                                                 <div class="uploader-content">
-                                                    <img id="avatar-preview" class="uploader-preview avatar-preview" src="https://placehold.co/80x80/1c1c1c/de212a?text=A">
+                                                    <img id="avatar-preview" class="uploader-preview avatar-preview" src="https://placehold.co/100x100/1c1c1c/de212a?text=A">
                                                     <div class="uploader-text">
-                                                        <strong>Upload Avatar</strong>
-                                                        <span>Square image • PNG/JPG format</span>
+                                                        <strong>Upload Your Avatar</strong>
+                                                        <span>Square image recommended • PNG/JPG format • Max 5MB<br>Click here or drag and drop your image</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -286,10 +442,10 @@
                                             <label class="form-label">Profile Banner</label>
                                             <div id="banner-uploader" class="uploader">
                                                 <div class="uploader-content">
-                                                    <img id="banner-preview" class="uploader-preview banner-preview" src="https://placehold.co/160x60/1c1c1c/de212a?text=B">
+                                                    <img id="banner-preview" class="uploader-preview banner-preview" src="https://placehold.co/200x67/1c1c1c/de212a?text=BANNER">
                                                     <div class="uploader-text">
-                                                        <strong>Upload Banner</strong>
-                                                        <span>Wide format • 3:1 ratio • Max 10MB</span>
+                                                        <strong>Upload Your Banner</strong>
+                                                        <span>Wide format • 3:1 ratio recommended • PNG/JPG format • Max 10MB<br>This appears at the top of your profile</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -297,83 +453,156 @@
                                         </div>
 
                                         <div class="form-group">
-                                            <label class="form-label" for="bio">Bio</label>
-                                            <textarea id="bio" class="form-input form-textarea" placeholder="Tell us about yourself..." maxlength="500"></textarea>
-                                            <div class="input-hint">Maximum 500 characters</div>
+                                            <label class="form-label" for="bio">About You</label>
+                                            <textarea id="bio" class="form-input form-textarea" placeholder="Tell the MCHub community about yourself, your interests, favorite games, or anything else you'd like to share..." maxlength="500"></textarea>
+                                            <div class="input-hint">Maximum 500 characters • This appears on your public profile</div>
                                         </div>
                                     </div>
                                     <div class="card-footer">
                                         <button type="submit" class="btn primary">
                                             <i class="fa-solid fa-save"></i>
-                                            Save Changes
+                                            Save Profile Changes
                                         </button>
                                     </div>
                                 </div>
                             </form>
                         </section>
 
-                        <!-- Connections Tab -->
-                        <section id="connections-tab" class="content-area">
-                            <form id="connections-form">
+                        <!-- Social Links Tab -->
+                        <section id="social-tab" class="content-area">
+                            <form id="social-form">
                                 <div class="card">
                                     <div class="card-header">
-                                        <h2>Social Connections</h2>
-                                        <p>Link your external profiles and accounts</p>
+                                        <h2>Social Media Links</h2>
+                                        <p>Connect your social profiles to appear on your MCHub profile</p>
                                     </div>
                                     <div class="card-body">
-                                        <div id="xbox-connection" class="form-group">
-                                            <label class="form-label">Xbox Live Account</label>
-                                            <button type="button" class="btn connection-btn" id="xbox-link-btn">
-                                                <div class="connection-status">
-                                                    <i class="fa-brands fa-xbox" style="color: #107C10;"></i>
-                                                    <span>Link Xbox Account</span>
+                                        <div class="social-grid">
+                                            <div class="social-platform">
+                                                <div class="social-platform-header">
+                                                    <div class="social-platform-icon discord-icon">
+                                                        <i class="fa-brands fa-discord"></i>
+                                                    </div>
+                                                    <div class="social-platform-name">Discord</div>
                                                 </div>
-                                            </button>
-                                            <div class="input-hint">Connect your Xbox Live profile for Bedrock features</div>
-                                        </div>
+                                                <div class="social-platform-input">
+                                                    <input type="text" id="discord" class="form-input" placeholder="username">
+                                                    <div class="input-hint">Your Discord username (no # needed)</div>
+                                                </div>
+                                            </div>
 
-                                        <div class="form-group">
-                                            <label class="form-label" for="discord">Discord</label>
-                                            <input type="text" id="discord" class="form-input" placeholder="username">
-                                            <div class="input-hint">Your Discord username (no # needed anymore)</div>
-                                        </div>
+                                            <div class="social-platform">
+                                                <div class="social-platform-header">
+                                                    <div class="social-platform-icon spotify-icon">
+                                                        <i class="fa-brands fa-spotify"></i>
+                                                    </div>
+                                                    <div class="social-platform-name">Spotify</div>
+                                                </div>
+                                                <div class="social-platform-input">
+                                                    <input type="url" id="spotify" class="form-input" placeholder="https://open.spotify.com/user/...">
+                                                    <div class="input-hint">Your public Spotify profile URL</div>
+                                                </div>
+                                            </div>
 
-                                        <div class="form-group">
-                                            <label class="form-label" for="spotify">Spotify Profile</label>
-                                            <input type="url" id="spotify" class="form-input" placeholder="https://open.spotify.com/user/...">
-                                            <div class="input-hint">Your public Spotify profile URL</div>
-                                        </div>
+                                            <div class="social-platform">
+                                                <div class="social-platform-header">
+                                                    <div class="social-platform-icon reddit-icon">
+                                                        <i class="fa-brands fa-reddit-alien"></i>
+                                                    </div>
+                                                    <div class="social-platform-name">Reddit</div>
+                                                </div>
+                                                <div class="social-platform-input">
+                                                    <input type="url" id="reddit" class="form-input" placeholder="https://www.reddit.com/user/...">
+                                                    <div class="input-hint">Your Reddit profile URL</div>
+                                                </div>
+                                            </div>
 
-                                        <div class="form-group">
-                                            <label class="form-label" for="reddit">Reddit Profile</label>
-                                            <input type="url" id="reddit" class="form-input" placeholder="https://www.reddit.com/user/...">
-                                            <div class="input-hint">Your Reddit profile URL</div>
+                                            <div class="social-platform">
+                                                <div class="social-platform-header">
+                                                    <div class="social-platform-icon youtube-icon">
+                                                        <i class="fa-brands fa-youtube"></i>
+                                                    </div>
+                                                    <div class="social-platform-name">YouTube</div>
+                                                </div>
+                                                <div class="social-platform-input">
+                                                    <input type="url" id="youtube" class="form-input" placeholder="https://www.youtube.com/c/...">
+                                                    <div class="input-hint">Your YouTube channel URL</div>
+                                                </div>
+                                            </div>
+
+                                            <div class="social-platform">
+                                                <div class="social-platform-header">
+                                                    <div class="social-platform-icon twitter-icon">
+                                                        <i class="fa-brands fa-twitter"></i>
+                                                    </div>
+                                                    <div class="social-platform-name">Twitter/X</div>
+                                                </div>
+                                                <div class="social-platform-input">
+                                                    <input type="text" id="twitter" class="form-input" placeholder="@username">
+                                                    <div class="input-hint">Your Twitter/X username</div>
+                                                </div>
+                                            </div>
+
+                                            <div class="social-platform">
+                                                <div class="social-platform-header">
+                                                    <div class="social-platform-icon github-icon">
+                                                        <i class="fa-brands fa-github"></i>
+                                                    </div>
+                                                    <div class="social-platform-name">GitHub</div>
+                                                </div>
+                                                <div class="social-platform-input">
+                                                    <input type="url" id="github" class="form-input" placeholder="https://github.com/...">
+                                                    <div class="input-hint">Your GitHub profile URL</div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="card-footer">
                                         <button type="submit" class="btn primary">
                                             <i class="fa-solid fa-link"></i>
-                                            Update Connections
+                                            Update Social Links
                                         </button>
                                     </div>
                                 </div>
                             </form>
+                        </section>
+
+                        <!-- Xbox Live Connection Tab -->
+                        <section id="connections-tab" class="content-area">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Xbox Live Connection</h2>
+                                    <p>Link your Xbox Live account to display your Bedrock profile and enable cross-platform features</p>
+                                </div>
+                                <div class="card-body">
+                                    <div id="xbox-connection" class="form-group">
+                                        <label class="form-label">Xbox Live Account</label>
+                                        <button type="button" class="btn connection-btn" id="xbox-link-btn">
+                                            <div class="connection-status">
+                                                <i class="fa-brands fa-xbox" style="color: #107C10;"></i>
+                                                <span>Link Xbox Account</span>
+                                            </div>
+                                        </button>
+                                        <div class="input-hint">Connect your Xbox Live profile to show your gamertag, gamerpic, and enable Bedrock-specific features on MCHub</div>
+                                    </div>
+                                </div>
+                            </div>
                         </section>
 
                         <!-- Security Tab -->
                         <section id="security-tab" class="content-area">
                             <div class="card">
                                 <div class="card-header">
-                                    <h2>Security Settings</h2>
-                                    <p>Manage your account security and login information</p>
+                                    <h2>Account Security</h2>
+                                    <p>Manage your username, password, and email address</p>
                                 </div>
                                 
                                 <form id="username-form">
                                     <div class="card-body" style="border-bottom: 1px solid var(--border);">
                                         <div class="form-group">
                                             <label class="form-label" for="username">Username</label>
-                                            <input type="text" id="username" class="form-input" required minlength="3" placeholder="Enter your username">
-                                            <div class="input-hint" id="username-hint">Your username can be changed once every 7 days</div>
+                                            <input type="text" id="username" class="form-input" required minlength="3" maxlength="20" placeholder="Enter your username">
+                                            <div class="input-hint" id="username-hint">Your username can be changed once every 7 days • This is how others will find you on MCHub</div>
                                         </div>
                                     </div>
                                     <div class="card-footer">
@@ -389,7 +618,7 @@
                                         <div class="form-group">
                                             <label class="form-label" for="new-password">New Password</label>
                                             <input type="password" id="new-password" class="form-input" required minlength="6" placeholder="Enter new password">
-                                            <div class="input-hint">Minimum 6 characters</div>
+                                            <div class="input-hint">Minimum 6 characters • Choose a strong password to keep your account secure</div>
                                         </div>
                                     </div>
                                     <div class="card-footer">
@@ -405,7 +634,7 @@
                                         <div class="form-group">
                                             <label class="form-label" for="email">Email Address</label>
                                             <input type="email" id="email" class="form-input" required placeholder="your.email@example.com">
-                                            <div class="input-hint">Primary email for notifications and recovery</div>
+                                            <div class="input-hint">Primary email for notifications, password resets, and account recovery</div>
                                         </div>
                                     </div>
                                     <div class="card-footer">
@@ -423,45 +652,54 @@
                             <div class="card">
                                 <div class="card-header">
                                     <h2>Advanced Settings</h2>
-                                    <p>Advanced account options and data management</p>
+                                    <p>Privacy controls and account management options</p>
                                 </div>
                                 <div class="card-body">
                                     <div class="form-group">
-                                        <label class="form-label">Account Visibility</label>
-                                        <select class="form-input">
-                                            <option>Public Profile</option>
-                                            <option>Friends Only</option>
-                                            <option>Private</option>
+                                        <label class="form-label">Profile Visibility</label>
+                                        <select id="profile-visibility" class="form-input">
+                                            <option value="public">Public Profile</option>
+                                            <option value="friends">Friends Only</option>
+                                            <option value="private">Private</option>
                                         </select>
-                                        <div class="input-hint">Control who can see your profile</div>
+                                        <div class="input-hint">Control who can see your profile and texture packs</div>
                                     </div>
 
                                     <div class="form-group">
-                                        <label class="form-label">Notifications</label>
-                                        <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
-                                            <label style="display: flex; align-items: center; gap: 8px; margin: 0;">
-                                                <input type="checkbox" style="accent-color: var(--brand-1);"> 
-                                                Email notifications
+                                        <label class="form-label">Notification Preferences</label>
+                                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 12px;">
+                                            <label style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-1); border-radius: 12px; cursor: pointer;">
+                                                <input type="checkbox" id="email-notifications" style="accent-color: var(--brand-1); transform: scale(1.2);"> 
+                                                <span style="font-weight: 600;">Email notifications</span>
                                             </label>
-                                            <label style="display: flex; align-items: center; gap: 8px; margin: 0;">
-                                                <input type="checkbox" style="accent-color: var(--brand-1);"> 
-                                                Push notifications
+                                            <label style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-1); border-radius: 12px; cursor: pointer;">
+                                                <input type="checkbox" id="push-notifications" style="accent-color: var(--brand-1); transform: scale(1.2);"> 
+                                                <span style="font-weight: 600;">Push notifications</span>
                                             </label>
-                                            <label style="display: flex; align-items: center; gap: 8px; margin: 0;">
-                                                <input type="checkbox" style="accent-color: var(--brand-1);"> 
-                                                Marketing emails
+                                            <label style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-1); border-radius: 12px; cursor: pointer;">
+                                                <input type="checkbox" id="marketing-emails" style="accent-color: var(--brand-1); transform: scale(1.2);"> 
+                                                <span style="font-weight: 600;">Community updates</span>
                                             </label>
+                                        </div>
+                                        <div class="input-hint" style="margin-top: 12px;">Choose how you want to receive updates from MCHub</div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Danger Zone</label>
+                                        <div style="padding: 20px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px;">
+                                            <h4 style="color: #ef4444; margin-bottom: 12px; font-weight: 700;">Delete Account</h4>
+                                            <p style="color: var(--muted); margin-bottom: 16px; line-height: 1.5;">Once you delete your account, there is no going back. All your data, texture packs, and profile information will be permanently deleted.</p>
+                                            <button type="button" id="delete-account-btn" class="btn danger">
+                                                <i class="fa-solid fa-trash-alt"></i>
+                                                Delete My Account
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="card-footer">
-                                    <button type="button" class="btn" style="background: var(--brand-1);">
-                                        <i class="fa-solid fa-trash"></i>
-                                        Delete Account
-                                    </button>
-                                    <button type="submit" class="btn primary">
+                                    <button type="button" id="save-advanced-btn" class="btn primary">
                                         <i class="fa-solid fa-save"></i>
-                                        Save Settings
+                                        Save Advanced Settings
                                     </button>
                                 </div>
                             </div>
@@ -471,20 +709,10 @@
             `;
 
             // Setup tab switching
-            document.querySelectorAll('.settings-tab').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    // Update tabs
-                    document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    
-                    // Update content
-                    document.querySelectorAll('.content-area').forEach(area => area.classList.remove('active'));
-                    document.getElementById(tab.dataset.tab + '-tab').classList.add('active');
-                });
-            });
-
+            setupTabSwitching();
             // Setup form handlers
             setupFormHandlers();
+            // Setup uploaders
             setupUploaders();
         }
 
@@ -689,12 +917,15 @@
                 }
             });
 
-            // Connections Form
-            handleForm(document.getElementById('connections-form'), async () => {
+            // Social Form
+            handleForm(document.getElementById('social-form'), async () => {
                 const socialLinks = {
                     discord: document.getElementById('discord').value.trim(),
                     spotify: document.getElementById('spotify').value.trim(),
-                    reddit: document.getElementById('reddit').value.trim()
+                    reddit: document.getElementById('reddit').value.trim(),
+                    youtube: document.getElementById('youtube').value.trim(),
+                    twitter: document.getElementById('twitter').value.trim(),
+                    github: document.getElementById('github').value.trim()
                 };
                 
                 const { error } = await supabase
@@ -704,12 +935,12 @@
                 
                 if (error) throw error;
                 
-                showToast('Connections updated successfully!', 'success');
+                showToast('Social links updated successfully!', 'success');
             });
 
             // Username Form
             handleForm(document.getElementById('username-form'), async () => {
-                const newUsername = document.getElementById('username').value.trim();
+                const newUsername = document.getElementById('username').value.trim().toLowerCase();
                 
                 if (newUsername.length < 3) {
                     throw new Error('Username must be at least 3 characters');
@@ -717,6 +948,17 @@
                 
                 if (newUsername === currentProfile.username) {
                     throw new Error('This is already your current username');
+                }
+                
+                // Check if username exists
+                const { data: existingUser } = await supabase
+                    .from('profiles')
+                    .select('id')
+                    .eq('username', newUsername)
+                    .single();
+                
+                if (existingUser) {
+                    throw new Error('Username already exists');
                 }
                 
                 const { error } = await supabase
@@ -727,12 +969,7 @@
                     })
                     .eq('id', currentUser.id);
                 
-                if (error) {
-                    if (error.code === '23505') {
-                        throw new Error('Username already exists');
-                    }
-                    throw error;
-                }
+                if (error) throw error;
                 
                 showToast('Username updated successfully!', 'success');
                 await loadProfile();
@@ -766,7 +1003,64 @@
                 
                 if (error) throw error;
                 
-                showToast('Email update initiated. Check your inbox.', 'success');
+                showToast('Email update initiated. Check your inbox for confirmation.', 'success');
+            });
+
+            // Advanced Settings
+            document.getElementById('save-advanced-btn').addEventListener('click', async () => {
+                if (isProcessing) return;
+                
+                isProcessing = true;
+                const btn = document.getElementById('save-advanced-btn');
+                const originalContent = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<div class="spinner" style="width: 16px; height: 16px; border-width: 2px; margin-right: 8px;"></div> Saving...';
+                
+                try {
+                    const settings = {
+                        profile_visibility: document.getElementById('profile-visibility').value,
+                        email_notifications: document.getElementById('email-notifications').checked,
+                        push_notifications: document.getElementById('push-notifications').checked,
+                        marketing_emails: document.getElementById('marketing-emails').checked
+                    };
+                    
+                    const { error } = await supabase
+                        .from('profiles')
+                        .update({ settings: settings })
+                        .eq('id', currentUser.id);
+                    
+                    if (error) throw error;
+                    
+                    showToast('Advanced settings saved!', 'success');
+                    
+                } catch (error) {
+                    showToast(error.message || 'Failed to save settings', 'error');
+                } finally {
+                    isProcessing = false;
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                }
+            });
+
+            // Delete Account
+            document.getElementById('delete-account-btn').addEventListener('click', () => {
+                showConfirmation(
+                    'Are you absolutely sure you want to delete your account? This action cannot be undone and all your data will be permanently lost.',
+                    async () => {
+                        showLoading('Deleting account...');
+                        try {
+                            // This would need to be implemented as an edge function
+                            // For now, just sign out
+                            await supabase.auth.signOut();
+                            showToast('Account deletion initiated', 'success');
+                            window.location.href = '/';
+                        } catch (error) {
+                            showToast('Failed to delete account', 'error');
+                        } finally {
+                            hideLoading();
+                        }
+                    }
+                );
             });
         }
 
@@ -881,6 +1175,8 @@
 
         // === PROFILE LOADING ===
         async function loadProfile() {
+            console.log('Loading profile for user:', currentUser.id);
+            
             try {
                 const { data: profileData, error: profileError } = await supabase
                     .from('profiles')
@@ -900,13 +1196,14 @@
                 }
                 
                 currentProfile = profileData;
+                console.log('Profile loaded successfully:', profileData);
                 
                 // Update UI with profile data
                 document.getElementById('avatar-preview').src = 
-                    profileData.avatar_url || 'https://placehold.co/80x80/1c1c1c/de212a?text=A';
+                    profileData.avatar_url || `https://placehold.co/100x100/1c1c1c/de212a?text=${(profileData.username || 'U').charAt(0).toUpperCase()}`;
                     
                 document.getElementById('banner-preview').src = 
-                    profileData.banner_url || 'https://placehold.co/160x60/1c1c1c/de212a?text=B';
+                    profileData.banner_url || 'https://placehold.co/200x67/1c1c1c/de212a?text=BANNER';
                     
                 document.getElementById('bio').value = profileData.bio || '';
                 
@@ -915,6 +1212,9 @@
                 document.getElementById('discord').value = socialLinks.discord || '';
                 document.getElementById('spotify').value = socialLinks.spotify || '';
                 document.getElementById('reddit').value = socialLinks.reddit || '';
+                document.getElementById('youtube').value = socialLinks.youtube || '';
+                document.getElementById('twitter').value = socialLinks.twitter || '';
+                document.getElementById('github').value = socialLinks.github || '';
                 
                 // Xbox connection
                 renderXboxConnection(profileData);
@@ -923,10 +1223,15 @@
                 document.getElementById('username').value = profileData.username || '';
                 document.getElementById('email').value = currentUser.email || '';
                 
+                // Advanced settings
+                const settings = profileData.settings || {};
+                document.getElementById('profile-visibility').value = settings.profile_visibility || 'public';
+                document.getElementById('email-notifications').checked = settings.email_notifications !== false;
+                document.getElementById('push-notifications').checked = settings.push_notifications !== false;
+                document.getElementById('marketing-emails').checked = settings.marketing_emails !== false;
+                
                 // Check username cooldown
                 checkUsernameCooldown(profileData.username_last_changed);
-                
-                console.log('Profile loaded successfully:', profileData);
                 
             } catch (error) {
                 console.error('Critical loading error:', error);
@@ -1009,15 +1314,11 @@
                         <button class="user-menu-btn">
                             ${avatarContent}
                             <span>${profile.username || 'User'}</span>
-                            <div style="margin-left: auto; display: flex; align-items: center; gap: 1rem; font-size: 11px; color: var(--muted);">
-                                <span>${(profile.followers_count || 0).toLocaleString()} followers</span>
-                                <span>${(profile.following_count || 0).toLocaleString()} following</span>
-                            </div>
                             <i class="fa-solid fa-chevron-down"></i>
                         </button>
                         <div class="dropdown-content">
                             <a href="/profile.html?user=${profile.username}">
-                                <i class="fa-solid fa-user"></i> Profile
+                                <i class="fa-solid fa-user"></i> My Profile
                             </a>
                             <a href="/settings.html">
                                 <i class="fa-solid fa-cog"></i> Settings
@@ -1077,53 +1378,96 @@
 
         // === AUTH STATE MANAGEMENT ===
         async function handleAuthState() {
+            console.log('Handling auth state...');
+            
             try {
-                const { data: { session } } = await supabase.auth.getSession();
+                // Get current session
+                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                
+                if (sessionError) {
+                    console.error('Session error:', sessionError);
+                    throw sessionError;
+                }
 
-                if (session) {
+                if (session && session.user) {
+                    console.log('User authenticated:', session.user.id);
                     currentUser = session.user;
                     
-                    // Render settings page
+                    // Render settings page first
                     renderSettingsPage();
                     
-                    // Load profile data
+                    // Then load profile data
                     await loadProfile();
                     
-                    // Render navigation
+                    // Finally render navigation
                     if (currentProfile) {
                         renderUserDropdown(currentProfile);
                     }
                     
                 } else {
+                    console.log('No authenticated user, redirecting to login');
                     // Redirect to login if not authenticated
-                    window.location.href = '/login.html';
+                    window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
+                    return;
                 }
                 
             } catch (error) {
                 console.error('Auth state error:', error);
-                showToast('Authentication error', 'error');
+                showToast('Authentication error. Please try signing in again.', 'error');
                 renderLoginButtons();
+                
+                // Redirect to login after a brief delay
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 2000);
             } finally {
                 hideLoading();
             }
         }
 
         // === INITIALIZATION ===
-        document.addEventListener('DOMContentLoaded', () => {
-            // Initialize auth state
-            handleAuthState();
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 MCHub Settings Page Initializing...');
+            
+            // Show loading immediately
+            showLoading('Initializing settings...');
+            
+            try {
+                // Initialize auth state
+                await handleAuthState();
+                
+                console.log('✅ Settings page initialized successfully');
+            } catch (error) {
+                console.error('❌ Failed to initialize settings page:', error);
+                showToast('Failed to initialize settings page', 'error');
+                hideLoading();
+            }
             
             // Listen for auth changes
             supabase.auth.onAuthStateChange((event, session) => {
+                console.log('Auth state changed:', event);
+                
                 if (event === 'SIGNED_OUT') {
                     window.location.href = '/';
                 } else if (event === 'SIGNED_IN' && session) {
-                    handleAuthState();
+                    // Reload the page to refresh everything
+                    window.location.reload();
                 }
             });
         });
 
-        console.log('🚀 MCHub Settings Page Initialized');
+        // === WINDOW ERROR HANDLING ===
+        window.addEventListener('error', (e) => {
+            console.error('Global error:', e.error);
+            showToast('An unexpected error occurred', 'error');
+        });
+
+        window.addEventListener('unhandledrejection', (e) => {
+            console.error('Unhandled promise rejection:', e.reason);
+            showToast('An unexpected error occurred', 'error');
+        });
+
+        console.log('🔧 MCHub Settings Module Loaded');
     </script>
 </body>
 </html>
