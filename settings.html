@@ -24,54 +24,53 @@
         .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-13px); }
         .brand-title { font-weight: 800; letter-spacing: .6px; }
         .nav-actions { display: flex; align-items: center; gap: .6rem; }
-        .btn { padding: .6rem 1rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; background: none; color: inherit; font-family: inherit; font-size: inherit; }
-        .primary { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: white; box-shadow: var(--shadow-brand); }
-        .primary:disabled { opacity: 0.7; cursor: not-allowed; }
+        .btn { padding: .6rem 1rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; background: none; color: inherit; font-family: inherit; font-size: inherit; transition: all .2s; }
+        .btn.primary { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: white; box-shadow: var(--shadow-brand); }
+        .btn:disabled { opacity: 0.7; cursor: not-allowed; }
         .tiny { font-size: 12px; color: var(--muted); }
         
-        .user-dropdown { position: relative; display: inline-block; }
-        .user-menu-btn {
-            background: var(--bg-2); border: 1px solid var(--border); color: var(--text);
-            padding: 8px 12px; border-radius: 12px; display: flex; align-items: center;
-            gap: 10px; cursor: pointer; font-weight: 600;
-        }
-        .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
-        .nav-avatar-default {
-            width: 28px; height: 28px; border-radius: 50%; background: var(--bg-0);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .user-menu-btn .fa-chevron-down { font-size: 0.8em; transition: transform 0.2s; }
-        .user-menu-btn:hover { border-color: var(--border-strong); }
-        .dropdown-content {
-            display: none; position: absolute; right: 0; top: 110%;
-            background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px;
-            min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10;
-            overflow: hidden;
-        }
-        .dropdown-content.show { display: block; }
-        .dropdown-content a {
-            color: var(--muted); padding: 12px 16px; text-decoration: none;
-            display: flex; align-items: center; gap: 10px; font-weight: 600;
-        }
-        .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
-
-        .container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; opacity: 0; transition: opacity 0.3s; }
+        /* New Styles for Settings Page */
+        .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; opacity: 0; transition: opacity 0.4s ease-out; }
         .container.loaded { opacity: 1; }
-        .settings-layout { display: flex; gap: 2rem; align-items: flex-start; }
-        .tabs { display: flex; flex-direction: column; gap: 0.5rem; flex-shrink: 0; width: 200px; }
-        .tab-btn { padding: 0.75rem 1rem; border-radius: 10px; background: transparent; border: none; color: var(--muted); font: 600 15px/1.4 Inter, sans-serif; text-align: left; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .settings-layout { display: grid; grid-template-columns: 220px 1fr; gap: 2rem; align-items: flex-start; }
+        .tabs { display: flex; flex-direction: column; gap: 0.5rem; position: sticky; top: 100px; }
+        .tab-btn { padding: 0.75rem 1rem; border-radius: 10px; background: transparent; border: none; color: var(--muted); font: 600 15px/1.4 Inter, sans-serif; text-align: left; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all .2s; }
         .tab-btn.active, .tab-btn:hover { background: var(--bg-2); color: var(--text); }
-        .tab-content { display: none; flex-grow: 1; }
-        .tab-content.active { display: block; }
-        .card { background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn .4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card { background: rgba(28,28,28,0.8); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 18px; margin-bottom: 2rem; }
         .card-header { padding: 1.5rem; border-bottom: 1px solid var(--border); }
         .card-body { padding: 1.5rem; }
-        .card-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
-        h1 { font-size: 1.8rem; font-weight: 800; margin: 0; }
+        .card-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); background: rgba(0,0,0,0.2); display: flex; justify-content: flex-end; align-items: center; gap: 1rem; border-radius: 0 0 18px 18px; }
+        h1, h2 { font-weight: 800; margin: 0; }
+        h1 { font-size: 1.8rem; }
+        h2 { font-size: 1.4rem; }
+        .card-header p { color: var(--muted); font-size: 14px; margin-top: 4px; }
         .form-group { margin-bottom: 1.5rem; }
-        label { display: block; margin-bottom: .5rem; font-weight: 600; color: var(--muted); }
-        textarea { width: 100%; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text); font-size: 1rem; font-family: inherit; min-height: 100px; resize: vertical; }
+        label { display: block; margin-bottom: .6rem; font-weight: 600; color: var(--muted); }
+        .input, textarea { width: 100%; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text); font-size: 1rem; font-family: inherit; transition: all .2s; }
+        .input:focus, textarea:focus { border-color: var(--brand-1); box-shadow: 0 0 0 3px rgba(222, 33, 42, .2); outline: none; }
+        textarea { min-height: 100px; resize: vertical; }
         .input-hint { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+        .input-with-icon { position: relative; }
+        .input-with-icon i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--muted); }
+        .input-with-icon .input { padding-left: 2.5rem; }
+        
+        /* File Upload Styles */
+        .image-upload-container { display: flex; align-items: center; gap: 1.5rem; }
+        .image-preview { border-radius: 50%; object-fit: cover; border: 3px solid var(--border); }
+        .image-preview.avatar { width: 100px; height: 100px; }
+        .image-preview.banner { width: 100%; height: 120px; border-radius: 10px; margin-bottom: 1rem; }
+        .upload-actions { display: flex; flex-direction: column; gap: 0.5rem; }
+        
+        /* Links Tab Styles */
+        .social-link-group { display: flex; flex-direction: column; gap: 1rem; }
+        .connection-btn { background: var(--bg-2); border: 1px solid var(--border); padding: .75rem 1rem; width: 100%; justify-content: flex-start; }
+        .connection-btn.linked { background: var(--success); color: white; border-color: var(--success); }
+        .connection-btn i { font-size: 1.2rem; width: 20px; text-align: center; margin-right: 10px; }
+        
         #toast-container { position: fixed; top: 80px; right: 20px; z-index: 1000; }
         .toast { padding: 12px 18px; border-radius: 8px; color: white; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; margin-bottom: 10px; }
         .toast.success { background: var(--success); }
@@ -79,23 +78,15 @@
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .spinner-sm { width: 1.2em; height: 1.2em; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .bedrock-linked { display: flex; align-items: center; justify-content: space-between; background: var(--bg-2); padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid var(--border); }
-        .bedrock-info { display: flex; align-items: center; gap: 10px; }
-        .bedrock-gamerpic { width: 32px; height: 32px; border-radius: 4px; }
     </style>
 </head>
 <body>
     <div id="toast-container"></div>
     <header>
         <div class="nav">
-            <a class="brand" href="/">
-                <div class="brand-badge">
-                    <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
-                </div>
-                <div>
-                    <div class="brand-title">MCHUB</div>
-                    <div class="tiny">Minecraft Bedrock • community</div>
-                </div>
+             <a class="brand" href="/">
+                <div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div>
+                <div><div class="brand-title">MCHUB</div><div class="tiny">Minecraft Bedrock • community</div></div>
             </a>
             <div id="nav-actions" class="nav-actions"></div>
         </div>
@@ -104,28 +95,140 @@
     <main class="container" id="settings-container">
         <div class="settings-layout">
             <aside class="tabs">
-                <button class="tab-btn active" data-tab="profile">
-                    <i class="fa-solid fa-user-pen"></i> Profile
-                </button>
+                <button class="tab-btn active" data-tab="profile"><i class="fa-solid fa-user-pen fa-fw"></i> Profile</button>
+                <button class="tab-btn" data-tab="links"><i class="fa-solid fa-link fa-fw"></i> Links</button>
+                <button class="tab-btn" data-tab="account"><i class="fa-solid fa-shield-halved fa-fw"></i> Account</button>
             </aside>
             <div class="content-container">
+                <!-- PROFILE TAB -->
                 <section id="profile-tab" class="tab-content active">
-                    <div class="card">
-                        <div class="card-header">
-                            <h1>Profile Settings</h1>
-                            <p class="tiny">This information will be displayed publicly on your profile.</p>
-                        </div>
-                        <form id="profile-form">
+                    <form id="profile-form">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2>Public Profile</h2>
+                                <p>This information will be displayed on your profile page.</p>
+                            </div>
                             <div class="card-body">
                                 <div class="form-group">
-                                    <label for="bio">Bio</label>
-                                    <textarea id="bio" placeholder="Tell us a little about yourself..." maxlength="500"></textarea>
-                                    <p class="input-hint">A short description about yourself. Max 500 characters.</p>
+                                    <label>Profile Picture</label>
+                                    <div class="image-upload-container">
+                                        <img id="avatar-preview" src="https://placehold.co/100x100/1c1c1c/a8b3cf?text=..." class="image-preview avatar">
+                                        <div class="upload-actions">
+                                            <button type="button" class="btn" onclick="document.getElementById('avatar-upload').click();"><i class="fa-solid fa-upload"></i> Upload</button>
+                                            <button type="button" class="btn" id="remove-avatar-btn"><i class="fa-solid fa-trash"></i> Remove</button>
+                                            <input type="file" id="avatar-upload" accept="image/png, image/jpeg" style="display: none;">
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="form-group" id="bedrock-link-container"></div>
+                                <div class="form-group">
+                                    <label>Profile Banner</label>
+                                    <img id="banner-preview" src="https://placehold.co/600x120/1c1c1c/a8b3cf?text=..." class="image-preview banner">
+                                    <button type="button" class="btn" onclick="document.getElementById('banner-upload').click();"><i class="fa-solid fa-upload"></i> Upload Banner</button>
+                                    <input type="file" id="banner-upload" accept="image/png, image/jpeg" style="display: none;">
+                                </div>
+                                <div class="form-group">
+                                    <label for="bio">Bio</label>
+                                    <textarea id="bio" class="input" placeholder="Tell us a little about yourself..." maxlength="500"></textarea>
+                                    <p class="input-hint">Max 500 characters.</p>
+                                </div>
+                                <div class="form-group">
+                                    <label for="music-upload">Profile Music (Coming Soon)</label>
+                                     <button type="button" class="btn" disabled><i class="fa-solid fa-music"></i> Upload MP3</button>
+                                     <p class="input-hint">Feature not yet available.</p>
+                                </div>
                             </div>
                             <div class="card-footer">
-                                <button type="submit" class="btn primary">Save Changes</button>
+                                <span id="profile-form-status" class="tiny"></span>
+                                <button type="submit" class="btn primary">Save Profile</button>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- LINKS TAB -->
+                <section id="links-tab" class="tab-content">
+                    <form id="links-form">
+                         <div class="card">
+                            <div class="card-header">
+                                <h2>Connections</h2>
+                                <p>Link your other accounts to display them on your profile.</p>
+                            </div>
+                            <div class="card-body">
+                               <div class="social-link-group">
+                                   <div id="bedrock-link-container">
+                                        <!-- Bedrock link button will be rendered here by JS -->
+                                   </div>
+                                   <div class="form-group">
+                                       <label for="discord">Discord Username</label>
+                                        <div class="input-with-icon">
+                                            <i class="fa-brands fa-discord"></i>
+                                            <input type="text" id="discord" class="input" placeholder="your_username">
+                                        </div>
+                                   </div>
+                                   <div class="form-group">
+                                       <label for="spotify">Spotify Profile URL</label>
+                                       <div class="input-with-icon">
+                                            <i class="fa-brands fa-spotify"></i>
+                                            <input type="url" id="spotify" class="input" placeholder="https://open.spotify.com/user/...">
+                                       </div>
+                                   </div>
+                                    <div class="form-group">
+                                       <label for="reddit">Reddit Profile URL</label>
+                                       <div class="input-with-icon">
+                                            <i class="fa-brands fa-reddit-alien"></i>
+                                            <input type="url" id="reddit" class="input" placeholder="https://www.reddit.com/user/...">
+                                       </div>
+                                   </div>
+                               </div>
+                            </div>
+                             <div class="card-footer">
+                                 <span id="links-form-status" class="tiny"></span>
+                                <button type="submit" class="btn primary">Save Links</button>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- ACCOUNT TAB -->
+                <section id="account-tab" class="tab-content">
+                    <div class="card">
+                        <div class="card-header"><h2>Account Settings</h2><p>Manage your account credentials.</p></div>
+                        <form id="username-form">
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="username">Username</label>
+                                    <input type="text" id="username" class="input" required minlength="3">
+                                    <p class="input-hint" id="username-hint">You can change your username once every 7 days.</p>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button type="submit" class="btn primary">Update Username</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card">
+                         <form id="password-form">
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="new-password">New Password</label>
+                                    <input type="password" id="new-password" class="input" required>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button type="submit" class="btn primary">Update Password</button>
+                            </div>
+                        </form>
+                    </div>
+                     <div class="card">
+                         <form id="email-form">
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="email">Email Address</label>
+                                    <input type="email" id="email" class="input" required>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button type="submit" class="btn primary">Update Email</button>
                             </div>
                         </form>
                     </div>
@@ -139,10 +242,14 @@
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // --- FIX: Re-added the OpenXBL Public Key ---
         const OPENXBL_PUBLIC_KEY = 'd396b4fc-75dc-2371-1a68-aa0b6665e135';
+        
         let currentUser = null;
+        let currentProfile = null;
         let isLoading = false;
         
+        // --- UTILITY FUNCTIONS ---
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -152,218 +259,257 @@
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 4000);
         }
-        
-        async function loadProfileData() {
+
+        async function handleFormSubmit(form, submitAction) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (isLoading) return;
+
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalContent = submitBtn.innerHTML;
+                isLoading = true;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<div class="spinner-sm"></div> Saving...';
+
+                try {
+                    await submitAction();
+                } catch (error) {
+                    console.error('Form submission error:', error);
+                    showToast(error.message || 'An unexpected error occurred.', 'error');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalContent;
+                    isLoading = false;
+                }
+            });
+        }
+
+        // --- TAB SWITCHING LOGIC ---
+        const tabs = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const target = document.getElementById(tab.dataset.tab + '-tab');
+                tabContents.forEach(tc => tc.classList.remove('active'));
+                target.classList.add('active');
+            });
+        });
+
+        // --- DATA LOADING ---
+        async function loadInitialData() {
             if (!currentUser) return;
             try {
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .select('bio, bedrock_gamertag, bedrock_gamerpic_url')
-                    .eq('id', currentUser.id)
-                    .single();
+                const { data, error } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
                 if (error) throw error;
+                currentProfile = data;
                 
+                document.getElementById('avatar-preview').src = data.avatar_url || 'https://placehold.co/100x100/1c1c1c/a8b3cf?text=AVATAR';
+                document.getElementById('banner-preview').src = data.banner_url || 'https://placehold.co/600x120/1c1c1c/a8b3cf?text=BANNER';
                 document.getElementById('bio').value = data.bio || '';
-                const bedrockContainer = document.getElementById('bedrock-link-container');
                 
-                if (data.bedrock_gamertag) {
-                    bedrockContainer.innerHTML = `
-                        <label>Bedrock Account</label>
-                        <div class="bedrock-linked">
-                            <div class="bedrock-info">
-                                <img src="${data.bedrock_gamerpic_url}" alt="${data.bedrock_gamertag}" class="bedrock-gamerpic">
-                                <span style="font-weight: 600;">Linked as ${data.bedrock_gamertag}</span>
-                            </div>
-                            <button type="button" class="btn" id="unlink-bedrock-btn" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
-                                <i class="fa-solid fa-unlink"></i> Unlink
-                            </button>
-                        </div>`;
-                    document.getElementById('unlink-bedrock-btn').addEventListener('click', unlinkBedrockAccount);
-                } else {
-                    bedrockContainer.innerHTML = `
-                        <label>Link Bedrock Account</label>
-                        <button type="button" class="btn" id="link-bedrock-btn" style="width: 100%; justify-content: center; background-color: #107C10;">
-                            <i class="fa-brands fa-xbox"></i> Link with Xbox Live
-                        </button>
-                        <p class="input-hint">Link your Xbox Live account to display your Gamertag and Gamerpic.</p>`;
-                    document.getElementById('link-bedrock-btn').addEventListener('click', handleBedrockLink);
-                }
+                const socialLinks = data.social_links || {};
+                document.getElementById('discord').value = socialLinks.discord || '';
+                document.getElementById('spotify').value = socialLinks.spotify || '';
+                document.getElementById('reddit').value = socialLinks.reddit || '';
+                renderBedrockLinker(data);
+
+                document.getElementById('username').value = data.username || '';
+                document.getElementById('email').value = currentUser.email || '';
+                checkUsernameCooldown(data.username_last_changed);
             } catch (err) {
                 console.error('Error loading profile:', err);
-                showToast('Failed to load profile data', 'error');
+                showToast('Failed to load your data.', 'error');
+            }
+        }
+
+        // --- PROFILE TAB LOGIC (Image Uploads & Bio) ---
+        const avatarUpload = document.getElementById('avatar-upload');
+        const bannerUpload = document.getElementById('banner-upload');
+        let newAvatarFile = null;
+        let newBannerFile = null;
+
+        avatarUpload.addEventListener('change', (e) => {
+            newAvatarFile = e.target.files[0];
+            if (newAvatarFile) document.getElementById('avatar-preview').src = URL.createObjectURL(newAvatarFile);
+        });
+        bannerUpload.addEventListener('change', (e) => {
+            newBannerFile = e.target.files[0];
+            if (newBannerFile) document.getElementById('banner-preview').src = URL.createObjectURL(newBannerFile);
+        });
+        
+        document.getElementById('remove-avatar-btn').addEventListener('click', async () => { /* Logic to remove avatar */ });
+
+        handleFormSubmit(document.getElementById('profile-form'), async () => {
+            let avatar_url = currentProfile.avatar_url;
+            let banner_url = currentProfile.banner_url;
+
+            if (newAvatarFile) {
+                const filePath = `public/${currentUser.id}/avatar-${Date.now()}`;
+                const { data, error } = await supabase.storage.from('avatars').upload(filePath, newAvatarFile);
+                if (error) throw new Error('Avatar upload failed: ' + error.message);
+                const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(data.path);
+                avatar_url = publicUrl;
+            }
+            if (newBannerFile) {
+                const filePath = `public/${currentUser.id}/banner-${Date.now()}`;
+                const { data, error } = await supabase.storage.from('banners').upload(filePath, newBannerFile);
+                if (error) throw new Error('Banner upload failed: ' + error.message);
+                const { data: { publicUrl } } = supabase.storage.from('banners').getPublicUrl(data.path);
+                banner_url = publicUrl;
+            }
+
+            const { error } = await supabase.from('profiles').update({
+                bio: document.getElementById('bio').value.trim(),
+                avatar_url,
+                banner_url
+            }).eq('id', currentUser.id);
+            if (error) throw error;
+            showToast('Profile updated successfully!');
+            await loadInitialData();
+        });
+
+        // --- LINKS TAB LOGIC (Social & Bedrock) ---
+        function renderBedrockLinker(profile) {
+            const container = document.getElementById('bedrock-link-container');
+            if (profile.bedrock_gamertag) {
+                 container.innerHTML = `
+                    <button type="button" class="btn connection-btn linked">
+                        <i class="fa-brands fa-xbox" style="color:white;"></i>
+                        Linked as ${profile.bedrock_gamertag}
+                    </button>`;
+            } else {
+                container.innerHTML = `
+                    <button type="button" class="btn connection-btn" id="link-bedrock-btn">
+                         <i class="fa-brands fa-xbox" style="color:#107C10;"></i> Link Xbox Account
+                    </button>`;
+                // --- FIX: Re-attached the event listener ---
+                document.getElementById('link-bedrock-btn').addEventListener('click', handleBedrockLink);
             }
         }
         
-        async function unlinkBedrockAccount() {
-            if (isLoading || !confirm('Are you sure you want to unlink your Bedrock account?')) return;
-            
-            isLoading = true;
-            const btn = document.getElementById('unlink-bedrock-btn');
-            const originalContent = btn.innerHTML;
-            btn.innerHTML = '<div class="spinner-sm"></div>';
-            btn.disabled = true;
-            
-            try {
-                const { error } = await supabase.from('profiles').update({
-                    xuid: null,
-                    bedrock_gamertag: null,
-                    bedrock_gamerpic_url: null
-                }).eq('id', currentUser.id);
-                
-                if (error) throw error;
-                showToast('Bedrock account unlinked successfully!');
-                await loadProfileData();
-            } catch (error) {
-                showToast('Failed to unlink account: ' + error.message, 'error');
-                btn.innerHTML = originalContent;
-                btn.disabled = false;
-            } finally {
-                isLoading = false;
-            }
-        }
-        
+        // --- FIX: Re-added the Bedrock linking logic ---
         function handleBedrockLink() {
             if (isLoading) return;
-            
             const baseUrl = window.location.origin;
             const callbackUrl = `${baseUrl}/bedrock-callback.html`;
             const authUrl = `https://xbl.io/app/auth/${OPENXBL_PUBLIC_KEY}?redirect_uri=${encodeURIComponent(callbackUrl)}`;
             
-            console.log('Opening auth URL:', authUrl);
-            
             const linkBtn = document.getElementById('link-bedrock-btn');
             const originalContent = linkBtn.innerHTML;
             
-            // Open popup with better dimensions
-            const popup = window.open(
-                authUrl, 
-                'bedrock-auth', 
-                'width=600,height=700,scrollbars=yes,resizable=yes,status=yes,location=yes'
-            );
-            
+            const popup = window.open(authUrl, 'bedrock-auth', 'width=600,height=700');
             if (!popup) {
-                showToast('Please allow popups for this site to link your account', 'error');
+                showToast('Please allow popups for this site.', 'error');
                 return;
             }
-            
+
             const handleMessage = async (event) => {
-                console.log('Received message:', event.data);
+                if (event.origin !== window.location.origin) return;
                 
-                // Security check
-                if (event.origin !== window.location.origin) {
-                    console.warn('Received message from unauthorized origin:', event.origin);
-                    return;
-                }
-                
+                window.removeEventListener('message', handleMessage);
+                isLoading = true;
+                linkBtn.disabled = true;
+                linkBtn.innerHTML = '<div class="spinner-sm"></div> Verifying...';
+
                 if (event.data.type === 'BEDROCK_AUTH_ERROR') {
-                    console.error('Bedrock auth error:', event.data);
                     showToast(`Authentication failed: ${event.data.message}`, 'error');
                     linkBtn.disabled = false;
                     linkBtn.innerHTML = originalContent;
-                    window.removeEventListener('message', handleMessage);
                     isLoading = false;
                     return;
                 }
                 
                 if (event.data.type !== 'BEDROCK_AUTH_SUCCESS') return;
                 
-                window.removeEventListener('message', handleMessage);
-                isLoading = true;
-                linkBtn.disabled = true;
-                linkBtn.innerHTML = '<div class="spinner-sm"></div> Verifying...';
-                
                 try {
-                    // Get the token from the callback
-                    const xblToken = event.data.token;
-                    if (!xblToken) {
-                        throw new Error('No authentication token received');
-                    }
-                    
                     const { data: { session } } = await supabase.auth.getSession();
-                    if (!session) {
-                        throw new Error('You must be logged in to link accounts.');
-                    }
-                    
-                    console.log('Calling link-bedrock API...');
                     const response = await fetch('/api/link-bedrock', {
                         method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            mchub_token: session.access_token,
-                            xbl_token: xblToken
-                        })
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ mchub_token: session.access_token, xbl_token: event.data.token })
                     });
-                    
                     const result = await response.json();
-                    console.log('API response:', result);
-                    
-                    if (!response.ok) {
-                        throw new Error(result.details || result.error || 'Failed to link account');
-                    }
-                    
+                    if (!response.ok) throw new Error(result.error || 'Failed to link account');
                     showToast(`Account "${result.bedrock_gamertag}" linked successfully!`);
-                    await loadProfileData();
-                    
+                    await loadInitialData();
                 } catch (error) {
-                    console.error('Link error:', error);
                     showToast(error.message, 'error');
                 } finally {
-                    linkBtn.disabled = false;
-                    linkBtn.innerHTML = originalContent;
                     isLoading = false;
                 }
             };
-            
-            // Listen for messages from the popup
             window.addEventListener('message', handleMessage);
-            
-            // Handle popup being closed manually
-            const checkClosed = setInterval(() => {
-                if (popup.closed) {
-                    clearInterval(checkClosed);
-                    window.removeEventListener('message', handleMessage);
-                    if (isLoading) {
-                        linkBtn.disabled = false;
-                        linkBtn.innerHTML = originalContent;
-                        isLoading = false;
-                    }
-                }
-            }, 1000);
         }
-        
-        document.getElementById('profile-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (isLoading) return;
-            
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            const originalContent = submitBtn.innerHTML;
-            isLoading = true;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<div class="spinner-sm"></div> Saving...';
-            
-            try {
-                const bio = document.getElementById('bio').value.trim();
-                const { error } = await supabase.from('profiles').update({ bio }).eq('id', currentUser.id);
-                if (error) throw error;
-                showToast('Profile updated successfully!');
-            } catch (error) {
-                showToast('Failed to save changes: ' + error.message, 'error');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalContent;
-                isLoading = false;
-            }
+
+        handleFormSubmit(document.getElementById('links-form'), async () => {
+             const { error } = await supabase.from('profiles').update({
+                social_links: {
+                    discord: document.getElementById('discord').value.trim(),
+                    spotify: document.getElementById('spotify').value.trim(),
+                    reddit: document.getElementById('reddit').value.trim()
+                }
+            }).eq('id', currentUser.id);
+            if (error) throw error;
+            showToast('Links updated successfully!');
         });
         
+        // --- ACCOUNT TAB LOGIC ---
+        function checkUsernameCooldown(lastChangedStr) {
+            const usernameInput = document.getElementById('username');
+            const usernameBtn = document.querySelector('#username-form button');
+            const usernameHint = document.getElementById('username-hint');
+            if (!lastChangedStr) return;
+
+            const timeSinceChange = new Date().getTime() - new Date(lastChangedStr).getTime();
+            const sevenDays = 7 * 24 * 60 * 60 * 1000;
+
+            if (timeSinceChange < sevenDays) {
+                const days = Math.ceil((sevenDays - timeSinceChange) / (1000 * 60 * 60 * 24));
+                usernameInput.disabled = true;
+                usernameBtn.disabled = true;
+                usernameHint.textContent = `You can change your username again in ${days} day(s).`;
+                usernameHint.style.color = 'var(--danger)';
+            }
+        }
+
+        handleFormSubmit(document.getElementById('username-form'), async () => {
+            const newUsername = document.getElementById('username').value.trim();
+            if (newUsername === currentProfile.username) throw new Error('This is already your username.');
+            const { error } = await supabase.from('profiles').update({ 
+                username: newUsername,
+                username_last_changed: new Date().toISOString()
+            }).eq('id', currentUser.id);
+            if (error) throw error;
+            showToast('Username updated!');
+            await loadInitialData();
+        });
+
+        handleFormSubmit(document.getElementById('password-form'), async () => {
+            const newPassword = document.getElementById('new-password').value;
+            if (newPassword.length < 6) throw new Error('Password must be at least 6 characters.');
+            const { error } = await supabase.auth.updateUser({ password: newPassword });
+            if (error) throw error;
+            document.getElementById('new-password').value = '';
+            showToast('Password updated successfully!');
+        });
+
+        handleFormSubmit(document.getElementById('email-form'), async () => {
+            const newEmail = document.getElementById('email').value;
+            if (newEmail === currentUser.email) throw new Error('This is already your current email.');
+            const { error } = await supabase.auth.updateUser({ email: newEmail });
+            if (error) throw error;
+            showToast('Email update initiated. Please check both inboxes to confirm.');
+        });
+        
+        // --- INITIALIZATION ---
         document.addEventListener('auth-ready', (e) => {
             const user = e.detail.user;
             if (user) {
                 currentUser = user;
                 document.getElementById('settings-container').classList.add('loaded');
-                loadProfileData();
+                loadInitialData();
             } else {
                 window.location.href = '/login.html';
             }
@@ -372,3 +518,4 @@
     <script type="module" src="/auth.js"></script>
 </body>
 </html>
+
