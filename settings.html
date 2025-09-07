@@ -44,8 +44,8 @@
         .tabs { display: flex; flex-direction: column; gap: 0.5rem; position: sticky; top: 100px; }
         .tab-btn { padding: 0.75rem 1rem; border-radius: 10px; background: transparent; border: none; color: var(--muted); font: 600 15px/1.4 Inter, sans-serif; text-align: left; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all .2s; }
         .tab-btn.active, .tab-btn:hover { background: var(--bg-2); color: var(--text); }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn .4s; }
+        .tab-content { display: none; animation: fadeIn .4s; }
+        .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .card { background: rgba(28,28,28,0.8); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 18px; margin-bottom: 2rem; }
@@ -65,14 +65,18 @@
         .image-uploader { background: var(--bg-2); border: 2px dashed var(--border); border-radius: 12px; padding: 1rem; text-align: center; cursor: pointer; transition: all .2s; }
         .image-uploader:hover, .image-uploader.dragover { border-color: var(--brand-1); background: var(--bg-1); }
         .image-uploader .uploader-content { display: flex; align-items: center; gap: 1.5rem; }
-        .image-uploader img { object-fit: cover; }
+        .image-uploader img { object-fit: cover; background-color: var(--bg-1); }
         .image-uploader .avatar-preview { width: 80px; height: 80px; border-radius: 50%; }
         .image-uploader .banner-preview { width: 100%; height: 80px; border-radius: 8px; }
         .image-uploader .uploader-text strong { display: block; font-size: 1rem; }
         .image-uploader .uploader-text span { font-size: .85rem; color: var(--muted); }
         
-        #cropper-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 1001; display: none; align-items: center; justify-content: center; }
-        .cropper-container { background: var(--bg-1); padding: 1.5rem; border-radius: 16px; width: 90%; max-width: 500px; }
+        #cropper-modal, #confirmation-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 1001; }
+        .modal-dialog { background: var(--bg-1); padding: 1.5rem; border-radius: 16px; width: 90%; }
+        .cropper-container { max-width: 500px; }
+        .confirmation-dialog { max-width: 400px; text-align: center; }
+        .confirmation-dialog p { margin: 0 0 1.5rem 0; font-size: 1.1rem; line-height: 1.5; }
+        .confirmation-actions { display: flex; justify-content: center; gap: 1rem; }
         
         #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 1rem; font-size: 1.2rem; }
         #toast-container { position: fixed; top: 80px; right: 20px; z-index: 1002; }
@@ -85,16 +89,10 @@
         .connection-btn.linked { display: flex; align-items: center; justify-content: space-between; }
         .connection-btn .unlink-btn { background: var(--danger); color: white; padding: .4rem .8rem; font-size: .8rem; }
         .connection-btn i { font-size: 1.2rem; width: 20px; text-align: center; margin-right: 10px; }
-
-        /* --- NEW CONFIRMATION MODAL --- */
-        #confirmation-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 1003; display: none; align-items: center; justify-content: center; }
-        .confirmation-dialog { background: var(--bg-1); padding: 1.5rem; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; }
-        .confirmation-dialog p { margin: 0 0 1.5rem 0; font-size: 1.1rem; }
-        .confirmation-actions { display: flex; justify-content: center; gap: 1rem; }
     </style>
 </head>
 <body>
-    <div id="loading-overlay"><div class="spinner-sm" style="width: 40px; height: 40px; border-width: 4px;"></div><p>Uploading...</p></div>
+    <div id="loading-overlay"><div class="spinner-sm" style="width: 40px; height: 40px; border-width: 4px;"></div><p>Processing...</p></div>
     <div id="toast-container"></div>
     <header>
         <div class="nav">
@@ -120,8 +118,8 @@
                         <div class="card">
                             <div class="card-header"><h2>Public Profile</h2><p>Customize your presence on MCHub.</p></div>
                             <div class="card-body">
-                                <div class="form-group"><label>Profile Picture</label><div id="avatar-uploader" class="image-uploader"><div class="uploader-content"><img id="avatar-preview" src="" class="avatar-preview"><div class="uploader-text"><strong>Upload Avatar</strong><span>1:1 ratio recommended. PNG or JPG.</span></div></div></div><input type="file" id="avatar-input" accept="image/png, image/jpeg" style="display:none;"></div>
-                                <div class="form-group"><label>Profile Banner</label><div id="banner-uploader" class="image-uploader"><div class="uploader-content"><img id="banner-preview" src="" class="banner-preview"><div class="uploader-text"><strong>Upload Banner</strong><span>3:1 ratio recommended. Max 5MB.</span></div></div></div><input type="file" id="banner-input" accept="image/png, image/jpeg" style="display:none;"></div>
+                                <div class="form-group"><label>Profile Picture</label><div id="avatar-uploader" class="image-uploader"><div class="uploader-content"><img id="avatar-preview" class="avatar-preview"><div class="uploader-text"><strong>Upload Avatar</strong><span>1:1 ratio recommended. PNG or JPG.</span></div></div></div><input type="file" id="avatar-input" accept="image/png, image/jpeg" style="display:none;"></div>
+                                <div class="form-group"><label>Profile Banner</label><div id="banner-uploader" class="image-uploader"><div class="uploader-content"><img id="banner-preview" class="banner-preview"><div class="uploader-text"><strong>Upload Banner</strong><span>3:1 ratio recommended. Max 5MB.</span></div></div></div><input type="file" id="banner-input" accept="image/png, image/jpeg" style="display:none;"></div>
                                 <div class="form-group"><label for="bio">Bio</label><textarea id="bio" class="input" placeholder="Tell us a little about yourself..." maxlength="500"></textarea></div>
                             </div>
                             <div class="card-footer"><button type="submit" class="btn primary">Save Profile</button></div>
@@ -147,7 +145,8 @@
 
                 <!-- ACCOUNT TAB -->
                 <section id="account-tab" class="tab-content">
-                    <div class="card"><div class="card-header"><h2>Account Settings</h2><p>Manage your account credentials.</p></div>
+                    <div class="card">
+                        <div class="card-header"><h2>Account Settings</h2><p>Manage your account credentials.</p></div>
                         <form id="username-form"><div class="card-body"><div class="form-group"><label for="username">Username</label><input type="text" id="username" class="input" required minlength="3"><p class="input-hint" id="username-hint">You can change your username once every 7 days.</p></div></div><div class="card-footer"><button type="submit" class="btn primary">Update Username</button></div></form>
                         <form id="password-form"><div class="card-body" style="border-top: 1px solid var(--border);"><div class="form-group"><label for="new-password">New Password</label><input type="password" id="new-password" class="input" required minlength="6"></div></div><div class="card-footer"><button type="submit" class="btn primary">Update Password</button></div></form>
                         <form id="email-form"><div class="card-body" style="border-top: 1px solid var(--border);"><div class="form-group"><label for="email">Email Address</label><input type="email" id="email" class="input" required></div></div><div class="card-footer"><button type="submit" class="btn primary">Update Email</button></div></form>
@@ -158,24 +157,22 @@
     </main>
     
     <!-- MODALS -->
-    <div id="cropper-modal"><div class="cropper-container"><h3 id="cropper-title">Crop Image</h3><div id="cropper-image-container"><img id="cropper-image"></div><div class="cropper-actions"><button id="cancel-crop-btn" class="btn">Cancel</button><button id="confirm-crop-btn" class="btn primary">Crop & Save</button></div></div></div>
-    <div id="confirmation-modal"><div class="confirmation-dialog"><p id="confirmation-message">Are you sure?</p><div class="confirmation-actions"><button id="cancel-confirmation-btn" class="btn">Cancel</button><button id="confirm-action-btn" class="btn primary" style="background: var(--danger);">Confirm</button></div></div></div>
+    <div id="cropper-modal"><div class="modal-dialog cropper-container"><h3 id="cropper-title">Crop Image</h3><div id="cropper-image-container"><img id="cropper-image"></div><div class="cropper-actions"><button id="cancel-crop-btn" class="btn">Cancel</button><button id="confirm-crop-btn" class="btn primary">Crop & Save</button></div></div></div>
+    <div id="confirmation-modal"><div class="modal-dialog confirmation-dialog"><p id="confirmation-message">Are you sure?</p><div class="confirmation-actions"><button id="cancel-confirmation-btn" class="btn">Cancel</button><button id="confirm-action-btn" class="btn primary" style="background: var(--danger);">Confirm</button></div></div></div>
 
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIizI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED_DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED_DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const OPENXBL_PUBLIC_KEY = 'd396b4fc-75dc-2371-1a68-aa0b6665e135';
         
-        let currentUser = null, currentProfile = null, isLoading = false;
-        let avatarBlob = null, bannerBlob = null;
+        let currentUser, currentProfile, isLoading = false;
+        let avatarBlob, bannerBlob, cropper, cropCallback, confirmCallback;
         
         const loadingOverlay = document.getElementById('loading-overlay');
         const cropperModal = document.getElementById('cropper-modal');
         const confirmationModal = document.getElementById('confirmation-modal');
-        const cropperImage = document.getElementById('cropper-image');
-        let cropper, cropCallback, confirmCallback;
 
         // --- UTILITIES ---
         function showToast(message, type = 'success') {
@@ -229,20 +226,49 @@
         }
         
         // --- CROPPING LOGIC ---
-        function openCropper(file, aspect, title, callback) { /* ... same as before ... */ }
-        function setupUploader(uploaderId, inputId, previewEl, aspect, title, blobTargetSetter) { /* ... same as before ... */ }
-        // ... Cropper button listeners and setupUploader calls are the same
+        function openCropper(file, aspect, title, callback) {
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('cropper-image').src = e.target.result;
+                cropperModal.style.display = 'flex';
+                document.getElementById('cropper-title').textContent = title;
+                if (cropper) cropper.destroy();
+                cropper = new Cropper(document.getElementById('cropper-image'), { aspectRatio: aspect, viewMode: 1, background: false, autoCropArea: 0.8 });
+                cropCallback = callback;
+            };
+            reader.readAsDataURL(file);
+        }
         document.getElementById('cancel-crop-btn').addEventListener('click', () => cropperModal.style.display = 'none');
         document.getElementById('confirm-crop-btn').addEventListener('click', () => {
+            if(!cropper) return;
             cropper.getCroppedCanvas({ width: 1024, imageSmoothingQuality: 'high' }).toBlob((blob) => {
                 cropCallback(blob);
                 cropperModal.style.display = 'none';
             }, 'image/jpeg', 0.9);
         });
+        function setupUploader(uploaderId, inputId, previewEl, aspect, title, blobTargetSetter) {
+            const uploader = document.getElementById(uploaderId), input = document.getElementById(inputId);
+            uploader.addEventListener('click', () => input.click());
+            input.addEventListener('change', (e) => openCropper(e.target.files[0], aspect, title, (blob) => {
+                previewEl.src = URL.createObjectURL(blob);
+                blobTargetSetter(blob);
+            }));
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => uploader.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }));
+            uploader.addEventListener('dragover', () => uploader.classList.add('dragover'));
+            uploader.addEventListener('dragleave', () => uploader.classList.remove('dragover'));
+            uploader.addEventListener('drop', (e) => {
+                uploader.classList.remove('dragover');
+                openCropper(e.dataTransfer.files[0], aspect, title, (blob) => {
+                    previewEl.src = URL.createObjectURL(blob);
+                    blobTargetSetter(blob);
+                });
+            });
+        }
         setupUploader('avatar-uploader', 'avatar-input', document.getElementById('avatar-preview'), 1 / 1, 'Crop Avatar', (blob) => avatarBlob = blob);
         setupUploader('banner-uploader', 'banner-input', document.getElementById('banner-preview'), 3 / 1, 'Crop Banner', (blob) => bannerBlob = blob);
         
-        // --- PROFILE TAB LOGIC ---
+        // --- PROFILE TAB ---
         handleFormSubmit(document.getElementById('profile-form'), async () => {
             loadingOverlay.style.display = 'flex';
             let updates = { bio: document.getElementById('bio').value.trim() };
@@ -266,28 +292,80 @@
             loadingOverlay.style.display = 'none';
         });
 
-        // --- LINKS TAB LOGIC ---
-        handleFormSubmit(document.getElementById('links-form'), async () => { /* ... fully implemented ... */ });
-        function renderBedrockLinker(profile) { /* ... fully implemented ... */ }
+        // --- LINKS TAB ---
+        handleFormSubmit(document.getElementById('links-form'), async () => {
+            const { error } = await supabase.from('profiles').update({
+                social_links: {
+                    discord: document.getElementById('discord').value.trim(),
+                    spotify: document.getElementById('spotify').value.trim(),
+                    reddit: document.getElementById('reddit').value.trim()
+                }
+            }).eq('id', currentUser.id);
+            if (error) throw error;
+            showToast('Links updated!');
+        });
+
+        function renderBedrockLinker(profile) {
+            const container = document.getElementById('bedrock-link-container');
+            if (profile.bedrock_gamertag) {
+                container.innerHTML = `<label>Bedrock Account</label><div class="btn connection-btn linked"><span><i class="fa-brands fa-xbox" style="color:white;"></i> Linked as ${profile.bedrock_gamertag}</span><button type="button" class="btn unlink-btn" id="unlink-bedrock-btn"><i class="fa-solid fa-unlink"></i> Unlink</button></div>`;
+                document.getElementById('unlink-bedrock-btn').addEventListener('click', unlinkBedrockAccount);
+            } else {
+                container.innerHTML = `<label>Bedrock Account</label><button type="button" class="btn connection-btn" id="link-bedrock-btn"><i class="fa-brands fa-xbox" style="color:#107C10;"></i> Link Xbox Account</button>`;
+                document.getElementById('link-bedrock-btn').addEventListener('click', handleBedrockLink);
+            }
+        }
+
         async function unlinkBedrockAccount() {
             showConfirmation('Are you sure you want to unlink your Bedrock account?', async () => {
-                isLoading = true;
+                loadingOverlay.style.display = 'flex';
+                loadingOverlay.querySelector('p').textContent = 'Unlinking...';
                 try {
                     const { error } = await supabase.from('profiles').update({ xuid: null, bedrock_gamertag: null, bedrock_gamerpic_url: null }).eq('id', currentUser.id);
                     if (error) throw error;
                     showToast('Bedrock account unlinked!');
                     await loadInitialData();
                 } catch (error) { showToast(error.message, 'error'); } 
-                finally { isLoading = false; }
+                finally { loadingOverlay.style.display = 'none'; loadingOverlay.querySelector('p').textContent = 'Processing...'; }
             });
         }
-        function handleBedrockLink() { /* ... fully implemented ... */ }
 
-        // --- ACCOUNT TAB LOGIC ---
+        function handleBedrockLink() {
+            const popup = window.open(`https://xbl.io/app/auth/${OPENXBL_PUBLIC_KEY}?redirect_uri=${window.location.origin}/bedrock-callback.html`, 'bedrock-auth', 'width=600,height=700');
+            if (!popup) return showToast('Please allow popups.', 'error');
+            
+            const handleMessage = async ({ origin, data }) => {
+                if (origin !== window.location.origin) return;
+                window.removeEventListener('message', handleMessage);
+                if (data.type !== 'BEDROCK_AUTH_SUCCESS') return showToast(`Auth failed: ${data.message || 'Unknown error.'}`, 'error');
+                
+                const linkBtn = document.getElementById('link-bedrock-btn');
+                linkBtn.disabled = true;
+                linkBtn.innerHTML = '<div class="spinner-sm"></div> Verifying...';
+                try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    const response = await fetch('/api/link-bedrock', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ mchub_token: session.access_token, xbl_token: data.token })
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.details || 'Failed to link account');
+                    showToast(`Account "${result.bedrock_gamertag}" linked!`, 'success');
+                    await loadInitialData();
+                } catch (error) {
+                    showToast(error.message, 'error');
+                    renderBedrockLinker(currentProfile);
+                }
+            };
+            window.addEventListener('message', handleMessage);
+        }
+
+        // --- ACCOUNT TAB ---
         handleFormSubmit(document.getElementById('username-form'), async () => {
             const newUsername = document.getElementById('username').value.trim();
             if (newUsername.length < 3) throw new Error('Username must be at least 3 characters.');
-            if (newUsername === currentProfile.username) return; // No change
+            if (newUsername === currentProfile.username) return showToast('This is already your username.', 'error');
             const { error } = await supabase.from('profiles').update({ username: newUsername, username_last_changed: new Date().toISOString() }).eq('id', currentUser.id);
             if (error) throw error;
             showToast('Username updated!');
@@ -303,12 +381,22 @@
         });
         handleFormSubmit(document.getElementById('email-form'), async () => {
             const newEmail = document.getElementById('email').value;
-            if (newEmail === currentUser.email) return;
+            if (newEmail === currentUser.email) return showToast('This is already your email.', 'error');
             const { error } = await supabase.auth.updateUser({ email: newEmail });
             if (error) throw error;
             showToast('Email update initiated. Check your inbox to confirm.');
         });
-        function checkUsernameCooldown(lastChangedStr) { /* ... fully implemented ... */ }
+        function checkUsernameCooldown(lastChangedStr) {
+            if (!lastChangedStr) return;
+            const timeSinceChange = new Date().getTime() - new Date(lastChangedStr).getTime();
+            const sevenDays = 7 * 24 * 60 * 60 * 1000;
+            if (timeSinceChange < sevenDays) {
+                const days = Math.ceil((sevenDays - timeSinceChange) / (1000 * 60 * 60 * 24));
+                document.getElementById('username').disabled = true;
+                document.querySelector('#username-form button').disabled = true;
+                document.getElementById('username-hint').textContent = `You can change your username again in ${days} day(s).`;
+            }
+        }
         
         // --- INITIALIZATION ---
         async function loadInitialData() {
