@@ -258,7 +258,6 @@
             color: var(--error);
         }
 
-
         /* Modals */
         .modal { 
             position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); 
@@ -369,15 +368,79 @@
     <!-- Overlays and Modals -->
     <div id="loading-overlay" class="loading-overlay"><div class="spinner"></div><p class="loading-text">Loading...</p></div>
     <div id="toast-container" class="toast-container"></div>
-    <div id="cropper-modal" class="modal"><div class="modal-dialog cropper-modal"><!-- Cropper content --></div></div>
-    <div id="confirmation-modal" class="modal"><div class="modal-dialog" style="text-align: center; max-width: 450px;"><!-- Confirmation content --></div></div>
-    <div id="social-modal" class="modal"><div class="modal-dialog social-modal"><!-- Social modal content --></div></div>
+
+    <div id="cropper-modal" class="modal">
+        <div class="modal-dialog cropper-modal">
+            <h3 id="cropper-title" style="margin-bottom: 24px; font-size: 20px; font-weight: 700;">Image Cropper</h3>
+            <div id="cropper-image-container" style="margin-bottom: 24px;">
+                <img id="cropper-image" style="max-width: 100%; border-radius: 12px;">
+            </div>
+            <div style="display: flex; gap: 16px; justify-content: flex-end;">
+                <button id="cancel-crop-btn" class="btn ghost">Cancel</button>
+                <button id="confirm-crop-btn" class="btn primary">
+                    <i class="fa-solid fa-crop"></i>
+                    Crop & Upload
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmation-modal" class="modal">
+        <div class="modal-dialog" style="text-align: center; max-width: 450px;">
+            <i class="fa-solid fa-exclamation-triangle" style="font-size: 48px; color: #f59e0b; margin-bottom: 16px;"></i>
+            <p id="confirmation-message" style="font-size: 18px; margin-bottom: 24px;">Are you sure?</p>
+            <div style="display: flex; gap: 16px; justify-content: center;">
+                <button id="cancel-confirmation-btn" class="btn ghost">Cancel</button>
+                <button id="confirm-action-btn" class="btn danger">
+                    <i class="fa-solid fa-check"></i>
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="social-modal" class="modal">
+        <div class="modal-dialog social-modal">
+            <div id="social-modal-header">
+                <i id="social-modal-icon"></i>
+                <h2 id="social-modal-title"></h2>
+            </div>
+            <div id="social-mode-switcher-container" class="social-mode-switcher">
+                 <!-- JS will render buttons here -->
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label id="social-modal-label" class="form-label" for="social-modal-input"></label>
+                <div style="position: relative; display: flex; align-items: center;">
+                    <i id="social-input-icon" class="fa-solid fa-link" style="position: absolute; left: 16px; color: var(--muted);"></i>
+                    <input type="text" id="social-modal-input" class="form-input" style="padding-left: 45px;">
+                </div>
+            </div>
+            <div id="social-modal-footer">
+                <button id="cancel-social-btn" class="btn ghost">Cancel</button>
+                <button id="save-social-btn" class="btn primary">Save</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Header -->
-    <header><nav class="nav"><!-- Nav content --></nav></header>
+    <header>
+        <nav class="nav">
+            <a class="brand" href="/">
+                <div class="brand-badge">
+                    <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
+                </div>
+                <div>
+                    <div class="brand-title">MCHUB</div>
+                    <div class="tiny">Minecraft Bedrock • community</div>
+                </div>
+            </a>
+            <div id="nav-actions" class="nav-actions"></div>
+        </nav>
+    </header>
 
     <!-- Main Content -->
     <main class="container" id="settings-container">
+        <!-- JS will populate this after auth -->
         <div class="loading-container"><div class="spinner"></div><p>Loading Settings...</p></div>
     </main>
     
@@ -409,27 +472,31 @@
         };
 
         // --- UTILITIES ---
-        function showToast(message, type = 'success') { /* ... */ }
-        function showConfirmation(message, onConfirm) { /* ... */ }
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation'}"></i><span>${message}</span>`;
+            toastContainer.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 4000);
+        }
+        function showConfirmation(message, onConfirm) {
+            document.getElementById('confirmation-message').textContent = message;
+            confirmCallback = onConfirm;
+            confirmationModal.classList.add('show');
+        }
         function hideLoading() { loadingOverlay.style.display = 'none'; }
-        function showLoading(text = 'Loading...') { /* ... */ }
+        function showLoading(text = 'Loading...') {
+            loadingOverlay.querySelector('.loading-text').textContent = text;
+            loadingOverlay.style.display = 'flex';
+        }
 
-        // --- CORE RENDER FUNCTION ---
-        function renderSettingsPage() {
-            // This function now builds the entire static structure of the page.
-            const nav = document.querySelector('.nav');
-            if(nav) nav.innerHTML = `<a class="brand" href="/"><div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div><div><div class="brand-title">MCHUB</div><div class="tiny">Minecraft Bedrock • community</div></div></a><div id="nav-actions" class="nav-actions"></div>`;
-            
-            const cropperDialog = document.querySelector('.cropper-modal');
-            if(cropperDialog) cropperDialog.innerHTML = `<h3 id="cropper-title">Image Cropper</h3><div id="cropper-image-container"><img id="cropper-image"></div><div><button id="cancel-crop-btn" class="btn ghost">Cancel</button><button id="confirm-crop-btn" class="btn primary"><i class="fa-solid fa-crop"></i> Crop & Upload</button></div>`;
-
-            const confirmDialog = document.querySelector('#confirmation-modal .modal-dialog');
-            if(confirmDialog) confirmDialog.innerHTML = `<i class="fa-solid fa-exclamation-triangle" style="font-size: 48px; color: #f59e0b;"></i><p id="confirmation-message">Are you sure?</p><div><button id="cancel-confirmation-btn" class="btn ghost">Cancel</button><button id="confirm-action-btn" class="btn danger"><i class="fa-solid fa-check"></i> Confirm</button></div>`;
-
-            const socialDialog = document.querySelector('.social-modal');
-            if(socialDialog) socialDialog.innerHTML = `<div id="social-modal-header"><i id="social-modal-icon"></i><h2 id="social-modal-title"></h2></div><div id="social-mode-switcher-container" class="social-mode-switcher"></div><div class="form-group" style="margin-bottom: 0;"><label id="social-modal-label" class="form-label"></label><div style="position: relative; display: flex; align-items: center;"><i id="social-input-icon" class="fa-solid fa-link"></i><input type="text" id="social-modal-input" class="form-input" style="padding-left: 45px;"></div></div><div id="social-modal-footer"><button id="cancel-social-btn" class="btn ghost">Cancel</button><button id="save-social-btn" class="btn primary">Save</button></div>`;
-            
-            settingsContainer.innerHTML = `
+        // --- RENDER & SETUP ---
+        function buildPageStructure() {
+             settingsContainer.innerHTML = `
                 <div class="settings-grid">
                     <aside class="settings-sidebar">
                         <div class="sidebar-header"><h2>Settings</h2><p>Customize your MCHub experience</p></div>
@@ -446,8 +513,8 @@
                                 <div class="card">
                                     <div class="card-header"><h2>Profile Customization</h2><p>Make your profile stand out with a custom avatar, banner, and bio</p></div>
                                     <div class="card-body">
-                                        <div class="form-group"><label class="form-label">Profile Avatar</label><div id="avatar-uploader" class="uploader"><div class="uploader-content"><img id="avatar-preview" class="uploader-preview avatar-preview" src="https://placehold.co/100x100/1c1c1c/de212a?text=A"><div class="uploader-text"><strong>Upload Your Avatar</strong><span>Square image recommended • PNG/JPG format • Max 5MB<br>Click here or drag and drop your image</span></div></div></div><input type="file" id="avatar-input" accept="image/png, image/jpeg" style="display:none;"></div>
-                                        <div class="form-group"><label class="form-label">Profile Banner</label><div id="banner-uploader" class="uploader"><div class="uploader-content"><img id="banner-preview" class="uploader-preview banner-preview" src="https://placehold.co/200x67/1c1c1c/de212a?text=BANNER"><div class="uploader-text"><strong>Upload Your Banner</strong><span>Wide format • 3:1 ratio recommended • PNG/JPG format • Max 10MB<br>This appears at the top of your profile</span></div></div></div><input type="file" id="banner-input" accept="image/png, image/jpeg" style="display:none;"></div>
+                                        <div class="form-group"><label class="form-label">Profile Avatar</label><div id="avatar-uploader" class="uploader"><div class="uploader-content"><img id="avatar-preview" class="uploader-preview avatar-preview"><div class="uploader-text"><strong>Upload Your Avatar</strong><span>Square image recommended • PNG/JPG format • Max 5MB<br>Click here or drag and drop your image</span></div></div></div><input type="file" id="avatar-input" accept="image/png, image/jpeg" style="display:none;"></div>
+                                        <div class="form-group"><label class="form-label">Profile Banner</label><div id="banner-uploader" class="uploader"><div class="uploader-content"><img id="banner-preview" class="uploader-preview banner-preview"><div class="uploader-text"><strong>Upload Your Banner</strong><span>Wide format • 3:1 ratio recommended • PNG/JPG format • Max 10MB<br>This appears at the top of your profile</span></div></div></div><input type="file" id="banner-input" accept="image/png, image/jpeg" style="display:none;"></div>
                                         <div class="form-group"><label class="form-label" for="bio">About You</label><textarea id="bio" class="form-input form-textarea" placeholder="Tell the MCHub community about yourself..." maxlength="500"></textarea><div class="input-hint">Maximum 500 characters • This appears on your public profile</div></div>
                                     </div>
                                     <div class="card-footer"><button type="submit" class="btn primary"><i class="fa-solid fa-save"></i> Save Profile Changes</button></div>
@@ -476,46 +543,165 @@
                             </div>
                         </section>
                         <section id="advanced-tab" class="content-area">
-                            <!-- Placeholder for advanced settings -->
+                             <div class="card">
+                                <div class="card-header"><h2>Advanced Settings</h2><p>Privacy controls and account management options</p></div>
+                                <div class="card-body">
+                                     <div class="form-group">
+                                        <label class="form-label">Danger Zone</label>
+                                        <div style="padding: 20px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px;">
+                                            <h4 style="color: #ef4444; margin-bottom: 12px; font-weight: 700;">Delete Account</h4>
+                                            <p style="color: var(--muted); margin-bottom: 16px; line-height: 1.5;">Once you delete your account, there is no going back. All your data will be permanently deleted.</p>
+                                            <button type="button" id="delete-account-btn" class="btn danger"><i class="fa-solid fa-trash-alt"></i> Delete My Account</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </section>
                     </div>
                 </div>`;
         }
 
-        // --- SETUP FUNCTIONS ---
         function setupAllEventListeners() {
             setupTabSwitching();
             setupFormHandlers();
             setupUploaders();
             setupModalHandlers();
         }
-        function setupTabSwitching() { /* ... */ }
-        function setupFormHandlers() { /* ... */ }
-        function setupUploaders() { /* ... */ }
-        function setupModalHandlers() { /* ... */ }
         
-        // --- SOCIALS LOGIC ---
-        function renderSocials(profile) { /* ... */ }
-        function createLinkedAccountCard(key, value) { /* ... */ }
-        function attachSocialsEventListeners() { /* ... */ }
-        function unlinkSocial(key) { /* ... */ }
-        function openSocialModal(key) { /* ... */ }
-        function saveSocial(key) { /* ... */ }
+        function setupTabSwitching() {
+            document.querySelectorAll('.settings-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.querySelectorAll('.content-area').forEach(area => area.classList.remove('active'));
+                    document.getElementById(tab.dataset.tab + '-tab').classList.add('active');
+                });
+            });
+        }
         
-        // --- XBOX LOGIC ---
-        function initiateXboxConnection() { /* ... */ }
-        function unlinkXboxConnection() { /* ... */ }
+        function handleForm(form, submitAction) {
+            if (!form) return;
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (isProcessing) return;
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalContent = submitBtn.innerHTML;
+                isProcessing = true;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<div class="spinner" style="width: 16px; height: 16px; border-width: 2px; margin-right: 8px;"></div> Processing...';
+                try { await submitAction(); } catch (error) {
+                    console.error('Form error:', error);
+                    showToast(error.message || 'An error occurred', 'error');
+                } finally {
+                    isProcessing = false;
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalContent;
+                }
+            });
+        }
+        
+        function setupFormHandlers() {
+            handleForm(document.getElementById('profile-form'), async () => { /* ... Profile form logic ... */ });
+            handleForm(document.getElementById('username-form'), async () => { /* ... Username form logic ... */ });
+            const deleteBtn = document.getElementById('delete-account-btn');
+            if(deleteBtn) deleteBtn.addEventListener('click', () => { /* ... delete logic ... */ });
+        }
 
-        // --- DATA LOGIC ---
-        async function loadProfile() { /* ... */ }
+        function setupUploaders() {
+            setupUploader('avatar-uploader', 'avatar-input', document.getElementById('avatar-preview'), 1, 'Avatar', (blob) => avatarBlob = blob);
+            setupUploader('banner-uploader', 'banner-input', document.getElementById('banner-preview'), 3, 'Banner', (blob) => bannerBlob = blob);
+        }
+
+        function setupUploader(uploaderId, inputId, previewEl, aspectRatio, title, blobSetter) {
+             const uploader = document.getElementById(uploaderId);
+             const input = document.getElementById(inputId);
+             if (!uploader || !input) return;
+
+             uploader.addEventListener('click', () => input.click());
+             input.addEventListener('change', (e) => {
+                 const file = e.target.files[0];
+                 if (file) initializeCropper(file, aspectRatio, title, blobSetter);
+             });
+             // ... drag/drop listeners
+        }
+
+        function initializeCropper(file, aspectRatio, title, callback) {
+             if (!file) return;
+             const reader = new FileReader();
+             reader.onload = (e) => {
+                 document.getElementById('cropper-image').src = e.target.result;
+                 document.getElementById('cropper-title').textContent = title;
+                 cropperModal.classList.add('show');
+                 if (cropper) cropper.destroy();
+                 setTimeout(() => {
+                     cropper = new Cropper(document.getElementById('cropper-image'), { aspectRatio: aspectRatio, viewMode: 1 });
+                 }, 100);
+                 cropCallback = callback;
+             };
+             reader.readAsDataURL(file);
+        }
+
+        function setupModalHandlers() {
+            document.getElementById('cancel-crop-btn')?.addEventListener('click', () => cropperModal.classList.remove('show'));
+            document.getElementById('confirm-crop-btn')?.addEventListener('click', () => {
+                if (!cropper) return;
+                cropper.getCroppedCanvas({ width: 1024, height: 1024 }).toBlob((blob) => {
+                    if (cropCallback) cropCallback(blob);
+                    cropperModal.classList.remove('show');
+                }, 'image/jpeg', 0.92);
+            });
+            document.getElementById('cancel-confirmation-btn')?.addEventListener('click', () => confirmationModal.classList.remove('show'));
+            document.getElementById('confirm-action-btn')?.addEventListener('click', () => {
+                confirmationModal.classList.remove('show');
+                if (confirmCallback) confirmCallback();
+            });
+            document.getElementById('cancel-social-btn')?.addEventListener('click', () => socialModal.classList.remove('show'));
+        }
+
+        // ... SOCIALS & XBOX logic functions (renderSocials, openSocialModal, initiateXboxConnection, etc.) ...
+        
+        async function loadProfileAndPopulate() {
+            try {
+                const { data: profileData, error } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
+                if (error) throw error;
+                currentProfile = profileData;
+
+                // Populate Profile Tab
+                document.getElementById('avatar-preview').src = currentProfile.avatar_url || `https://placehold.co/100x100/1c1c1c/de212a?text=${currentProfile.username.charAt(0).toUpperCase()}`;
+                document.getElementById('banner-preview').src = currentProfile.banner_url || 'https://placehold.co/200x67/1c1c1c/de212a?text=BANNER';
+                document.getElementById('bio').value = currentProfile.bio || '';
+                
+                // Populate Security Tab
+                document.getElementById('username').value = currentProfile.username || '';
+                
+                // Populate Connections Tab
+                renderSocials(currentProfile);
+
+            } catch (error) {
+                console.error('Failed to load profile data:', error);
+                showToast('Could not load your settings.', 'error');
+            }
+        }
+
+        function renderSocials(profile) {
+            // ... same as before
+        }
+        function attachSocialsEventListeners(){
+            // ... same as before
+        }
+        function openSocialModal(key){
+            // ... same as before
+        }
+        function initiateXboxConnection(){
+            // ... same as before
+        }
+
 
         // --- INITIALIZATION ---
         document.addEventListener('auth-ready', async (event) => {
-            hideLoading();
             const { user, profile, error } = event.detail;
 
-            if (error || !user || !profile) {
-                showToast('Authentication error. Please sign in.', 'error');
+            if (error || !user) {
                 settingsContainer.innerHTML = `<div class="loading-container"><p>Please log in to view your settings.</p></div>`;
                 return;
             }
@@ -523,10 +709,9 @@
             currentUser = user;
             currentProfile = profile;
             
-            // CORRECT INITIALIZATION ORDER
-            renderSettingsPage();      // 1. Build the static DOM
-            await loadProfile();       // 2. Populate the DOM with data
-            setupAllEventListeners();  // 3. Attach listeners to the now-existing elements
+            buildPageStructure();
+            await loadProfileAndPopulate();
+            setupAllEventListeners();
         });
     </script>
     <script type="module" src="auth.js"></script>
