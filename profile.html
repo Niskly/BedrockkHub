@@ -273,12 +273,11 @@
             // Check if currently following
             const { data } = await supabase
                 .from('followers')
-                .select('*')
+                .select('created_at', { count: 'exact', head: true }) // More efficient check
                 .eq('follower_id', currentUser.id)
-                .eq('following_id', profile.id)
-                .single();
+                .eq('following_id', profile.id);
                 
-            let isFollowing = data !== null;
+            let isFollowing = data && data.count > 0;
             
             function updateButtonState(newFollowerCount) {
                 document.getElementById('follower-count').textContent = newFollowerCount.toLocaleString();
@@ -316,9 +315,9 @@
                             }]);
                     }
                     
-                    // Get updated count by calling the RPC function which is more efficient
+                    // Get updated count directly from our new, reliable VIEW
                     const { data: updatedProfile, error } = await supabase
-                        .from('profiles')
+                        .from('profiles_with_counts')
                         .select('followers_count')
                         .eq('id', profile.id)
                         .single();
@@ -349,9 +348,9 @@
 
                 console.log('👤 Looking for user:', username);
 
-                // Get target profile by username
+                // Get target profile from our new VIEW
                 const { data: profile, error: profileError } = await supabase
-                    .from('profiles')
+                    .from('profiles_with_counts')
                     .select('*')
                     .eq('username', username)
                     .single();
@@ -371,14 +370,12 @@
                 // Increment view count if viewing someone else's profile
                 if (currentUser && currentUser.id !== profile.id) {
                     try {
-                        // This uses a database function (RPC) to safely increment the count.
                         const { error } = await supabase.rpc('increment_view_count', { 
                             profile_id_to_update: profile.id 
                         });
                         if (error) console.error('View count error:', error);
                     } catch (viewError) {
                         console.error('View count increment failed:', viewError);
-                        // Don't fail the whole page for this
                     }
                 }
                 
@@ -392,7 +389,6 @@
                     
                 if (packsError) {
                     console.error('Packs error:', packsError);
-                    // Don't fail the whole page for pack loading errors
                 }
                 
                 console.log('🎨 Rendering profile dashboard...');
@@ -415,15 +411,14 @@
         }
 
         // === INITIALIZATION ===
-        // Main entry point, listening for the custom 'auth-ready' event from auth.js
         document.addEventListener('auth-ready', (event) => {
-            const { user } = event.detail; // We only need the logged-in user's info here.
+            const { user } = event.detail;
             loggedInUser = user; 
-            loadProfilePage(loggedInUser); // Load the target profile page, passing in who is viewing it.
+            loadProfilePage(loggedInUser);
         });
 
     </script>
-    <!-- The centralized auth script is now included and does the heavy lifting -->
     <script type="module" src="auth.js"></script>
 </body>
 </html>
+
