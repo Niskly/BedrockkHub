@@ -66,7 +66,6 @@ export default async function handler(req, res) {
     }
 
     // 5. Check if this Xbox account is already linked to a DIFFERENT user
-    // FIXED: Only check for OTHER users, not the current user
     const { data: existingLinks, error: linkCheckError } = await supabaseAdmin
       .from('profiles')
       .select('id, username')
