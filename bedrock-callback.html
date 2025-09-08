@@ -29,26 +29,21 @@
         }
         
         try {
-            const params = new URLSearchParams(window.location.search);
-            const code = params.get('code');
-            const error = params.get('error');
-            const errorDescription = params.get('error_description');
+            // xbl.io returns the token in the URL hash
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const token = hashParams.get('token');
 
-            if (error) {
-                throw new Error(errorDescription || 'Authentication failed.');
+            if (!token) {
+                throw new Error('Authentication token not found in response.');
             }
 
-            if (!code) {
-                throw new Error('Authentication code not found in response.');
-            }
-
-            updateStatus('Authentication successful! Sending code to main application...');
+            updateStatus('Authentication successful! Closing window...', 'success');
             
             if (window.opener) {
-                // The main window now expects an 'auth_code' instead of a 'token'
+                // This is the message format our settings.html expects for the xbl.io flow
                 window.opener.postMessage({
                     type: 'BEDROCK_AUTH_SUCCESS',
-                    auth_code: code 
+                    token: token 
                 }, window.location.origin);
             }
             
