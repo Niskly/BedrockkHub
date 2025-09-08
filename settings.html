@@ -820,28 +820,18 @@
         }
 
 function initiateXboxConnection() {
-    // Force account selection and clear any cached authentication
-    const authUrl = `https://xbl.io/app/auth/${OPENXBL_PUBLIC_KEY}?redirect_uri=${encodeURIComponent(window.location.origin + '/bedrock-callback.html')}&prompt=select_account&force_verify=true&max_age=0`;
+    const authUrl = `https://xbl.io/app/auth/${OPENXBL_PUBLIC_KEY}?redirect_uri=${encodeURIComponent(window.location.origin + '/bedrock-callback.html')}&prompt=select_account`;
     
-    // Clear any existing Xbox authentication cookies/session data
-    const popup = window.open('about:blank', 'xbox-auth', 'width=600,height=700,scrollbars=yes,resizable=yes');
+    const popup = window.open(authUrl, 'xbox-auth', 'width=600,height=700,scrollbars=yes,resizable=yes');
     
     if (!popup) { 
         return showToast('Popup blocked. Please allow popups and try again.', 'error'); 
     }
 
-    // Clear the popup's storage to ensure fresh authentication
-    try {
-        popup.document.write('<html><body><p>Redirecting to Xbox authentication...</p></body></html>');
-        popup.location.href = authUrl;
-    } catch (e) {
-        // Fallback if we can't write to popup document
-        popup.location.href = authUrl;
-    }
-
     const handleMessage = async ({ origin, data }) => {
         if (origin !== window.location.origin) return;
         window.removeEventListener('message', handleMessage);
+        clearInterval(checkClosed);
         
         if (data.type !== 'BEDROCK_AUTH_SUCCESS') { 
             return showToast(`Xbox connection failed: ${data.message || 'Unknown error'}`, 'error'); 
@@ -858,10 +848,7 @@ function initiateXboxConnection() {
 
             const response = await fetch('/api/link-bedrock', {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.access_token}` // Add explicit auth header
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     mchub_token: session.access_token, 
                     xbl_token: data.token 
@@ -871,7 +858,7 @@ function initiateXboxConnection() {
             const result = await response.json();
             
             if (!response.ok) {
-                throw new Error(result.details || `Server error: ${response.status}`);
+                throw new Error(result.details || 'Failed to link account');
             }
 
             showToast(`Xbox account linked successfully: ${result.bedrock_gamertag}`, 'success');
