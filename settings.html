@@ -442,7 +442,7 @@
     <!-- Main Content -->
     <main class="container" id="settings-container">
         <!-- JS will populate this after auth -->
-        <div class="loading-container"><div class="spinner"></div><p class="loading-text">Loading Settings...</p></div>
+        <div class="loading-container"><div class="spinner"></div><p>Loading Settings...</p></div>
     </main>
     
     <script type="module">
@@ -454,8 +454,8 @@
         let currentUser, currentProfile, isProcessing = false;
         let avatarBlob, bannerBlob, cropper, cropCallback, confirmCallback;
         
-        // IMPORTANT: REPLACE THIS WITH YOUR ACTUAL AZURE APP CLIENT ID
-        const AZURE_CLIENT_ID = 'e0d7b39d-e084-4028-beac-0d77da979a18'; 
+        // IMPORTANT: REPLACE THIS WITH YOUR ACTUAL PUBLIC KEY FROM YOUR NEW, CLEAN XBL.IO APP
+        const OPENXBL_PUBLIC_KEY = '7105e188-fd19-a56c-c9ee-6a72128c8f39'; 
         
         const loadingOverlay = document.getElementById('loading-overlay');
         const cropperModal = document.getElementById('cropper-modal');
@@ -838,31 +838,22 @@
         }
 
         function initiateXboxConnection() {
-            const redirectUri = `${window.location.origin}/bedrock-callback.html`;
-            const authUrl = new URL(`https://login.microsoftonline.com/common/oauth2/v2.0/authorize`);
-            authUrl.search = new URLSearchParams({
-                client_id: AZURE_CLIENT_ID,
-                response_type: 'code',
-                redirect_uri: redirectUri,
-                scope: 'XboxLive.signin offline_access',
-                prompt: 'select_account',
-            }).toString();
-
-            const popup = window.open(authUrl.href, 'xbox-auth', 'width=600,height=700');
+            const authUrl = `https://xbl.io/app/auth/${OPENXBL_PUBLIC_KEY}?redirect_uri=${encodeURIComponent(window.location.origin + '/bedrock-callback.html')}`;
+            const popup = window.open(authUrl, 'xbox-auth', 'width=600,height=700');
             if (!popup) { return showToast('Popup blocked. Please allow popups.', 'error'); }
             
             const handleMessage = async ({ origin, data }) => {
                 if (origin !== window.location.origin) return;
                 window.removeEventListener('message', handleMessage);
 
-                if (data.type === 'BEDROCK_AUTH_SUCCESS' && data.auth_code) {
+                if (data.type === 'BEDROCK_AUTH_SUCCESS' && data.token) {
                     showLoading('Linking Xbox account...');
                     try {
                         const { data: { session } } = await supabase.auth.getSession();
                         const response = await fetch('/api/link-bedrock', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ mchub_token: session.access_token, auth_code: data.auth_code })
+                            body: JSON.stringify({ mchub_token: session.access_token, xbl_token: data.token })
                         });
                         const result = await response.json();
                         if (!response.ok) throw new Error(result.details || 'Failed to link account');
