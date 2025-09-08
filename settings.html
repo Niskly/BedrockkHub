@@ -217,7 +217,7 @@
         .linked-accounts-container {
             display: grid;
             gap: 1rem;
-            max-width: 500px; /* NEW: Constrain width */
+            max-width: 500px;
         }
         .linked-account-card {
             display: flex;
@@ -450,10 +450,16 @@
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        const OPENXBL_PUBLIC_KEY = '7105e188-fd19-a56c-c9ee-6a72128c8f39';
         
         let currentUser, currentProfile, isProcessing = false;
         let avatarBlob, bannerBlob, cropper, cropCallback, confirmCallback;
+        
+        // These need to be replaced with your actual Azure App credentials
+        // It's best practice to fetch these from a config file or environment variable on the server-side
+        // But for this client-side example, we'll define them here.
+        // IMPORTANT: In a real production app, you would not expose the client ID like this.
+        // This is simplified for our current setup.
+        const AZURE_CLIENT_ID = 'e0d7b39d-e084-4028-beac-0d77da979a18'; // <-- IMPORTANT: REPLACE THIS
         
         const loadingOverlay = document.getElementById('loading-overlay');
         const cropperModal = document.getElementById('cropper-modal');
@@ -464,7 +470,7 @@
 
         const socialPlatforms = {
             xbox: { name: 'Xbox Live', icon: 'fa-brands fa-xbox', color: '#107c10', type: 'oauth' },
-            discord: { name: 'Discord', icon: 'fa-brands fa-discord', color: '#5865F2', modes: ['text', 'link'], defaultMode: 'text', placeholder: 'your_username' },
+            discord: { name: 'Discord', icon: 'fa-brands fa-discord', color: '#5865F2', modes: ['text', 'link'], defaultMode: 'text', placeholder: 'your_username_or_invite_link' },
             spotify: { name: 'Spotify', icon: 'fa-brands fa-spotify', color: '#1DB954', modes: ['link'], defaultMode: 'link', placeholder: 'https://open.spotify.com/user/...' },
             reddit: { name: 'Reddit', icon: 'fa-brands fa-reddit-alien', color: '#FF4500', modes: ['link'], defaultMode: 'link', placeholder: 'https://reddit.com/user/...' },
             youtube: { name: 'YouTube', icon: 'fa-brands fa-youtube', color: '#FF0000', modes: ['link'], defaultMode: 'link', placeholder: 'https://youtube.com/c/...' },
@@ -634,9 +640,25 @@
                 }
             });
 
-            handleForm(document.getElementById('username-form'), async () => { /* ... (same as before) ... */ });
+            handleForm(document.getElementById('username-form'), async () => {
+                const newUsername = document.getElementById('username').value.trim().toLowerCase();
+                if (newUsername.length < 3) throw new Error('Username must be at least 3 characters');
+                if (newUsername === currentProfile.username) throw new Error('This is already your current username');
+                const { data: existingUser } = await supabase.from('profiles').select('id').eq('username', newUsername).single();
+                if (existingUser) throw new Error('Username already exists');
+                const { error } = await supabase.from('profiles').update({ username: newUsername, username_last_changed: new Date().toISOString() }).eq('id', currentUser.id);
+                if (error) throw error;
+                showToast('Username updated successfully!', 'success');
+                await loadProfileAndPopulate();
+            });
+
             const deleteBtn = document.getElementById('delete-account-btn');
-            if(deleteBtn) deleteBtn.addEventListener('click', () => { /* ... (same as before) ... */ });
+            if(deleteBtn) deleteBtn.addEventListener('click', () => { 
+                showConfirmation('Are you sure you want to delete your account? This is irreversible.', () => {
+                    console.log("Deletion confirmed. (Needs server-side implementation)");
+                    showToast("Account deletion not yet implemented.", "warning");
+                });
+            });
         }
 
         function setupUploaders() {
@@ -820,26 +842,44 @@
         }
 
         function initiateXboxConnection() {
-            const authUrl = `https://xbl.io/app/auth/${OPENXBL_PUBLIC_KEY}?redirect_uri=${encodeURIComponent(window.location.origin + '/bedrock-callback.html')}&prompt=select_account`;
-            const popup = window.open(authUrl, 'xbox-auth', 'width=600,height=700');
+            const redirectUri = `${window.location.origin}/bedrock-callback.html`;
+            const authUrl = new URL(`https://login.microsoftonline.com/common/oauth2/v2.0/authorize`);
+            authUrl.search = new URLSearchParams({
+                client_id: AZURE_CLIENT_ID,
+                response_type: 'code',
+                redirect_uri: redirectUri,
+                scope: 'XboxLive.signin offline_access',
+                prompt: 'select_account',
+            }).toString();
+
+            const popup = window.open(authUrl.href, 'xbox-auth', 'width=600,height=700');
             if (!popup) { return showToast('Popup blocked. Please allow popups.', 'error'); }
+            
             const handleMessage = async ({ origin, data }) => {
                 if (origin !== window.location.origin) return;
                 window.removeEventListener('message', handleMessage);
-                if (data.type !== 'BEDROCK_AUTH_SUCCESS') { return showToast(`Xbox connection failed: ${data.message || 'Unknown error'}`, 'error'); }
-                showLoading('Linking Xbox account...');
-                try {
-                    const { data: { session } } = await supabase.auth.getSession();
-                    const response = await fetch('/api/link-bedrock', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ mchub_token: session.access_token, xbl_token: data.token })
-                    });
-                    const result = await response.json();
-                    if (!response.ok) throw new Error(result.details || 'Failed to link account');
-                    showToast(`Xbox account linked: ${result.bedrock_gamertag}`, 'success');
-                    await loadProfileAndPopulate();
-                } catch (error) { showToast(error.message, 'error'); } finally { hideLoading(); }
+
+                if (data.type === 'BEDROCK_AUTH_SUCCESS' && data.auth_code) {
+                    showLoading('Linking Xbox account...');
+                    try {
+                        const { data: { session } } = await supabase.auth.getSession();
+                        const response = await fetch('/api/link-bedrock', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ mchub_token: session.access_token, auth_code: data.auth_code })
+                        });
+                        const result = await response.json();
+                        if (!response.ok) throw new Error(result.details || 'Failed to link account');
+                        showToast(`Xbox account linked: ${result.bedrock_gamertag}`, 'success');
+                        await loadProfileAndPopulate();
+                    } catch (error) { 
+                        showToast(error.message, 'error');
+                    } finally { 
+                        hideLoading();
+                    }
+                } else {
+                    showToast(`Xbox connection failed: ${data.message || 'Unknown error'}`, 'error');
+                }
             };
             window.addEventListener('message', handleMessage);
         }
