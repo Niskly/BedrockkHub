@@ -442,7 +442,7 @@
     <!-- Main Content -->
     <main class="container" id="settings-container">
         <!-- JS will populate this after auth -->
-        <div class="loading-container"><div class="spinner"></div><p>Loading Settings...</p></div>
+        <div class="loading-container"><div class="spinner"></div><p class="loading-text">Loading Settings...</p></div>
     </main>
     
     <script type="module">
@@ -454,12 +454,8 @@
         let currentUser, currentProfile, isProcessing = false;
         let avatarBlob, bannerBlob, cropper, cropCallback, confirmCallback;
         
-        // These need to be replaced with your actual Azure App credentials
-        // It's best practice to fetch these from a config file or environment variable on the server-side
-        // But for this client-side example, we'll define them here.
-        // IMPORTANT: In a real production app, you would not expose the client ID like this.
-        // This is simplified for our current setup.
-        const AZURE_CLIENT_ID = 'e0d7b39d-e084-4028-beac-0d77da979a18'; // <-- IMPORTANT: REPLACE THIS
+        // IMPORTANT: REPLACE THIS WITH YOUR ACTUAL AZURE APP CLIENT ID
+        const AZURE_CLIENT_ID = 'e0d7b39d-e084-4028-beac-0d77da979a18'; 
         
         const loadingOverlay = document.getElementById('loading-overlay');
         const cropperModal = document.getElementById('cropper-modal');
@@ -644,7 +640,7 @@
                 const newUsername = document.getElementById('username').value.trim().toLowerCase();
                 if (newUsername.length < 3) throw new Error('Username must be at least 3 characters');
                 if (newUsername === currentProfile.username) throw new Error('This is already your current username');
-                const { data: existingUser } = await supabase.from('profiles').select('id').eq('username', newUsername).single();
+                const { data: existingUser } = await supabase.from('profiles').select('id').ilike('username', newUsername).single();
                 if (existingUser) throw new Error('Username already exists');
                 const { error } = await supabase.from('profiles').update({ username: newUsername, username_last_changed: new Date().toISOString() }).eq('id', currentUser.id);
                 if (error) throw error;
