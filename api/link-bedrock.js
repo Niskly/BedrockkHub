@@ -32,40 +32,68 @@ export default async function handler(req, res) {
       return res.status(401).json({ details: 'Invalid or expired MCHub user token. Please sign in again.' });
     }
 
-    console.log('Attempting to use Xbox token for user-specific profile access...');
+    console.log('=== DEBUGGING XBOX TOKEN ===');
+    console.log('Token received:', xbl_token);
+    console.log('Token type:', typeof xbl_token);
+    console.log('Token length:', xbl_token.length);
+    console.log('Token starts with:', xbl_token.substring(0, 20) + '...');
     
+    // Check if it's a JWT
+    const tokenParts = xbl_token.split('.');
+    console.log('Token parts count:', tokenParts.length);
+    if (tokenParts.length === 3) {
+      try {
+        const header = JSON.parse(atob(tokenParts[0]));
+        const payload = JSON.parse(atob(tokenParts[1]));
+        console.log('JWT Header:', header);
+        console.log('JWT Payload:', payload);
+      } catch (e) {
+        console.log('Failed to parse as JWT:', e.message);
+      }
+    }
+
     let xboxData;
     let authSuccess = false;
+    let lastError = '';
 
-    // Method 1: Try using the token as a user-specific Bearer token (NO API KEY)
+    // Method 1: Try using the token as a user-specific Bearer token
     try {
-      console.log('Trying user-specific Bearer token authentication...');
+      console.log('=== METHOD 1: Bearer Token ===');
       const bearerResponse = await fetch('https://xbl.io/api/v2/account', {
         headers: {
           'Authorization': `Bearer ${xbl_token}`,
           'Accept': 'application/json'
-          // REMOVED: 'X-Authorization': process.env.OPENXBL_API_KEY - this was causing app owner auth
         }
       });
 
+      console.log('Bearer response status:', bearerResponse.status);
+      console.log('Bearer response headers:', Object.fromEntries(bearerResponse.headers));
+      
+      const responseText = await bearerResponse.text();
+      console.log('Bearer response body:', responseText);
+
       if (bearerResponse.ok) {
-        xboxData = await bearerResponse.json();
-        authSuccess = true;
-        console.log('User-specific Bearer token authentication successful');
+        try {
+          xboxData = JSON.parse(responseText);
+          authSuccess = true;
+          console.log('✅ Bearer token authentication successful');
+        } catch (parseError) {
+          console.log('❌ Failed to parse Bearer response as JSON:', parseError.message);
+          lastError = `Bearer method failed: Invalid JSON response`;
+        }
       } else {
-        const errorText = await bearerResponse.text();
-        console.log(`Bearer token failed with status: ${bearerResponse.status} - ${errorText}`);
+        lastError = `Bearer method failed: ${bearerResponse.status} - ${responseText}`;
+        console.log('❌ Bearer token failed:', lastError);
       }
     } catch (error) {
-      console.log('Bearer token method failed:', error.message);
+      lastError = `Bearer method error: ${error.message}`;
+      console.log('❌ Bearer token method failed:', lastError);
     }
 
-    // Method 2: Try OAuth token exchange for user-specific data
+    // Method 2: Try OAuth token exchange
     if (!authSuccess) {
       try {
-        console.log('Trying OAuth token exchange for user-specific access...');
-        
-        // First, try to exchange the authorization code for an access token
+        console.log('=== METHOD 2: OAuth Token Exchange ===');
         const tokenExchangeResponse = await fetch('https://xbl.io/api/v2/oauth/token', {
           method: 'POST',
           headers: {
@@ -80,92 +108,99 @@ export default async function handler(req, res) {
           })
         });
 
+        console.log('Token exchange status:', tokenExchangeResponse.status);
+        const exchangeResponseText = await tokenExchangeResponse.text();
+        console.log('Token exchange response:', exchangeResponseText);
+
         if (tokenExchangeResponse.ok) {
-          const tokenData = await tokenExchangeResponse.json();
-          console.log('Token exchange successful, fetching user-specific data...');
+          const tokenData = JSON.parse(exchangeResponseText);
+          console.log('Token exchange successful, got:', tokenData);
           
-          // Now use the user's access token to get their Xbox profile
+          // Now use the access token to get user data
           const userDataResponse = await fetch('https://xbl.io/api/v2/account', {
             headers: {
               'Authorization': `Bearer ${tokenData.access_token}`,
               'Accept': 'application/json'
-              // NO X-Authorization - we want the user's data, not the app owner's
             }
           });
+
+          console.log('User data response status:', userDataResponse.status);
+          const userDataText = await userDataResponse.text();
+          console.log('User data response:', userDataText);
 
           if (userDataResponse.ok) {
-            xboxData = await userDataResponse.json();
+            xboxData = JSON.parse(userDataText);
             authSuccess = true;
-            console.log('OAuth user-specific authentication successful');
+            console.log('✅ OAuth authentication successful');
           } else {
-            const errorText = await userDataResponse.text();
-            console.log(`User data fetch failed: ${userDataResponse.status} - ${errorText}`);
+            lastError = `OAuth user data failed: ${userDataResponse.status} - ${userDataText}`;
+            console.log('❌', lastError);
           }
         } else {
-          const errorText = await tokenExchangeResponse.text();
-          console.log(`Token exchange failed: ${tokenExchangeResponse.status} - ${errorText}`);
+          lastError = `OAuth token exchange failed: ${tokenExchangeResponse.status} - ${exchangeResponseText}`;
+          console.log('❌', lastError);
         }
       } catch (error) {
-        console.log('OAuth token exchange method failed:', error.message);
+        lastError = `OAuth method error: ${error.message}`;
+        console.log('❌ OAuth token exchange failed:', lastError);
       }
     }
 
-    // Method 3: Try direct profile lookup with user token (if we have an XUID from the token)
+    // Method 3: Try using your API key with the token (fallback)
     if (!authSuccess) {
       try {
-        console.log('Trying direct user profile lookup...');
-        
-        // Sometimes the token contains user info we can extract
-        let decodedToken;
-        try {
-          // Try to decode JWT if it's a JWT token
-          const tokenParts = xbl_token.split('.');
-          if (tokenParts.length === 3) {
-            const payload = JSON.parse(atob(tokenParts[1]));
-            if (payload.xid) {
-              decodedToken = payload;
-              console.log('Found user ID in token:', payload.xid);
-            }
+        console.log('=== METHOD 3: API Key Fallback ===');
+        const fallbackResponse = await fetch('https://xbl.io/api/v2/account', {
+          headers: {
+            'X-Authorization': process.env.OPENXBL_API_KEY,
+            'Authorization': `XBL3.0 x=${xbl_token}`,
+            'Accept': 'application/json'
           }
-        } catch (e) {
-          console.log('Token is not a JWT or cannot be decoded');
-        }
+        });
 
-        if (decodedToken && decodedToken.xid) {
-          // Try to get profile data using the user's XUID
-          const profileResponse = await fetch(`https://xbl.io/api/v2/account/${decodedToken.xid}`, {
-            headers: {
-              'X-Authorization': process.env.OPENXBL_API_KEY, // OK to use API key for specific user lookup
-              'Accept': 'application/json'
-            }
-          });
+        console.log('Fallback response status:', fallbackResponse.status);
+        const fallbackResponseText = await fallbackResponse.text();
+        console.log('Fallback response:', fallbackResponseText);
 
-          if (profileResponse.ok) {
-            const profileData = await profileResponse.json();
-            if (profileData.people && profileData.people.length > 0) {
-              xboxData = profileData;
-              authSuccess = true;
-              console.log('Direct profile lookup successful');
-            }
+        if (fallbackResponse.ok) {
+          try {
+            xboxData = JSON.parse(fallbackResponseText);
+            authSuccess = true;
+            console.log('✅ API Key fallback successful');
+            console.log('⚠️  WARNING: This might return app owner data, not user data');
+          } catch (parseError) {
+            lastError = `API key method failed: Invalid JSON - ${parseError.message}`;
+            console.log('❌', lastError);
           }
+        } else {
+          lastError = `API key method failed: ${fallbackResponse.status} - ${fallbackResponseText}`;
+          console.log('❌', lastError);
         }
       } catch (error) {
-        console.log('Direct profile lookup failed:', error.message);
+        lastError = `API key method error: ${error.message}`;
+        console.log('❌ API key method failed:', lastError);
       }
     }
 
+    console.log('=== FINAL RESULT ===');
+    console.log('Auth success:', authSuccess);
+    console.log('Last error:', lastError);
+    
     if (!authSuccess || !xboxData) {
-      console.error('All authentication methods failed');
-      throw new Error('Failed to authenticate with Xbox Live. This might be because:\n1. The authorization code expired\n2. The user denied permissions\n3. There was a temporary service issue\n\nPlease try linking your Xbox account again.');
+      console.error('❌ All authentication methods failed');
+      console.error('Environment check:');
+      console.error('- OPENXBL_PUBLIC_KEY:', process.env.OPENXBL_PUBLIC_KEY ? 'Set' : 'Missing');
+      console.error('- VERCEL_URL:', process.env.VERCEL_URL || 'Not set (using fallback)');
+      
+      throw new Error(`All authentication methods failed. Last error: ${lastError}`);
     }
 
-    console.log('Xbox data received:', JSON.stringify(xboxData, null, 2));
+    console.log('✅ Xbox data received:', JSON.stringify(xboxData, null, 2));
 
-    // Parse the response based on the API documentation structure
+    // Parse the Xbox data (your existing logic)
     let xuid, bedrockGamertag, bedrockGamepicUrl;
 
     if (xboxData.profileUsers && xboxData.profileUsers.length > 0) {
-      // Format from /account endpoint (user's own data)
       const profile = xboxData.profileUsers[0];
       xuid = profile.id;
       
@@ -176,42 +211,39 @@ export default async function handler(req, res) {
       bedrockGamepicUrl = picSetting?.value;
       
     } else if (xboxData.people && xboxData.people.length > 0) {
-      // Format from /account/{xuid} endpoint (specific user data)
       const profile = xboxData.people[0];
       xuid = profile.xuid;
       bedrockGamertag = profile.gamertag;
       bedrockGamepicUrl = profile.displayPicRaw;
       
     } else if (xboxData.xuid || xboxData.id) {
-      // Direct user object format
       xuid = xboxData.xuid || xboxData.id;
       bedrockGamertag = xboxData.gamertag;
       bedrockGamepicUrl = xboxData.avatar || xboxData.displayPicRaw;
       
     } else {
-      console.error('Unexpected Xbox data format:', xboxData);
+      console.error('❌ Unexpected Xbox data format:', xboxData);
       throw new Error('Received unexpected data format from Xbox Live. Please try again.');
     }
 
     if (!xuid || !bedrockGamertag) {
-      console.error(`Missing essential profile data - XUID: ${xuid}, Gamertag: ${bedrockGamertag}`);
-      throw new Error(`Could not retrieve your Xbox profile information. Please ensure your Xbox account has a valid gamertag and try again.`);
+      console.error(`❌ Missing essential data - XUID: ${xuid}, Gamertag: ${bedrockGamertag}`);
+      throw new Error(`Could not retrieve Xbox profile information. XUID: ${xuid}, Gamertag: ${bedrockGamertag}`);
     }
 
-    console.log(`Successfully extracted - XUID: ${xuid}, Gamertag: ${bedrockGamertag}`);
+    console.log(`✅ Extracted - XUID: ${xuid}, Gamertag: ${bedrockGamertag}`);
 
-    // Check if this Xbox account is already linked to a DIFFERENT user
+    // Check for existing links
     const { data: existingLinks, error: linkCheckError } = await supabaseAdmin
       .from('profiles')
       .select('id, username')
       .eq('xuid', xuid);
 
     if (linkCheckError) {
-      console.error('Database error while checking existing links:', linkCheckError);
+      console.error('Database error:', linkCheckError);
       throw new Error('Database error while checking existing links.');
     }
 
-    // Filter out the current user from existing links
     const otherUserLinks = existingLinks?.filter(link => link.id !== user.id) || [];
 
     if (otherUserLinks.length > 0) {
@@ -219,7 +251,7 @@ export default async function handler(req, res) {
       throw new Error(`This Xbox account is already linked to another MCHub user: ${existingUser.username}`);
     }
 
-    // Update the user's profile in Supabase using the ADMIN client
+    // Update the user's profile
     const { error: updateError } = await supabaseAdmin
       .from('profiles')
       .update({
@@ -234,14 +266,15 @@ export default async function handler(req, res) {
       throw updateError;
     }
 
-    // Return success
+    console.log('✅ Profile updated successfully');
+
     res.status(200).json({
       message: 'Bedrock account linked successfully!',
       bedrock_gamertag: bedrockGamertag,
     });
 
   } catch (error) {
-    console.error('Error in link-bedrock function:', error);
+    console.error('❌ Error in link-bedrock function:', error);
     res.status(500).json({ details: error.message || 'An internal server error occurred.' });
   }
 }
