@@ -32,17 +32,16 @@ export default async function handler(req, res) {
       return res.status(401).json({ details: 'Invalid or expired MCHub user token. Please sign in again.' });
     }
 
-    // FIXED: Use OpenXBL's claim endpoint instead of account endpoint
-    // This processes the auth code and returns the AUTHENTICATED USER's data
+    // Try using only the public key like in the demo
+    // This should process the auth code and return the AUTHENTICATED USER's data
     const claimResponse = await fetch('https://xbl.io/api/v2/claim', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'X-Authorization': process.env.OPENXBL_API_KEY
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         code: xbl_token,
-        app_key: process.env.OPENXBL_PUBLIC_KEY
+        app_key: process.env.OPENXBL_PUBLIC_KEY // Only using public key
       })
     });
 
