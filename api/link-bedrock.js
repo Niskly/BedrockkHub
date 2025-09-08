@@ -1,14 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
+// Initialize the ADMIN client for database updates
 const supabaseAdmin = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
-
-// These are the credentials from your Azure App Registration
-const AZURE_CLIENT_ID = process.env.AZURE_CLIENT_ID;
-const AZURE_CLIENT_SECRET = process.env.AZURE_CLIENT_SECRET;
-const REDIRECT_URI = `${process.env.NEXT_PUBLIC_BASE_URL}/bedrock-callback.html`;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -16,137 +12,88 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { mchub_token, auth_code } = req.body;
-    if (!mchub_token || !auth_code) {
-      return res.status(400).json({ details: 'MCHub token and Auth Code are required.' });
+    const { mchub_token, xbl_token } = req.body;
+    
+    if (!mchub_token || !xbl_token) {
+      return res.status(400).json({ details: 'MCHub token and OpenXBL token are required.' });
     }
 
-    // 1. Authenticate the MCHub user
-    const supabaseUserClient = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+    // Initialize a USER-LEVEL client to verify the MCHub user
+    const supabaseUserClient = createClient(
+        process.env.SUPABASE_URL, 
+        process.env.SUPABASE_ANON_KEY
+    );
+
+    // Authenticate the MCHub user
     const { data: { user }, error: userError } = await supabaseUserClient.auth.getUser(mchub_token);
+
     if (userError || !user) {
-      throw new Error('Invalid or expired MCHub user token.');
+      console.error('User authentication failed:', userError);
+      return res.status(401).json({ details: 'Invalid or expired MCHub user token.' });
     }
 
-    // --- The Three-Token Dance Begins ---
-
-    // STEP 1: Exchange the Authorization Code for an OAuth Token (The ID Check)
-    const tokenParams = new URLSearchParams({
-      client_id: AZURE_CLIENT_ID,
-      client_secret: AZURE_CLIENT_SECRET,
-      grant_type: 'authorization_code',
-      code: auth_code,
-      redirect_uri: REDIRECT_URI,
-      scope: 'XboxLive.signin offline_access',
+    // Use the OpenXBL token and your OpenXBL API key to get the user's account info
+    const accountResponse = await fetch('https://xbl.io/api/v2/account', {
+      headers: {
+        'X-Authorization': process.env.OPENXBL_API_KEY, // This is your secret key from xbl.io
+        'Authorization': `XBL3.0 x=${xbl_token}`,
+        'Accept': 'application/json',
+        'x-contract-version': '5'
+      }
     });
 
-    const oauthRes = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: tokenParams.toString(),
-    });
-
-    if (!oauthRes.ok) {
-        const errorData = await oauthRes.json();
-        console.error("OAuth Token Error:", errorData);
-        throw new Error(`Failed to get OAuth token: ${errorData.error_description}`);
+    if (!accountResponse.ok) {
+      const errorText = await accountResponse.text();
+      console.error('OpenXBL API error:', accountResponse.status, errorText);
+      throw new Error(`Failed to fetch Xbox Live profile.`);
     }
-    const oauthData = await oauthRes.json();
-    const accessToken = oauthData.access_token;
-
-    // STEP 2: Use the OAuth Token to get an Xbox Live User Token (The VIP Wristband)
-    const userTokenRes = await fetch('https://user.auth.xboxlive.com/user/authenticate', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'x-xbl-contract-version': '1'
-        },
-        body: JSON.stringify({
-            RelyingParty: 'http://auth.xboxlive.com',
-            TokenType: 'JWT',
-            Properties: {
-                AuthMethod: 'RPS',
-                SiteName: 'user.auth.xboxlive.com',
-                RpsTicket: `d=${accessToken}`
-            }
-        })
-    });
-
-    if (!userTokenRes.ok) {
-        const errorData = await userTokenRes.json();
-        console.error("User Token Error:", errorData);
-        throw new Error('Failed to authenticate with Xbox Live.');
-    }
-    const userTokenData = await userTokenRes.json();
-    const userToken = userTokenData.Token;
-
-    // STEP 3: Use the User Token to get the final XSTS Token (The Drink Ticket)
-    const xstsTokenRes = await fetch('https://xsts.auth.xboxlive.com/xsts/authorize', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'x-xbl-contract-version': '1'
-        },
-        body: JSON.stringify({
-            RelyingParty: 'http://xboxlive.com',
-            TokenType: 'JWT',
-            Properties: {
-                UserTokens: [userToken],
-                SandboxId: 'RETAIL'
-            }
-        })
-    });
-
-    if (!xstsTokenRes.ok) {
-        const errorData = await xstsTokenRes.json();
-        console.error("XSTS Token Error:", errorData);
-        // Check for child account error
-        if (errorData.XErr === 2148916238) {
-             throw new Error('Authentication failed. Child accounts are not supported.');
-        }
-        throw new Error('Failed to get final authorization token.');
-    }
-    const xstsTokenData = await xstsTokenRes.json();
-
-    // --- Extract Profile Info from the final XSTS Token ---
-    const displayClaims = xstsTokenData.DisplayClaims.xui[0];
-    const xuid = displayClaims.xid;
-    const bedrockGamertag = displayClaims.gtg;
     
-    // We need one more call to get the gamerpic
-    const xstsTokenForRequest = xstsTokenData.Token;
-    const userHash = xstsTokenData.DisplayClaims.xui[0].uhs;
-    
-    const profileRes = await fetch(`https://profile.xboxlive.com/users/xuid(${xuid})/profile/settings?settings=GameDisplayPicRaw`, {
-        headers: {
-            'Authorization': `XBL 1.0 x=${userHash};${xstsTokenForRequest}`,
-            'x-xbl-contract-version': '2',
-            'Accept': 'application/json'
-        }
-    });
-
-    let bedrockGamepicUrl = null;
-    if (profileRes.ok) {
-        const profileData = await profileRes.json();
-        bedrockGamepicUrl = profileData.profileUsers?.[0]?.settings?.[0]?.value || null;
+    const accountData = await accountResponse.json();
+    const profileUser = accountData.profileUsers?.[0];
+    if (!profileUser) {
+      throw new Error('No Xbox Live profile found for this user.');
     }
 
-    // --- Final Database Operations ---
-    const { data: existingLinks } = await supabaseAdmin.from('profiles').select('id, username').eq('xuid', xuid);
+    const xuid = profileUser.id;
+    const bedrockGamertag = profileUser.settings?.find(s => s.id === 'Gamertag')?.value;
+    const bedrockGamepicUrl = profileUser.settings?.find(s => s.id === 'GameDisplayPicRaw')?.value;
+
+    if (!xuid || !bedrockGamertag) {
+      throw new Error('Could not retrieve essential profile data (XUID or Gamertag).');
+    }
+
+    // Check if this Xbox account is already linked to a DIFFERENT MCHub user
+    const { data: existingLinks, error: linkCheckError } = await supabaseAdmin
+      .from('profiles')
+      .select('id, username')
+      .eq('xuid', xuid);
+
+    if (linkCheckError) {
+      throw new Error('Database error while checking existing links.');
+    }
+
     const otherUserLinks = existingLinks?.filter(link => link.id !== user.id) || [];
+
     if (otherUserLinks.length > 0) {
-      throw new Error(`This Xbox account is already linked to user: ${otherUserLinks[0].username}`);
+      const existingUser = otherUserLinks[0];
+      throw new Error(`This Xbox account is already linked to another MCHub user: ${existingUser.username}`);
     }
 
+    // Update the correct user's profile in Supabase
     const { error: updateError } = await supabaseAdmin
       .from('profiles')
-      .update({ xuid, bedrock_gamertag: bedrockGamertag, bedrock_gamerpic_url: bedrockGamepicUrl })
+      .update({
+        xuid,
+        bedrock_gamertag: bedrockGamertag,
+        bedrock_gamerpic_url: bedrockGamepicUrl || null
+      })
       .eq('id', user.id);
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      throw updateError;
+    }
 
+    // Return success
     res.status(200).json({
       message: 'Bedrock account linked successfully!',
       bedrock_gamertag: bedrockGamertag,
