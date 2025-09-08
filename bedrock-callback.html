@@ -4,12 +4,46 @@
     <meta charset="UTF-8">
     <title>Linking Bedrock Account</title>
     <style>
-        body { font-family: sans-serif; background: #1c1c1c; color: #e8eefc; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .container { text-align: center; padding: 2rem; background: rgba(44, 44, 44, 0.8); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.12); max-width: 400px; }
+        body { 
+            font-family: sans-serif; 
+            background: #1c1c1c; 
+            color: #e8eefc; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
+        .container { 
+            text-align: center; 
+            padding: 2rem;
+            background: rgba(44, 44, 44, 0.8);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            max-width: 400px;
+        }
         .success { color: #22c55e; }
         .error { color: #ef4444; }
-        .spinner { width: 32px; height: 32px; border: 3px solid rgba(255, 255, 255, 0.3); border-top-color: #de212a; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .spinner { 
+            width: 32px; 
+            height: 32px; 
+            border: 3px solid rgba(255, 255, 255, 0.3); 
+            border-top-color: #de212a; 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+            margin: 0 auto 1rem; 
+        }
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+        .icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        h2 {
+            margin-bottom: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -25,42 +59,105 @@
         function updateStatus(message, type = 'info') {
             statusEl.textContent = message;
             statusEl.className = type;
-            if (type !== 'info') spinnerEl.style.display = 'none';
+            
+            if (type === 'success') {
+                spinnerEl.innerHTML = '<div class="icon">✓</div>';
+                spinnerEl.style.animation = 'none';
+                spinnerEl.style.color = '#22c55e';
+            } else if (type === 'error') {
+                spinnerEl.innerHTML = '<div class="icon">✗</div>';
+                spinnerEl.style.animation = 'none';
+                spinnerEl.style.color = '#ef4444';
+            }
         }
         
-        try {
-            // xbl.io returns the token in the URL hash
-            const hashParams = new URLSearchParams(window.location.hash.substring(1));
-            const token = hashParams.get('token');
-
-            if (!token) {
-                throw new Error('Authentication token not found in response.');
-            }
-
-            updateStatus('Authentication successful! Closing window...', 'success');
+        function extractTokenFromUrl() {
+            const hash = window.location.hash.substring(1);
+            const search = window.location.search.substring(1);
             
-            if (window.opener) {
-                // This is the message format our settings.html expects for the xbl.io flow
-                window.opener.postMessage({
-                    type: 'BEDROCK_AUTH_SUCCESS',
-                    token: token 
-                }, window.location.origin);
-            }
+            console.log('URL hash:', hash);
+            console.log('URL search:', search);
             
-            setTimeout(() => window.close(), 1500);
-
-        } catch (e) {
-            console.error('Callback error:', e);
-            updateStatus(`Error: ${e.message}`, 'error');
-            if (window.opener) {
-                window.opener.postMessage({
-                    type: 'BEDROCK_AUTH_ERROR',
-                    message: e.message
-                }, window.location.origin);
-            }
-            setTimeout(() => window.close(), 3000);
+            const hashParams = new URLSearchParams(hash);
+            const searchParams = new URLSearchParams(search);
+            
+            const token = hashParams.get('token') || 
+                         hashParams.get('access_token') || 
+                         searchParams.get('token') || 
+                         searchParams.get('access_token') ||
+                         searchParams.get('code');
+                         
+            console.log('Extracted token:', token ? 'Found' : 'Not found');
+            return token;
         }
+        
+        function handleCallback() {
+            try {
+                console.log('Processing callback...');
+                const urlParams = new URLSearchParams(window.location.search);
+                const error = urlParams.get('error');
+                const errorMsg = urlParams.get('msg') || urlParams.get('error_description');
+                
+                if (error) {
+                    console.error('OAuth error:', error, errorMsg);
+                    updateStatus(`Authentication failed: ${errorMsg || error}`, 'error');
+                    if (window.opener) {
+                        window.opener.postMessage({
+                            type: 'BEDROCK_AUTH_ERROR',
+                            error: error,
+                            message: errorMsg || error
+                        }, window.location.origin);
+                    }
+                    setTimeout(() => window.close(), 3000);
+                    return;
+                }
+                
+                const token = extractTokenFromUrl();
+                
+                if (!token) {
+                    console.error('No token found in URL');
+                    updateStatus('No authentication token found in response', 'error');
+                    if (window.opener) {
+                        window.opener.postMessage({
+                            type: 'BEDROCK_AUTH_ERROR',
+                            error: 'no_token',
+                            message: 'No authentication token found'
+                        }, window.location.origin);
+                    }
+                    setTimeout(() => window.close(), 3000);
+                    return;
+                }
+                
+                console.log('Token found, sending to parent window');
+                updateStatus('Authentication successful! Closing window...', 'success');
+                
+                if (window.opener) {
+                    window.opener.postMessage({
+                        type: 'BEDROCK_AUTH_SUCCESS',
+                        token: token
+                    }, window.location.origin);
+                } else {
+                    console.warn('No opener window found');
+                }
+                
+                setTimeout(() => window.close(), 1500);
+                
+            } catch (error) {
+                console.error('Callback error:', error);
+                updateStatus(`Processing error: ${error.message}`, 'error');
+                if (window.opener) {
+                    window.opener.postMessage({
+                        type: 'BEDROCK_AUTH_ERROR',
+                        error: 'callback_error',
+                        message: error.message
+                    }, window.location.origin);
+                }
+                setTimeout(() => window.close(), 3000);
+            }
+        }
+        
+        console.log('Bedrock callback page loaded');
+        handleCallback();
     </script>
 </body>
 </html>
-
