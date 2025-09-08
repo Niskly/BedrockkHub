@@ -32,41 +32,82 @@ export default async function handler(req, res) {
       return res.status(401).json({ details: 'Invalid or expired MCHub user token. Please sign in again.' });
     }
 
-    // CRITICAL: We need to understand what xbl_token actually is
-    // Based on the PHP demo, it's likely an authorization code that needs to be "claimed"
-    // Let's try to exchange this code for user data using OpenXBL's claim mechanism
+    console.log('Attempting to use Xbox token for profile access...');
     
-    console.log('Attempting to claim Xbox token...');
-    
-    // Try to use OpenXBL's token exchange/claim mechanism
-    // This is similar to how OAuth2 works: code -> access token -> user data
-    const tokenExchangeResponse = await fetch('https://xbl.io/api/v2/oauth/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: new URLSearchParams({
-        'grant_type': 'authorization_code',
-        'code': xbl_token,
-        'client_id': process.env.OPENXBL_PUBLIC_KEY
-      })
-    });
+    // The xbl_token from the callback should be a user-specific access token
+    // Try multiple authentication methods based on OpenXBL's API patterns
 
-    if (!tokenExchangeResponse.ok) {
-      console.log('Token exchange failed, trying direct account access...');
-      
-      // Fallback: Try using the token directly as an access token
-      const directResponse = await fetch('https://xbl.io/api/v2/account', {
+    let xboxData;
+    let authSuccess = false;
+
+    // Method 1: Try using the token as a Bearer token
+    try {
+      console.log('Trying Bearer token authentication...');
+      const bearerResponse = await fetch('https://xbl.io/api/v2/account', {
         headers: {
           'Authorization': `Bearer ${xbl_token}`,
           'Accept': 'application/json'
         }
       });
 
-      if (!directResponse.ok) {
-        console.log('Direct access failed, trying XBL3.0 format...');
-        
-        // Last attempt: Try the original XBL3.0 format but log the full response
+      if (bearerResponse.ok) {
+        xboxData = await bearerResponse.json();
+        authSuccess = true;
+        console.log('Bearer token authentication successful');
+      } else {
+        console.log(`Bearer token failed with status: ${bearerResponse.status}`);
+      }
+    } catch (error) {
+      console.log('Bearer token method failed:', error.message);
+    }
+
+    // Method 2: If Bearer failed, try OAuth token exchange
+    if (!authSuccess) {
+      try {
+        console.log('Trying OAuth token exchange...');
+        const tokenExchangeResponse = await fetch('https://xbl.io/api/v2/oauth/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json'
+          },
+          body: new URLSearchParams({
+            'grant_type': 'authorization_code',
+            'code': xbl_token,
+            'client_id': process.env.OPENXBL_PUBLIC_KEY
+          })
+        });
+
+        if (tokenExchangeResponse.ok) {
+          const tokenData = await tokenExchangeResponse.json();
+          console.log('Token exchange successful, fetching user data...');
+          
+          // Now use the access token to get user data
+          const userDataResponse = await fetch('https://xbl.io/api/v2/account', {
+            headers: {
+              'Authorization': `Bearer ${tokenData.access_token}`,
+              'Accept': 'application/json'
+            }
+          });
+
+          if (userDataResponse.ok) {
+            xboxData = await userDataResponse.json();
+            authSuccess = true;
+            console.log('OAuth token exchange authentication successful');
+          }
+        } else {
+          const errorText = await tokenExchangeResponse.text();
+          console.log(`Token exchange failed: ${tokenExchangeResponse.status} - ${errorText}`);
+        }
+      } catch (error) {
+        console.log('OAuth token exchange method failed:', error.message);
+      }
+    }
+
+    // Method 3: Last resort - try the original XBL3.0 format (likely won't work for user-specific data)
+    if (!authSuccess) {
+      console.log('Trying legacy XBL3.0 authentication as last resort...');
+      try {
         const xblResponse = await fetch('https://xbl.io/api/v2/account', {
           headers: {
             'X-Authorization': process.env.OPENXBL_API_KEY,
@@ -79,33 +120,22 @@ export default async function handler(req, res) {
         console.log('XBL Response status:', xblResponse.status);
         console.log('XBL Response body:', responseText);
 
-        if (!xblResponse.ok) {
-          throw new Error(`All authentication methods failed. Last error: ${responseText}`);
+        if (xblResponse.ok) {
+          try {
+            xboxData = JSON.parse(responseText);
+            authSuccess = true;
+            console.log('Legacy XBL3.0 authentication successful');
+          } catch (e) {
+            console.log('Failed to parse XBL response:', e.message);
+          }
         }
-
-        try {
-          var xboxData = JSON.parse(responseText);
-        } catch (e) {
-          throw new Error(`Failed to parse Xbox response: ${responseText}`);
-        }
-      } else {
-        var xboxData = await directResponse.json();
+      } catch (error) {
+        console.log('Legacy XBL3.0 method failed:', error.message);
       }
-    } else {
-      // If token exchange worked, use the access token to get user data
-      const tokenData = await tokenExchangeResponse.json();
-      const userDataResponse = await fetch('https://xbl.io/api/v2/account', {
-        headers: {
-          'Authorization': `Bearer ${tokenData.access_token}`,
-          'Accept': 'application/json'
-        }
-      });
+    }
 
-      if (!userDataResponse.ok) {
-        throw new Error('Failed to fetch user data with exchanged token');
-      }
-
-      var xboxData = await userDataResponse.json();
+    if (!authSuccess || !xboxData) {
+      throw new Error('All authentication methods failed. The Xbox token may be invalid or expired. Please try linking your account again.');
     }
 
     console.log('Xbox data received:', JSON.stringify(xboxData, null, 2));
@@ -138,11 +168,11 @@ export default async function handler(req, res) {
       bedrockGamepicUrl = xboxData.avatar || xboxData.displayPicRaw;
       
     } else {
-      throw new Error('Unexpected Xbox data format received: ' + JSON.stringify(xboxData));
+      throw new Error('Unexpected Xbox data format received. This might indicate an authentication issue - please try linking again.');
     }
 
     if (!xuid || !bedrockGamertag) {
-      throw new Error(`Could not retrieve essential profile data. XUID: ${xuid}, Gamertag: ${bedrockGamertag}`);
+      throw new Error(`Could not retrieve essential profile data. This usually means the authentication token doesn't have the right permissions. XUID: ${xuid}, Gamertag: ${bedrockGamertag}`);
     }
 
     console.log(`Successfully extracted - XUID: ${xuid}, Gamertag: ${bedrockGamertag}`);
