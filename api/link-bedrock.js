@@ -1,11 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 
-// 1. Initialize the ADMIN client (God Mode) for database updates
-// This uses the service role key to bypass RLS for the final update.
+// Initialize the ADMIN client for database updates
 const supabaseAdmin = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
+
+// These are the details from your Azure App Registration
+const AZURE_CLIENT_ID = process.env.AZURE_CLIENT_ID;
+const AZURE_CLIENT_SECRET = process.env.AZURE_CLIENT_SECRET;
+const AZURE_TENANT_ID = process.env.AZURE_TENANT_ID || 'common'; // Use 'common' for multi-tenant apps
+const REDIRECT_URI = process.env.NEXT_PUBLIC_BASE_URL ? `${process.env.NEXT_PUBLIC_BASE_URL}/bedrock-callback.html` : 'http://localhost:3000/bedrock-callback.html';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -13,93 +18,80 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { mchub_token, xbl_token } = req.body;
+    const { mchub_token, auth_code } = req.body;
     
-    if (!mchub_token || !xbl_token) {
-      return res.status(400).json({ details: 'MCHub token and OpenXBL token are required.' });
+    if (!mchub_token || !auth_code) {
+      return res.status(400).json({ details: 'MCHub token and auth code are required.' });
     }
 
-    // 2. Initialize a separate, USER-LEVEL client to verify the token
-    // This uses the public ANON key, which is safe and ensures correct user identification.
-    const supabaseUserClient = createClient(
-        process.env.SUPABASE_URL, 
-        process.env.SUPABASE_ANON_KEY
-    );
-
-    // 3. Authenticate the MCHub user with the USER-LEVEL client
+    // 1. Authenticate the MCHub user (unchanged)
+    const supabaseUserClient = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
     const { data: { user }, error: userError } = await supabaseUserClient.auth.getUser(mchub_token);
-
     if (userError || !user) {
-      console.error('User authentication failed:', userError);
-      return res.status(401).json({ details: 'Invalid or expired MCHub user token. Please sign in again.' });
+      return res.status(401).json({ details: 'Invalid MCHub user token.' });
     }
-    // Now, `user.id` is GUARANTEED to be the ID of the person making the request
 
-    // 4. Use the OpenXBL token to get the user's account info (unchanged)
-    const accountResponse = await fetch('https://xbl.io/api/v2/account', {
-      headers: {
-        'X-Authorization': process.env.OPENXBL_API_KEY,
-        'Authorization': `XBL3.0 x=${xbl_token}`,
-        'Accept': 'application/json',
-        'x-contract-version': '5'
-      }
+    // 2. NEW: Exchange the authorization code for an access token directly from Microsoft
+    const tokenResponse = await fetch(`https://login.microsoftonline.com/${AZURE_TENANT_ID}/oauth2/v2.0/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: AZURE_CLIENT_ID,
+        client_secret: AZURE_CLIENT_SECRET,
+        scope: 'XboxLive.signin offline_access',
+        code: auth_code,
+        redirect_uri: REDIRECT_URI,
+        grant_type: 'authorization_code'
+      })
+    });
+    
+    const tokenData = await tokenResponse.json();
+    if (!tokenResponse.ok || !tokenData.access_token) {
+        console.error("Microsoft Token Exchange Error:", tokenData);
+        throw new Error('Failed to get access token from Microsoft.');
+    }
+    const accessToken = tokenData.access_token;
+
+    // 3. NEW: Use the access token to get the user's Xbox Live profile
+    const profileResponse = await fetch('https://profile.xboxlive.com/users/me/profile/settings?settings=Gamertag,GameDisplayPicRaw', {
+        headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'x-xbl-contract-version': '2',
+            'Accept-Language': 'en-US'
+        }
     });
 
-    if (!accountResponse.ok) {
-      const errorText = await accountResponse.text();
-      console.error('OpenXBL API error:', accountResponse.status, errorText);
-      throw new Error(`Failed to fetch Xbox Live profile. Please try again.`);
+    if (!profileResponse.ok) {
+        const errorText = await profileResponse.text();
+        console.error("Xbox Profile Fetch Error:", errorText);
+        throw new Error('Failed to fetch Xbox Live profile details.');
     }
     
-    const accountData = await accountResponse.json();
-    const profileUser = accountData.profileUsers?.[0];
-    if (!profileUser) {
-      throw new Error('No Xbox Live profile found for this user.');
-    }
-
-    const xuid = profileUser.id;
-    const bedrockGamertag = profileUser.settings?.find(s => s.id === 'Gamertag')?.value;
-    const bedrockGamepicUrl = profileUser.settings?.find(s => s.id === 'GameDisplayPicRaw')?.value;
+    const profileData = await profileResponse.json();
+    const xuid = profileData.profileUsers[0].id;
+    const bedrockGamertag = profileData.profileUsers[0].settings.find(s => s.id === 'Gamertag')?.value;
+    const bedrockGamepicUrl = profileData.profileUsers[0].settings.find(s => s.id === 'GameDisplayPicRaw')?.value;
 
     if (!xuid || !bedrockGamertag) {
       throw new Error('Could not retrieve essential profile data (XUID or Gamertag).');
     }
 
-    // 5. Check if this Xbox account is already linked to a DIFFERENT user
-    const { data: existingLinks, error: linkCheckError } = await supabaseAdmin
-      .from('profiles')
-      .select('id, username')
-      .eq('xuid', xuid);
+    // 4. Check for existing links and update the profile (unchanged logic)
+    const { data: existingLinks, error: linkCheckError } = await supabaseAdmin.from('profiles').select('id, username').eq('xuid', xuid);
+    if (linkCheckError) throw linkCheckError;
 
-    if (linkCheckError) {
-      console.error('Database error while checking existing links:', linkCheckError);
-      throw new Error('Database error while checking existing links.');
-    }
-
-    // Filter out the current user from existing links
     const otherUserLinks = existingLinks?.filter(link => link.id !== user.id) || [];
-
     if (otherUserLinks.length > 0) {
-      const existingUser = otherUserLinks[0];
-      throw new Error(`This Xbox account is already linked to another MCHub user: ${existingUser.username}`);
+      throw new Error(`This Xbox account is already linked to another MCHub user: ${otherUserLinks[0].username}`);
     }
 
-    // 6. Update the user's profile in Supabase using the ADMIN client
     const { error: updateError } = await supabaseAdmin
       .from('profiles')
-      .update({
-        xuid,
-        bedrock_gamertag: bedrockGamertag,
-        bedrock_gamerpic_url: bedrockGamepicUrl || null
-      })
+      .update({ xuid, bedrock_gamertag: bedrockGamertag, bedrock_gamerpic_url: bedrockGamepicUrl || null })
       .eq('id', user.id);
 
-    if (updateError) {
-      console.error('Profile update error:', updateError);
-      throw updateError;
-    }
+    if (updateError) throw updateError;
 
-    // 7. Return success
     res.status(200).json({
       message: 'Bedrock account linked successfully!',
       bedrock_gamertag: bedrockGamertag,
@@ -110,3 +102,4 @@ export default async function handler(req, res) {
     res.status(500).json({ details: error.message || 'An internal server error occurred.' });
   }
 }
+
