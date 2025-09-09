@@ -820,69 +820,102 @@
         }
 
 function initiateXboxConnection() {
-    const authUrl = `https://xbl.io/app/auth/${OPENXBL_PUBLIC_KEY}?redirect_uri=${encodeURIComponent(window.location.origin + '/bedrock-callback.html')}&prompt=select_account`;
+    showLoading('Connecting to Xbox Live...');
     
-    const popup = window.open(authUrl, 'xbox-auth', 'width=600,height=700,scrollbars=yes,resizable=yes');
-    
-    if (!popup) { 
-        return showToast('Popup blocked. Please allow popups and try again.', 'error'); 
-    }
-
-    const handleMessage = async ({ origin, data }) => {
-        if (origin !== window.location.origin) return;
-        window.removeEventListener('message', handleMessage);
-        clearInterval(checkClosed);
-        
-        if (data.type !== 'BEDROCK_AUTH_SUCCESS') { 
-            return showToast(`Xbox connection failed: ${data.message || 'Unknown error'}`, 'error'); 
-        }
-
-        showLoading('Linking Xbox account...');
-        
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            
+    try {
+        // Get current session for state parameter
+        supabase.auth.getSession().then(({ data: { session } }) => {
             if (!session?.access_token) {
-                throw new Error('No valid session found. Please refresh and try again.');
+                hideLoading();
+                return showToast('Please refresh and try again.', 'error');
             }
 
-            const response = await fetch('/api/link-bedrock', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    mchub_token: session.access_token, 
-                    xbl_token: data.token 
-                })
-            });
-
-            const result = await response.json();
+            // Create state with user info for server-side callback
+            const state = btoa(JSON.stringify({
+                user_id: currentUser.id,
+                mchub_token: session.access_token,
+                timestamp: Date.now(),
+                nonce: Math.random().toString(36).substring(2, 15)
+            }));
             
-            if (!response.ok) {
-                throw new Error(result.details || 'Failed to link account');
-            }
-
-            showToast(`Xbox account linked successfully: ${result.bedrock_gamertag}`, 'success');
-            await loadProfileAndPopulate();
+            // Redirect directly to OpenXBL auth (server-side callback)
+            const authUrl = `https://xbl.io/app/auth/${OPENXBL_PUBLIC_KEY}?` + 
+                `redirect_uri=${encodeURIComponent(window.location.origin + '/api/xbox-callback')}&` +
+                `prompt=select_account&` +
+                `state=${encodeURIComponent(state)}&` +
+                `response_type=code&` +
+                `_t=${Date.now()}`;
             
-        } catch (error) { 
-            console.error('Xbox linking error:', error);
-            showToast(`Failed to link Xbox account: ${error.message}`, 'error'); 
-        } finally { 
-            hideLoading(); 
-        }
-    };
-
-    window.addEventListener('message', handleMessage);
-
-    // Handle popup being closed manually
-    const checkClosed = setInterval(() => {
-        if (popup.closed) {
-            clearInterval(checkClosed);
-            window.removeEventListener('message', handleMessage);
             hideLoading();
-        }
-    }, 1000);
+            
+            // Redirect the current window (like the PHP demo does)
+            window.location.href = authUrl;
+        });
+        
+    } catch (error) {
+        hideLoading();
+        console.error('Xbox connection initiation error:', error);
+        showToast('Failed to initiate Xbox connection', 'error');
+    }
 }
+
+// Also add this to handle the return from Xbox callback
+document.addEventListener('DOMContentLoaded', () => {
+    // Check for Xbox callback results in URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    if (urlParams.has('xbox_success')) {
+        const gamertag = urlParams.get('xbox_success');
+        showToast(`Xbox account linked successfully: ${gamertag}`, 'success');
+        
+        // Clean URL and reload profile
+        window.history.replaceState({}, document.title, window.location.pathname);
+        setTimeout(() => loadProfileAndPopulate(), 1000);
+        
+    } else if (urlParams.has('xbox_error')) {
+        const error = urlParams.get('xbox_error');
+        let errorMessage = 'Xbox linking failed';
+        
+        switch (error) {
+            case 'no_code':
+                errorMessage = 'No authorization code received from Xbox';
+                break;
+            case 'invalid_state':
+                errorMessage = 'Security validation failed';
+                break;
+            case 'user_verification_failed':
+                errorMessage = 'User verification failed - please log in again';
+                break;
+            case 'claim_failed':
+                errorMessage = 'Failed to claim Xbox profile data';
+                break;
+            case 'parse_failed':
+                errorMessage = 'Unable to parse Xbox profile data';
+                break;
+            case 'incomplete_data':
+                errorMessage = 'Xbox profile data is incomplete';
+                break;
+            case 'database_error':
+                errorMessage = 'Database error occurred';
+                break;
+            case 'update_failed':
+                errorMessage = 'Failed to update profile';
+                break;
+            default:
+                if (error.startsWith('already_linked_to_')) {
+                    const username = error.replace('already_linked_to_', '');
+                    errorMessage = `This Xbox account is already linked to user: ${username}`;
+                } else {
+                    errorMessage = `Xbox linking failed: ${error}`;
+                }
+        }
+        
+        showToast(errorMessage, 'error');
+        
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+});
         
         async function unlinkXboxConnection() {
             showLoading('Disconnecting Xbox account...');
