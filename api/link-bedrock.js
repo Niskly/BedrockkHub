@@ -1,4 +1,4 @@
-// In your api/link-bedrock.js - Replace the entire authentication section:
+// In your api/link-bedrock.js - Try this approach without using your private API key:
 
 import { createClient } from '@supabase/supabase-js';
 
@@ -32,126 +32,241 @@ export default async function handler(req, res) {
       return res.status(401).json({ details: 'Invalid or expired MCHub user token. Please sign in again.' });
     }
 
-    console.log('=== CLAIMING XBOX USER DATA ===');
-    console.log('Authorization code received:', xbl_token.substring(0, 20) + '...');
+    console.log('=== PROCESSING XBOX AUTHORIZATION ===');
+    console.log('Token received:', xbl_token.substring(0, 20) + '...');
     
-    // This is the equivalent of PHP $auth->claim($code)
-    // According to OpenXBL docs, we need to "claim" the code to get user data
+    let xboxData;
+    let authSuccess = false;
+
+    // Method 1: Try to exchange the authorization code directly (no API key)
     try {
-      console.log('Claiming authorization code with OpenXBL...');
+      console.log('Trying direct OAuth token exchange...');
       
-      const claimResponse = await fetch('https://xbl.io/api/v2/claim', {
+      const tokenResponse = await fetch('https://login.live.com/oauth20_token.srf', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Authorization': process.env.OPENXBL_API_KEY // Your private API key
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json'
         },
-        body: JSON.stringify({
-          code: xbl_token,
-          public_key: process.env.OPENXBL_PUBLIC_KEY
+        body: new URLSearchParams({
+          'client_id': process.env.OPENXBL_PUBLIC_KEY,
+          'grant_type': 'authorization_code',
+          'code': xbl_token,
+          'redirect_uri': `${process.env.VERCEL_URL || 'https://mchub.vercel.app'}/bedrock-callback.html`
         })
       });
 
-      console.log('Claim response status:', claimResponse.status);
-      const claimText = await claimResponse.text();
-      console.log('Claim response body:', claimText);
+      console.log('OAuth token response status:', tokenResponse.status);
+      const tokenText = await tokenResponse.text();
+      console.log('OAuth token response:', tokenText);
 
-      if (!claimResponse.ok) {
-        throw new Error(`OpenXBL claim failed: ${claimResponse.status} - ${claimText}`);
-      }
-
-      const xboxData = JSON.parse(claimText);
-      console.log('✅ Successfully claimed user data:', JSON.stringify(xboxData, null, 2));
-
-      // Parse the claimed data - OpenXBL should return user profile directly
-      let xuid, bedrockGamertag, bedrockGamepicUrl;
-
-      // The claim response should contain the user's Xbox data directly
-      if (xboxData.xuid && xboxData.gamertag) {
-        // Direct format from claim
-        xuid = xboxData.xuid;
-        bedrockGamertag = xboxData.gamertag;
-        bedrockGamepicUrl = xboxData.avatar;
+      if (tokenResponse.ok) {
+        const tokenData = JSON.parse(tokenText);
+        console.log('Got OAuth tokens:', tokenData);
         
-      } else if (xboxData.profileUsers && xboxData.profileUsers.length > 0) {
-        // Alternative format
-        const profile = xboxData.profileUsers[0];
-        xuid = profile.id;
-        
-        const gamertagSetting = profile.settings?.find(s => s.id === 'Gamertag');
-        bedrockGamertag = gamertagSetting?.value;
-        
-        const picSetting = profile.settings?.find(s => s.id === 'GameDisplayPicRaw');
-        bedrockGamepicUrl = picSetting?.value;
-        
-      } else {
-        console.error('Unexpected claim response format:', xboxData);
-        throw new Error('Unable to parse Xbox profile from OpenXBL claim response.');
+        // Now use the access token to authenticate with Xbox Live
+        const xblAuthResponse = await fetch('https://user.auth.xboxlive.com/user/authenticate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            Properties: {
+              AuthMethod: 'RPS',
+              SiteName: 'user.auth.xboxlive.com',
+              RpsTicket: `d=${tokenData.access_token}`
+            },
+            RelyingParty: 'http://auth.xboxlive.com',
+            TokenType: 'JWT'
+          })
+        });
+
+        console.log('Xbox Live auth response status:', xblAuthResponse.status);
+        const xblAuthText = await xblAuthResponse.text();
+        console.log('Xbox Live auth response:', xblAuthText);
+
+        if (xblAuthResponse.ok) {
+          const xblData = JSON.parse(xblAuthText);
+          
+          // Get XSTS token
+          const xstsResponse = await fetch('https://xsts.auth.xboxlive.com/xsts/authorize', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              Properties: {
+                SandboxId: 'RETAIL',
+                UserTokens: [xblData.Token]
+              },
+              RelyingParty: 'http://xboxlive.com',
+              TokenType: 'JWT'
+            })
+          });
+
+          console.log('XSTS response status:', xstsResponse.status);
+          const xstsText = await xstsResponse.text();
+          console.log('XSTS response:', xstsText);
+
+          if (xstsResponse.ok) {
+            const xstsData = JSON.parse(xstsText);
+            
+            // Extract user info from XSTS token
+            const userClaims = xstsData.DisplayClaims?.xui?.[0];
+            if (userClaims) {
+              xboxData = {
+                xuid: userClaims.xid,
+                gamertag: userClaims.gtg,
+                avatar: userClaims.pic
+              };
+              authSuccess = true;
+              console.log('✅ Direct Xbox Live authentication successful');
+            }
+          }
+        }
       }
-
-      if (!xuid || !bedrockGamertag) {
-        console.error(`Missing essential data - XUID: ${xuid}, Gamertag: ${bedrockGamertag}`);
-        throw new Error(`Incomplete Xbox profile data received. XUID: ${xuid}, Gamertag: ${bedrockGamertag}`);
-      }
-
-      console.log(`✅ Parsed Xbox data - XUID: ${xuid}, Gamertag: ${bedrockGamertag}`);
-
-      // Check if this Xbox account is already linked to a different user
-      const { data: existingLinks, error: linkCheckError } = await supabaseAdmin
-        .from('profiles')
-        .select('id, username')
-        .eq('xuid', xuid);
-
-      if (linkCheckError) {
-        console.error('Database error while checking existing links:', linkCheckError);
-        throw new Error('Database error while checking existing links.');
-      }
-
-      const otherUserLinks = existingLinks?.filter(link => link.id !== user.id) || [];
-
-      if (otherUserLinks.length > 0) {
-        const existingUser = otherUserLinks[0];
-        throw new Error(`This Xbox account is already linked to another MCHub user: ${existingUser.username}`);
-      }
-
-      // Update the user's profile in Supabase
-      const { error: updateError } = await supabaseAdmin
-        .from('profiles')
-        .update({
-          xuid,
-          bedrock_gamertag: bedrockGamertag,
-          bedrock_gamerpic_url: bedrockGamepicUrl || null
-        })
-        .eq('id', user.id);
-
-      if (updateError) {
-        console.error('Profile update error:', updateError);
-        throw updateError;
-      }
-
-      console.log('✅ Profile updated successfully');
-
-      // Return success
-      res.status(200).json({
-        message: 'Xbox account linked successfully!',
-        bedrock_gamertag: bedrockGamertag,
-      });
-
     } catch (error) {
-      console.error('❌ OpenXBL claim error:', error);
-      
-      // Provide helpful error messages based on common issues
-      if (error.message.includes('404')) {
-        throw new Error('The authorization code has expired or is invalid. Please try linking your Xbox account again.');
-      } else if (error.message.includes('401')) {
-        throw new Error('OpenXBL API authentication failed. Please check your API keys.');
-      } else if (error.message.includes('400')) {
-        throw new Error('Invalid request to OpenXBL. The authorization code format may be incorrect.');
-      } else {
-        throw new Error(`Failed to claim Xbox profile: ${error.message}`);
+      console.log('❌ Direct OAuth method failed:', error.message);
+    }
+
+    // Method 2: Try using OpenXBL's public claim endpoint (if it exists)
+    if (!authSuccess) {
+      try {
+        console.log('Trying OpenXBL public claim...');
+        
+        const claimResponse = await fetch('https://xbl.io/api/v2/oauth/claim', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            code: xbl_token,
+            public_key: process.env.OPENXBL_PUBLIC_KEY
+          })
+        });
+
+        console.log('Public claim response status:', claimResponse.status);
+        const claimText = await claimResponse.text();
+        console.log('Public claim response:', claimText);
+
+        if (claimResponse.ok) {
+          xboxData = JSON.parse(claimText);
+          authSuccess = true;
+          console.log('✅ OpenXBL public claim successful');
+        }
+      } catch (error) {
+        console.log('❌ Public claim method failed:', error.message);
       }
     }
+
+    // Method 3: Try OpenXBL's user-specific token approach
+    if (!authSuccess) {
+      try {
+        console.log('Trying user-specific token...');
+        
+        // Some OAuth systems return the token in a format we can use directly
+        const userTokenResponse = await fetch('https://xbl.io/api/v2/account', {
+          headers: {
+            'Authorization': `Bearer ${xbl_token}`,
+            'Accept': 'application/json'
+            // NOTE: No X-Authorization header (no private API key)
+          }
+        });
+
+        console.log('User token response status:', userTokenResponse.status);
+        const userTokenText = await userTokenResponse.text();
+        console.log('User token response:', userTokenText);
+
+        if (userTokenResponse.ok) {
+          xboxData = JSON.parse(userTokenText);
+          authSuccess = true;
+          console.log('✅ User-specific token successful');
+        }
+      } catch (error) {
+        console.log('❌ User token method failed:', error.message);
+      }
+    }
+
+    if (!authSuccess || !xboxData) {
+      console.error('❌ All authentication methods failed');
+      console.error('This suggests the OAuth flow might not be properly configured');
+      console.error('Consider reaching out to OpenXBL support for user authentication guidance');
+      
+      throw new Error('Unable to authenticate Xbox user. The authorization code may have expired or the OAuth configuration needs adjustment.');
+    }
+
+    console.log('✅ Xbox authentication successful:', JSON.stringify(xboxData, null, 2));
+
+    // Parse the Xbox data
+    let xuid, bedrockGamertag, bedrockGamepicUrl;
+
+    if (xboxData.xuid && xboxData.gamertag) {
+      xuid = xboxData.xuid;
+      bedrockGamertag = xboxData.gamertag;
+      bedrockGamepicUrl = xboxData.avatar;
+    } else if (xboxData.profileUsers && xboxData.profileUsers.length > 0) {
+      const profile = xboxData.profileUsers[0];
+      xuid = profile.id;
+      
+      const gamertagSetting = profile.settings?.find(s => s.id === 'Gamertag');
+      bedrockGamertag = gamertagSetting?.value;
+      
+      const picSetting = profile.settings?.find(s => s.id === 'GameDisplayPicRaw');
+      bedrockGamepicUrl = picSetting?.value;
+    } else {
+      console.error('Unexpected Xbox data format:', xboxData);
+      throw new Error('Unable to parse Xbox profile data.');
+    }
+
+    if (!xuid || !bedrockGamertag) {
+      console.error(`Missing essential data - XUID: ${xuid}, Gamertag: ${bedrockGamertag}`);
+      throw new Error(`Incomplete Xbox profile data. XUID: ${xuid}, Gamertag: ${bedrockGamertag}`);
+    }
+
+    console.log(`✅ Parsed data - XUID: ${xuid}, Gamertag: ${bedrockGamertag}`);
+
+    // Check for existing links
+    const { data: existingLinks, error: linkCheckError } = await supabaseAdmin
+      .from('profiles')
+      .select('id, username')
+      .eq('xuid', xuid);
+
+    if (linkCheckError) {
+      console.error('Database error:', linkCheckError);
+      throw new Error('Database error while checking existing links.');
+    }
+
+    const otherUserLinks = existingLinks?.filter(link => link.id !== user.id) || [];
+
+    if (otherUserLinks.length > 0) {
+      const existingUser = otherUserLinks[0];
+      throw new Error(`This Xbox account is already linked to another MCHub user: ${existingUser.username}`);
+    }
+
+    // Update profile
+    const { error: updateError } = await supabaseAdmin
+      .from('profiles')
+      .update({
+        xuid,
+        bedrock_gamertag: bedrockGamertag,
+        bedrock_gamerpic_url: bedrockGamepicUrl || null
+      })
+      .eq('id', user.id);
+
+    if (updateError) {
+      console.error('Profile update error:', updateError);
+      throw updateError;
+    }
+
+    console.log('✅ Profile updated successfully');
+
+    res.status(200).json({
+      message: 'Xbox account linked successfully!',
+      bedrock_gamertag: bedrockGamertag,
+    });
 
   } catch (error) {
     console.error('❌ Error in link-bedrock function:', error);
