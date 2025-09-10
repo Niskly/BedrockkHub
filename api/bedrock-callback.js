@@ -33,59 +33,60 @@ export default async function handler(req, res) {
     }
 
     try {
-        console.log('[bedrock-callback] Exchanging code for token...');
+        console.log('[bedrock-callback] Claiming access token with code:', code);
         
-        // Use the correct XBL.io token endpoint
-        const tokenResponse = await fetch('https://xbl.io/api/v2/oauth/token', {
+        // Use XBL.io's claim endpoint to exchange code for access token
+        const claimResponse = await fetch('https://xbl.io/app/claim', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
-                client_id: process.env.OPENXBL_PUBLIC_KEY,
-                client_secret: process.env.OPENXBL_APP_SECRET, // This is your Azure client secret
-                grant_type: 'authorization_code',
                 code: code,
-                // XBL.io uses their own callback, not yours
-                redirect_uri: 'https://xbl.io/app/callback'
+                app_key: process.env.OPENXBL_PUBLIC_KEY
             }),
         });
 
-        console.log('[bedrock-callback] Token response status:', tokenResponse.status);
+        console.log('[bedrock-callback] Claim response status:', claimResponse.status);
 
-        if (!tokenResponse.ok) {
-            const errorText = await tokenResponse.text();
-            console.error('[bedrock-callback] Token exchange failed:', {
-                status: tokenResponse.status,
-                statusText: tokenResponse.statusText,
+        if (!claimResponse.ok) {
+            const errorText = await claimResponse.text();
+            console.error('[bedrock-callback] Token claim failed:', {
+                status: claimResponse.status,
+                statusText: claimResponse.statusText,
                 body: errorText
             });
 
             return res.status(500).send(`
                 <html><body style="font-family: sans-serif; background: #1c1c1c; color: #e8eefc; text-align: center; padding: 2rem;">
-                    <h2>Token Exchange Failed</h2>
-                    <p>Status: ${tokenResponse.status}</p>
+                    <h2>Token Claim Failed</h2>
+                    <p>Status: ${claimResponse.status}</p>
                     <p>Error: ${errorText}</p>
                     <details style="margin-top: 1rem; text-align: left; background: #2c2c2c; padding: 1rem; border-radius: 8px;">
                         <summary>Debug Info</summary>
-                        <pre>Client ID: ${process.env.OPENXBL_PUBLIC_KEY ? 'Present' : 'Missing'}
-Client Secret: ${process.env.OPENXBL_APP_SECRET ? 'Present' : 'Missing'}
-Code: ${code ? 'Present' : 'Missing'}</pre>
+                        <pre>Public Key: ${process.env.OPENXBL_PUBLIC_KEY ? 'Present' : 'Missing'}
+Code: ${code ? 'Present' : 'Missing'}
+Code Length: ${code ? code.length : 0}</pre>
                     </details>
                     <script>setTimeout(() => window.close(), 10000);</script>
                 </body></html>
             `);
         }
 
-        const tokenData = await tokenResponse.json();
+        const claimData = await claimResponse.json();
+        console.log('[bedrock-callback] Claim response data keys:', Object.keys(claimData));
         
-        if (!tokenData.access_token) {
-            console.error('[bedrock-callback] No access token in response:', tokenData);
-            throw new Error('No access token received from XBL.io');
+        // XBL.io returns the user's access token in the response
+        // This token can be used to make API calls on behalf of the user
+        const accessToken = claimData.app_key || claimData.access_token || claimData.token;
+        
+        if (!accessToken) {
+            console.error('[bedrock-callback] No access token in claim response:', claimData);
+            throw new Error('No access token received from XBL.io claim endpoint');
         }
 
-        console.log('[bedrock-callback] Token exchange successful');
+        console.log('[bedrock-callback] Token claim successful');
 
         // Get the base URL for the postMessage
         const baseUrl = process.env.VERCEL_URL 
@@ -100,17 +101,25 @@ Code: ${code ? 'Present' : 'Missing'}</pre>
             <script>
               console.log('Callback page loaded, sending message to parent...');
               if (window.opener) {
-                window.opener.postMessage({
-                  type: 'BEDROCK_AUTH_SUCCESS',
-                  token: "${tokenData.access_token}"
-                }, "${baseUrl}");
-                console.log('Message sent to parent window');
+                try {
+                  window.opener.postMessage({
+                    type: 'BEDROCK_AUTH_SUCCESS',
+                    token: "${accessToken}"
+                  }, "${baseUrl}");
+                  console.log('Message sent to parent window');
+                } catch (e) {
+                  console.error('Failed to send message:', e);
+                }
               } else {
                 console.error('No opener window found');
               }
               setTimeout(() => {
                 console.log('Closing popup window');
-                window.close();
+                try {
+                  window.close();
+                } catch (e) {
+                  console.log('Could not close window automatically');
+                }
               }, 2000);
             </script>
           </body></html>
@@ -122,6 +131,10 @@ Code: ${code ? 'Present' : 'Missing'}</pre>
             <html><body style="font-family: sans-serif; background: #1c1c1c; color: #e8eefc; text-align: center; padding: 2rem;">
                 <h2>Authentication Error</h2>
                 <p>An unexpected error occurred: ${error.message}</p>
+                <details style="margin-top: 1rem; text-align: left; background: #2c2c2c; padding: 1rem; border-radius: 8px;">
+                    <summary>Error Details</summary>
+                    <pre>${error.message}</pre>
+                </details>
                 <script>setTimeout(() => window.close(), 8000);</script>
             </body></html>
         `);
