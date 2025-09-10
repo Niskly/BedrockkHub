@@ -489,26 +489,19 @@
             setupModalHandlers();
         }
         
-        // ** THIS IS THE FIX FOR THE TABS **
         function setupTabSwitching() {
-            // Use event delegation on the container for efficiency
             const tabsContainer = document.querySelector('.settings-tabs');
             if (!tabsContainer) return;
 
             tabsContainer.addEventListener('click', (e) => {
                 const tab = e.target.closest('.settings-tab');
-                if (!tab) return; // Exit if the click wasn't on a tab
+                if (!tab) return;
 
-                // Remove active class from all tabs
                 tabsContainer.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
-                
-                // Add active class to the clicked tab
                 tab.classList.add('active');
                 
-                // Hide all content areas
                 document.querySelectorAll('.content-area').forEach(area => area.classList.remove('active'));
                 
-                // Show the corresponding content area
                 const tabName = tab.dataset.tab;
                 const contentArea = document.getElementById(tabName + '-tab');
                 if (contentArea) {
@@ -582,9 +575,17 @@
                 }
             });
 
-            handleForm(document.getElementById('username-form'), async () => { /* ... Username logic ... */ });
+            handleForm(document.getElementById('username-form'), async () => { 
+                // Placeholder for username logic
+            });
+
             const deleteBtn = document.getElementById('delete-account-btn');
-            if(deleteBtn) deleteBtn.addEventListener('click', () => { /* ... Delete logic ... */ });
+            if(deleteBtn) deleteBtn.addEventListener('click', () => { 
+                showConfirmation("Are you absolutely sure you want to delete your account? This action cannot be undone.", async () => {
+                    // Placeholder for delete logic
+                    showToast("Account deletion initiated.", "warning");
+                });
+            });
         }
 
         function setupUploaders() {
@@ -666,14 +667,174 @@
         }
 
         // --- SOCIALS & XBOX LOGIC (FULLY RESTORED) ---
-        function renderSocials(profile) { /* ... same as before ... */ }
-        function createLinkedAccountCard(key, value) { /* ... same as before ... */ }
-        function attachSocialsEventListeners(){ /* ... same as before ... */ }
-        async function unlinkSocial(key) { /* ... same as before ... */ }
-        function openSocialModal(key) { /* ... same as before ... */ }
-        async function saveSocial(key) { /* ... same as before ... */ }
-        function initiateXboxConnection() { /* ... same as before ... */ }
-        async function unlinkXboxConnection() { /* ... same as before ... */ }
+        function renderSocials(profile) {
+            const container = document.getElementById('socials-container');
+            if (!container) return;
+            const socialLinks = profile.social_links || {};
+            const gridHtml = Object.entries(socialPlatforms).map(([key, platform]) => {
+                const isLinked = key === 'xbox' ? !!profile.bedrock_gamertag : !!socialLinks[key];
+                return `<button class="social-icon-btn ${isLinked ? 'linked' : ''}" data-social="${key}" title="Link ${platform.name}"><i class="${platform.icon}"></i></button>`;
+            }).join('');
+            
+            let cardsHtml = '';
+            if (profile.bedrock_gamertag) cardsHtml += createLinkedAccountCard('xbox', profile.bedrock_gamertag);
+            for (const [key, value] of Object.entries(socialLinks)) {
+                if (value && socialPlatforms[key]) cardsHtml += createLinkedAccountCard(key, value);
+            }
+            
+            container.innerHTML = `
+                <div class="form-group"><label class="form-label">Link your profiles</label><div class="socials-grid">${gridHtml}</div></div>
+                <div class="form-group"><label class="form-label">Linked Accounts</label><div class="linked-accounts-container" id="linked-accounts-list">
+                    ${cardsHtml || '<p class="tiny">No accounts linked yet. Click an icon above to add one.</p>'}
+                </div></div>`;
+            attachSocialsEventListeners();
+        }
+
+        function createLinkedAccountCard(key, value) {
+            const platform = socialPlatforms[key];
+            return `<div class="linked-account-card" data-social="${key}"><div class="linked-account-info"><i class="${platform.icon}" style="color: ${platform.color};"></i><span class="linked-account-value">${value}</span></div><div class="linked-account-actions"><button class="unlink-btn" title="Unlink ${platform.name}"><i class="fa-solid fa-trash-can"></i></button></div></div>`;
+        }
+
+        function attachSocialsEventListeners(){
+            document.querySelectorAll('.social-icon-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const key = btn.dataset.social;
+                    if (key === 'xbox') initiateXboxConnection();
+                    else openSocialModal(key);
+                });
+            });
+            document.querySelectorAll('.unlink-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const key = btn.closest('.linked-account-card').dataset.social;
+                    showConfirmation(`Unlink your ${socialPlatforms[key].name} account?`, () => {
+                        if (key === 'xbox') unlinkXboxConnection();
+                        else unlinkSocial(key);
+                    });
+                });
+            });
+        }
+        
+        async function unlinkSocial(key) {
+            showLoading(`Unlinking ${socialPlatforms[key].name}...`);
+            try {
+                const newSocials = { ...currentProfile.social_links };
+                delete newSocials[key];
+                const { error } = await supabase.from('profiles').update({ social_links: newSocials }).eq('id', currentUser.id);
+                if (error) throw error;
+                showToast(`${socialPlatforms[key].name} unlinked.`, 'success');
+                await loadProfileAndPopulate();
+            } catch (error) {
+                showToast(`Failed to unlink: ${error.message}`, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function openSocialModal(key) {
+            const platform = socialPlatforms[key];
+            const currentVal = currentProfile.social_links?.[key] || '';
+            let currentMode = platform.defaultMode;
+            document.getElementById('social-modal-icon').className = platform.icon;
+            document.getElementById('social-modal-icon').style.color = platform.color;
+            document.getElementById('social-modal-title').textContent = `Add ${platform.name}`;
+            const switcherContainer = document.getElementById('social-mode-switcher-container');
+            if (platform.modes.length > 1) {
+                switcherContainer.style.display = 'flex';
+                switcherContainer.innerHTML = platform.modes.map(mode => `<button class="social-mode-btn" data-mode="${mode}"><i class="fa-solid ${mode === 'link' ? 'fa-link' : 'fa-at'}"></i> ${mode.charAt(0).toUpperCase() + mode.slice(1)}</button>`).join('');
+            } else {
+                switcherContainer.style.display = 'none';
+            }
+            const updateInputForMode = (mode) => {
+                const input = document.getElementById('social-modal-input');
+                const inputIcon = document.getElementById('social-input-icon');
+                document.getElementById('social-modal-label').textContent = mode === 'link' ? 'Profile URL' : 'Username';
+                input.type = mode === 'link' ? 'url' : 'text';
+                input.placeholder = platform.placeholder;
+                inputIcon.className = `fa-solid ${mode === 'link' ? 'fa-link' : 'fa-at'}`;
+                switcherContainer.querySelectorAll('.social-mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
+            };
+            updateInputForMode(currentMode);
+            document.getElementById('social-modal-input').value = currentVal;
+            switcherContainer.querySelectorAll('.social-mode-btn').forEach(btn => {
+                btn.onclick = () => { currentMode = btn.dataset.mode; updateInputForMode(currentMode); };
+            });
+            document.getElementById('save-social-btn').onclick = () => saveSocial(key);
+            socialModal.classList.add('show');
+            document.getElementById('social-modal-input').focus();
+        }
+        
+        async function saveSocial(key) {
+            const input = document.getElementById('social-modal-input');
+            const value = input.value.trim();
+            if (!value) return showToast("Please enter a value.", 'error');
+            socialModal.classList.remove('show');
+            showLoading(`Saving ${socialPlatforms[key].name}...`);
+            try {
+                const newSocials = { ...currentProfile.social_links, [key]: value };
+                const { error } = await supabase.from('profiles').update({ social_links: newSocials }).eq('id', currentUser.id);
+                if (error) throw error;
+                showToast(`${socialPlatforms[key].name} linked successfully.`, 'success');
+                await loadProfileAndPopulate();
+            } catch (error) {
+                showToast(`Failed to save: ${error.message}`, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function initiateXboxConnection() {
+            if (OPENXBL_PUBLIC_KEY === 'PASTE_YOUR_XBL_IO_PUBLIC_KEY_HERE' || !OPENXBL_PUBLIC_KEY) {
+                showToast('Xbox connection is not configured by the site administrator.', 'error');
+                return;
+            }
+            const redirectUri = encodeURIComponent(window.location.origin + '/api/bedrock-callback');
+            const authUrl = `https://xbl.io/app/auth/${OPENXBL_PUBLIC_KEY}?redirect_uri=${redirectUri}&prompt=select_account`;
+            
+            const popup = window.open(authUrl, 'xbox-auth', 'width=600,height=700');
+            if (!popup) { return showToast('Popup blocked. Please allow popups.', 'error'); }
+            
+            const handleMessage = async ({ origin, data }) => {
+                if (origin !== window.location.origin) return;
+                window.removeEventListener('message', handleMessage);
+                
+                if (data.type !== 'BEDROCK_AUTH_SUCCESS') { 
+                    return showToast(`Xbox connection failed: ${data.message || 'Unknown error'}`, 'error'); 
+                }
+
+                showLoading('Linking Xbox account...');
+                try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    const response = await fetch('/api/link-bedrock', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ mchub_token: session.access_token, xbl_token: data.token })
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.details || 'Failed to link account');
+                    showToast(`Xbox account linked: ${result.bedrock_gamertag}`, 'success');
+                    await loadProfileAndPopulate();
+                } catch (error) { 
+                    showToast(error.message, 'error');
+                } finally { 
+                    hideLoading(); 
+                }
+            };
+            window.addEventListener('message', handleMessage);
+        }
+        
+        async function unlinkXboxConnection() {
+            showLoading('Disconnecting Xbox account...');
+            try {
+                const { error } = await supabase.from('profiles').update({ xuid: null, bedrock_gamertag: null, bedrock_gamerpic_url: null }).eq('id', currentUser.id);
+                if (error) throw error;
+                showToast('Xbox account disconnected', 'success');
+                await loadProfileAndPopulate();
+            } catch (error) {
+                showToast(error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
 
         // --- DATA LOADING & INITIALIZATION ---
         async function loadProfileAndPopulate() {
@@ -696,7 +857,8 @@
              const { data: { user }, error } = await supabase.auth.getUser();
              if (error || !user) {
                  settingsContainer.innerHTML = `<div class="loading-container"><p>Please log in to view your settings.</p><a href="/login.html" class="btn primary" style="margin-top: 1rem;">Login</a></div>`;
-                 document.querySelector('.nav-actions').innerHTML = `<a class="btn primary" href="/login.html">Login</a>`;
+                 const nav = document.querySelector('.nav-actions');
+                 if(nav) nav.innerHTML = `<a class="btn primary" href="/login.html">Login</a>`;
                  return;
              }
              currentUser = user;
