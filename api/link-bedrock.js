@@ -8,93 +8,86 @@ const supabase = createClient(
 );
 
 export default async function handler(req, res) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ details: 'Method Not Allowed' });
+    const { code, error, error_description } = req.query;
+
+    if (error) {
+        return res.status(400).send(`
+          <html><body style="font-family: sans-serif; background: #1c1c1c; color: #e8eefc; text-align: center; padding: 2rem;">
+            <h2>Authentication Failed</h2>
+            <p><strong>Error:</strong> ${error}</p>
+            <p><strong>Details:</strong> ${error_description || 'No details provided.'}</p>
+            <p>You can close this window.</p>
+            <script>setTimeout(() => window.close(), 5000);</script>
+          </body></html>
+        `);
     }
 
+    if (!code) {
+        return res.status(400).send(`<html><body><h2>Error</h2><p>Missing authorization code.</p></body></html>`);
+    }
+
+    let tokenResponse; // Define it here to access it in the catch block
+
     try {
-        const { mchub_token, xbl_token } = req.body;
-
-        if (!mchub_token || !xbl_token) {
-            return res.status(400).json({ details: 'MCHub token and OpenXBL token are required.' });
-        }
-
-        // 1. Authenticate the MCHub user
-        const { data: { user }, error: userError } = await supabase.auth.getUser(mchub_token);
-        if (userError || !user) {
-            console.error('User authentication failed:', userError);
-            return res.status(401).json({ details: 'Invalid MCHub user token.' });
-        }
-
-        // 2. Use the user's OpenXBL access token to get their account info
-        const accountResponse = await fetch('https://xbl.io/api/v2/account', {
-            method: 'GET',
-            headers: {
-                // THIS IS THE CRITICAL FIX
-                'Authorization': `Bearer ${xbl_token}`, // Use the USER's token to get THEIR data
-                'X-Authorization': process.env.OPENXBL_API_KEY, // Your main API key for billing
-                'Accept': 'application/json',
-                'Accept-Language': 'en-US'
-            }
+        tokenResponse = await fetch('https://xbl.io/api/v2/oauth/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                client_id: process.env.OPENXBL_PUBLIC_KEY,
+                client_secret: process.env.OPENXBL_APP_SECRET,
+                grant_type: 'authorization_code',
+                redirect_uri: `https://${process.env.VERCEL_URL}/api/bedrock-callback`,
+                code: code,
+            }),
         });
 
-        if (!accountResponse.ok) {
-            const errorText = await accountResponse.text();
-            console.error('OpenXBL API error:', accountResponse.status, errorText);
-            throw new Error(`Failed to fetch Xbox Live profile. Status: ${accountResponse.status}`);
+        if (!tokenResponse.ok) {
+            // This is the key part: we throw an error so the catch block can read the body
+            throw new Error('Token exchange failed');
         }
 
-        const accountData = await accountResponse.json();
-        const profileUser = accountData.profileUsers?.[0];
+        const tokenData = await tokenResponse.json();
+        const accessToken = tokenData.access_token;
 
-        if (!profileUser) {
-            throw new Error('No Xbox Live profile found for this user.');
+        res.status(200).send(`
+          <html><body style="font-family: sans-serif; background: #1c1c1c; color: #e8eefc; text-align: center;">
+            <h2>Authentication Successful!</h2>
+            <p>Finalizing... You can close this window now.</p>
+            <script>
+              if (window.opener) {
+                window.opener.postMessage({
+                  type: 'BEDROCK_AUTH_SUCCESS',
+                  token: "${accessToken}"
+                }, "https://${process.env.VERCEL_URL}");
+              }
+              setTimeout(() => window.close(), 1500);
+            </script>
+          </body></html>
+        `);
+
+    } catch (e) {
+        console.error('Bedrock callback error:', e);
+
+        // ** THIS IS THE NEW DEBUGGING CODE **
+        // If the fetch failed, we try to read the error body from xbl.io
+        if (tokenResponse) {
+            const errorBodyText = await tokenResponse.text();
+            console.error('Error response from xbl.io:', errorBodyText);
+            return res.status(500).send(`
+                <html><body style="font-family: sans-serif; background: #1c1c1c; color: #e8eefc; text-align: center; padding: 2rem;">
+                    <h2>An unexpected error occurred during authentication.</h2>
+                    <p>The server received the following error from the authentication provider:</p>
+                    <pre style="background: #000; padding: 1rem; border-radius: 8px; text-align: left; white-space: pre-wrap; word-break: break-all;">${errorBodyText}</pre>
+                </body></html>
+            `);
         }
 
-        const xuid = profileUser.id;
-        const bedrockGamertag = profileUser.settings?.find(s => s.id === 'Gamertag')?.value;
-        const bedrockGamepicUrl = profileUser.settings?.find(s => s.id === 'GameDisplayPicRaw')?.value;
-
-        if (!xuid || !bedrockGamertag) {
-            throw new Error('Could not retrieve essential profile data (XUID or Gamertag).');
-        }
-        
-        // (Optional but recommended) Check if this Xbox account is already linked
-        const { data: existingLink } = await supabase
-          .from('profiles')
-          .select('id, username')
-          .eq('xuid', xuid)
-          .neq('id', user.id)
-          .single();
-
-        if (existingLink) {
-          throw new Error(`This Xbox account is already linked to another user: ${existingLink.username}`);
-        }
-
-        // 3. Update the user's profile in Supabase
-        const { error: updateError } = await supabase
-            .from('profiles')
-            .update({
-                xuid,
-                bedrock_gamertag: bedrockGamertag,
-                bedrock_gamerpic_url: bedrockGamepicUrl || null
-            })
-            .eq('id', user.id);
-
-        if (updateError) {
-            throw updateError;
-        }
-
-        // 4. Return success
-        res.status(200).json({
-            message: 'Bedrock account linked successfully!',
-            bedrock_gamertag: bedrockGamertag
-        });
-
-    } catch (error) {
-        console.error('Error in link-bedrock function:', error);
-        res.status(500).json({
-            details: error.message || 'An internal server error occurred.'
-        });
+        // Fallback for other types of errors
+        res.status(500).send(`
+            <html><body style="font-family: sans-serif; background: #1c1c1c; color: #e8eefc; text-align: center; padding: 2rem;">
+                <h2>An unexpected error occurred during authentication.</h2>
+                <p>${e.message}</p>
+            </body></html>
+        `);
     }
 }
