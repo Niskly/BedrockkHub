@@ -88,10 +88,11 @@ Code Length: ${code ? code.length : 0}</pre>
 
         console.log('[bedrock-callback] Token claim successful');
 
-        // Get the base URL for the postMessage
-        const baseUrl = process.env.VERCEL_URL 
-            ? `https://${process.env.VERCEL_URL}` 
-            : `https://${req.headers.host}`;
+        // FIXED: Get the base URL from the request host header (which matches the parent window)
+        // This ensures the postMessage target origin matches the recipient window origin
+        const baseUrl = `https://${req.headers.host}`;
+        
+        console.log('[bedrock-callback] Using base URL for postMessage:', baseUrl);
 
         // Send success response with token
         res.status(200).send(`
@@ -100,6 +101,7 @@ Code Length: ${code ? code.length : 0}</pre>
             <p>Finalizing... You can close this window now.</p>
             <script>
               console.log('Callback page loaded, sending message to parent...');
+              console.log('Target origin:', "${baseUrl}");
               if (window.opener) {
                 try {
                   window.opener.postMessage({
@@ -109,6 +111,16 @@ Code Length: ${code ? code.length : 0}</pre>
                   console.log('Message sent to parent window');
                 } catch (e) {
                   console.error('Failed to send message:', e);
+                  // Fallback: try with wildcard origin (less secure but might work)
+                  try {
+                    window.opener.postMessage({
+                      type: 'BEDROCK_AUTH_SUCCESS',
+                      token: "${accessToken}"
+                    }, "*");
+                    console.log('Message sent with wildcard origin');
+                  } catch (e2) {
+                    console.error('Wildcard fallback also failed:', e2);
+                  }
                 }
               } else {
                 console.error('No opener window found');
