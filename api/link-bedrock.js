@@ -32,15 +32,12 @@ export default async function handler(req, res) {
 
         // 2. Use the user's OpenXBL access token to get their account info
         console.log("[link-bedrock] Fetching Xbox Live profile from xbl.io...");
+        console.log("[link-bedrock] Using token:", xbl_token.substring(0, 10) + '...');
         
-        // FIXED: Use the correct header structure for XBL.io API
-        // The xbl_token IS the user's access token from the claim response
         const accountResponse = await fetch('https://xbl.io/api/v2/account', {
             method: 'GET',
             headers: {
-                // The user's access token goes in X-Authorization
                 'X-Authorization': xbl_token,
-                // Add the contract header for app usage
                 'X-Contract': '100',
                 'Accept': 'application/json',
                 'Accept-Language': 'en-US'
@@ -48,32 +45,32 @@ export default async function handler(req, res) {
         });
 
         console.log('[link-bedrock] Account API response status:', accountResponse.status);
+        console.log('[link-bedrock] Account API response headers:', Object.fromEntries(accountResponse.headers.entries()));
 
         if (!accountResponse.ok) {
             const errorText = await accountResponse.text();
             console.error(`[link-bedrock] OpenXBL API error. Status: ${accountResponse.status}. Body: ${errorText}`);
             
-            // Provide more helpful error messages
+            // More specific error handling
             if (accountResponse.status === 401) {
-                throw new Error('Invalid Xbox Live token. Please try linking your account again.');
+                throw new Error('Xbox Live authentication failed. Please try linking your account again.');
             } else if (accountResponse.status === 429) {
-                throw new Error('Rate limit exceeded. Please try again later.');
+                throw new Error('Rate limit exceeded. Please try again in a few minutes.');
+            } else if (accountResponse.status === 403) {
+                throw new Error('Access forbidden. Your Xbox profile may be set to private.');
             } else {
-                throw new Error(`Failed to fetch Xbox Live profile. API returned status ${accountResponse.status}.`);
+                throw new Error(`Xbox Live API error (${accountResponse.status}): ${errorText}`);
             }
         }
 
         const accountData = await accountResponse.json();
-        console.log('[link-bedrock] Account data received:', {
-            hasProfileUsers: !!accountData.profileUsers,
-            profileUsersCount: accountData.profileUsers?.length || 0
-        });
+        console.log('[link-bedrock] Full account response:', JSON.stringify(accountData, null, 2));
 
         const profileUser = accountData.profileUsers?.[0];
 
         if (!profileUser) {
             console.error("[link-bedrock] Error: No profile user found in xbl.io response.", accountData);
-            throw new Error('No Xbox Live profile found. Make sure you have an active Xbox Live account.');
+            throw new Error('No Xbox Live profile found. Your profile may be private or you may not have Xbox Live Gold/Game Pass.');
         }
 
         // 3. Extract the necessary data from the response
@@ -84,21 +81,23 @@ export default async function handler(req, res) {
         console.log('[link-bedrock] Extracted profile data:', {
             xuid,
             bedrockGamertag,
-            hasGamepic: !!bedrockGamepicUrl
+            hasGamepic: !!bedrockGamepicUrl,
+            allSettings: profileUser.settings?.map(s => ({ id: s.id, value: s.value }))
         });
 
         if (!xuid || !bedrockGamertag) {
             console.error("[link-bedrock] Error: Could not find XUID or Gamertag in profile data.", {
                 xuid,
                 bedrockGamertag,
-                availableSettings: profileUser.settings?.map(s => s.id)
+                availableSettings: profileUser.settings?.map(s => s.id) || []
             });
-            throw new Error('Could not retrieve Xbox Live gamertag. Your Xbox profile may be private.');
+            throw new Error('Could not retrieve Xbox Live gamertag. Your Xbox profile may be set to private or missing required information.');
         }
 
         console.log(`[link-bedrock] Found Gamertag: ${bedrockGamertag} (XUID: ${xuid})`);
 
         // 4. Check if this Xbox account is already linked to another MCHub user
+        console.log('[link-bedrock] Checking for existing Xbox account links...');
         const { data: existingUser, error: checkError } = await supabase
             .from('profiles')
             .select('id, username')
@@ -118,30 +117,58 @@ export default async function handler(req, res) {
 
         // 5. Update the user's profile in your Supabase database
         console.log(`[link-bedrock] Updating profile for user ${user.id} in Supabase...`);
-        const { error: updateError } = await supabase
+        
+        // Try both possible column names in case there's a mismatch
+        const updateData = {
+            xuid,
+            bedrock_gamertag: bedrockGamertag,
+            bedrock_gamer: bedrockGamertag, // Backup in case the column name is different
+            bedrock_gamerpic_url: bedrockGamepicUrl || null
+        };
+
+        console.log('[link-bedrock] Update data:', updateData);
+
+        const { data: updatedProfile, error: updateError } = await supabase
             .from('profiles')
-            .update({
-                xuid,
-                bedrock_gamertag: bedrockGamertag,
-                bedrock_gamerpic_url: bedrockGamepicUrl || null
-            })
-            .eq('id', user.id);
+            .update(updateData)
+            .eq('id', user.id)
+            .select()
+            .single();
 
         if (updateError) {
             console.error("[link-bedrock] Supabase update error:", updateError);
-            throw new Error('Failed to save Xbox account information to your profile.');
+            throw new Error(`Failed to save Xbox account information: ${updateError.message}`);
         }
-        console.log(`[link-bedrock] Profile for ${user.id} updated successfully.`);
+        
+        console.log(`[link-bedrock] Profile updated successfully:`, updatedProfile);
 
-        // 6. Return a success message
+        // 6. Verify the update worked
+        const { data: verifyProfile, error: verifyError } = await supabase
+            .from('profiles')
+            .select('xuid, bedrock_gamertag, bedrock_gamerpic_url')
+            .eq('id', user.id)
+            .single();
+
+        if (verifyError) {
+            console.error("[link-bedrock] Verification error:", verifyError);
+        } else {
+            console.log("[link-bedrock] Verification - profile after update:", verifyProfile);
+        }
+
+        // 7. Return a success message
         return res.status(200).json({
-            message: 'Bedrock account linked successfully!',
+            message: 'Xbox account linked successfully!',
             bedrock_gamertag: bedrockGamertag,
-            xuid: xuid
+            xuid: xuid,
+            profile_updated: updatedProfile
         });
 
     } catch (error) {
-        console.error('[link-bedrock] A critical error occurred in the function:', error);
+        console.error('[link-bedrock] Critical error occurred:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+        });
         return res.status(500).json({
             details: error.message || 'An internal server error occurred.'
         });
