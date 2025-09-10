@@ -5,6 +5,10 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const navActions = document.getElementById('nav-actions');
 
+// Track if auth has already been initialized to prevent multiple runs
+let authInitialized = false;
+let currentUserId = null;
+
 /**
  * Renders the user dropdown menu in the navigation bar.
  * @param {object} profile - The user's profile data.
@@ -70,6 +74,12 @@ function renderLoginButtons() {
  * It fetches the session, checks for a profile, and dispatches an 'auth-ready' event.
  */
 async function handleAuthState() {
+    // Prevent multiple simultaneous auth checks
+    if (authInitialized) {
+        console.log('🔄 Auth already initialized, skipping...');
+        return;
+    }
+
     let user = null;
     let profile = null;
     let authError = null;
@@ -83,6 +93,10 @@ async function handleAuthState() {
         if (session && session.user) {
             console.log('✅ User is authenticated:', session.user.id);
             user = session.user;
+            
+            // Track current user to detect actual user changes
+            const userChanged = currentUserId !== user.id;
+            currentUserId = user.id;
             
             // Now, fetch the associated profile. This is a critical step.
             const { data: profileData, error: profileError } = await supabase
@@ -100,7 +114,11 @@ async function handleAuthState() {
                 // Profile exists and is complete.
                 console.log('✅ Profile loaded:', profileData.username);
                 profile = profileData;
-                renderUserDropdown(profile);
+                
+                // Only re-render navigation if user actually changed or this is first load
+                if (userChanged || !authInitialized) {
+                    renderUserDropdown(profile);
+                }
             } else {
                 // User is authenticated but has no profile or an incomplete one.
                 console.log('❌ Profile incomplete. Redirecting...');
@@ -114,20 +132,34 @@ async function handleAuthState() {
         } else {
             // No user session found.
             console.log('❌ No authenticated user.');
-            renderLoginButtons();
+            currentUserId = null;
+            
+            // Only re-render if this is first load or user actually changed
+            if (!authInitialized) {
+                renderLoginButtons();
+            }
         }
     } catch (error) {
         console.error("❌ Critical error in handleAuthState:", error);
         authError = error.message;
-        renderLoginButtons();
+        currentUserId = null;
+        
+        if (!authInitialized) {
+            renderLoginButtons();
+        }
     } finally {
         // *** THE MOST IMPORTANT PART ***
         // Broadcast a custom event to let the rest of the page know that auth is ready.
         // The page's specific logic (like loading settings) will listen for this.
-        console.log('🚀 Dispatching auth-ready event.');
-        document.dispatchEvent(new CustomEvent('auth-ready', { 
-            detail: { user, profile, error: authError } 
-        }));
+        
+        // Only dispatch auth-ready on first initialization or actual user changes
+        if (!authInitialized) {
+            console.log('🚀 Dispatching auth-ready event.');
+            document.dispatchEvent(new CustomEvent('auth-ready', { 
+                detail: { user, profile, error: authError } 
+            }));
+            authInitialized = true;
+        }
     }
 }
 
@@ -142,11 +174,28 @@ if (document.readyState === 'loading') {
 }
 
 // Listen for future auth changes (e.g., token refresh, sign out from another tab).
+// FIXED: Be more selective about when to re-run auth state
 supabase.auth.onAuthStateChange((event, session) => {
     console.log('🔄 Auth state changed:', event);
-    // If the user signs in or out, re-run the entire auth check.
-    if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+    
+    // Only respond to actual authentication events, not tab switching
+    if (event === 'SIGNED_OUT') {
+        // User logged out - reset everything
+        console.log('🚪 User signed out, resetting auth state');
+        authInitialized = false;
+        currentUserId = null;
+        renderLoginButtons();
+        // Reload page to clear any user-specific content
+        window.location.reload();
+    } else if (event === 'SIGNED_IN' && !authInitialized) {
+        // User just signed in and we haven't initialized yet
+        console.log('🚪 User signed in, initializing auth state');
         handleAuthState();
+    } else if (event === 'TOKEN_REFRESHED') {
+        // Token refresh is normal, don't reload anything
+        console.log('🔄 Token refreshed, no action needed');
+    } else {
+        console.log('🔄 Auth event ignored to prevent tab switching issues:', event);
     }
 });
 
