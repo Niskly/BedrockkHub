@@ -1,17 +1,13 @@
 // api/bedrock-callback.js
+// This handles the callback from XBL.io's OAuth flow
 
 export default async function handler(req, res) {
     console.log('[bedrock-callback] Handler started');
     console.log('[bedrock-callback] Query params:', req.query);
-    console.log('[bedrock-callback] Environment check:', {
-        hasPublicKey: !!process.env.OPENXBL_PUBLIC_KEY,
-        hasAppSecret: !!process.env.OPENXBL_APP_SECRET,
-        hasVercelUrl: !!process.env.VERCEL_URL
-    });
-
+    
     const { code, error, error_description } = req.query;
 
-    // Handle the case where the user denies access in the Xbox login popup
+    // Handle OAuth errors
     if (error) {
         console.error('[bedrock-callback] OAuth error:', { error, error_description });
         return res.status(400).send(`
@@ -37,96 +33,66 @@ export default async function handler(req, res) {
     }
 
     try {
-        console.log('[bedrock-callback] Starting token exchange with code:', code);
-
-        // Determine the correct redirect URI
-        const baseUrl = process.env.VERCEL_URL 
-            ? `https://${process.env.VERCEL_URL}` 
-            : `https://${req.headers.host}`;
-        const redirectUri = `${baseUrl}/api/bedrock-callback`;
+        console.log('[bedrock-callback] Exchanging code for token...');
         
-        console.log('[bedrock-callback] Using redirect URI:', redirectUri);
-
-        // Exchange the temporary code for a real access token
-        const tokenRequestBody = {
-            client_id: process.env.OPENXBL_PUBLIC_KEY,
-            client_secret: process.env.OPENXBL_APP_SECRET,
-            grant_type: 'authorization_code',
-            redirect_uri: redirectUri,
-            code: code,
-        };
-
-        console.log('[bedrock-callback] Token request body (without secrets):', {
-            client_id: tokenRequestBody.client_id,
-            grant_type: tokenRequestBody.grant_type,
-            redirect_uri: tokenRequestBody.redirect_uri,
-            code: 'REDACTED'
-        });
-
+        // Use the correct XBL.io token endpoint
         const tokenResponse = await fetch('https://xbl.io/api/v2/oauth/token', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify(tokenRequestBody),
+            body: JSON.stringify({
+                client_id: process.env.OPENXBL_PUBLIC_KEY,
+                client_secret: process.env.OPENXBL_APP_SECRET, // This is your Azure client secret
+                grant_type: 'authorization_code',
+                code: code,
+                // XBL.io uses their own callback, not yours
+                redirect_uri: 'https://xbl.io/app/callback'
+            }),
         });
 
         console.log('[bedrock-callback] Token response status:', tokenResponse.status);
-        
-        const responseText = await tokenResponse.text();
-        console.log('[bedrock-callback] Token response body:', responseText);
 
         if (!tokenResponse.ok) {
-            let errorBody;
-            try {
-                errorBody = JSON.parse(responseText);
-            } catch {
-                errorBody = { error: 'Invalid response format', message: responseText };
-            }
-            
+            const errorText = await tokenResponse.text();
             console.error('[bedrock-callback] Token exchange failed:', {
                 status: tokenResponse.status,
                 statusText: tokenResponse.statusText,
-                body: errorBody
+                body: errorText
             });
 
             return res.status(500).send(`
                 <html><body style="font-family: sans-serif; background: #1c1c1c; color: #e8eefc; text-align: center; padding: 2rem;">
                     <h2>Token Exchange Failed</h2>
                     <p>Status: ${tokenResponse.status}</p>
-                    <p>Error: ${JSON.stringify(errorBody)}</p>
+                    <p>Error: ${errorText}</p>
                     <details style="margin-top: 1rem; text-align: left; background: #2c2c2c; padding: 1rem; border-radius: 8px;">
                         <summary>Debug Info</summary>
-                        <pre>${JSON.stringify({ 
-                            redirectUri, 
-                            hasClientId: !!process.env.OPENXBL_PUBLIC_KEY,
-                            hasClientSecret: !!process.env.OPENXBL_APP_SECRET,
-                            code: code ? 'Present' : 'Missing'
-                        }, null, 2)}</pre>
+                        <pre>Client ID: ${process.env.OPENXBL_PUBLIC_KEY ? 'Present' : 'Missing'}
+Client Secret: ${process.env.OPENXBL_APP_SECRET ? 'Present' : 'Missing'}
+Code: ${code ? 'Present' : 'Missing'}</pre>
                     </details>
                     <script>setTimeout(() => window.close(), 10000);</script>
                 </body></html>
             `);
         }
 
-        let tokenData;
-        try {
-            tokenData = JSON.parse(responseText);
-        } catch (parseError) {
-            console.error('[bedrock-callback] Failed to parse token response:', parseError);
-            throw new Error('Invalid JSON response from token endpoint');
-        }
-
+        const tokenData = await tokenResponse.json();
+        
         if (!tokenData.access_token) {
             console.error('[bedrock-callback] No access token in response:', tokenData);
-            throw new Error('No access token received');
+            throw new Error('No access token received from XBL.io');
         }
 
         console.log('[bedrock-callback] Token exchange successful');
-        const accessToken = tokenData.access_token;
 
-        // This script runs in the popup, sends the token to the main settings page, and closes itself.
+        // Get the base URL for the postMessage
+        const baseUrl = process.env.VERCEL_URL 
+            ? `https://${process.env.VERCEL_URL}` 
+            : `https://${req.headers.host}`;
+
+        // Send success response with token
         res.status(200).send(`
           <html><body style="font-family: sans-serif; background: #1c1c1c; color: #e8eefc; text-align: center; padding: 2rem;">
             <h2>Authentication Successful!</h2>
@@ -136,7 +102,7 @@ export default async function handler(req, res) {
               if (window.opener) {
                 window.opener.postMessage({
                   type: 'BEDROCK_AUTH_SUCCESS',
-                  token: "${accessToken}"
+                  token: "${tokenData.access_token}"
                 }, "${baseUrl}");
                 console.log('Message sent to parent window');
               } else {
@@ -150,16 +116,12 @@ export default async function handler(req, res) {
           </body></html>
         `);
 
-    } catch (e) {
-        console.error('[bedrock-callback] Unexpected error:', e);
+    } catch (error) {
+        console.error('[bedrock-callback] Unexpected error:', error);
         res.status(500).send(`
             <html><body style="font-family: sans-serif; background: #1c1c1c; color: #e8eefc; text-align: center; padding: 2rem;">
                 <h2>Authentication Error</h2>
-                <p>An unexpected error occurred during authentication.</p>
-                <details style="margin-top: 1rem; text-align: left; background: #2c2c2c; padding: 1rem; border-radius: 8px;">
-                    <summary>Error Details</summary>
-                    <pre>${e.message}\n${e.stack}</pre>
-                </details>
+                <p>An unexpected error occurred: ${error.message}</p>
                 <script>setTimeout(() => window.close(), 8000);</script>
             </body></html>
         `);
