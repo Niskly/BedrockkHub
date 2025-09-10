@@ -725,7 +725,7 @@
         }
 
         function initiateXboxConnection() {
-            const redirectUri = encodeURIComponent(window.location.origin + '/api/bedrock-callback');
+            const redirectUri = encodeURIComponent('https://mchub.vercel.app/api/bedrock-callback');
             const authUrl = `https://xbl.io/app/auth/${OPENXBL_PUBLIC_KEY}?redirect_uri=${redirectUri}&prompt=select_account`;
             
             console.log("Attempting to open Xbox auth URL:", authUrl); // DEBUG LOG
