@@ -496,52 +496,64 @@
         function nextPage(){state.currentPage++,scrollToContentTop(),render()}
         function prevPage(){state.currentPage--,scrollToContentTop(),render()}
 
-        function renderCard(p) {
-            const colorKey = p.color || 'gray';
-            const color = COLORS.find(c => c.key === colorKey)?.hex || '#6b7280';
-            const card = document.createElement('div');
-            card.className = 'card pack';
-            const { data } = supabase.storage.from('packs').getPublicUrl(p.filename);
-            const extension = p.filename.split('.').pop();
-            const downloadName = `${p.name}.${extension}`;
+function renderCard(p) {
+    const colorKey = p.color || 'gray';
+    const color = COLORS.find(c => c.key === colorKey)?.hex || '#6b7280';
+    const card = document.createElement('div');
+    card.className = 'card pack';
+    
+    // Fix: Check if filename exists before getting public URL
+    let downloadUrl = '#';
+    let downloadName = `${p.name || 'pack'}.mcpack`;
+    
+    if (p.filename) {
+        const { data } = supabase.storage.from('packs').getPublicUrl(p.filename);
+        downloadUrl = data.publicUrl;
+        const extension = p.filename.split('.').pop();
+        downloadName = `${p.name}.${extension}`;
+    }
 
-            let thumbContent;
-            let thumbBackgroundStyle;
-            if (p.icon_url) {
-                thumbContent = `<div class="pack-icon-bg" style="background-image: url('${p.icon_url}');"></div><img class="pack-icon" src="${p.icon_url}" alt="${escapeHtml(p.name)} Icon">`;
-                thumbBackgroundStyle = `background: linear-gradient(135deg,#1f2937,#0f172a);`;
-            } else {
-                thumbContent = `<div class="glyph" style="background:${color}"><i class="fa-solid fa-cube"></i></div>`;
-                thumbBackgroundStyle = `background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})`;
-            }
+    let thumbContent;
+    let thumbBackgroundStyle;
+    if (p.icon_url) {
+        thumbContent = `<div class="pack-icon-bg" style="background-image: url('${p.icon_url}');"></div><img class="pack-icon" src="${p.icon_url}" alt="${escapeHtml(p.name)} Icon">`;
+        thumbBackgroundStyle = `background: linear-gradient(135deg,#1f2937,#0f172a);`;
+    } else {
+        thumbContent = `<div class="glyph" style="background:${color}"><i class="fa-solid fa-cube"></i></div>`;
+        thumbBackgroundStyle = `background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})`;
+    }
 
-            const downloadLink = `<a href="${data.publicUrl}" onclick="handleDownload(event, ${p.id}, '${data.publicUrl}', '${escapeHtml(downloadName)}')"><i class="fa-solid fa-download"></i> Download</a>`;
-            const editLink = currentUserRole === 'admin' ? `<a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>` : '';
+    // Fix: Only create download link if we have a valid filename
+    const downloadLink = p.filename 
+        ? `<a href="${downloadUrl}" onclick="handleDownload(event, ${p.id}, '${downloadUrl}', '${escapeHtml(downloadName)}')"><i class="fa-solid fa-download"></i> Download</a>`
+        : `<a href="#" onclick="alert('Download not available'); return false;"><i class="fa-solid fa-download"></i> Download Unavailable</a>`;
+    
+    const editLink = currentUserRole === 'admin' ? `<a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>` : '';
 
-            card.innerHTML = `
-                <div class="thumb" style="${thumbBackgroundStyle}">
-                    ${thumbContent}
-                    <button class="pack-options-btn" style="display: grid;" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                    <div class="pack-options-menu" id="options-menu-${p.id}">
-                        ${downloadLink}
-                        ${editLink}
-                    </div>
-                </div>
-                <div class="content">
-                    <div class="pack-stats-top">
-                        <div class="stat-item"><i class="fa-solid fa-download"></i><span id="downloads-${p.id}">${(p.download_count || 0).toLocaleString()}</span></div>
-                        <div class="stat-item"><i class="fa-solid fa-calendar-day"></i><span>${formatDate(p.created_at)}</span></div>
-                    </div>
-                    <h4>${escapeHtml(p.name)}</h4>
-                    <div class="meta">
-                        ${(p.color && p.color !== 'none') ? `<span class="badge" style="text-transform: capitalize;">${escapeHtml(p.color)}</span>` : ''}
-                        ${p.resolution ? `<span class="badge">${escapeHtml(p.resolution)}</span>` : ''}
-                        ${p.version ? `<span class="badge" style="text-transform: capitalize;">${escapeHtml(p.version)}</span>` : ''}
-                        ${(p.tags||[]).map(t=>`<span class="badge">${escapeHtml(capitalizeFirst(t))}</span>`).join('')}
-                    </div>
-                </div>`;
-            return card;
-        }
+    card.innerHTML = `
+        <div class="thumb" style="${thumbBackgroundStyle}">
+            ${thumbContent}
+            <button class="pack-options-btn" style="display: grid;" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+            <div class="pack-options-menu" id="options-menu-${p.id}">
+                ${downloadLink}
+                ${editLink}
+            </div>
+        </div>
+        <div class="content">
+            <div class="pack-stats-top">
+                <div class="stat-item"><i class="fa-solid fa-download"></i><span id="downloads-${p.id}">${(p.download_count || 0).toLocaleString()}</span></div>
+                <div class="stat-item"><i class="fa-solid fa-calendar-day"></i><span>${formatDate(p.created_at)}</span></div>
+            </div>
+            <h4>${escapeHtml(p.name)}</h4>
+            <div class="meta">
+                ${(p.color && p.color !== 'none') ? `<span class="badge" style="text-transform: capitalize;">${escapeHtml(p.color)}</span>` : ''}
+                ${p.resolution ? `<span class="badge">${escapeHtml(p.resolution)}</span>` : ''}
+                ${p.version ? `<span class="badge" style="text-transform: capitalize;">${escapeHtml(p.version)}</span>` : ''}
+                ${(p.tags||[]).map(t=>`<span class="badge">${escapeHtml(capitalizeFirst(t))}</span>`).join('')}
+            </div>
+        </div>`;
+    return card;
+}
 
         function buildSwatches(e,t,o){e.innerHTML="",COLORS.forEach(a=>{const n=document.createElement("button");n.type="button",n.className="swatch"+(o&&o.has(a.key)?" active":""),n.style.background=a.hex,n.title=a.key,a.icon&&(n.innerHTML=`<i class="${a.icon}"></i>`),n.onclick=()=>t(a.key,n),e.appendChild(n)})}
         function buildModalTags(e,t,o=""){e.innerHTML="";const a=TAGS.filter(e=>e.toLowerCase().includes(o.toLowerCase()));0===a.length&&(e.innerHTML='<div class="tiny" style="grid-column: 1 / -1; text-align: center;">No tags found.</div>'),a.forEach(o=>{const a=document.createElement("span");a.className="tag-checkbox",t.has(o)&&a.classList.add("selected"),a.textContent=capitalizeFirst(o),a.onclick=()=>{toggleSet(tempModalTags,o),a.classList.toggle("selected")},e.appendChild(a)})}
