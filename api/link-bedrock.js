@@ -118,11 +118,10 @@ export default async function handler(req, res) {
         // 5. Update the user's profile in your Supabase database
         console.log(`[link-bedrock] Updating profile for user ${user.id} in Supabase...`);
         
-        // Try both possible column names in case there's a mismatch
+        // FIXED: Only use the correct column names that actually exist in your database
         const updateData = {
             xuid,
             bedrock_gamertag: bedrockGamertag,
-            bedrock_gamer: bedrockGamertag, // Backup in case the column name is different
             bedrock_gamerpic_url: bedrockGamepicUrl || null
         };
 
