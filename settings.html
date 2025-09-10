@@ -199,57 +199,15 @@
         }
 
         /* --- NEW CROPPER MODAL STYLES --- */
-        .cropper-modal {
-            padding: 1.5rem;
-            max-width: 450px;
-            width: 90%;
-        }
-        .cropper-modal-header {
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-        .cropper-modal-header h3 {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-        #cropper-image-container {
-            margin-bottom: 1.5rem;
-            background: var(--bg-0);
-            border-radius: 16px;
-            border: 1px solid var(--border);
-            overflow: hidden;
-            height: 300px;
-        }
-        #cropper-image {
-            max-width: 100%;
-        }
-        .cropper-controls {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        .cropper-control-btn {
-            background: var(--bg-2);
-            border: 1px solid var(--border);
-            color: var(--muted);
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            font-size: 18px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .cropper-control-btn:hover {
-            background: var(--bg-1);
-            color: var(--text);
-            border-color: var(--border-strong);
-        }
-        .cropper-modal-footer {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-        }
+        .cropper-modal { padding: 1.5rem; max-width: 450px; width: 90%; }
+        .cropper-modal-header { text-align: center; margin-bottom: 1.5rem; }
+        .cropper-modal-header h3 { font-size: 1.5rem; font-weight: 700; }
+        #cropper-image-container { margin-bottom: 1.5rem; background: var(--bg-0); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; height: 300px; }
+        #cropper-image { max-width: 100%; }
+        .cropper-controls { display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.5rem; }
+        .cropper-control-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--muted); width: 44px; height: 44px; border-radius: 12px; font-size: 18px; cursor: pointer; transition: all 0.2s ease; }
+        .cropper-control-btn:hover { background: var(--bg-1); color: var(--text); border-color: var(--border-strong); }
+        .cropper-modal-footer { display: flex; gap: 1rem; justify-content: flex-end; }
 
         /* --- CONFIRMATION & SOCIAL MODAL --- */
         .modal-dialog.confirmation-modal { max-width: 450px; text-align: center; padding: 2.5rem; }
@@ -305,15 +263,10 @@
     <!-- Overlays and Modals -->
     <div id="loading-overlay" class="loading-overlay"><div class="spinner"></div><p class="loading-text">Loading...</p></div>
     <div id="toast-container" class="toast-container"></div>
-
     <div id="cropper-modal" class="modal">
         <div class="modal-dialog cropper-modal">
-            <div class="cropper-modal-header">
-                <h3 id="cropper-title">Crop Image</h3>
-            </div>
-            <div id="cropper-image-container">
-                <img id="cropper-image" style="max-width: 100%;">
-            </div>
+            <div class="cropper-modal-header"><h3 id="cropper-title">Crop Image</h3></div>
+            <div id="cropper-image-container"><img id="cropper-image" style="max-width: 100%;"></div>
             <div class="cropper-controls">
                 <button id="zoom-in-btn" class="cropper-control-btn" title="Zoom In"><i class="fa-solid fa-search-plus"></i></button>
                 <button id="zoom-out-btn" class="cropper-control-btn" title="Zoom Out"><i class="fa-solid fa-search-minus"></i></button>
@@ -322,14 +275,10 @@
             </div>
             <div class="cropper-modal-footer">
                 <button id="cancel-crop-btn" class="btn ghost">Cancel</button>
-                <button id="confirm-crop-btn" class="btn primary">
-                    <i class="fa-solid fa-crop-simple"></i>
-                    Crop & Save
-                </button>
+                <button id="confirm-crop-btn" class="btn primary"><i class="fa-solid fa-crop-simple"></i> Crop & Save</button>
             </div>
         </div>
     </div>
-
     <div id="confirmation-modal" class="modal">
         <div class="modal-dialog confirmation-modal">
             <i class="fa-solid fa-exclamation-triangle" style="font-size: 48px; color: #f59e0b; margin-bottom: 16px;"></i>
@@ -340,13 +289,9 @@
             </div>
         </div>
     </div>
-
     <div id="social-modal" class="modal">
         <div class="modal-dialog social-modal">
-            <div id="social-modal-header">
-                <i id="social-modal-icon"></i>
-                <h2 id="social-modal-title"></h2>
-            </div>
+            <div id="social-modal-header"><i id="social-modal-icon"></i><h2 id="social-modal-title"></h2></div>
             <div id="social-mode-switcher-container" class="social-mode-switcher"></div>
             <div class="form-group" style="margin-bottom: 0;">
                 <label id="social-modal-label" class="form-label" for="social-modal-input"></label>
@@ -366,9 +311,7 @@
     <header>
         <nav class="nav">
             <a class="brand" href="/">
-                <div class="brand-badge">
-                    <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
-                </div>
+                <div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div>
                 <div>
                     <div class="brand-title">MCHUB</div>
                     <div class="tiny">Minecraft Bedrock • community</div>
@@ -386,10 +329,8 @@
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI_NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        // This value is now correct and matches your latest screenshot
         const OPENXBL_PUBLIC_KEY = '0f03abb9-2072-b029-2987-c31ddccbc780';
         
         let currentUser, currentProfile, isProcessing = false;
@@ -412,7 +353,7 @@
             github: { name: 'GitHub', icon: 'fa-brands fa-github', color: '#e8eefc', modes: ['link'], defaultMode: 'link', placeholder: 'https://github.com/...' },
         };
 
-        // --- ALL FUNCTIONS ARE NOW COMPLETE AND INCLUDED ---
+        // --- UTILITIES ---
         function showToast(message, type = 'success') {
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
@@ -424,22 +365,18 @@
                 setTimeout(() => toast.remove(), 400);
             }, 4000);
         }
-
         function showConfirmation(message, onConfirm) {
             document.getElementById('confirmation-message').textContent = message;
             confirmCallback = onConfirm;
             confirmationModal.classList.add('show');
         }
-
-        function hideLoading() {
-            loadingOverlay.style.display = 'none';
-        }
-
+        function hideLoading() { loadingOverlay.style.display = 'none'; }
         function showLoading(text = 'Loading...') {
             loadingOverlay.querySelector('.loading-text').textContent = text;
             loadingOverlay.style.display = 'flex';
         }
 
+        // --- RENDER & SETUP ---
         function buildPageStructure() {
             settingsContainer.innerHTML = `
                 <div class="settings-grid">
@@ -494,7 +431,7 @@
             setupUploaders();
             setupModalHandlers();
         }
-
+        
         function setupTabSwitching() {
             const tabsContainer = document.querySelector('.settings-tabs');
             if (!tabsContainer) return;
@@ -780,7 +717,6 @@
         }
 
         function initiateXboxConnection() {
-            // THE FAULTY SAFETY CHECK HAS BEEN REMOVED.
             const redirectUri = encodeURIComponent(window.location.origin + '/api/bedrock-callback');
             const authUrl = `https://xbl.io/app/auth/${OPENXBL_PUBLIC_KEY}?redirect_uri=${redirectUri}&prompt=select_account`;
             
@@ -846,19 +782,24 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', async () => {
-             const { data: { user }, error } = await supabase.auth.getUser();
-             if (error || !user) {
-                 settingsContainer.innerHTML = `<div class="loading-container"><p>Please log in to view your settings.</p><a href="/login.html" class="btn primary" style="margin-top: 1rem;">Login</a></div>`;
-                 const nav = document.querySelector('.nav-actions');
-                 if(nav) nav.innerHTML = `<a class="btn primary" href="/login.html">Login</a>`;
-                 return;
-             }
-             currentUser = user;
-             
-             buildPageStructure();
-             await loadProfileAndPopulate();
-             setupAllEventListeners();
+        // =========================================================================
+        // ======================= CRITICAL FIX IS HERE ============================
+        // This code now WAITS for the `auth-ready` signal before doing anything.
+        // =========================================================================
+        document.addEventListener('auth-ready', async (event) => {
+            const { user, profile, error } = event.detail;
+
+            if (error || !user) {
+                settingsContainer.innerHTML = `<div class="loading-container"><p>Please log in to view your settings.</p><a href="/login.html" class="btn primary" style="margin-top: 1rem;">Login</a></div>`;
+                return;
+            }
+            
+            currentUser = user;
+            currentProfile = profile;
+            
+            buildPageStructure();
+            await loadProfileAndPopulate();
+            setupAllEventListeners();
         });
         
     </script>
