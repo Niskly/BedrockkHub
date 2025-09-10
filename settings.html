@@ -331,7 +331,8 @@
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        const OPENXBL_PUBLIC_KEY = 'e2ed13c6-bea5-9f3a-a796-546b48c71960';
+        
+        const OPENXBL_PUBLIC_KEY = '';
         
         let currentUser, currentProfile, isProcessing = false;
         let avatarBlob, bannerBlob, cropper, cropCallback, confirmCallback;
@@ -353,7 +354,6 @@
             github: { name: 'GitHub', icon: 'fa-brands fa-github', color: '#e8eefc', modes: ['link'], defaultMode: 'link', placeholder: 'https://github.com/...' },
         };
 
-        // --- UTILITIES ---
         function showToast(message, type = 'success') {
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
@@ -365,18 +365,22 @@
                 setTimeout(() => toast.remove(), 400);
             }, 4000);
         }
+
         function showConfirmation(message, onConfirm) {
             document.getElementById('confirmation-message').textContent = message;
             confirmCallback = onConfirm;
             confirmationModal.classList.add('show');
         }
-        function hideLoading() { loadingOverlay.style.display = 'none'; }
+
+        function hideLoading() {
+            loadingOverlay.style.display = 'none';
+        }
+
         function showLoading(text = 'Loading...') {
             loadingOverlay.querySelector('.loading-text').textContent = text;
             loadingOverlay.style.display = 'flex';
         }
 
-        // --- RENDER & SETUP ---
         function buildPageStructure() {
             settingsContainer.innerHTML = `
                 <div class="settings-grid">
@@ -406,7 +410,7 @@
                         <section id="connections-tab" class="content-area">
                             <div class="card">
                                 <div class="card-header"><h2>Manage Connections</h2><p>Link your social and gaming profiles to display on your MCHub page.</p></div>
-                                <div class="card-body"><div id="socials-container"><!-- JS will render this section --></div></div>
+                                <div class="card-body"><div id="socials-container"></div></div>
                             </div>
                         </section>
                         <section id="security-tab" class="content-area">
@@ -431,7 +435,7 @@
             setupUploaders();
             setupModalHandlers();
         }
-        
+
         function setupTabSwitching() {
             const tabsContainer = document.querySelector('.settings-tabs');
             if (!tabsContainer) return;
@@ -518,9 +522,9 @@
                 }
             });
 
-            handleForm(document.getElementById('username-form'), async () => { /* Username logic */ });
+            handleForm(document.getElementById('username-form'), async () => {});
             const deleteBtn = document.getElementById('delete-account-btn');
-            if(deleteBtn) deleteBtn.addEventListener('click', () => { /* Delete logic */ });
+            if(deleteBtn) deleteBtn.addEventListener('click', () => {});
         }
 
         function setupUploaders() {
@@ -599,6 +603,10 @@
                 if (confirmCallback) confirmCallback();
             });
             document.getElementById('cancel-social-btn')?.addEventListener('click', () => socialModal.classList.remove('show'));
+            document.getElementById('save-social-btn')?.addEventListener('click', () => {
+                const key = document.getElementById('save-social-btn').dataset.key;
+                if(key) saveSocial(key);
+            });
         }
 
         function renderSocials(profile) {
@@ -692,7 +700,7 @@
             switcherContainer.querySelectorAll('.social-mode-btn').forEach(btn => {
                 btn.onclick = () => { currentMode = btn.dataset.mode; updateInputForMode(currentMode); };
             });
-            document.getElementById('save-social-btn').onclick = () => saveSocial(key);
+            document.getElementById('save-social-btn').dataset.key = key;
             socialModal.classList.add('show');
             document.getElementById('social-modal-input').focus();
         }
@@ -720,6 +728,8 @@
             const redirectUri = encodeURIComponent(window.location.origin + '/api/bedrock-callback');
             const authUrl = `https://xbl.io/app/auth/${OPENXBL_PUBLIC_KEY}?redirect_uri=${redirectUri}&prompt=select_account`;
             
+            console.log("Attempting to open Xbox auth URL:", authUrl); // DEBUG LOG
+
             const popup = window.open(authUrl, 'xbox-auth', 'width=600,height=700');
             if (!popup) { return showToast('Popup blocked. Please allow popups.', 'error'); }
             
@@ -782,10 +792,6 @@
             }
         }
 
-        // =========================================================================
-        // ======================= CRITICAL FIX IS HERE ============================
-        // This code now WAITS for the `auth-ready` signal before doing anything.
-        // =========================================================================
         document.addEventListener('auth-ready', async (event) => {
             const { user, profile, error } = event.detail;
 
