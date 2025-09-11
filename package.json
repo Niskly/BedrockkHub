@@ -5,6 +5,7 @@
   "type": "module",
   "dependencies": {
     "@supabase/supabase-js": "^2.43.5",
-    "canvas": "^2.11.2"
+    "@napi-rs/canvas": "^0.1.52"
   }
 }
+
