@@ -61,7 +61,6 @@
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         /* Settings Grid */
-        /* CORRECTED: Reduced gap to bring sidebar and content closer */
         .settings-grid { display: grid; grid-template-columns: 280px 1fr; gap: 2rem; align-items: flex-start; }
         .content-container { max-width: 680px; }
         
@@ -245,7 +244,6 @@
         #cropper-image { max-width: 100%; }
         .cropper-modal-footer { display: flex; gap: 1rem; justify-content: flex-end; }
         
-        /* CORRECTED: Redesigned Cropper Controls */
         .cropper-controls {
             display: flex;
             justify-content: center;
@@ -340,7 +338,6 @@
         <div class="modal-dialog cropper-modal">
             <div class="cropper-modal-header"><h3 id="cropper-title">Crop Image</h3></div>
             <div id="cropper-image-container"><img id="cropper-image" style="max-width: 100%;"></div>
-            <!-- CORRECTED: Redesigned cropper controls HTML structure -->
             <div class="cropper-controls">
                 <div class="cropper-controls-inner">
                     <button id="zoom-out-btn" class="cropper-control-btn" title="Zoom Out"><i class="fa-solid fa-search-minus"></i></button>
@@ -373,7 +370,6 @@
             <div id="social-mode-switcher-container" class="social-mode-switcher"></div>
             <div class="form-group" style="margin-bottom: 0;">
                 <label id="social-modal-label" class="form-label" for="social-modal-input"></label>
-                <!-- CORRECTED: Added wrapper for prefix -->
                 <div class="form-input-wrapper">
                     <span id="social-input-prefix" class="form-input-prefix"></span>
                     <input type="text" id="social-modal-input" class="form-input">
@@ -422,14 +418,15 @@
         const toastContainer = document.getElementById('toast-container');
         const settingsContainer = document.getElementById('settings-container');
 
+        // UPDATED: Removed placeholders for link modes
         const socialPlatforms = {
             xbox: { name: 'Xbox Live', icon: 'fa-brands fa-xbox', color: '#107c10', type: 'oauth' },
-            discord: { name: 'Discord', icon: 'fa-brands fa-discord', color: '#5865F2', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'your_username', link: 'invitecode' }, linkPrefix: 'https://discord.gg/' },
-            spotify: { name: 'Spotify', icon: 'fa-brands fa-spotify', color: '#1DB954', modes: ['link'], defaultMode: 'link', placeholders: { link: 'your_user_id' }, linkPrefix: 'https://open.spotify.com/user/' },
-            reddit: { name: 'Reddit', icon: 'fa-brands fa-reddit-alien', color: '#FF4500', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'your_username', link: 'username' }, linkPrefix: 'https://reddit.com/user/' },
-            youtube: { name: 'YouTube', icon: 'fa-brands fa-youtube', color: '#FF0000', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'YourChannelName', link: 'channel_url' }, linkPrefix: 'https://youtube.com/' },
-            twitter: { name: 'Twitter/X', icon: 'fa-brands fa-twitter', color: '#1DA1F2', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: '@username', link: 'username' }, newRow: true, linkPrefix: 'https://x.com/' },
-            github: { name: 'GitHub', icon: 'fa-brands fa-github', color: '#e8eefc', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'your-username', link: 'username' }, linkPrefix: 'https://github.com/' },
+            discord: { name: 'Discord', icon: 'fa-brands fa-discord', color: '#5865F2', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'your_username', link: '' }, linkPrefix: 'https://discord.gg/' },
+            spotify: { name: 'Spotify', icon: 'fa-brands fa-spotify', color: '#1DB954', modes: ['link'], defaultMode: 'link', placeholders: { link: '' }, linkPrefix: 'https://open.spotify.com/user/' },
+            reddit: { name: 'Reddit', icon: 'fa-brands fa-reddit-alien', color: '#FF4500', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'your_username', link: '' }, linkPrefix: 'https://reddit.com/user/' },
+            youtube: { name: 'YouTube', icon: 'fa-brands fa-youtube', color: '#FF0000', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'YourChannelName', link: '' }, linkPrefix: 'https://youtube.com/' },
+            twitter: { name: 'Twitter/X', icon: 'fa-brands fa-twitter', color: '#1DA1F2', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: '@username', link: '' }, newRow: true, linkPrefix: 'https://x.com/' },
+            github: { name: 'GitHub', icon: 'fa-brands fa-github', color: '#e8eefc', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'your-username', link: '' }, linkPrefix: 'https://github.com/' },
         };
 
         function showToast(message, type = 'success') {
@@ -791,7 +788,6 @@
             }
         }
 
-        // CORRECTED: Logic for handling URL prefix inside the input
         function openSocialModal(key) {
             const platform = socialPlatforms[key];
             if (!platform) return;
@@ -846,7 +842,6 @@
             document.getElementById('social-modal-input').focus();
         }
         
-        // CORRECTED: Logic to assemble final URL from prefix and input
         async function saveSocial(key) {
             const platform = socialPlatforms[key];
             const input = document.getElementById('social-modal-input');
