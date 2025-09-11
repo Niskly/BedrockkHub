@@ -1,7 +1,7 @@
 async function fetchTextureFromUrl(url) {
     try {
         const response = await fetch(url, {
-            headers: { 'User-Agent': 'MCHub-BedrockSkinFetcher/4.0' } // Updated user agent
+            headers: { 'User-Agent': 'MCHub/Final' }
         });
         if (!response.ok) {
             console.error(`[Texture Fetch] Failed: ${response.status} from ${url}`);
@@ -13,17 +13,11 @@ async function fetchTextureFromUrl(url) {
             contentType: response.headers.get('content-type') || 'image/png'
         };
     } catch (error) {
-        console.error(`[Texture Fetch] Critical error downloading from ${url}:`, error.message);
+        console.error(`[Texture Fetch] Error downloading from ${url}:`, error.message);
         return null;
     }
 }
 
-/**
- * Fetches a player's custom skin from the GeyserMC API.
- * This function is responsible for finding a user's unique skin.
- * @param {string} xuid The player's Xbox User ID.
- * @returns {Promise<{buffer: Buffer, contentType: string}|null>}
- */
 async function getPlayerSkin(xuid) {
     try {
         const geyserApiUrl = `https://api.geysermc.org/v2/skin/${xuid}`;
@@ -31,7 +25,7 @@ async function getPlayerSkin(xuid) {
         
         const response = await fetch(geyserApiUrl);
         if (!response.ok) {
-            return null; // Don't log an error, it's common for users not to be in the DB
+            return null; // It's common for users not to be in the DB, so this isn't an error.
         }
         
         const skinData = await response.json();
@@ -74,7 +68,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { xuid } = req.query;
+        const { xuid, gamertag } = req.query; // gamertag is included for potential future use
         if (!xuid) {
             return res.status(400).json({ error: 'XUID is required' });
         }
@@ -86,7 +80,7 @@ export default async function handler(req, res) {
             // If we found a custom skin, send it.
             console.log(`[Handler] SUCCESS: Sending custom skin for ${xuid}.`);
             res.setHeader('Content-Type', skinData.contentType);
-            res.setHeader('Cache-Control', 'public, max-age=86400');
+            res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache custom skins for 1 day
             res.setHeader('Access-Control-Allow-Origin', '*');
             return res.send(skinData.buffer);
         } else {
@@ -97,11 +91,11 @@ export default async function handler(req, res) {
 
             if (steveSkinData && steveSkinData.buffer) {
                 res.setHeader('Content-Type', 'image/png');
-                res.setHeader('Cache-Control', 'public, max-age=86400');
+                res.setHeader('Cache-Control', 'public, max-age=86400'); // Steve can be cached for a long time
                 res.setHeader('Access-Control-Allow-Origin', '*');
                 return res.send(steveSkinData.buffer);
             } else {
-                // Failsafe if the Steve skin itself can't be fetched.
+                // Failsafe if the Steve skin itself can't be fetched from Supabase.
                 console.error('[Handler] CRITICAL: Could not fetch default Steve skin from Supabase.');
                 return res.status(500).json({ error: 'Could not load default skin.' });
             }
