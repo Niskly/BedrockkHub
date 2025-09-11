@@ -1,4 +1,30 @@
-import { createCanvas } from '@napi-rs/canvas';
+No longer needed as we are not generating a skin
+// import { createCanvas } from '@napi-rs/canvas';
+
+/**
+ * Helper function to fetch an image from a URL and return its buffer and content type.
+ * @param {string} url The URL of the image to fetch.
+ * @returns {Promise<{buffer: Buffer, contentType: string}|null>}
+ */
+async function fetchTextureFromUrl(url) {
+    try {
+        const response = await fetch(url, {
+            headers: { 'User-Agent': 'MCHub-BedrockSkinFetcher/3.0' }
+        });
+        if (!response.ok) {
+            return null;
+        }
+        const buffer = await response.arrayBuffer();
+        return {
+            buffer: Buffer.from(buffer),
+            contentType: response.headers.get('content-type') || 'image/png'
+        };
+    } catch (error) {
+        console.error(`[Texture Fetch] Error downloading from ${url}:`, error.message);
+        return null;
+    }
+}
+
 
 // api/bedrock-skin.js
 // Get Bedrock skins DIRECTLY from GeyserMC skin endpoint - THE RIGHT WAY! 🔥
@@ -8,7 +34,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { xuid } = req.query;
+        const { xuid, gamertag } = req.query; // Added gamertag for future fallbacks
         if (!xuid) {
             return res.status(400).json({ error: 'XUID is required' });
         }
@@ -21,26 +47,39 @@ export default async function handler(req, res) {
         if (skinData && skinData.buffer && skinData.buffer.length > 0) {
             console.log(`[bedrock-skin] SUCCESS! Got that fire skin from GeyserMC: ${skinData.buffer.length} bytes 🎨`);
             res.setHeader('Content-Type', skinData.contentType || 'image/png');
-            res.setHeader('Cache-Control', 'public, max-age=3600');
+            res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 1 day
             res.setHeader('Access-Control-Allow-Origin', '*');
             return res.send(skinData.buffer);
         } else {
-            // Generate a fire default skin
-            console.warn(`[bedrock-skin] GeyserMC API call failed or returned empty data for ${xuid}`);
-            console.warn(`[bedrock-skin] Try manually checking: https://api.geysermc.org/v2/skin/${xuid}`);
-            const defaultSkinBuffer = generateFireDefaultSkin(xuid);
-            res.setHeader('Content-Type', 'image/png');
-            res.setHeader('Cache-Control', 'public, max-age=1800'); // Shorter cache for defaults
-            res.setHeader('Access-Control-Allow-Origin', '*');
-            return res.send(defaultSkinBuffer);
+            // --- MODIFIED PART ---
+            // If the custom skin isn't found, fetch the Steve skin from your Supabase URL.
+            console.warn(`[bedrock-skin] GeyserMC API call failed for ${xuid}. Serving default Steve skin.`);
+            const steveSkinUrl = "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png";
+            const steveSkinData = await fetchTextureFromUrl(steveSkinUrl);
+
+            if (steveSkinData && steveSkinData.buffer) {
+                res.setHeader('Content-Type', 'image/png');
+                res.setHeader('Cache-Control', 'public, max-age=86400'); // Steve can be cached
+                res.setHeader('Access-Control-Allow-Origin', '*');
+                return res.send(steveSkinData.buffer);
+            } else {
+                // This is a final failsafe if Supabase is down or the URL is wrong.
+                console.error('[Handler] CRITICAL: Could not fetch default Steve skin from Supabase.');
+                return res.status(500).json({ error: 'Could not load default skin.' });
+            }
         }
 
     } catch (error) {
         console.error('[bedrock-skin] ERROR:', error);
-        const defaultSkinBuffer = generateFireDefaultSkin("error");
         res.setHeader('Content-Type', 'image/png');
         res.setHeader('Access-Control-Allow-Origin', '*');
-        res.status(500).send(defaultSkinBuffer);
+        // Attempt to send Steve skin even on error
+        const steveSkinUrl = "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png";
+        const steveSkinData = await fetchTextureFromUrl(steveSkinUrl);
+        if (steveSkinData && steveSkinData.buffer) {
+            return res.status(500).send(steveSkinData.buffer);
+        }
+        return res.status(500).send('Error processing request.');
     }
 }
 
@@ -52,7 +91,6 @@ async function getBedrockSkinDirect(xuid) {
     try {
         console.log(`[GeyserMC Direct] Hitting the direct skin endpoint for XUID: ${xuid}`);
         
-        // Hit the DIRECT GeyserMC skin endpoint
         const response = await fetch(`https://api.geysermc.org/v2/skin/${xuid}`, {
             method: 'GET',
             headers: {
@@ -68,70 +106,14 @@ async function getBedrockSkinDirect(xuid) {
             return null;
         }
         
-        // Get the JSON response which should contain the skin data
         const skinData = await response.json();
         console.log(`[GeyserMC Direct] Got response data:`, {
-            hasHash: !!skinData.hash,
-            hasSignature: !!skinData.signature,
-            hasTextureId: !!skinData.texture_id,
             hasValue: !!skinData.value,
+            hasTextureId: !!skinData.texture_id,
             isSteve: skinData.is_steve
         });
         
-        // First, try to get the hash from the response (this is the texture hash)
-        if (skinData.hash) {
-            console.log(`[GeyserMC Direct] Found hash: ${skinData.hash}`);
-            
-            // Use the hash to get the texture from Minecraft's texture server
-            const textureUrl = `https://textures.minecraft.net/texture/${skinData.hash}`;
-            console.log(`[GeyserMC Direct] Fetching texture from: ${textureUrl}`);
-            
-            const textureResponse = await fetch(textureUrl, {
-                headers: {
-                    'User-Agent': 'MCHub-BedrockSkinFetcher/2.0'
-                }
-            });
-            
-            if (textureResponse.ok) {
-                const textureBuffer = await textureResponse.arrayBuffer();
-                console.log(`[GeyserMC Direct] SUCCESS! Downloaded your real skin: ${textureBuffer.byteLength} bytes 🎉`);
-                
-                return {
-                    buffer: Buffer.from(textureBuffer),
-                    contentType: textureResponse.headers.get('content-type') || 'image/png'
-                };
-            } else {
-                console.log(`[GeyserMC Direct] Failed to fetch texture from hash: ${textureResponse.status}`);
-            }
-        }
-        
-        // Fallback: try texture_id if hash didn't work
-        if (skinData.texture_id) {
-            console.log(`[GeyserMC Direct] Trying texture_id: ${skinData.texture_id}`);
-            
-            const textureUrl = `https://textures.minecraft.net/texture/${skinData.texture_id}`;
-            console.log(`[GeyserMC Direct] Fetching texture from: ${textureUrl}`);
-            
-            const textureResponse = await fetch(textureUrl, {
-                headers: {
-                    'User-Agent': 'MCHub-BedrockSkinFetcher/2.0'
-                }
-            });
-            
-            if (textureResponse.ok) {
-                const textureBuffer = await textureResponse.arrayBuffer();
-                console.log(`[GeyserMC Direct] SUCCESS via texture_id! Downloaded: ${textureBuffer.byteLength} bytes 🎉`);
-                
-                return {
-                    buffer: Buffer.from(textureBuffer),
-                    contentType: textureResponse.headers.get('content-type') || 'image/png'
-                };
-            } else {
-                console.log(`[GeyserMC Direct] Failed to fetch texture from texture_id: ${textureResponse.status}`);
-            }
-        }
-        
-        // Try to decode the value field if texture_id didn't work
+        // Try to decode the value field first, as it's most common
         if (skinData.value) {
             console.log(`[GeyserMC Direct] Trying to decode value field...`);
             try {
@@ -139,30 +121,22 @@ async function getBedrockSkinDirect(xuid) {
                 const skinUrl = decodedData.textures?.SKIN?.url;
                 
                 if (skinUrl) {
-                    console.log(`[GeyserMC Direct] Found skin URL in value field: ${skinUrl.substring(0, 50)}...`);
-                    
-                    const skinResponse = await fetch(skinUrl, {
-                        headers: {
-                            'User-Agent': 'MCHub-BedrockSkinFetcher/2.0'
-                        }
-                    });
-                    
-                    if (skinResponse.ok) {
-                        const skinBuffer = await skinResponse.arrayBuffer();
-                        console.log(`[GeyserMC Direct] SUCCESS via value field! Downloaded: ${skinBuffer.byteLength} bytes 🎉`);
-                        
-                        return {
-                            buffer: Buffer.from(skinBuffer),
-                            contentType: skinResponse.headers.get('content-type') || 'image/png'
-                        };
-                    }
+                    console.log(`[GeyserMC Direct] Found skin URL in value field.`);
+                    return await fetchTextureFromUrl(skinUrl);
                 }
             } catch (decodeError) {
                 console.log(`[GeyserMC Direct] Failed to decode value field:`, decodeError.message);
             }
         }
         
-        console.log(`[GeyserMC Direct] No usable skin data found in response`);
+        // Fallback: try texture_id if value didn't work or was absent
+        if (skinData.texture_id) {
+            console.log(`[GeyserMC Direct] Trying texture_id: ${skinData.texture_id}`);
+            const textureUrl = `https://textures.minecraft.net/texture/${skinData.texture_id}`;
+            return await fetchTextureFromUrl(textureUrl);
+        }
+        
+        console.log(`[GeyserMC Direct] No usable skin data found in response.`);
         return null;
 
     } catch (error) {
@@ -171,82 +145,3 @@ async function getBedrockSkinDirect(xuid) {
     }
 }
 
-/**
- * Generate a fire default skin when GeyserMC doesn't have the player's skin
- * This makes a unique skin based on their XUID so it's always the same for them
- */
-function generateFireDefaultSkin(xuid) {
-    const canvas = createCanvas(64, 64);
-    const ctx = canvas.getContext('2d');
-    
-    // Create a consistent hash from XUID for same colors every time
-    let hash = 0;
-    for (let i = 0; i < xuid.length; i++) {
-        hash = xuid.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    
-    // Generate some fire colors based on the hash
-    const hue = Math.abs(hash) % 360;
-    const skinTone = `hsl(${30 + (hash % 40)}, 50%, 65%)`; // Skin tone range
-    const shirtColor = `hsl(${hue}, 70%, 45%)`;
-    const pantsColor = `hsl(${(hue + 180) % 360}, 60%, 35%)`;
-    const shoeColor = `hsl(${(hue + 90) % 360}, 40%, 25%)`;
-    
-    // Clear canvas with transparency
-    ctx.fillStyle = 'rgba(0, 0, 0, 0)';
-    ctx.fillRect(0, 0, 64, 64);
-    
-    // Draw the Minecraft skin layout (64x64 format)
-    
-    // HEAD (front face)
-    ctx.fillStyle = skinTone;
-    ctx.fillRect(8, 8, 8, 8);   // Head front
-    
-    // BODY
-    ctx.fillStyle = skinTone;
-    ctx.fillRect(20, 20, 8, 12); // Body front
-    
-    // ARMS
-    ctx.fillStyle = skinTone;
-    ctx.fillRect(44, 20, 4, 12); // Right arm front
-    ctx.fillRect(36, 20, 4, 12); // Left arm front
-    
-    // LEGS
-    ctx.fillStyle = skinTone;
-    ctx.fillRect(4, 20, 4, 12);  // Right leg front
-    ctx.fillRect(20, 52, 4, 12); // Left leg front
-    
-    // Add clothing details to make it look fresh 🔥
-    
-    // Shirt
-    ctx.fillStyle = shirtColor;
-    ctx.fillRect(20, 20, 8, 7); // Shirt on body
-    ctx.fillRect(44, 20, 4, 7); // Right arm shirt
-    ctx.fillRect(36, 20, 4, 7); // Left arm shirt
-    
-    // Pants
-    ctx.fillStyle = pantsColor;
-    ctx.fillRect(20, 27, 8, 5); // Pants on body
-    ctx.fillRect(4, 20, 4, 8);  // Right leg pants
-    ctx.fillRect(20, 52, 4, 8); // Left leg pants
-    
-    // Shoes
-    ctx.fillStyle = shoeColor;
-    ctx.fillRect(4, 28, 4, 4);  // Right shoe
-    ctx.fillRect(20, 60, 4, 4); // Left shoe
-    
-    // Add some detail pixels to make it look more interesting
-    const accentColor = `hsl(${(hue + 60) % 360}, 80%, 60%)`;
-    ctx.fillStyle = accentColor;
-    
-    // Add some random detail pixels based on hash
-    for (let i = 0; i < 3; i++) {
-        const x = 21 + (hash >> (i * 2)) % 6;
-        const y = 21 + (hash >> (i * 3)) % 5;
-        ctx.fillRect(x, y, 1, 1);
-    }
-    
-    console.log(`[Default Skin] Generated fire default skin with colors - Skin: ${skinTone}, Shirt: ${shirtColor}, Pants: ${pantsColor} 🎨`);
-    
-    return canvas.toBuffer('image/png');
-}
