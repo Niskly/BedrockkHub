@@ -26,7 +26,8 @@ export default async function handler(req, res) {
             return res.send(skinData.buffer);
         } else {
             // Generate a fire default skin
-            console.warn(`[bedrock-skin] GeyserMC doesn't have skin for ${xuid}, making a custom one 🎭`);
+            console.warn(`[bedrock-skin] GeyserMC API call failed or returned empty data for ${xuid}`);
+            console.warn(`[bedrock-skin] Try manually checking: https://api.geysermc.org/v2/skin/${xuid}`);
             const defaultSkinBuffer = generateFireDefaultSkin(xuid);
             res.setHeader('Content-Type', 'image/png');
             res.setHeader('Cache-Control', 'public, max-age=1800'); // Shorter cache for defaults
@@ -77,11 +78,37 @@ async function getBedrockSkinDirect(xuid) {
             isSteve: skinData.is_steve
         });
         
-        // The response contains skin data, now we need to get the actual texture
-        if (skinData.texture_id) {
-            console.log(`[GeyserMC Direct] Found texture_id: ${skinData.texture_id}`);
+        // First, try to get the hash from the response (this is the texture hash)
+        if (skinData.hash) {
+            console.log(`[GeyserMC Direct] Found hash: ${skinData.hash}`);
             
-            // Convert texture_id to Minecraft texture URL
+            // Use the hash to get the texture from Minecraft's texture server
+            const textureUrl = `https://textures.minecraft.net/texture/${skinData.hash}`;
+            console.log(`[GeyserMC Direct] Fetching texture from: ${textureUrl}`);
+            
+            const textureResponse = await fetch(textureUrl, {
+                headers: {
+                    'User-Agent': 'MCHub-BedrockSkinFetcher/2.0'
+                }
+            });
+            
+            if (textureResponse.ok) {
+                const textureBuffer = await textureResponse.arrayBuffer();
+                console.log(`[GeyserMC Direct] SUCCESS! Downloaded your real skin: ${textureBuffer.byteLength} bytes 🎉`);
+                
+                return {
+                    buffer: Buffer.from(textureBuffer),
+                    contentType: textureResponse.headers.get('content-type') || 'image/png'
+                };
+            } else {
+                console.log(`[GeyserMC Direct] Failed to fetch texture from hash: ${textureResponse.status}`);
+            }
+        }
+        
+        // Fallback: try texture_id if hash didn't work
+        if (skinData.texture_id) {
+            console.log(`[GeyserMC Direct] Trying texture_id: ${skinData.texture_id}`);
+            
             const textureUrl = `https://textures.minecraft.net/texture/${skinData.texture_id}`;
             console.log(`[GeyserMC Direct] Fetching texture from: ${textureUrl}`);
             
@@ -93,14 +120,14 @@ async function getBedrockSkinDirect(xuid) {
             
             if (textureResponse.ok) {
                 const textureBuffer = await textureResponse.arrayBuffer();
-                console.log(`[GeyserMC Direct] SUCCESS! Downloaded texture: ${textureBuffer.byteLength} bytes 🎉`);
+                console.log(`[GeyserMC Direct] SUCCESS via texture_id! Downloaded: ${textureBuffer.byteLength} bytes 🎉`);
                 
                 return {
                     buffer: Buffer.from(textureBuffer),
                     contentType: textureResponse.headers.get('content-type') || 'image/png'
                 };
             } else {
-                console.log(`[GeyserMC Direct] Failed to fetch texture: ${textureResponse.status}`);
+                console.log(`[GeyserMC Direct] Failed to fetch texture from texture_id: ${textureResponse.status}`);
             }
         }
         
