@@ -10,7 +10,6 @@
     <!-- Add skinview3d library -->
     <script src="https://cdn.jsdelivr.net/npm/skinview3d@3.0.1/bundles/skinview3d.bundle.js"></script>
     <style>
-        /* Your existing styles... */
         :root {
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
             --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
@@ -21,7 +20,7 @@
         body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 14px/1.6 Inter, sans-serif; min-height: 100vh; }
         body::before { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg'); background-size: cover; filter: blur(8px); opacity: 0.2; z-index: -1; }
 
-        /* NEW: Bedrock skin viewer styles */
+        /* Bedrock skin viewer styles */
         .bedrock-display {
             display: flex;
             flex-direction: column;
@@ -35,12 +34,16 @@
             background: linear-gradient(135deg, var(--bg-1), var(--bg-2));
             border: 1px solid var(--border);
             position: relative;
+            width: 280px;
+            height: 350px;
         }
 
         .bedrock-skin-viewer canvas {
             display: block;
             border-radius: 12px;
             cursor: grab;
+            width: 100% !important;
+            height: 100% !important;
         }
         .bedrock-skin-viewer canvas:active {
             cursor: grabbing;
@@ -50,6 +53,7 @@
             font-size: 1.2rem;
             font-weight: 700;
             text-align: center;
+            color: var(--text);
         }
 
         .bedrock-xuid {
@@ -59,7 +63,7 @@
             color: var(--muted);
         }
 
-        .skin-loading {
+        .skin-loading, .skin-error {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -67,8 +71,9 @@
             gap: 1rem;
             padding: 2rem;
             color: var(--muted);
-            width: 280px; /* Match canvas width */
-            height: 350px; /* Match canvas height */
+            width: 100%;
+            height: 100%;
+            text-align: center;
         }
 
         .skin-spinner {
@@ -86,15 +91,29 @@
         }
 
         .skin-error {
-            text-align: center;
-            color: var(--muted);
-            padding: 2rem;
             background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.3);
             border-radius: 12px;
         }
 
-        /* Continue with your existing profile styles... */
+        .skin-retry-btn {
+            background: var(--brand-1);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .skin-retry-btn:hover {
+            background: var(--brand-2);
+            transform: translateY(-1px);
+        }
+
+        /* Navigation and layout styles */
         a { color: inherit; text-decoration: none; }
         header { position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(1.2) blur(10px); background: rgba(12, 12, 12, 0.75); border-bottom: 1px solid var(--border); }
         .nav { max-width: 1100px; margin: 0 auto; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; }
@@ -177,6 +196,11 @@
         .error-icon { font-size: 4rem; color: var(--brand-1); margin-bottom: 1rem; }
         .error-title { font-size: 1.5rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
         .error-message { font-size: 1.1rem; line-height: 1.5; max-width: 500px; }
+
+        @media (max-width: 768px) {
+            .profile-content-grid { grid-template-columns: 1fr; }
+            .bedrock-skin-viewer { width: 240px; height: 300px; }
+        }
     </style>
 </head>
 <body>
@@ -197,7 +221,7 @@
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MVg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const profileContainer = document.getElementById('profile-container');
 
@@ -261,15 +285,14 @@
                 .join('');
         }
 
-        // SIMPLIFIED renderDashboard
         function renderDashboard(profile, packs, currentUser) {
             const pfpHtml = profile.avatar_url
                 ? `<img src="${profile.avatar_url}" alt="${profile.username}'s avatar" class="profile-avatar">`
                 : `<div class="pfp-placeholder"><span>${(profile.username || '?').charAt(0).toUpperCase()}</span></div>`;
 
-            // SIMPLIFIED Bedrock HTML
+            // Enhanced Bedrock HTML with better error handling
             let bedrockHtml;
-            if (profile.bedrock_gamertag) {
+            if (profile.bedrock_gamertag && profile.xuid) {
                 bedrockHtml = `
                     <div class="bedrock-display">
                         <div class="bedrock-skin-viewer" id="bedrock-skin-viewer">
@@ -279,10 +302,15 @@
                             </div>
                         </div>
                         <span class="bedrock-gamertag">${profile.bedrock_gamertag}</span>
-                        <div class="bedrock-xuid tiny">XUID: ${profile.xuid || 'N/A'}</div>
+                        <div class="bedrock-xuid tiny">XUID: ${profile.xuid}</div>
                     </div>`;
             } else {
-                bedrockHtml = `<p class="tiny" style="text-align:center;">No Bedrock account linked.</p>`;
+                bedrockHtml = `
+                    <div style="text-align: center; padding: 2rem; color: var(--muted);">
+                        <i class="fa-brands fa-xbox fa-3x" style="opacity: 0.3; margin-bottom: 1rem;"></i>
+                        <p>No Bedrock account linked</p>
+                        <p class="tiny">Link your Xbox account to display your Bedrock skin</p>
+                    </div>`;
             }
 
             const socialLinksHtml = renderSocialLinks(profile.social_links);
@@ -319,7 +347,7 @@
                     <div id="minecraft-container">
                         <div class="card glassy">
                             <div class="card-body">
-                                <h3><i class="fa-brands fa-xbox" style="color:#107C10; margin-right: 5px;"></i> Bedrock Profile</h3>
+                                <h3><i class="fa-brands fa-xbox" style="color:#107C10; margin-right: 8px;"></i>Bedrock Profile</h3>
                                 ${bedrockHtml}
                             </div>
                         </div>
@@ -346,61 +374,100 @@
             }
 
             // Initialize 3D skin viewer if bedrock account is linked
-            if (profile.bedrock_gamertag) {
+            if (profile.bedrock_gamertag && profile.xuid) {
                 initBedrockSkinViewer(profile);
             }
         }
 
-        // SIMPLIFIED Bedrock Skin Viewer Functions
+        // Enhanced Bedrock Skin Viewer Functions
         async function initBedrockSkinViewer(profile) {
+            const viewerContainer = document.getElementById('bedrock-skin-viewer');
+            if (!viewerContainer) return;
+
             try {
-                const viewerContainer = document.getElementById('bedrock-skin-viewer');
-                if (!viewerContainer) return;
+                console.log(`[Skin Viewer] Initializing for ${profile.bedrock_gamertag} (${profile.xuid})`);
 
                 // Create canvas element and replace loading spinner
                 viewerContainer.innerHTML = '<canvas id="skin-canvas" width="280" height="350"></canvas>';
                 const canvas = document.getElementById('skin-canvas');
                 if (!canvas) throw new Error('Canvas not created');
 
-                // Initialize skinview3d with no animation
+                // Initialize skinview3d
                 skinViewer = new skinview3d.SkinViewer({
                     canvas: canvas,
                     width: 280,
                     height: 350,
-                    skin: null, // Skin will be loaded below
-                    animation: null // No animation
+                    skin: null
                 });
 
-                // Configure controls - only allow rotation
+                // Configure controls for better user experience
                 skinViewer.controls.enableRotate = true;
-                skinViewer.controls.enableZoom = true; // Keep zoom for accessibility
+                skinViewer.controls.enableZoom = true;
                 skinViewer.controls.enablePan = false;
-                skinViewer.controls.maxDistance = 80;
-                skinViewer.controls.minDistance = 30;
+                skinViewer.controls.maxDistance = 70;
+                skinViewer.controls.minDistance = 25;
+                
+                // Set a nice initial angle
+                skinViewer.controls.object.position.set(25, 20, 25);
+                skinViewer.controls.object.lookAt(0, 0, 0);
 
                 // Load the skin from our API
                 const skinUrl = `/api/bedrock-skin?xuid=${profile.xuid}`;
+                console.log(`[Skin Viewer] Loading skin from: ${skinUrl}`);
+                
                 await skinViewer.loadSkin(skinUrl);
+                
+                // Add subtle rotation animation
+                let animationId;
+                const rotateModel = () => {
+                    if (skinViewer && skinViewer.playerObject) {
+                        skinViewer.playerObject.rotation.y += 0.01;
+                        animationId = requestAnimationFrame(rotateModel);
+                    }
+                };
+                
+                // Start animation, but stop on user interaction
+                rotateModel();
+                
+                // Stop auto-rotation when user interacts
+                let userInteracted = false;
+                canvas.addEventListener('mousedown', () => {
+                    if (!userInteracted) {
+                        userInteracted = true;
+                        if (animationId) {
+                            cancelAnimationFrame(animationId);
+                        }
+                    }
+                });
                 
                 console.log('✅ Bedrock skin viewer initialized successfully');
                 
             } catch (error) {
                 console.error('❌ Failed to initialize Bedrock skin viewer:', error);
-                showSkinError('Failed to load 3D skin');
+                showSkinError('Failed to load 3D skin', profile.xuid);
             }
         }
         
-        function showSkinError(message) {
+        function showSkinError(message, xuid) {
             const viewerContainer = document.getElementById('bedrock-skin-viewer');
             if (viewerContainer) {
                 viewerContainer.innerHTML = `
                     <div class="skin-error">
                         <i class="fa-solid fa-exclamation-triangle" style="font-size: 2rem; color: var(--brand-1); margin-bottom: 0.5rem;"></i>
-                        <p>${message}</p>
+                        <p style="margin-bottom: 1rem;">${message}</p>
+                        <button class="skin-retry-btn" onclick="retryLoadingSkin('${xuid}')">
+                            <i class="fa-solid fa-refresh"></i> Retry
+                        </button>
                     </div>
                 `;
             }
         }
+
+        // Make retry function global
+        window.retryLoadingSkin = function(xuid) {
+            const profile = { xuid: xuid, bedrock_gamertag: 'Retrying...' };
+            initBedrockSkinViewer(profile);
+        };
         
         async function setupFollowSystem(profile, currentUser) {
             const followButton = document.querySelector('.follow-btn');
@@ -556,4 +623,3 @@
     <script type="module" src="auth.js"></script>
 </body>
 </html>
-
