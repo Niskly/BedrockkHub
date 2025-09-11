@@ -13,24 +13,38 @@
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
             --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
             --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
-            --border-strong: rgba(255, 255, 255, .2); --danger: #ef4444; --success: #22c55e;
+            --border-strong: rgba(255, 255, 255, .2);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 14px/1.6 Inter, sans-serif; min-height: 100vh; }
         body::before { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg'); background-size: cover; filter: blur(8px); opacity: 0.2; z-index: -1; }
 
-        /* General UI */
-        a { color: inherit; text-decoration: none; }
-        .tiny { font-size: 11px; color: var(--muted); }
-        .btn { padding: .5rem 1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .btn.primary { background: linear-gradient(90deg, var(--brand-1), var(--brand-2)); box-shadow: 0 10px 30px rgba(222, 33, 42, .22); color: white; }
-        .btn.ghost { border-color: var(--border); background: transparent; color: var(--text); }
-        .btn.sm { padding: .25rem .5rem; border-radius: 8px; font-weight: 700; display: inline-flex; align-items: center; gap: .4rem; min-width: auto; }
-        .spinner { width: 1em; height: 1em; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        /* Bedrock skin viewer styles */
+        .bedrock-display { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+        .bedrock-skin-viewer {
+            border-radius: 12px; overflow: hidden;
+            border: 1px solid var(--border); position: relative; width: 280px; height: 350px;
+            background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg');
+            background-size: cover; background-position: center;
+        }
+        .bedrock-skin-viewer canvas { display: block; border-radius: 12px; cursor: grab; width: 100% !important; height: 100% !important; }
+        .bedrock-skin-viewer canvas:active { cursor: grabbing; }
+        .bedrock-gamertag { font-size: 1.2rem; font-weight: 700; text-align: center; color: var(--text); }
+        .bedrock-xuid { opacity: 0.7; font-size: 11px; text-align: center; color: var(--muted); }
+        .skin-loading, .skin-error { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; padding: 2rem; color: var(--muted); width: 100%; height: 100%; text-align: center; backdrop-filter: blur(4px); background: rgba(0,0,0,0.3); }
+        .skin-spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-bottom-color: var(--brand-1); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .skin-error { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; }
+        .skin-retry-btn { background: var(--brand-1); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s; }
+        .skin-retry-btn:hover { background: var(--brand-2); transform: translateY(-1px); }
         
-        /* Header Nav */
+        /* Profile type switcher (Bedrock/Java) */
+        .profile-type-switcher { display: flex; gap: 0.5rem; margin-bottom: 1rem; background: var(--bg-2); padding: 0.25rem; border-radius: 8px; border: 1px solid var(--border); }
+        .profile-type-btn { flex: 1; padding: 0.5rem; border: none; background: transparent; color: var(--muted); font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+        .profile-type-btn.active { background: var(--bg-0); color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+
+        /* Navigation and layout styles */
+        a { color: inherit; text-decoration: none; }
         header { position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(1.2) blur(10px); background: rgba(12, 12, 12, 0.75); border-bottom: 1px solid var(--border); }
         .nav { max-width: 1100px; margin: 0 auto; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; }
         .brand { display: flex; align-items: center; gap: .8rem; }
@@ -38,57 +52,60 @@
         .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-11px); }
         .brand-title { font-weight: 800; letter-spacing: .6px; font-size: 15px; }
         .nav-actions { display: flex; align-items: center; gap: 0.6rem; }
+        .btn { padding: .5rem 1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn.primary { background: linear-gradient(90deg, var(--brand-1), var(--brand-2)); box-shadow: 0 10px 30px rgba(222, 33, 42, .22); color: white; }
+        .btn.ghost { border-color: var(--border); background: transparent; color: var(--text); }
+        .tiny { font-size: 11px; color: var(--muted); }
+        
         .user-dropdown { position: relative; display: inline-block; }
         .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
         .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+        .nav-avatar-default { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-0); display: flex; align-items: center; justify-content: center; }
+        .user-menu-btn .fa-chevron-down { font-size: 0.8em; }
         .user-menu-btn:hover { border-color: var(--border-strong); }
         .dropdown-content { display: none; position: absolute; right: 0; top: 110%; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; }
         .dropdown-content.show { display: block; }
         .dropdown-content a { color: var(--muted); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 600; }
         .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
-        
-        /* Main Layout */
+
         .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+        .glassy { background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); border: 1px solid var(--border); }
         .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; min-height: 60vh; color: var(--muted); }
+        .spinner { width: 48px; height: 48px; border: 5px solid var(--border); border-bottom-color: var(--brand-1); border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
         
-        /* Profile Header Card */
-        .profile-header { border-radius: 16px; margin-bottom: 2rem; overflow: hidden; position: relative; background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); border: 1px solid var(--border); }
+        .profile-header { border-radius: 16px; margin-bottom: 2rem; overflow: hidden; position: relative; }
         .profile-banner { height: 220px; background-size: cover; background-position: center; }
-        .profile-details { position: relative; padding: 1rem 1.5rem; display: flex; flex-direction: column; margin-top: -70px; z-index: 2; }
+        .profile-details { position: relative; padding: 1rem 1.5rem; display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-top: -70px; z-index: 2; }
         .profile-meta { display: flex; align-items: center; gap: 1.5rem; }
         .profile-avatar { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #161616; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .profile-main-info { padding-top: 70px; width: 100%; }
-        .info-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
-        .info-top h1 { font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, var(--brand-1), #ff525a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; flex-shrink: 0; }
+        .pfp-placeholder { width: 140px; height: 140px; border-radius: 50%; border: 4px solid #161616; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .pfp-placeholder span { font-size: 5rem; font-weight: 800; color: white; }
+        .profile-main-info { padding-top: 70px; }
+        .profile-main-info h1 { font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, var(--brand-1), #ff525a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .profile-bio { color: var(--muted); margin-top: 0.5rem; max-width: 500px; line-height: 1.5; font-size: 13px; }
-        .header-stats { display: flex; gap: 1.5rem; align-items: center; }
+        .header-stats { display: flex; gap: 1.5rem; align-items: center; margin-top: 0.8rem; }
         .stat-item { text-align: left; }
         .stat-item .count { font-size: 1.1rem; font-weight: 700; color: var(--text); }
         .stat-item .label { font-size: .8rem; color: var(--muted); }
-        .profile-actions { position: absolute; top: 1.5rem; right: 1.5rem; z-index: 3; }
-        .social-links-container { margin-top: 1rem; display: flex; gap: 0.8rem; }
+        
+        /* New position for follow button */
+        .profile-actions { position: absolute; top: 1.5rem; right: 1.5rem; }
+        
+        .social-links-container { position: absolute; bottom: 1.5rem; right: 1.5rem; display: flex; gap: 0.8rem; }
         .social-link { font-size: 1.2rem; color: var(--muted); transition: color .2s; }
         .social-link:hover { color: var(--text); }
+        .social-link.discord { color: #5865F2; } .social-link.spotify { color: #1DB954; }
+        .social-link.reddit { color: #FF4500; } .social-link.youtube { color: #FF0000; }
+        .social-link.twitter { color: #1DA1F2; } .social-link.github { color: #333; }
 
-        /* Content Grid */
         .profile-content-grid { display: grid; grid-template-columns: 300px 1fr; gap: 1.5rem; align-items: flex-start; }
-        .card { border-radius: 16px; background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); border: 1px solid var(--border); }
+        .card { border-radius: 16px; }
         .card-body { padding: 1.2rem; }
         h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; }
-
-        /* Minecraft Profile Card */
-        .bedrock-display { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
-        .bedrock-skin-viewer { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); position: relative; width: 100%; max-width: 280px; height: 350px; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg'); background-size: cover; background-position: center; }
-        .bedrock-skin-viewer canvas { display: block; cursor: grab; width: 100% !important; height: 100% !important; }
-        .bedrock-gamertag { font-size: 1.2rem; font-weight: 700; text-align: center; color: var(--text); }
-        .skin-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; color: var(--muted); width: 100%; height: 100%; text-align: center; backdrop-filter: blur(4px); background: rgba(0,0,0,0.3); }
-        .profile-type-switcher { display: flex; gap: 0.5rem; margin-bottom: 1rem; background: var(--bg-2); padding: 0.25rem; border-radius: 8px; border: 1px solid var(--border); }
-        .profile-type-btn { flex: 1; padding: 0.5rem; border: none; background: transparent; color: var(--muted); font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
-        .profile-type-btn.active { background: var(--bg-0); color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
-        
-        /* Texture Packs Card */
         .packs-header { display: flex; justify-content: space-between; align-items: center; }
         .upload-btn { height: 36px; width: 36px; border-radius: 10px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); color: white; font-size: 1rem; cursor: pointer; }
+        
         .packs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin-top: 1.2rem; }
         .pack-card { background: var(--bg-1); border-radius: 16px; overflow: hidden; transition: all 0.2s; border: 1px solid transparent; }
         .pack-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.2); box-shadow: 0 10px 30px rgba(0, 0, 0, .4); }
@@ -96,34 +113,26 @@
         .thumb .pack-icon-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; filter: blur(8px) brightness(0.7); transform: scale(1.1); }
         .thumb .pack-icon { position: relative; width: 80px; height: 80px; border-radius: 8px; object-fit: cover; z-index: 1; }
         .content { padding: 14px; }
-        
-        /* Modals and Overlays */
-        .backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, .8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 60; }
-        .modal { width: 100%; max-width: 420px; background: var(--bg-1); border-radius: 12px; overflow-y: auto; max-height: 90vh; border: 1px solid var(--border); }
-        .modal .panel { padding: 20px; }
-        .modal-footer { display: flex; justify-content: flex-end; align-items: center; gap: 10px; padding: 12px 20px 20px; }
-        .file-upload-area { margin-top: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; border: 2px dashed var(--border); border-radius: 12px; background: var(--bg-0); text-align: center; cursor: pointer; }
-        .file-upload-area:hover { border-color: var(--brand-1); background: rgba(222, 33, 42, .05); }
-        .file-upload-area i { font-size: 24px; margin-bottom: 12px; color: var(--brand-1); }
-        .file-hint { margin-top: 6px; color: var(--muted); }
-        input[type="text"] { width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-2);color:var(--text); font-family: inherit; font-size: inherit; }
-        #toast-container { position: fixed; top: 80px; right: 20px; z-index: 100; display: flex; flex-direction: column; gap: 10px; }
-        .toast { padding: 12px 18px; border-radius: 8px; color: white; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; background: var(--bg-1); border: 1px solid var(--border); }
-        .toast.error { border-left: 4px solid var(--danger); }
-        .toast.success { border-left: 4px solid var(--success); }
-        @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
+
+        .error-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; min-height: 50vh; text-align: center; color: var(--muted); }
+        .error-icon { font-size: 4rem; color: var(--brand-1); margin-bottom: 1rem; }
+        .error-title { font-size: 1.5rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+        .error-message { font-size: 1.1rem; line-height: 1.5; max-width: 500px; }
 
         @media (max-width: 768px) {
             .profile-content-grid { grid-template-columns: 1fr; }
-            .info-top { flex-direction: column; align-items: flex-start; }
-            .header-stats { margin-top: 1rem; }
+            .bedrock-skin-viewer { width: 240px; height: 300px; }
+            .profile-actions { top: 1rem; right: 1rem; }
         }
     </style>
 </head>
 <body>
     <header>
         <div class="nav">
-            <a class="brand" href="/"><div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div><div><div class="brand-title">MCHUB</div><div class="tiny">Minecraft Bedrock • community</div></div></a>
+            <a class="brand" href="/">
+                <div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div>
+                <div><div class="brand-title">MCHUB</div><div class="tiny">Minecraft Bedrock • community</div></div>
+            </a>
             <div id="nav-actions" class="nav-actions"></div>
         </div>
     </header>
@@ -131,43 +140,6 @@
     <main class="container" id="profile-container">
         <div class="loading-container"><div class="spinner"></div><p>Loading Profile...</p></div>
     </main>
-
-    <div id="backdrop" class="backdrop">
-        <div class="modal">
-            <div class="panel">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-                    <strong>Upload Texture Pack</strong>
-                    <button class="btn sm ghost" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-                <p class="tiny">Select a .mcpack or .zip file, set a name, and upload an icon.</p>
-            </div>
-            <div class="panel" style="padding-top:0">
-                <form id="uploadForm" onsubmit="handleUpload(event)">
-                    <div>
-                        <label class="tiny">Pack Name</label>
-                        <input id="packName" required placeholder="e.g. Crystal PvP" type="text">
-                    </div>
-                    <div class="file-upload-area" id="pack-file-area" onclick="document.getElementById('fileInput').click()">
-                        <i class="fa-solid fa-file-arrow-up"></i>
-                        <div><span style="color:var(--brand-1)">Browse</span> for a pack file</div>
-                        <div class="file-hint" id="fileHint">.mcpack or .zip required</div>
-                        <input id="fileInput" type="file" accept=".mcpack,.zip" style="display:none" onchange="hintFile()" />
-                    </div>
-                     <div class="file-upload-area" id="pack-icon-area" onclick="document.getElementById('iconInput').click()">
-                        <i class="fa-solid fa-image"></i>
-                        <div><span style="color:var(--brand-1)">Browse</span> for a pack icon</div>
-                        <div class="file-hint" id="iconHint">.png required</div>
-                        <input id="iconInput" type="file" accept=".png" style="display:none" onchange="hintIcon()" />
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn ghost" onclick="closeModal()">Cancel</button>
-                        <button id="submitBtn" class="btn primary" type="submit"><i class="fa-solid fa-upload"></i> Upload</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    <div id="toast-container"></div>
     
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -179,18 +151,72 @@
         let loggedInUser = null;
         let skinViewer = null;
 
-        function showToast(message, type = 'error') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> <span>${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 4000);
+        function showError(title, message, showRetry = true) {
+            profileContainer.innerHTML = `
+                <div class="error-container">
+                    <i class="fa-solid fa-exclamation-triangle error-icon"></i>
+                    <h2 class="error-title">${title}</h2>
+                    <p class="error-message">${message}</p>
+                    ${showRetry ? `<button class="btn primary" onclick="window.location.reload()"><i class="fa-solid fa-refresh"></i> Try Again</button>` : ''}
+                </div>`;
+        }
+
+        function renderPackCard(p) {
+            const card = document.createElement('div');
+            card.className = 'pack-card';
+            const thumbContent = p.icon_url
+                ? `<div class="pack-icon-bg" style="background-image: url('${p.icon_url}');"></div><img class="pack-icon" src="${p.icon_url}" alt="${p.name} Icon">`
+                : `<div style="width:100%; height:100%; display:grid; place-items:center; background:#2c2c2c"><i class="fa-solid fa-cube fa-2x"></i></div>`;
+            card.innerHTML = `<a href="#"><div class="thumb">${thumbContent}</div><div class="content"><h4 style="font-size:0.9rem; font-weight:600;">${p.name}</h4></div></a>`;
+            return card;
+        }
+
+        function renderSocialLinks(socialLinks) {
+            if (!socialLinks || typeof socialLinks !== 'object') return '';
+            const platforms = [
+                { key: 'discord', icon: 'fa-brands fa-discord', class: 'discord', getUrl: (val) => `#` },
+                { key: 'spotify', icon: 'fa-brands fa-spotify', class: 'spotify', getUrl: (val) => val },
+                { key: 'reddit', icon: 'fa-brands fa-reddit-alien', class: 'reddit', getUrl: (val) => val },
+                { key: 'youtube', icon: 'fa-brands fa-youtube', class: 'youtube', getUrl: (val) => val },
+                { key: 'twitter', icon: 'fa-brands fa-twitter', class: 'twitter', getUrl: (val) => val.startsWith('@') ? `https://twitter.com/${val.slice(1)}` : val },
+                { key: 'github', icon: 'fa-brands fa-github', class: 'github', getUrl: (val) => val }
+            ];
+            return platforms.filter(p => socialLinks[p.key]).map(p => {
+                const value = socialLinks[p.key], url = p.getUrl(value);
+                const target = p.key === 'discord' ? '' : 'target="_blank"';
+                const title = p.key === 'discord' ? value : '';
+                return `<a href="${url}" ${target} class="social-link ${p.class}" title="${title}"><i class="${p.icon}"></i></a>`;
+            }).join('');
         }
 
         function renderDashboard(profile, packs, currentUser) {
-            const pfpHtml = profile.avatar_url ? `<img src="${profile.avatar_url}" alt="${profile.username}'s avatar" class="profile-avatar">` : `<div class="pfp-placeholder"><span>${(profile.username || '?').charAt(0).toUpperCase()}</span></div>`;
-            const bedrockHtml = (profile.bedrock_gamertag && profile.xuid) ? `<div class="bedrock-display"><div class="bedrock-skin-viewer" id="bedrock-skin-viewer"><div class="skin-loading"><div class="spinner"></div><span>Loading 3D skin...</span></div></div><span class="bedrock-gamertag">${profile.bedrock_gamertag}</span></div>` : `<div style="text-align: center; padding: 2rem; color: var(--muted);"><i class="fa-brands fa-xbox fa-3x" style="opacity: 0.3; margin-bottom: 1rem;"></i><p>No Bedrock account linked</p></div>`;
+            const pfpHtml = profile.avatar_url
+                ? `<img src="${profile.avatar_url}" alt="${profile.username}'s avatar" class="profile-avatar">`
+                : `<div class="pfp-placeholder"><span>${(profile.username || '?').charAt(0).toUpperCase()}</span></div>`;
+
+            let bedrockHtml;
+            if (profile.bedrock_gamertag && profile.xuid) {
+                bedrockHtml = `
+                    <div class="profile-type-switcher">
+                        <button class="profile-type-btn active" id="bedrock-btn">Bedrock</button>
+                        <button class="profile-type-btn" id="java-btn">Java</button>
+                    </div>
+                    <div class="bedrock-display">
+                        <div class="bedrock-skin-viewer" id="bedrock-skin-viewer">
+                            <div class="skin-loading"><div class="skin-spinner"></div><span>Loading 3D skin...</span></div>
+                        </div>
+                        <span class="bedrock-gamertag">${profile.bedrock_gamertag}</span>
+                        <div class="bedrock-xuid tiny">XUID: ${profile.xuid}</div>
+                    </div>`;
+            } else {
+                bedrockHtml = `
+                    <div style="text-align: center; padding: 2rem; color: var(--muted);">
+                        <i class="fa-brands fa-xbox fa-3x" style="opacity: 0.3; margin-bottom: 1rem;"></i>
+                        <p>No Bedrock account linked</p>
+                        <p class="tiny">Link your Xbox account to display your Bedrock skin</p>
+                    </div>`;
+            }
+
             const socialLinksHtml = renderSocialLinks(profile.social_links);
             const showFollowButton = currentUser && currentUser.id !== profile.id;
             const profileActionsHtml = showFollowButton ? `<div class="profile-actions"><button class="btn primary follow-btn"><i class="fa-solid fa-user-plus"></i> Follow</button></div>` : '';
@@ -201,19 +227,19 @@
                     <div class="profile-details">
                         ${profileActionsHtml}
                         <div class="profile-meta">
-                            <div style="position:relative;">${pfpHtml}</div>
+                            ${pfpHtml}
                             <div class="profile-main-info">
-                                <div class="info-top">
-                                    <h1>${profile.username || 'Unnamed'}</h1>
-                                    <div class="header-stats">
-                                        <div class="stat-item"><div class="count">${(profile.view_count || 0).toLocaleString()}</div><div class="label">Views</div></div>
-                                        <div class="stat-item"><div class="count" id="follower-count">${(profile.followers_count || 0).toLocaleString()}</div><div class="label">Followers</div></div>
-                                        <div class="stat-item"><div class="count" id="following-count">${(profile.following_count || 0).toLocaleString()}</div><div class="label">Following</div></div>
-                                    </div>
-                                </div>
+                                <h1>${profile.username || 'Unnamed'}</h1>
                                 <p class="profile-bio">${profile.bio || "This user hasn't written a bio yet."}</p>
-                                <div class="social-links-container">${socialLinksHtml}</div>
+                                <div class="header-stats">
+                                    <div class="stat-item"><div class="count">${(profile.view_count || 0).toLocaleString()}</div><div class="label">Views</div></div>
+                                    <div class="stat-item"><div class="count" id="follower-count">${(profile.followers_count || 0).toLocaleString()}</div><div class="label">Followers</div></div>
+                                    <div class="stat-item"><div class="count" id="following-count">${(profile.following_count || 0).toLocaleString()}</div><div class="label">Following</div></div>
+                                </div>
                             </div>
+                        </div>
+                        <div class="social-links-container">
+                            ${socialLinksHtml}
                         </div>
                     </div>
                 </div>
@@ -222,10 +248,6 @@
                         <div class="card glassy">
                             <div class="card-body">
                                 <h3><i class="fa-brands fa-xbox" style="color:#107C10; margin-right: 8px;"></i>Minecraft Profile</h3>
-                                <div class="profile-type-switcher">
-                                    <button class="profile-type-btn active">Bedrock</button>
-                                    <button class="profile-type-btn">Java</button>
-                                </div>
                                 ${bedrockHtml}
                             </div>
                         </div>
@@ -245,108 +267,165 @@
             
             const packsGridEl = document.getElementById('packs-grid-placeholder');
             if (packs && packs.length > 0) {
-                packs.forEach(pack => {
-                    const card = document.createElement('div');
-                    card.className = 'pack-card';
-                    const thumbContent = pack.icon_url ? `<div class="pack-icon-bg" style="background-image: url('${pack.icon_url}');"></div><img class="pack-icon" src="${pack.icon_url}" alt="${pack.name} Icon">` : `<div style="width:100%; height:100%; display:grid; place-items:center; background:#2c2c2c"><i class="fa-solid fa-cube fa-2x"></i></div>`;
-                    card.innerHTML = `<a href="#"><div class="thumb">${thumbContent}</div><div class="content"><h4 style="font-size:0.9rem; font-weight:600;">${pack.name}</h4></div></a>`;
-                    packsGridEl.appendChild(card);
-                });
+                packs.forEach(pack => packsGridEl.appendChild(renderPackCard(pack)));
             } else {
                 packsGridEl.innerHTML = `<p class="tiny">This user hasn't uploaded any packs yet.</p>`;
             }
-            if (profile.bedrock_gamertag && profile.xuid) { initBedrockSkinViewer(profile); }
-            
-            const uploadBtn = document.querySelector('.upload-btn');
-            if (uploadBtn) { uploadBtn.addEventListener('click', () => document.getElementById('backdrop').style.display = 'flex'); }
+
+            if (profile.bedrock_gamertag && profile.xuid) {
+                initBedrockSkinViewer(profile);
+            }
         }
 
         async function initBedrockSkinViewer(profile) {
             const viewerContainer = document.getElementById('bedrock-skin-viewer');
             if (!viewerContainer) return;
+
             try {
                 viewerContainer.innerHTML = '<canvas id="skin-canvas"></canvas>';
                 const canvas = document.getElementById('skin-canvas');
-                skinViewer = new skinview3d.SkinViewer({ canvas: canvas, width: 280, height: 350 });
-                skinViewer.controls.enableRotate = true; skinViewer.controls.enableZoom = true;
+                if (!canvas) throw new Error('Canvas not created');
+
+                skinViewer = new skinview3d.SkinViewer({
+                    canvas: canvas,
+                    width: 280,
+                    height: 350,
+                });
+
+                skinViewer.controls.enableRotate = true;
+                skinViewer.controls.enableZoom = true;
+                skinViewer.controls.enablePan = false;
+                skinViewer.controls.maxDistance = 70;
+                skinViewer.controls.minDistance = 25;
+
                 const skinUrl = `/api/bedrock-skin?xuid=${profile.xuid}&gamertag=${encodeURIComponent(profile.bedrock_gamertag)}`;
+                console.log(`[Skin Viewer] Loading skin from: ${skinUrl}`);
+                
                 await skinViewer.loadSkin(skinUrl);
-                skinViewer.autoRotateAnimation.speed = 0.5;
-                canvas.addEventListener('mousedown', () => skinViewer.autoRotateAnimation.paused = true, { once: true });
-            } catch (error) { console.error('Failed to init skin viewer:', error); }
+                
+                let animationId;
+                const rotateModel = () => {
+                    if (skinViewer && skinViewer.playerObject) {
+                        skinViewer.playerObject.rotation.y += 0.01;
+                        animationId = requestAnimationFrame(rotateModel);
+                    }
+                };
+                rotateModel();
+                
+                canvas.addEventListener('mousedown', () => cancelAnimationFrame(animationId), { once: true });
+                
+            } catch (error) {
+                console.error('❌ Failed to initialize Bedrock skin viewer:', error);
+                showSkinError('Failed to load 3D skin', profile);
+            }
         }
+        
+        function showSkinError(message, profile) {
+            const viewerContainer = document.getElementById('bedrock-skin-viewer');
+            if (viewerContainer) {
+                viewerContainer.innerHTML = `
+                    <div class="skin-error">
+                        <i class="fa-solid fa-exclamation-triangle" style="font-size: 2rem; color: var(--brand-1); margin-bottom: 0.5rem;"></i>
+                        <p style="margin-bottom: 1rem;">${message}</p>
+                        <button class="skin-retry-btn" onclick="retryLoadingSkin(event, '${profile.xuid}', '${profile.bedrock_gamertag}')">
+                            <i class="fa-solid fa-refresh"></i> Retry
+                        </button>
+                    </div>`;
+            }
+        }
+
+        window.retryLoadingSkin = function(event, xuid, gamertag) {
+            event.stopPropagation();
+            const profile = { xuid: xuid, bedrock_gamertag: gamertag };
+            initBedrockSkinViewer(profile);
+        };
         
         async function setupFollowSystem(profile, currentUser) {
             const followButton = document.querySelector('.follow-btn');
-            if (!followButton) return;
-            const { count } = await supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', currentUser.id).eq('following_id', profile.id);
+            if (!followButton || !currentUser || currentUser.id === profile.id) return;
+
+            const { count, error: checkError } = await supabase
+                .from('followers')
+                .select('*', { count: 'exact', head: true })
+                .eq('follower_id', currentUser.id)
+                .eq('following_id', profile.id);
+
+            if (checkError) return console.error("Failed to check follow status:", checkError);
+                
             let isFollowing = count > 0;
-            const updateButtonState = (newCount) => {
-                document.getElementById('follower-count').textContent = newCount.toLocaleString();
-                followButton.innerHTML = isFollowing ? `<i class="fa-solid fa-user-check"></i> Following` : `<i class="fa-solid fa-user-plus"></i> Follow`;
-                followButton.classList.toggle('ghost', isFollowing); followButton.classList.toggle('primary', !isFollowing);
-            };
+            
+            function updateButtonState(newFollowerCount) {
+                document.getElementById('follower-count').textContent = newFollowerCount.toLocaleString();
+                if (isFollowing) {
+                    followButton.innerHTML = `<i class="fa-solid fa-user-check"></i> Following`;
+                    followButton.classList.replace('primary', 'ghost');
+                } else {
+                    followButton.innerHTML = `<i class="fa-solid fa-user-plus"></i> Follow`;
+                    followButton.classList.replace('ghost', 'primary');
+                }
+            }
             updateButtonState(profile.followers_count || 0);
+
             followButton.addEventListener('click', async () => {
                 followButton.disabled = true;
-                const action = isFollowing ? supabase.from('followers').delete().match({ follower_id: currentUser.id, following_id: profile.id }) : supabase.from('followers').insert({ follower_id: currentUser.id, following_id: profile.id });
-                await action;
-                const { data: updatedProfile } = await supabase.from('profiles_with_counts').select('followers_count').eq('id', profile.id).single();
-                isFollowing = !isFollowing;
-                updateButtonState(updatedProfile?.followers_count || 0);
-                followButton.disabled = false;
+                try {
+                    const action = isFollowing
+                        ? supabase.from('followers').delete().match({ follower_id: currentUser.id, following_id: profile.id })
+                        : supabase.from('followers').insert({ follower_id: currentUser.id, following_id: profile.id });
+                    
+                    const { error } = await action;
+                    if (error) throw error;
+                    
+                    const { data: updatedProfile, error: fetchError } = await supabase.from('profiles_with_counts').select('followers_count').eq('id', profile.id).single();
+                    if(fetchError) throw fetchError;
+                    
+                    isFollowing = !isFollowing;
+                    updateButtonState(updatedProfile?.followers_count || 0);
+                } catch (error) {
+                    console.error('Follow/Unfollow error:', error);
+                } finally {
+                    followButton.disabled = false;
+                }
             });
         }
         
         async function loadProfilePage(currentUser) {
             try {
                 const username = new URLSearchParams(window.location.search).get('user');
-                if (!username) return showError('No User Specified', 'Please provide a username.', false); 
-                const { data: profile, error } = await supabase.from('profiles_with_counts').select('*').ilike('username', username).single();
-                if (error || !profile) return showError('User Not Found', `User "${username}" was not found.`, false);
-                if (currentUser && currentUser.id !== profile.id) { supabase.rpc('increment_view_count', { profile_id_to_update: profile.id }).then(() => {}); }
-                const { data: packs } = await supabase.from('packs').select('*').eq('user_id', profile.id).order('created_at', { ascending: false });
+                if (!username) return showError('No User Specified', 'Please provide a username in the URL.', false); 
+
+                const { data: profile, error: profileError } = await supabase.from('profiles_with_counts').select('*').ilike('username', username).single();
+                
+                if (profileError || !profile) {
+                    return (profileError && profileError.code === 'PGRST116')
+                        ? showError('User Not Found', `User "${username}" was not found.`, false)
+                        : showError('Loading Error', 'Failed to load user profile.');
+                }
+
+                if (currentUser && currentUser.id !== profile.id) {
+                    supabase.rpc('increment_view_count', { profile_id_to_update: profile.id }).then(({ error }) => {
+                        if (error) console.error('View count error:', error);
+                    });
+                }
+                
+                const { data: packs, error: packsError } = await supabase.from('packs').select('*').eq('user_id', profile.id).order('created_at', { ascending: false });
+                if (packsError) console.error('Packs error:', packsError);
+                
                 renderDashboard(profile, packs || [], currentUser);
                 await setupFollowSystem(profile, currentUser);
-            } catch (error) { showError('Loading Error', 'An unexpected error occurred.'); }
+
+            } catch (error) {
+                console.error("❌ Critical error loading profile:", error);
+                showError('Loading Error', 'An unexpected error occurred while loading the profile.');
+            }
         }
-        
-        // --- Upload Modal Logic (Copied from previous correct version) ---
-        window.closeModal = () => { document.getElementById('backdrop').style.display = 'none'; document.getElementById('uploadForm').reset(); document.getElementById('fileHint').textContent = '.mcpack or .zip required'; document.getElementById('iconHint').textContent = '.png required'; };
-        window.hintFile = () => { const f = document.getElementById('fileInput').files[0]; if(f) document.getElementById('fileHint').textContent = f.name; };
-        window.hintIcon = () => { const f = document.getElementById('iconInput').files[0]; if(f) document.getElementById('iconHint').textContent = f.name; };
-        window.handleUpload = async (event) => {
-            event.preventDefault();
-            const submitBtn = document.getElementById('submitBtn'), packFile = document.getElementById('fileInput').files[0], iconFile = document.getElementById('iconInput').files[0], packName = document.getElementById('packName').value.trim();
-            if (!packFile || !iconFile || !packName) return showToast('All fields are required.');
-            if (!packFile.name.match(/\.(mcpack|zip)$/i)) return showToast('Invalid pack file type.');
-            if (!iconFile.name.match(/\.png$/i)) return showToast('Icon must be a .png file.');
-            submitBtn.disabled = true; submitBtn.innerHTML = '<div class="spinner"></div>';
-            try {
-                const iconPath = `pack_icons/${loggedInUser.id}-${Date.now()}.png`;
-                let { error: iconError } = await supabase.storage.from('packs').upload(iconPath, iconFile);
-                if (iconError) throw new Error(`Icon upload: ${iconError.message}`);
-                const { data: { publicUrl: icon_url } } = supabase.storage.from('packs').getPublicUrl(iconPath);
-                
-                const packPath = `pack_files/${loggedInUser.id}-${Date.now()}-${packFile.name}`;
-                let { error: packError } = await supabase.storage.from('packs').upload(packPath, packFile);
-                if (packError) throw new Error(`Pack file upload: ${packError.message}`);
-                
-                let { error: dbError } = await supabase.from('packs').insert({ user_id: loggedInUser.id, name: packName, filename: packPath, icon_url: icon_url, color: 'gray', tags: 'user-upload', resolution: '16x', version: packFile.name.endsWith('.mcpack') ? 'bedrock' : 'java' });
-                if (dbError) throw new Error(`Database insert: ${dbError.message}`);
-                showToast('Pack uploaded successfully!', 'success');
-                closeModal();
-                loadProfilePage(loggedInUser); // Refresh the page to show the new pack
-            } catch (error) { showToast(error.message, 'error');
-            } finally { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; }
-        };
 
         document.addEventListener('auth-ready', (event) => {
-            loggedInUser = event.detail.user; 
+            const { user } = event.detail;
+            loggedInUser = user; 
             loadProfilePage(loggedInUser);
         });
     </script>
     <script type="module" src="auth.js"></script>
 </body>
 </html>
-
