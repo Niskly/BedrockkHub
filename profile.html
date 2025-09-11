@@ -59,7 +59,7 @@
         .profile-avatar { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #161616; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .profile-main-info { padding-top: 70px; width: 100%; }
         .info-top { display: flex; align-items: baseline; gap: 1.5rem; flex-wrap: wrap; }
-        .info-top h1 { font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, var(--brand-1), #ff525a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; flex-shrink: 0; margin-right: auto; }
+        .info-top h1 { font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, var(--brand-1), #ff525a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; flex-shrink: 0; }
         .profile-bio { color: var(--muted); margin-top: 0.5rem; max-width: 500px; line-height: 1.5; font-size: 13px; }
         .header-stats { display: flex; gap: 1.5rem; align-items: center; }
         .stat-item { text-align: left; }
@@ -194,7 +194,7 @@
 
         function copyToClipboard(text, type) {
             navigator.clipboard.writeText(text).then(() => {
-                showToast(`Copied ${type} to clipboard!`, 'success');
+                showToast(`Copied ${type} ID to clipboard!`, 'success');
             }).catch(err => {
                 showToast(`Failed to copy: ${err}`, 'error');
             });
@@ -203,12 +203,9 @@
         function renderSocialLinks(socialLinks) {
             if (!socialLinks || typeof socialLinks !== 'object') return '';
             const platforms = [
-                { key: 'discord', icon: 'fa-brands fa-discord' },
-                { key: 'spotify', icon: 'fa-brands fa-spotify' },
-                { key: 'reddit', icon: 'fa-brands fa-reddit-alien' },
-                { key: 'youtube', icon: 'fa-brands fa-youtube' },
-                { key: 'twitter', icon: 'fa-brands fa-twitter' },
-                { key: 'github', icon: 'fa-brands fa-github' }
+                { key: 'discord', icon: 'fa-brands fa-discord' }, { key: 'spotify', icon: 'fa-brands fa-spotify' },
+                { key: 'reddit', icon: 'fa-brands fa-reddit-alien' }, { key: 'youtube', icon: 'fa-brands fa-youtube' },
+                { key: 'twitter', icon: 'fa-brands fa-twitter' }, { key: 'github', icon: 'fa-brands fa-github' }
             ];
             return platforms.filter(p => socialLinks[p.key] && socialLinks[p.key].value).map(p => {
                 const link = socialLinks[p.key];
@@ -353,7 +350,6 @@
             } catch (error) { showError('Loading Error', 'An unexpected error occurred.'); }
         }
         
-        // --- Upload Modal Logic ---
         window.closeModal = () => { document.getElementById('backdrop').style.display = 'none'; document.getElementById('uploadForm').reset(); document.getElementById('fileHint').textContent = '.mcpack or .zip required'; document.getElementById('iconHint').textContent = '.png required'; };
         window.hintFile = () => { const f = document.getElementById('fileInput').files[0]; if(f) document.getElementById('fileHint').textContent = f.name; };
         window.hintIcon = () => { const f = document.getElementById('iconInput').files[0]; if(f) document.getElementById('iconHint').textContent = f.name; };
@@ -382,14 +378,12 @@
             } catch (error) { showToast(error.message, 'error');
             } finally { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; }
         };
-        
-        // --- Global Event Listeners ---
+
         document.addEventListener('auth-ready', (event) => {
             loggedInUser = event.detail.user; 
             loadProfilePage(loggedInUser);
         });
 
-        // Add copyToClipboard to the window object so inline HTML can call it
         window.copyToClipboard = copyToClipboard;
     </script>
     <script type="module" src="auth.js"></script>
