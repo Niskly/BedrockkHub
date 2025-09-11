@@ -53,7 +53,7 @@
         .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
 
         /* Layout */
-        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+        .container { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
         
         /* Loading & Animations */
         .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; min-height: 60vh; color: var(--muted); }
@@ -61,13 +61,13 @@
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         /* Settings Grid */
-        /* UPDATED: Reduced gap to bring sidebar and content closer */
-        .settings-grid { display: grid; grid-template-columns: 300px 1fr; gap: 1.5rem; align-items: flex-start; }
-        .content-container { max-width: 680px; margin: 0 auto; }
+        /* CORRECTED: Reduced gap to bring sidebar and content closer */
+        .settings-grid { display: grid; grid-template-columns: 280px 1fr; gap: 2rem; align-items: flex-start; }
+        .content-container { max-width: 680px; }
         
         /* Sidebar */
         .settings-sidebar { 
-            position: sticky; top: 120px; 
+            position: sticky; top: 100px; 
             background: rgba(18, 18, 18, 0.9); backdrop-filter: saturate(1.2) blur(25px); 
             border: 1px solid var(--border); border-radius: 20px; padding: 2rem; 
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
@@ -131,6 +131,17 @@
         .form-label { 
             display: block; margin-bottom: 0.8rem; font-weight: 700; 
             color: var(--text); font-size: 14px; 
+        }
+        .form-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .form-input-prefix {
+            position: absolute;
+            left: 18px;
+            color: var(--muted);
+            pointer-events: none;
         }
         .form-input { 
             width: 100%; padding: 14px 18px; border-radius: 12px; 
@@ -234,7 +245,7 @@
         #cropper-image { max-width: 100%; }
         .cropper-modal-footer { display: flex; gap: 1rem; justify-content: flex-end; }
         
-        /* UPDATED: Redesigned Cropper Controls */
+        /* CORRECTED: Redesigned Cropper Controls */
         .cropper-controls {
             display: flex;
             justify-content: center;
@@ -329,7 +340,7 @@
         <div class="modal-dialog cropper-modal">
             <div class="cropper-modal-header"><h3 id="cropper-title">Crop Image</h3></div>
             <div id="cropper-image-container"><img id="cropper-image" style="max-width: 100%;"></div>
-            <!-- UPDATED: Redesigned cropper controls HTML structure -->
+            <!-- CORRECTED: Redesigned cropper controls HTML structure -->
             <div class="cropper-controls">
                 <div class="cropper-controls-inner">
                     <button id="zoom-out-btn" class="cropper-control-btn" title="Zoom Out"><i class="fa-solid fa-search-minus"></i></button>
@@ -362,9 +373,10 @@
             <div id="social-mode-switcher-container" class="social-mode-switcher"></div>
             <div class="form-group" style="margin-bottom: 0;">
                 <label id="social-modal-label" class="form-label" for="social-modal-input"></label>
-                <div style="position: relative; display: flex; align-items: center;">
-                    <i id="social-input-icon" class="fa-solid fa-link" style="position: absolute; left: 16px; color: var(--muted);"></i>
-                    <input type="text" id="social-modal-input" class="form-input" style="padding-left: 45px;">
+                <!-- CORRECTED: Added wrapper for prefix -->
+                <div class="form-input-wrapper">
+                    <span id="social-input-prefix" class="form-input-prefix"></span>
+                    <input type="text" id="social-modal-input" class="form-input">
                 </div>
             </div>
             <div id="social-modal-footer">
@@ -412,12 +424,12 @@
 
         const socialPlatforms = {
             xbox: { name: 'Xbox Live', icon: 'fa-brands fa-xbox', color: '#107c10', type: 'oauth' },
-            discord: { name: 'Discord', icon: 'fa-brands fa-discord', color: '#5865F2', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'your_username', link: 'https://discord.gg/invitecode' }, linkPrefix: 'https://discord.gg/' },
-            spotify: { name: 'Spotify', icon: 'fa-brands fa-spotify', color: '#1DB954', modes: ['link'], defaultMode: 'link', placeholders: { link: 'https://open.spotify.com/user/...' }, linkPrefix: 'https://open.spotify.com/user/' },
-            reddit: { name: 'Reddit', icon: 'fa-brands fa-reddit-alien', color: '#FF4500', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'your_username', link: 'https://reddit.com/user/...' }, linkPrefix: 'https://reddit.com/user/' },
-            youtube: { name: 'YouTube', icon: 'fa-brands fa-youtube', color: '#FF0000', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'YourChannelName', link: 'https://youtube.com/...' }, linkPrefix: 'https://youtube.com/' },
-            twitter: { name: 'Twitter/X', icon: 'fa-brands fa-twitter', color: '#1DA1F2', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: '@username', link: 'https://x.com/username' }, newRow: true, linkPrefix: 'https://x.com/' },
-            github: { name: 'GitHub', icon: 'fa-brands fa-github', color: '#e8eefc', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'your-username', link: 'https://github.com/...' }, linkPrefix: 'https://github.com/' },
+            discord: { name: 'Discord', icon: 'fa-brands fa-discord', color: '#5865F2', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'your_username', link: 'invitecode' }, linkPrefix: 'https://discord.gg/' },
+            spotify: { name: 'Spotify', icon: 'fa-brands fa-spotify', color: '#1DB954', modes: ['link'], defaultMode: 'link', placeholders: { link: 'your_user_id' }, linkPrefix: 'https://open.spotify.com/user/' },
+            reddit: { name: 'Reddit', icon: 'fa-brands fa-reddit-alien', color: '#FF4500', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'your_username', link: 'username' }, linkPrefix: 'https://reddit.com/user/' },
+            youtube: { name: 'YouTube', icon: 'fa-brands fa-youtube', color: '#FF0000', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'YourChannelName', link: 'channel_url' }, linkPrefix: 'https://youtube.com/' },
+            twitter: { name: 'Twitter/X', icon: 'fa-brands fa-twitter', color: '#1DA1F2', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: '@username', link: 'username' }, newRow: true, linkPrefix: 'https://x.com/' },
+            github: { name: 'GitHub', icon: 'fa-brands fa-github', color: '#e8eefc', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'your-username', link: 'username' }, linkPrefix: 'https://github.com/' },
         };
 
         function showToast(message, type = 'success') {
@@ -737,7 +749,11 @@
 
         function createLinkedAccountCard(key, value) {
             const platform = socialPlatforms[key];
-            return `<div class="linked-account-card" data-social="${key}"><div class="linked-account-info"><i class="${platform.icon}" style="color: ${platform.color};"></i><span class="linked-account-value">${value}</span></div><div class="linked-account-actions"><button class="unlink-btn" title="Unlink ${platform.name}"><i class="fa-solid fa-trash-can"></i></button></div></div>`;
+            let displayValue = value;
+            if (platform.linkPrefix && value.startsWith(platform.linkPrefix)) {
+                displayValue = value.substring(platform.linkPrefix.length);
+            }
+            return `<div class="linked-account-card" data-social="${key}"><div class="linked-account-info"><i class="${platform.icon}" style="color: ${platform.color};"></i><span class="linked-account-value">${displayValue}</span></div><div class="linked-account-actions"><button class="unlink-btn" title="Unlink ${platform.name}"><i class="fa-solid fa-trash-can"></i></button></div></div>`;
         }
 
         function attachSocialsEventListeners(){
@@ -775,6 +791,7 @@
             }
         }
 
+        // CORRECTED: Logic for handling URL prefix inside the input
         function openSocialModal(key) {
             const platform = socialPlatforms[key];
             if (!platform) return;
@@ -795,16 +812,30 @@
             const updateInputForMode = (mode) => {
                 currentSocialMode = mode;
                 const input = document.getElementById('social-modal-input');
-                const inputIcon = document.getElementById('social-input-icon');
+                const prefixSpan = document.getElementById('social-input-prefix');
+                
                 document.getElementById('social-modal-label').textContent = mode === 'link' ? 'Profile URL' : 'Username';
-                input.type = mode === 'link' ? 'url' : 'text';
                 input.placeholder = platform.placeholders[mode] || '';
-                inputIcon.className = `fa-solid ${mode === 'link' ? 'fa-link' : 'fa-at'}`;
+
+                if (mode === 'link' && platform.linkPrefix) {
+                    prefixSpan.textContent = platform.linkPrefix;
+                    const prefixWidth = (prefixSpan.textContent.length * 8) + 'px'; // Approximate width
+                    input.style.paddingLeft = `calc(${prefixWidth} + 18px)`;
+                    let displayValue = currentVal;
+                    if(currentVal.startsWith(platform.linkPrefix)){
+                        displayValue = currentVal.substring(platform.linkPrefix.length);
+                    }
+                    input.value = displayValue;
+                } else {
+                    prefixSpan.textContent = '';
+                    input.style.paddingLeft = '18px';
+                    input.value = currentVal;
+                }
+                
                 switcherContainer.querySelectorAll('.social-mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
             };
             
             updateInputForMode(platform.defaultMode);
-            document.getElementById('social-modal-input').value = currentVal;
             
             switcherContainer.querySelectorAll('.social-mode-btn').forEach(btn => {
                 btn.onclick = () => updateInputForMode(btn.dataset.mode);
@@ -815,21 +846,21 @@
             document.getElementById('social-modal-input').focus();
         }
         
+        // CORRECTED: Logic to assemble final URL from prefix and input
         async function saveSocial(key) {
             const platform = socialPlatforms[key];
             const input = document.getElementById('social-modal-input');
-            const value = input.value.trim();
+            const userTypedValue = input.value.trim();
 
-            if (!value) {
+            if (!userTypedValue) {
                 return showToast("Please enter a value.", 'error');
             }
 
-            if (currentSocialMode === 'link') {
-                if (platform.linkPrefix && !value.startsWith(platform.linkPrefix)) {
-                    return showToast(`URL must start with "${platform.linkPrefix}"`, 'error');
-                }
-            } else { 
-                if (value.includes('http') || value.includes('://')) {
+            let finalValue = userTypedValue;
+            if (currentSocialMode === 'link' && platform.linkPrefix) {
+                finalValue = platform.linkPrefix + userTypedValue;
+            } else if (currentSocialMode === 'text') {
+                 if (userTypedValue.includes('http') || userTypedValue.includes('://')) {
                     return showToast('Please enter a username, not a link.', 'error');
                 }
             }
@@ -837,7 +868,7 @@
             socialModal.classList.remove('show');
             showLoading(`Saving ${platform.name}...`);
             try {
-                const newSocials = { ...currentProfile.social_links, [key]: value };
+                const newSocials = { ...currentProfile.social_links, [key]: finalValue };
                 const { error } = await supabase.from('profiles').update({ social_links: newSocials }).eq('id', currentUser.id);
                 if (error) throw error;
                 showToast(`${platform.name} linked successfully.`, 'success');
