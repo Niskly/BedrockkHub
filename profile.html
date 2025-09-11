@@ -13,7 +13,7 @@
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
             --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
             --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
-            --border-strong: rgba(255, 255, 255, .2); --danger: #ef4444;
+            --border-strong: rgba(255, 255, 255, .2); --danger: #ef4444; --success: #22c55e;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 14px/1.6 Inter, sans-serif; min-height: 100vh; }
@@ -27,7 +27,9 @@
         .btn.primary { background: linear-gradient(90deg, var(--brand-1), var(--brand-2)); box-shadow: 0 10px 30px rgba(222, 33, 42, .22); color: white; }
         .btn.ghost { border-color: var(--border); background: transparent; color: var(--text); }
         .btn.sm { padding: .25rem .5rem; border-radius: 8px; font-weight: 700; display: inline-flex; align-items: center; gap: .4rem; min-width: auto; }
-
+        .spinner { width: 1em; height: 1em; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
         /* Header Nav */
         header { position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(1.2) blur(10px); background: rgba(12, 12, 12, 0.75); border-bottom: 1px solid var(--border); }
         .nav { max-width: 1100px; margin: 0 auto; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; }
@@ -48,9 +50,7 @@
         /* Main Layout */
         .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
         .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; min-height: 60vh; color: var(--muted); }
-        .spinner { width: 48px; height: 48px; border: 5px solid var(--border); border-bottom-color: var(--brand-1); border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
-        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
+        
         /* Profile Header Card */
         .profile-header { border-radius: 16px; margin-bottom: 2rem; overflow: hidden; position: relative; background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); border: 1px solid var(--border); }
         .profile-banner { height: 220px; background-size: cover; background-position: center; }
@@ -65,11 +65,10 @@
         .stat-item { text-align: left; }
         .stat-item .count { font-size: 1.1rem; font-weight: 700; color: var(--text); }
         .stat-item .label { font-size: .8rem; color: var(--muted); }
-        .profile-actions { position: absolute; top: 1.5rem; right: 1.5rem; }
+        .profile-actions { position: absolute; top: 1.5rem; right: 1.5rem; z-index: 3; }
         .social-links-container { margin-top: 1rem; display: flex; gap: 0.8rem; }
         .social-link { font-size: 1.2rem; color: var(--muted); transition: color .2s; }
         .social-link:hover { color: var(--text); }
-        .social-link.discord { color: #5865F2; }
 
         /* Content Grid */
         .profile-content-grid { display: grid; grid-template-columns: 300px 1fr; gap: 1.5rem; align-items: flex-start; }
@@ -81,11 +80,11 @@
         .bedrock-display { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
         .bedrock-skin-viewer { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); position: relative; width: 100%; max-width: 280px; height: 350px; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg'); background-size: cover; background-position: center; }
         .bedrock-skin-viewer canvas { display: block; cursor: grab; width: 100% !important; height: 100% !important; }
-        .bedrock-skin-viewer canvas:active { cursor: grabbing; }
         .bedrock-gamertag { font-size: 1.2rem; font-weight: 700; text-align: center; color: var(--text); }
         .skin-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; color: var(--muted); width: 100%; height: 100%; text-align: center; backdrop-filter: blur(4px); background: rgba(0,0,0,0.3); }
-        .skin-spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-bottom-color: var(--brand-1); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .profile-type-switcher { display: flex; gap: 0.5rem; margin-bottom: 1rem; background: var(--bg-2); padding: 0.25rem; border-radius: 8px; border: 1px solid var(--border); }
+        .profile-type-btn { flex: 1; padding: 0.5rem; border: none; background: transparent; color: var(--muted); font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+        .profile-type-btn.active { background: var(--bg-0); color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
         
         /* Texture Packs Card */
         .packs-header { display: flex; justify-content: space-between; align-items: center; }
@@ -99,20 +98,20 @@
         .content { padding: 14px; }
         
         /* Modals and Overlays */
-        .backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, .6); display: none; align-items: center; justify-content: center; z-index: 60; }
-        .modal { width: 100%; max-width: 760px; background: var(--bg-2); border-radius: 12px; overflow-y: auto; max-height: 90vh; }
+        .backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, .8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 60; }
+        .modal { width: 100%; max-width: 420px; background: var(--bg-1); border-radius: 12px; overflow-y: auto; max-height: 90vh; border: 1px solid var(--border); }
         .modal .panel { padding: 20px; }
         .modal-footer { display: flex; justify-content: flex-end; align-items: center; gap: 10px; padding: 12px 20px 20px; }
-        .file-upload-area { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; border: 2px dashed var(--border); border-radius: 12px; background: var(--bg-0); text-align: center; cursor: pointer; grid-column: span 2; }
+        .file-upload-area { margin-top: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; border: 2px dashed var(--border); border-radius: 12px; background: var(--bg-0); text-align: center; cursor: pointer; }
         .file-upload-area:hover { border-color: var(--brand-1); background: rgba(222, 33, 42, .05); }
-        .file-upload-area i { font-size: 32px; margin-bottom: 12px; color: var(--brand-1); }
+        .file-upload-area i { font-size: 24px; margin-bottom: 12px; color: var(--brand-1); }
         .file-hint { margin-top: 6px; color: var(--muted); }
-        input[type="text"], textarea { width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-2);color:var(--text); font-family: inherit; font-size: inherit; }
-        textarea { resize: vertical; min-height: 80px; }
+        input[type="text"] { width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-2);color:var(--text); font-family: inherit; font-size: inherit; }
         #toast-container { position: fixed; top: 80px; right: 20px; z-index: 100; display: flex; flex-direction: column; gap: 10px; }
-        .toast { padding: 12px 18px; border-radius: 8px; color: white; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; }
-        .toast.error { background: var(--danger); }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .toast { padding: 12px 18px; border-radius: 8px; color: white; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; background: var(--bg-1); border: 1px solid var(--border); }
+        .toast.error { border-left: 4px solid var(--danger); }
+        .toast.success { border-left: 4px solid var(--success); }
+        @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
 
         @media (max-width: 768px) {
             .profile-content-grid { grid-template-columns: 1fr; }
@@ -134,36 +133,34 @@
     </main>
 
     <div id="backdrop" class="backdrop">
-        <div class="modal card">
+        <div class="modal">
             <div class="panel">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
                     <strong>Upload Texture Pack</strong>
-                    <button class="btn sm" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+                    <button class="btn sm ghost" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <p class="tiny">Select a .mcpack or .zip file, set a name, and upload an icon.</p>
             </div>
             <div class="panel" style="padding-top:0">
                 <form id="uploadForm" onsubmit="handleUpload(event)">
-                    <div style="display:grid;grid-template-columns:1fr;gap:14px; align-items: start;">
-                        <div>
-                            <label class="tiny">Pack Name</label>
-                            <input id="packName" required placeholder="e.g. Crystal PvP" type="text">
-                        </div>
-                        <div class="file-upload-area" id="pack-file-area" onclick="document.getElementById('fileInput').click()">
-                            <i class="fa-solid fa-file-arrow-up"></i>
-                            <div>Drag & drop or <span style="color:var(--brand-1)">browse pack file</span></div>
-                            <div class="file-hint" id="fileHint">.mcpack or .zip required</div>
-                            <input id="fileInput" type="file" accept=".mcpack,.zip" style="display:none" onchange="hintFile()" />
-                        </div>
-                         <div class="file-upload-area" id="pack-icon-area" onclick="document.getElementById('iconInput').click()">
-                            <i class="fa-solid fa-image"></i>
-                            <div>Drag & drop or <span style="color:var(--brand-1)">browse for icon</span></div>
-                            <div class="file-hint" id="iconHint">.png required</div>
-                            <input id="iconInput" type="file" accept=".png" style="display:none" onchange="hintIcon()" />
-                        </div>
+                    <div>
+                        <label class="tiny">Pack Name</label>
+                        <input id="packName" required placeholder="e.g. Crystal PvP" type="text">
+                    </div>
+                    <div class="file-upload-area" id="pack-file-area" onclick="document.getElementById('fileInput').click()">
+                        <i class="fa-solid fa-file-arrow-up"></i>
+                        <div><span style="color:var(--brand-1)">Browse</span> for a pack file</div>
+                        <div class="file-hint" id="fileHint">.mcpack or .zip required</div>
+                        <input id="fileInput" type="file" accept=".mcpack,.zip" style="display:none" onchange="hintFile()" />
+                    </div>
+                     <div class="file-upload-area" id="pack-icon-area" onclick="document.getElementById('iconInput').click()">
+                        <i class="fa-solid fa-image"></i>
+                        <div><span style="color:var(--brand-1)">Browse</span> for a pack icon</div>
+                        <div class="file-hint" id="iconHint">.png required</div>
+                        <input id="iconInput" type="file" accept=".png" style="display:none" onchange="hintIcon()" />
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn sm ghost" onclick="closeModal()">Cancel</button>
+                        <button type="button" class="btn ghost" onclick="closeModal()">Cancel</button>
                         <button id="submitBtn" class="btn primary" type="submit"><i class="fa-solid fa-upload"></i> Upload</button>
                     </div>
                 </form>
@@ -181,53 +178,87 @@
 
         let loggedInUser = null;
         let skinViewer = null;
-        let currentProfile = null; // Store the currently viewed profile
 
         function showToast(message, type = 'error') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            toast.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${message}`;
+            toast.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> <span>${message}</span>`;
             container.appendChild(toast);
-            setTimeout(() => { toast.remove(); }, 4000);
-        }
-
-        function showError(title, message, showRetry = true) {
-            profileContainer.innerHTML = `<div class="error-container"><i class="fa-solid fa-exclamation-triangle error-icon"></i><h2 class="error-title">${title}</h2><p class="error-message">${message}</p>${showRetry ? `<button class="btn primary" onclick="window.location.reload()"><i class="fa-solid fa-refresh"></i> Try Again</button>` : ''}</div>`;
-        }
-
-        function renderPackCard(p) {
-            const card = document.createElement('div');
-            card.className = 'pack-card';
-            const thumbContent = p.icon_url ? `<div class="pack-icon-bg" style="background-image: url('${p.icon_url}');"></div><img class="pack-icon" src="${p.icon_url}" alt="${p.name} Icon">` : `<div style="width:100%; height:100%; display:grid; place-items:center; background:#2c2c2c"><i class="fa-solid fa-cube fa-2x"></i></div>`;
-            card.innerHTML = `<a href="#"><div class="thumb">${thumbContent}</div><div class="content"><h4 style="font-size:0.9rem; font-weight:600;">${p.name}</h4></div></a>`;
-            return card;
-        }
-
-        function renderSocialLinks(socialLinks) {
-            if (!socialLinks || typeof socialLinks !== 'object') return '';
-            const platforms = [{ key: 'discord', icon: 'fa-brands fa-discord', class: 'discord', getUrl: (val) => `#` }, { key: 'spotify', icon: 'fa-brands fa-spotify', class: 'spotify', getUrl: (val) => val }, { key: 'reddit', icon: 'fa-brands fa-reddit-alien', class: 'reddit', getUrl: (val) => val }, { key: 'youtube', icon: 'fa-brands fa-youtube', class: 'youtube', getUrl: (val) => val }, { key: 'twitter', icon: 'fa-brands fa-twitter', class: 'twitter', getUrl: (val) => val.startsWith('@') ? `https://twitter.com/${val.slice(1)}` : val }, { key: 'github', icon: 'fa-brands fa-github', class: 'github', getUrl: (val) => val }];
-            return platforms.filter(p => socialLinks[p.key]).map(p => {
-                const value = socialLinks[p.key], url = p.getUrl(value);
-                const target = p.key === 'discord' ? '' : 'target="_blank"'; const title = p.key === 'discord' ? value : '';
-                return `<a href="${url}" ${target} class="social-link ${p.class}" title="${title}"><i class="${p.icon}"></i></a>`;
-            }).join('');
+            setTimeout(() => toast.remove(), 4000);
         }
 
         function renderDashboard(profile, packs, currentUser) {
-            currentProfile = profile; // Save profile data
             const pfpHtml = profile.avatar_url ? `<img src="${profile.avatar_url}" alt="${profile.username}'s avatar" class="profile-avatar">` : `<div class="pfp-placeholder"><span>${(profile.username || '?').charAt(0).toUpperCase()}</span></div>`;
-            const bedrockHtml = (profile.bedrock_gamertag && profile.xuid) ? `<div class="bedrock-display"><div class="bedrock-skin-viewer" id="bedrock-skin-viewer"><div class="skin-loading"><div class="skin-spinner"></div><span>Loading 3D skin...</span></div></div><span class="bedrock-gamertag">${profile.bedrock_gamertag}</span></div>` : `<div style="text-align: center; padding: 2rem; color: var(--muted);"><i class="fa-brands fa-xbox fa-3x" style="opacity: 0.3; margin-bottom: 1rem;"></i><p>No Bedrock account linked</p></div>`;
+            const bedrockHtml = (profile.bedrock_gamertag && profile.xuid) ? `<div class="bedrock-display"><div class="bedrock-skin-viewer" id="bedrock-skin-viewer"><div class="skin-loading"><div class="spinner"></div><span>Loading 3D skin...</span></div></div><span class="bedrock-gamertag">${profile.bedrock_gamertag}</span></div>` : `<div style="text-align: center; padding: 2rem; color: var(--muted);"><i class="fa-brands fa-xbox fa-3x" style="opacity: 0.3; margin-bottom: 1rem;"></i><p>No Bedrock account linked</p></div>`;
             const socialLinksHtml = renderSocialLinks(profile.social_links);
             const showFollowButton = currentUser && currentUser.id !== profile.id;
             const profileActionsHtml = showFollowButton ? `<div class="profile-actions"><button class="btn primary follow-btn"><i class="fa-solid fa-user-plus"></i> Follow</button></div>` : '';
-            profileContainer.innerHTML = `<div class="profile-header glassy"><div class="profile-banner" style="background-image: url('${profile.banner_url || 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/default-banner.png'}')"></div><div class="profile-details"><div class="profile-meta"><div style="position:relative;">${pfpHtml}</div><div class="profile-main-info"><div class="info-top"><h1>${profile.username || 'Unnamed'}</h1><div class="header-stats"><div class="stat-item"><div class="count">${(profile.view_count || 0).toLocaleString()}</div><div class="label">Views</div></div><div class="stat-item"><div class="count" id="follower-count">${(profile.followers_count || 0).toLocaleString()}</div><div class="label">Followers</div></div><div class="stat-item"><div class="count" id="following-count">${(profile.following_count || 0).toLocaleString()}</div><div class="label">Following</div></div></div></div><p class="profile-bio">${profile.bio || "This user hasn't written a bio yet."}</p><div class="social-links-container">${socialLinksHtml}</div></div></div>${profileActionsHtml}</div></div><div class="profile-content-grid"><div id="minecraft-container"><div class="card glassy"><div class="card-body"><h3><i class="fa-brands fa-xbox" style="color:#107C10; margin-right: 8px;"></i>Minecraft Profile</h3><div class="profile-type-switcher"><button class="profile-type-btn active">Bedrock</button><button class="profile-type-btn">Java</button></div>${bedrockHtml}</div></div></div><div id="packs-container"><div class="card glassy"><div class="card-body"><div class="packs-header"><h3>Texture Packs</h3>${(currentUser && currentUser.id === profile.id) ? '<div class="upload-btn" title="Upload new pack"><i class="fa-solid fa-plus"></i></div>' : ''}</div><div class="packs-grid" id="packs-grid-placeholder"></div></div></div></div></div>`;
+
+            profileContainer.innerHTML = `
+                <div class="profile-header glassy">
+                    <div class="profile-banner" style="background-image: url('${profile.banner_url || 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/default-banner.png'}')"></div>
+                    <div class="profile-details">
+                        ${profileActionsHtml}
+                        <div class="profile-meta">
+                            <div style="position:relative;">${pfpHtml}</div>
+                            <div class="profile-main-info">
+                                <div class="info-top">
+                                    <h1>${profile.username || 'Unnamed'}</h1>
+                                    <div class="header-stats">
+                                        <div class="stat-item"><div class="count">${(profile.view_count || 0).toLocaleString()}</div><div class="label">Views</div></div>
+                                        <div class="stat-item"><div class="count" id="follower-count">${(profile.followers_count || 0).toLocaleString()}</div><div class="label">Followers</div></div>
+                                        <div class="stat-item"><div class="count" id="following-count">${(profile.following_count || 0).toLocaleString()}</div><div class="label">Following</div></div>
+                                    </div>
+                                </div>
+                                <p class="profile-bio">${profile.bio || "This user hasn't written a bio yet."}</p>
+                                <div class="social-links-container">${socialLinksHtml}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-content-grid">
+                    <div id="minecraft-container">
+                        <div class="card glassy">
+                            <div class="card-body">
+                                <h3><i class="fa-brands fa-xbox" style="color:#107C10; margin-right: 8px;"></i>Minecraft Profile</h3>
+                                <div class="profile-type-switcher">
+                                    <button class="profile-type-btn active">Bedrock</button>
+                                    <button class="profile-type-btn">Java</button>
+                                </div>
+                                ${bedrockHtml}
+                            </div>
+                        </div>
+                    </div>
+                    <div id="packs-container">
+                        <div class="card glassy">
+                            <div class="card-body">
+                                <div class="packs-header">
+                                    <h3>Texture Packs</h3>
+                                    ${(currentUser && currentUser.id === profile.id) ? '<div class="upload-btn" title="Upload new pack"><i class="fa-solid fa-plus"></i></div>' : ''}
+                                </div>
+                                <div class="packs-grid" id="packs-grid-placeholder"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            
             const packsGridEl = document.getElementById('packs-grid-placeholder');
-            if (packs && packs.length > 0) { packs.forEach(pack => packsGridEl.appendChild(renderPackCard(pack))); } 
-            else { packsGridEl.innerHTML = `<p class="tiny">This user hasn't uploaded any packs yet.</p>`; }
+            if (packs && packs.length > 0) {
+                packs.forEach(pack => {
+                    const card = document.createElement('div');
+                    card.className = 'pack-card';
+                    const thumbContent = pack.icon_url ? `<div class="pack-icon-bg" style="background-image: url('${pack.icon_url}');"></div><img class="pack-icon" src="${pack.icon_url}" alt="${pack.name} Icon">` : `<div style="width:100%; height:100%; display:grid; place-items:center; background:#2c2c2c"><i class="fa-solid fa-cube fa-2x"></i></div>`;
+                    card.innerHTML = `<a href="#"><div class="thumb">${thumbContent}</div><div class="content"><h4 style="font-size:0.9rem; font-weight:600;">${pack.name}</h4></div></a>`;
+                    packsGridEl.appendChild(card);
+                });
+            } else {
+                packsGridEl.innerHTML = `<p class="tiny">This user hasn't uploaded any packs yet.</p>`;
+            }
             if (profile.bedrock_gamertag && profile.xuid) { initBedrockSkinViewer(profile); }
+            
             const uploadBtn = document.querySelector('.upload-btn');
-            if (uploadBtn) { uploadBtn.addEventListener('click', openModal); }
+            if (uploadBtn) { uploadBtn.addEventListener('click', () => document.getElementById('backdrop').style.display = 'flex'); }
         }
 
         async function initBedrockSkinViewer(profile) {
@@ -236,19 +267,18 @@
             try {
                 viewerContainer.innerHTML = '<canvas id="skin-canvas"></canvas>';
                 const canvas = document.getElementById('skin-canvas');
-                skinViewer = new skinview3d.SkinViewer({ canvas: canvas, width: 280, height: 350, });
-                skinViewer.controls.enableRotate = true; skinViewer.controls.enableZoom = true; skinViewer.controls.enablePan = false;
-                skinViewer.controls.maxDistance = 70; skinViewer.controls.minDistance = 25;
+                skinViewer = new skinview3d.SkinViewer({ canvas: canvas, width: 280, height: 350 });
+                skinViewer.controls.enableRotate = true; skinViewer.controls.enableZoom = true;
                 const skinUrl = `/api/bedrock-skin?xuid=${profile.xuid}&gamertag=${encodeURIComponent(profile.bedrock_gamertag)}`;
                 await skinViewer.loadSkin(skinUrl);
-                const animation = skinViewer.autoRotateAnimation; animation.speed = 0.5; animation.paused = false;
-                canvas.addEventListener('mousedown', () => { animation.paused = true; }, { once: true });
+                skinViewer.autoRotateAnimation.speed = 0.5;
+                canvas.addEventListener('mousedown', () => skinViewer.autoRotateAnimation.paused = true, { once: true });
             } catch (error) { console.error('Failed to init skin viewer:', error); }
         }
         
         async function setupFollowSystem(profile, currentUser) {
             const followButton = document.querySelector('.follow-btn');
-            if (!followButton || !currentUser || currentUser.id === profile.id) return;
+            if (!followButton) return;
             const { count } = await supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', currentUser.id).eq('following_id', profile.id);
             let isFollowing = count > 0;
             const updateButtonState = (newCount) => {
@@ -280,62 +310,35 @@
                 await setupFollowSystem(profile, currentUser);
             } catch (error) { showError('Loading Error', 'An unexpected error occurred.'); }
         }
-
-        // --- Upload Modal Logic ---
-        window.openModal = () => { document.getElementById('backdrop').style.display = 'flex'; }
-        window.closeModal = () => { document.getElementById('backdrop').style.display = 'none'; document.getElementById('uploadForm').reset(); document.getElementById('fileHint').textContent = '.mcpack or .zip required'; document.getElementById('iconHint').textContent = '.png required'; }
-        window.hintFile = () => { const file = document.getElementById('fileInput').files[0]; if(file) document.getElementById('fileHint').textContent = file.name; }
-        window.hintIcon = () => { const file = document.getElementById('iconInput').files[0]; if(file) document.getElementById('iconHint').textContent = file.name; }
-
+        
+        // --- Upload Modal Logic (Copied from previous correct version) ---
+        window.closeModal = () => { document.getElementById('backdrop').style.display = 'none'; document.getElementById('uploadForm').reset(); document.getElementById('fileHint').textContent = '.mcpack or .zip required'; document.getElementById('iconHint').textContent = '.png required'; };
+        window.hintFile = () => { const f = document.getElementById('fileInput').files[0]; if(f) document.getElementById('fileHint').textContent = f.name; };
+        window.hintIcon = () => { const f = document.getElementById('iconInput').files[0]; if(f) document.getElementById('iconHint').textContent = f.name; };
         window.handleUpload = async (event) => {
             event.preventDefault();
-            const submitBtn = document.getElementById('submitBtn');
-            const packFile = document.getElementById('fileInput').files[0];
-            const iconFile = document.getElementById('iconInput').files[0];
-            const packName = document.getElementById('packName').value.trim();
-
+            const submitBtn = document.getElementById('submitBtn'), packFile = document.getElementById('fileInput').files[0], iconFile = document.getElementById('iconInput').files[0], packName = document.getElementById('packName').value.trim();
             if (!packFile || !iconFile || !packName) return showToast('All fields are required.');
-            if (!packFile.name.toLowerCase().endsWith('.mcpack') && !packFile.name.toLowerCase().endsWith('.zip')) return showToast('Invalid pack file type.');
-            if (!iconFile.name.toLowerCase().endsWith('.png')) return showToast('Icon must be a .png file.');
-
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px;"></div> Uploading...';
-            
+            if (!packFile.name.match(/\.(mcpack|zip)$/i)) return showToast('Invalid pack file type.');
+            if (!iconFile.name.match(/\.png$/i)) return showToast('Icon must be a .png file.');
+            submitBtn.disabled = true; submitBtn.innerHTML = '<div class="spinner"></div>';
             try {
-                // 1. Upload Icon
                 const iconPath = `pack_icons/${loggedInUser.id}-${Date.now()}.png`;
-                const { error: iconError } = await supabase.storage.from('packs').upload(iconPath, iconFile);
-                if (iconError) throw new Error(`Icon upload failed: ${iconError.message}`);
+                let { error: iconError } = await supabase.storage.from('packs').upload(iconPath, iconFile);
+                if (iconError) throw new Error(`Icon upload: ${iconError.message}`);
                 const { data: { publicUrl: icon_url } } = supabase.storage.from('packs').getPublicUrl(iconPath);
-
-                // 2. Upload Pack File
+                
                 const packPath = `pack_files/${loggedInUser.id}-${Date.now()}-${packFile.name}`;
-                const { error: packError } = await supabase.storage.from('packs').upload(packPath, packFile);
-                if (packError) throw new Error(`Pack file upload failed: ${packError.message}`);
-
-                // 3. Add to Database
-                const { error: dbError } = await supabase.from('packs').insert({
-                    user_id: loggedInUser.id,
-                    name: packName,
-                    filename: packPath,
-                    icon_url: icon_url,
-                    // These are defaults, you can add inputs for them in the modal later
-                    color: 'gray',
-                    tags: 'user-upload',
-                    resolution: '16x',
-                    version: packFile.name.toLowerCase().endsWith('.mcpack') ? 'bedrock' : 'java'
-                });
-                if (dbError) throw new Error(`Database insert failed: ${dbError.message}`);
-
+                let { error: packError } = await supabase.storage.from('packs').upload(packPath, packFile);
+                if (packError) throw new Error(`Pack file upload: ${packError.message}`);
+                
+                let { error: dbError } = await supabase.from('packs').insert({ user_id: loggedInUser.id, name: packName, filename: packPath, icon_url: icon_url, color: 'gray', tags: 'user-upload', resolution: '16x', version: packFile.name.endsWith('.mcpack') ? 'bedrock' : 'java' });
+                if (dbError) throw new Error(`Database insert: ${dbError.message}`);
                 showToast('Pack uploaded successfully!', 'success');
                 closeModal();
                 loadProfilePage(loggedInUser); // Refresh the page to show the new pack
-            } catch (error) {
-                showToast(error.message, 'error');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload';
-            }
+            } catch (error) { showToast(error.message, 'error');
+            } finally { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; }
         };
 
         document.addEventListener('auth-ready', (event) => {
