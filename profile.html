@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <!-- Add skinview3d library -->
     <script src="https://cdn.jsdelivr.net/npm/skinview3d@3.0.1/bundles/skinview3d.bundle.js"></script>
     <style>
         :root {
@@ -21,97 +20,28 @@
         body::before { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg'); background-size: cover; filter: blur(8px); opacity: 0.2; z-index: -1; }
 
         /* Bedrock skin viewer styles */
-        .bedrock-display {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-        }
-
+        .bedrock-display { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
         .bedrock-skin-viewer {
-            border-radius: 12px;
-            overflow: hidden;
-            background: linear-gradient(135deg, var(--bg-1), var(--bg-2));
-            border: 1px solid var(--border);
-            position: relative;
-            width: 280px;
-            height: 350px;
+            border-radius: 12px; overflow: hidden;
+            border: 1px solid var(--border); position: relative; width: 280px; height: 350px;
+            background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg');
+            background-size: cover; background-position: center;
         }
-
-        .bedrock-skin-viewer canvas {
-            display: block;
-            border-radius: 12px;
-            cursor: grab;
-            width: 100% !important;
-            height: 100% !important;
-        }
-        .bedrock-skin-viewer canvas:active {
-            cursor: grabbing;
-        }
-
-        .bedrock-gamertag {
-            font-size: 1.2rem;
-            font-weight: 700;
-            text-align: center;
-            color: var(--text);
-        }
-
-        .bedrock-xuid {
-            opacity: 0.7;
-            font-size: 11px;
-            text-align: center;
-            color: var(--muted);
-        }
-
-        .skin-loading, .skin-error {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            padding: 2rem;
-            color: var(--muted);
-            width: 100%;
-            height: 100%;
-            text-align: center;
-        }
-
-        .skin-spinner {
-            width: 32px;
-            height: 32px;
-            border: 3px solid var(--border);
-            border-bottom-color: var(--brand-1);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .skin-error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            border-radius: 12px;
-        }
-
-        .skin-retry-btn {
-            background: var(--brand-1);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .skin-retry-btn:hover {
-            background: var(--brand-2);
-            transform: translateY(-1px);
-        }
+        .bedrock-skin-viewer canvas { display: block; border-radius: 12px; cursor: grab; width: 100% !important; height: 100% !important; }
+        .bedrock-skin-viewer canvas:active { cursor: grabbing; }
+        .bedrock-gamertag { font-size: 1.2rem; font-weight: 700; text-align: center; color: var(--text); }
+        .bedrock-xuid { opacity: 0.7; font-size: 11px; text-align: center; color: var(--muted); }
+        .skin-loading, .skin-error { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; padding: 2rem; color: var(--muted); width: 100%; height: 100%; text-align: center; backdrop-filter: blur(4px); background: rgba(0,0,0,0.3); }
+        .skin-spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-bottom-color: var(--brand-1); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .skin-error { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; }
+        .skin-retry-btn { background: var(--brand-1); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s; }
+        .skin-retry-btn:hover { background: var(--brand-2); transform: translateY(-1px); }
+        
+        /* Profile type switcher (Bedrock/Java) */
+        .profile-type-switcher { display: flex; gap: 0.5rem; margin-bottom: 1rem; background: var(--bg-2); padding: 0.25rem; border-radius: 8px; border: 1px solid var(--border); }
+        .profile-type-btn { flex: 1; padding: 0.5rem; border: none; background: transparent; color: var(--muted); font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+        .profile-type-btn.active { background: var(--bg-0); color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
 
         /* Navigation and layout styles */
         a { color: inherit; text-decoration: none; }
@@ -141,14 +71,12 @@
 
         .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
         .glassy { background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); border: 1px solid var(--border); }
-        .not-found { text-align: center; padding: 4rem; font-size: 1.2rem; color: var(--muted); }
         .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; min-height: 60vh; color: var(--muted); }
         .spinner { width: 48px; height: 48px; border: 5px solid var(--border); border-bottom-color: var(--brand-1); border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
-        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         .profile-header { border-radius: 16px; margin-bottom: 2rem; overflow: hidden; position: relative; }
         .profile-banner { height: 220px; background-size: cover; background-position: center; }
-        .profile-details { padding: 1rem 1.5rem; display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-top: -70px; position: relative; z-index: 2; }
+        .profile-details { position: relative; padding: 1rem 1.5rem; display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-top: -70px; z-index: 2; }
         .profile-meta { display: flex; align-items: center; gap: 1.5rem; }
         .profile-avatar { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #161616; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .pfp-placeholder { width: 140px; height: 140px; border-radius: 50%; border: 4px solid #161616; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
@@ -161,17 +89,15 @@
         .stat-item .count { font-size: 1.1rem; font-weight: 700; color: var(--text); }
         .stat-item .label { font-size: .8rem; color: var(--muted); }
         
-        .profile-actions { display: flex; align-items: center; gap: 1rem; }
+        /* New position for follow button */
+        .profile-actions { position: absolute; top: 1.5rem; right: 1.5rem; }
         
         .social-links-container { position: absolute; bottom: 1.5rem; right: 1.5rem; display: flex; gap: 0.8rem; }
         .social-link { font-size: 1.2rem; color: var(--muted); transition: color .2s; }
         .social-link:hover { color: var(--text); }
-        .social-link.discord { color: #5865F2; }
-        .social-link.spotify { color: #1DB954; }
-        .social-link.reddit { color: #FF4500; }
-        .social-link.youtube { color: #FF0000; }
-        .social-link.twitter { color: #1DA1F2; }
-        .social-link.github { color: #333; }
+        .social-link.discord { color: #5865F2; } .social-link.spotify { color: #1DB954; }
+        .social-link.reddit { color: #FF4500; } .social-link.youtube { color: #FF0000; }
+        .social-link.twitter { color: #1DA1F2; } .social-link.github { color: #333; }
 
         .profile-content-grid { display: grid; grid-template-columns: 300px 1fr; gap: 1.5rem; align-items: flex-start; }
         .card { border-radius: 16px; }
@@ -188,11 +114,7 @@
         .thumb .pack-icon { position: relative; width: 80px; height: 80px; border-radius: 8px; object-fit: cover; z-index: 1; }
         .content { padding: 14px; }
 
-        .error-container { 
-            display: flex; flex-direction: column; align-items: center; 
-            justify-content: center; gap: 1.5rem; min-height: 50vh; 
-            text-align: center; color: var(--muted); 
-        }
+        .error-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; min-height: 50vh; text-align: center; color: var(--muted); }
         .error-icon { font-size: 4rem; color: var(--brand-1); margin-bottom: 1rem; }
         .error-title { font-size: 1.5rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
         .error-message { font-size: 1.1rem; line-height: 1.5; max-width: 500px; }
@@ -200,6 +122,7 @@
         @media (max-width: 768px) {
             .profile-content-grid { grid-template-columns: 1fr; }
             .bedrock-skin-viewer { width: 240px; height: 300px; }
+            .profile-actions { top: 1rem; right: 1rem; }
         }
     </style>
 </head>
@@ -225,7 +148,6 @@
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const profileContainer = document.getElementById('profile-container');
 
-        // Global state for this page
         let loggedInUser = null;
         let skinViewer = null;
 
@@ -235,32 +157,22 @@
                     <i class="fa-solid fa-exclamation-triangle error-icon"></i>
                     <h2 class="error-title">${title}</h2>
                     <p class="error-message">${message}</p>
-                    ${showRetry ? `<button class="btn primary" onclick="window.location.reload()">
-                        <i class="fa-solid fa-refresh"></i> Try Again
-                    </button>` : ''}
-                </div>
-            `;
+                    ${showRetry ? `<button class="btn primary" onclick="window.location.reload()"><i class="fa-solid fa-refresh"></i> Try Again</button>` : ''}
+                </div>`;
         }
 
         function renderPackCard(p) {
             const card = document.createElement('div');
             card.className = 'pack-card';
-            let thumbContent;
-            if (p.icon_url) {
-                thumbContent = `<div class="pack-icon-bg" style="background-image: url('${p.icon_url}');"></div><img class="pack-icon" src="${p.icon_url}" alt="${p.name} Icon">`;
-            } else {
-                thumbContent = `<div style="width:100%; height:100%; display:grid; place-items:center; background:#2c2c2c"><i class="fa-solid fa-cube fa-2x"></i></div>`;
-            }
-            card.innerHTML = `<a href="#">
-                <div class="thumb">${thumbContent}</div>
-                <div class="content"><h4 style="font-size:0.9rem; font-weight:600;">${p.name}</h4></div>
-            </a>`;
+            const thumbContent = p.icon_url
+                ? `<div class="pack-icon-bg" style="background-image: url('${p.icon_url}');"></div><img class="pack-icon" src="${p.icon_url}" alt="${p.name} Icon">`
+                : `<div style="width:100%; height:100%; display:grid; place-items:center; background:#2c2c2c"><i class="fa-solid fa-cube fa-2x"></i></div>`;
+            card.innerHTML = `<a href="#"><div class="thumb">${thumbContent}</div><div class="content"><h4 style="font-size:0.9rem; font-weight:600;">${p.name}</h4></div></a>`;
             return card;
         }
 
         function renderSocialLinks(socialLinks) {
             if (!socialLinks || typeof socialLinks !== 'object') return '';
-            
             const platforms = [
                 { key: 'discord', icon: 'fa-brands fa-discord', class: 'discord', getUrl: (val) => `#` },
                 { key: 'spotify', icon: 'fa-brands fa-spotify', class: 'spotify', getUrl: (val) => val },
@@ -269,20 +181,12 @@
                 { key: 'twitter', icon: 'fa-brands fa-twitter', class: 'twitter', getUrl: (val) => val.startsWith('@') ? `https://twitter.com/${val.slice(1)}` : val },
                 { key: 'github', icon: 'fa-brands fa-github', class: 'github', getUrl: (val) => val }
             ];
-            
-            return platforms
-                .filter(platform => socialLinks[platform.key])
-                .map(platform => {
-                    const value = socialLinks[platform.key];
-                    const url = platform.getUrl(value);
-                    const target = platform.key === 'discord' ? '' : 'target="_blank"';
-                    const title = platform.key === 'discord' ? value : '';
-                    
-                    return `<a href="${url}" ${target} class="social-link ${platform.class}" title="${title}">
-                        <i class="${platform.icon}"></i>
-                    </a>`;
-                })
-                .join('');
+            return platforms.filter(p => socialLinks[p.key]).map(p => {
+                const value = socialLinks[p.key], url = p.getUrl(value);
+                const target = p.key === 'discord' ? '' : 'target="_blank"';
+                const title = p.key === 'discord' ? value : '';
+                return `<a href="${url}" ${target} class="social-link ${p.class}" title="${title}"><i class="${p.icon}"></i></a>`;
+            }).join('');
         }
 
         function renderDashboard(profile, packs, currentUser) {
@@ -290,16 +194,16 @@
                 ? `<img src="${profile.avatar_url}" alt="${profile.username}'s avatar" class="profile-avatar">`
                 : `<div class="pfp-placeholder"><span>${(profile.username || '?').charAt(0).toUpperCase()}</span></div>`;
 
-            // Enhanced Bedrock HTML with better error handling
             let bedrockHtml;
             if (profile.bedrock_gamertag && profile.xuid) {
                 bedrockHtml = `
+                    <div class="profile-type-switcher">
+                        <button class="profile-type-btn active" id="bedrock-btn">Bedrock</button>
+                        <button class="profile-type-btn" id="java-btn">Java</button>
+                    </div>
                     <div class="bedrock-display">
                         <div class="bedrock-skin-viewer" id="bedrock-skin-viewer">
-                            <div class="skin-loading">
-                                <div class="skin-spinner"></div>
-                                <span>Loading 3D skin...</span>
-                            </div>
+                            <div class="skin-loading"><div class="skin-spinner"></div><span>Loading 3D skin...</span></div>
                         </div>
                         <span class="bedrock-gamertag">${profile.bedrock_gamertag}</span>
                         <div class="bedrock-xuid tiny">XUID: ${profile.xuid}</div>
@@ -315,16 +219,13 @@
 
             const socialLinksHtml = renderSocialLinks(profile.social_links);
             const showFollowButton = currentUser && currentUser.id !== profile.id;
-            const profileActionsHtml = showFollowButton ? `
-                <div class="profile-actions">
-                    <button class="btn primary follow-btn"><i class="fa-solid fa-user-plus"></i> Follow</button>
-                </div>
-            ` : '';
+            const profileActionsHtml = showFollowButton ? `<div class="profile-actions"><button class="btn primary follow-btn"><i class="fa-solid fa-user-plus"></i> Follow</button></div>` : '';
 
             profileContainer.innerHTML = `
                 <div class="profile-header glassy">
                     <div class="profile-banner" style="background-image: url('${profile.banner_url || 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/default-banner.png'}')"></div>
                     <div class="profile-details">
+                        ${profileActionsHtml}
                         <div class="profile-meta">
                             ${pfpHtml}
                             <div class="profile-main-info">
@@ -337,7 +238,6 @@
                                 </div>
                             </div>
                         </div>
-                        ${profileActionsHtml}
                         <div class="social-links-container">
                             ${socialLinksHtml}
                         </div>
@@ -347,7 +247,7 @@
                     <div id="minecraft-container">
                         <div class="card glassy">
                             <div class="card-body">
-                                <h3><i class="fa-brands fa-xbox" style="color:#107C10; margin-right: 8px;"></i>Bedrock Profile</h3>
+                                <h3><i class="fa-brands fa-xbox" style="color:#107C10; margin-right: 8px;"></i>Minecraft Profile</h3>
                                 ${bedrockHtml}
                             </div>
                         </div>
@@ -357,14 +257,13 @@
                             <div class="card-body">
                                 <div class="packs-header">
                                     <h3>Texture Packs</h3>
-                                    <div class="upload-btn" title="Upload new pack" style="display:none;"><i class="fa-solid fa-plus"></i></div>
+                                    ${(currentUser && currentUser.id === profile.id) ? '<div class="upload-btn" title="Upload new pack"><i class="fa-solid fa-plus"></i></div>' : ''}
                                 </div>
                                 <div class="packs-grid" id="packs-grid-placeholder"></div>
                             </div>
                         </div>
                     </div>
-                </div>
-            `;
+                </div>`;
             
             const packsGridEl = document.getElementById('packs-grid-placeholder');
             if (packs && packs.length > 0) {
@@ -373,103 +272,77 @@
                 packsGridEl.innerHTML = `<p class="tiny">This user hasn't uploaded any packs yet.</p>`;
             }
 
-            // Initialize 3D skin viewer if bedrock account is linked
             if (profile.bedrock_gamertag && profile.xuid) {
                 initBedrockSkinViewer(profile);
             }
         }
 
-        // Enhanced Bedrock Skin Viewer Functions
-// IN: profile.html
+        async function initBedrockSkinViewer(profile) {
+            const viewerContainer = document.getElementById('bedrock-skin-viewer');
+            if (!viewerContainer) return;
 
-async function initBedrockSkinViewer(profile) {
-    const viewerContainer = document.getElementById('bedrock-skin-viewer');
-    if (!viewerContainer) return;
+            try {
+                viewerContainer.innerHTML = '<canvas id="skin-canvas"></canvas>';
+                const canvas = document.getElementById('skin-canvas');
+                if (!canvas) throw new Error('Canvas not created');
 
-    try {
-        console.log(`[Skin Viewer] Initializing for ${profile.bedrock_gamertag} (${profile.xuid})`);
+                skinViewer = new skinview3d.SkinViewer({
+                    canvas: canvas,
+                    width: 280,
+                    height: 350,
+                });
 
-        viewerContainer.innerHTML = '<canvas id="skin-canvas" width="280" height="350"></canvas>';
-        const canvas = document.getElementById('skin-canvas');
-        if (!canvas) throw new Error('Canvas not created');
+                skinViewer.controls.enableRotate = true;
+                skinViewer.controls.enableZoom = true;
+                skinViewer.controls.enablePan = false;
+                skinViewer.controls.maxDistance = 70;
+                skinViewer.controls.minDistance = 25;
 
-        skinViewer = new skinview3d.SkinViewer({
-            canvas: canvas,
-            width: 280,
-            height: 350,
-            skin: null
-        });
-
-        skinViewer.controls.enableRotate = true;
-        skinViewer.controls.enableZoom = true;
-        skinViewer.controls.enablePan = false;
-        skinViewer.controls.maxDistance = 70;
-        skinViewer.controls.minDistance = 25;
-        skinViewer.controls.object.position.set(25, 20, 25);
-        skinViewer.controls.object.lookAt(0, 0, 0);
-
-        // --- THIS IS THE FIX ---
-        // Replace your old line with this one to include the gamertag for the API's fallback methods.
-        const skinUrl = `/api/bedrock-skin?xuid=${profile.xuid}&gamertag=${encodeURIComponent(profile.bedrock_gamertag)}`;
-        
-        console.log(`[Skin Viewer] Loading skin from: ${skinUrl}`);
-        
-        await skinViewer.loadSkin(skinUrl);
-        
-        let animationId;
-        const rotateModel = () => {
-            if (skinViewer && skinViewer.playerObject) {
-                skinViewer.playerObject.rotation.y += 0.01;
-                animationId = requestAnimationFrame(rotateModel);
+                const skinUrl = `/api/bedrock-skin?xuid=${profile.xuid}&gamertag=${encodeURIComponent(profile.bedrock_gamertag)}`;
+                console.log(`[Skin Viewer] Loading skin from: ${skinUrl}`);
+                
+                await skinViewer.loadSkin(skinUrl);
+                
+                let animationId;
+                const rotateModel = () => {
+                    if (skinViewer && skinViewer.playerObject) {
+                        skinViewer.playerObject.rotation.y += 0.01;
+                        animationId = requestAnimationFrame(rotateModel);
+                    }
+                };
+                rotateModel();
+                
+                canvas.addEventListener('mousedown', () => cancelAnimationFrame(animationId), { once: true });
+                
+            } catch (error) {
+                console.error('❌ Failed to initialize Bedrock skin viewer:', error);
+                showSkinError('Failed to load 3D skin', profile);
             }
-        };
+        }
         
-        rotateModel();
-        
-        let userInteracted = false;
-        canvas.addEventListener('mousedown', () => {
-            if (!userInteracted) {
-                userInteracted = true;
-                if (animationId) {
-                    cancelAnimationFrame(animationId);
-                }
-            }
-        });
-        
-        console.log('✅ Bedrock skin viewer initialized successfully');
-        
-    } catch (error) {
-        console.error('❌ Failed to initialize Bedrock skin viewer:', error);
-        showSkinError('Failed to load 3D skin', profile.xuid);
-    }
-}
-        
-        function showSkinError(message, xuid) {
+        function showSkinError(message, profile) {
             const viewerContainer = document.getElementById('bedrock-skin-viewer');
             if (viewerContainer) {
                 viewerContainer.innerHTML = `
                     <div class="skin-error">
                         <i class="fa-solid fa-exclamation-triangle" style="font-size: 2rem; color: var(--brand-1); margin-bottom: 0.5rem;"></i>
                         <p style="margin-bottom: 1rem;">${message}</p>
-                        <button class="skin-retry-btn" onclick="retryLoadingSkin('${xuid}')">
+                        <button class="skin-retry-btn" onclick="retryLoadingSkin(event, '${profile.xuid}', '${profile.bedrock_gamertag}')">
                             <i class="fa-solid fa-refresh"></i> Retry
                         </button>
-                    </div>
-                `;
+                    </div>`;
             }
         }
 
-        // Make retry function global
-        window.retryLoadingSkin = function(xuid) {
-            const profile = { xuid: xuid, bedrock_gamertag: 'Retrying...' };
+        window.retryLoadingSkin = function(event, xuid, gamertag) {
+            event.stopPropagation();
+            const profile = { xuid: xuid, bedrock_gamertag: gamertag };
             initBedrockSkinViewer(profile);
         };
         
         async function setupFollowSystem(profile, currentUser) {
             const followButton = document.querySelector('.follow-btn');
-            if (!followButton || !currentUser || currentUser.id === profile.id) {
-                return;
-            }
+            if (!followButton || !currentUser || currentUser.id === profile.id) return;
 
             const { count, error: checkError } = await supabase
                 .from('followers')
@@ -477,130 +350,69 @@ async function initBedrockSkinViewer(profile) {
                 .eq('follower_id', currentUser.id)
                 .eq('following_id', profile.id);
 
-            if (checkError) {
-                console.error("Failed to check follow status:", checkError);
-                return;
-            }
+            if (checkError) return console.error("Failed to check follow status:", checkError);
                 
             let isFollowing = count > 0;
             
             function updateButtonState(newFollowerCount) {
                 document.getElementById('follower-count').textContent = newFollowerCount.toLocaleString();
-
                 if (isFollowing) {
                     followButton.innerHTML = `<i class="fa-solid fa-user-check"></i> Following`;
-                    followButton.classList.remove('primary');
-                    followButton.classList.add('ghost');
+                    followButton.classList.replace('primary', 'ghost');
                 } else {
                     followButton.innerHTML = `<i class="fa-solid fa-user-plus"></i> Follow`;
-                    followButton.classList.add('primary');
-                    followButton.classList.remove('ghost');
+                    followButton.classList.replace('ghost', 'primary');
                 }
             }
             updateButtonState(profile.followers_count || 0);
 
             followButton.addEventListener('click', async () => {
                 followButton.disabled = true;
-                
                 try {
-                    if (isFollowing) {
-                        const { error } = await supabase
-                            .from('followers')
-                            .delete()
-                            .eq('follower_id', currentUser.id)
-                            .eq('following_id', profile.id);
-                        if (error) throw error;
-                    } else {
-                        const { error } = await supabase
-                            .from('followers')
-                            .insert([{
-                                follower_id: currentUser.id,
-                                following_id: profile.id
-                            }]);
-                        if (error) throw error;
-                    }
+                    const action = isFollowing
+                        ? supabase.from('followers').delete().match({ follower_id: currentUser.id, following_id: profile.id })
+                        : supabase.from('followers').insert({ follower_id: currentUser.id, following_id: profile.id });
                     
-                    const { data: updatedProfile, error } = await supabase
-                        .from('profiles_with_counts')
-                        .select('followers_count')
-                        .eq('id', profile.id)
-                        .single();
-
-                    if(error) throw error;
+                    const { error } = await action;
+                    if (error) throw error;
+                    
+                    const { data: updatedProfile, error: fetchError } = await supabase.from('profiles_with_counts').select('followers_count').eq('id', profile.id).single();
+                    if(fetchError) throw fetchError;
                     
                     isFollowing = !isFollowing;
                     updateButtonState(updatedProfile?.followers_count || 0);
-                    
                 } catch (error) {
                     console.error('Follow/Unfollow error:', error);
+                } finally {
+                    followButton.disabled = false;
                 }
-                
-                followButton.disabled = false;
             });
         }
         
         async function loadProfilePage(currentUser) {
-            console.log('🔄 Loading profile page content...');
-            
             try {
                 const username = new URLSearchParams(window.location.search).get('user');
-                if (!username) { 
-                    showError('No User Specified', 'Please provide a username in the URL.', false); 
-                    return; 
-                }
+                if (!username) return showError('No User Specified', 'Please provide a username in the URL.', false); 
 
-                console.log('👤 Looking for user:', username);
-
-                const { data: profile, error: profileError } = await supabase
-                    .from('profiles_with_counts')
-                    .select('*')
-                    .ilike('username', username)
-                    .single();
+                const { data: profile, error: profileError } = await supabase.from('profiles_with_counts').select('*').ilike('username', username).single();
                 
                 if (profileError || !profile) {
-                    if (profileError && profileError.code === 'PGRST116') {
-                         showError('User Not Found', `User "${username}" was not found.`, false);
-                    } else {
-                        console.error('Profile fetch error:', profileError);
-                        showError('Loading Error', 'Failed to load user profile.');
-                    }
-                    return;
+                    return (profileError && profileError.code === 'PGRST116')
+                        ? showError('User Not Found', `User "${username}" was not found.`, false)
+                        : showError('Loading Error', 'Failed to load user profile.');
                 }
-
-                console.log('✅ Profile loaded:', profile.username);
 
                 if (currentUser && currentUser.id !== profile.id) {
-                    try {
-                        const { error } = await supabase.rpc('increment_view_count', { 
-                            profile_id_to_update: profile.id 
-                        });
+                    supabase.rpc('increment_view_count', { profile_id_to_update: profile.id }).then(({ error }) => {
                         if (error) console.error('View count error:', error);
-                    } catch (viewError) {
-                        console.error('View count increment failed:', viewError);
-                    }
+                    });
                 }
                 
-                const { data: packs, error: packsError } = await supabase
-                    .from('packs')
-                    .select('*')
-                    .eq('user_id', profile.id)
-                    .order('created_at', { ascending: false });
-                    
-                if (packsError) {
-                    console.error('Packs error:', packsError);
-                }
+                const { data: packs, error: packsError } = await supabase.from('packs').select('*').eq('user_id', profile.id).order('created_at', { ascending: false });
+                if (packsError) console.error('Packs error:', packsError);
                 
-                console.log('🎨 Rendering profile dashboard...');
                 renderDashboard(profile, packs || [], currentUser);
-                
                 await setupFollowSystem(profile, currentUser);
-
-                if (currentUser && currentUser.id === profile.id) {
-                    const uploadBtn = document.querySelector('.upload-btn');
-                    if (uploadBtn) uploadBtn.style.display = 'grid';
-                }
-
-                console.log('✅ Profile page loaded successfully');
 
             } catch (error) {
                 console.error("❌ Critical error loading profile:", error);
@@ -608,13 +420,11 @@ async function initBedrockSkinViewer(profile) {
             }
         }
 
-        // === INITIALIZATION ===
         document.addEventListener('auth-ready', (event) => {
             const { user } = event.detail;
             loggedInUser = user; 
             loadProfilePage(loggedInUser);
         });
-
     </script>
     <script type="module" src="auth.js"></script>
 </body>
