@@ -154,7 +154,7 @@
         .avatar-uploader-preview:hover { border-color: var(--brand-1); }
         .profile-bio-section { padding-top: 70px; width: 100%; max-width: 500px; }
 
-        /* FIXED: Social Connections Grid */
+        /* Social Connections Grid */
         .socials-grid { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1.5rem; }
         .social-icon-btn { 
             width: 50px; height: 50px; /* Smaller icons */
@@ -167,13 +167,13 @@
         .social-icon-btn.linked { color: var(--text); border-color: var(--brand-1); background: rgba(222, 33, 42, 0.1); }
         .social-icon-btn.linked::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; top: 4px; right: 4px; font-size: 8px; color: var(--brand-1); background: var(--bg-1); border-radius: 50%; width: 14px; height: 14px; display: grid; place-items: center; }
         
-        /* FIXED: Compact Linked Accounts */
-        .linked-accounts-container { display: grid; gap: 0.6rem; max-width: 400px; } /* Reduced width */
-        .linked-account-card { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 1rem; background: var(--bg-1); border: 1px solid var(--border); border-radius: 10px; }
-        .linked-account-info { display: flex; align-items: center; gap: 0.8rem; }
-        .linked-account-info i { font-size: 16px; color: var(--muted); width: 20px; text-align: center; }
-        .linked-account-value { font-weight: 600; color: var(--text); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
-        .linked-account-actions button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; transition: color 0.2s ease; }
+        /* UPDATED: Compact Linked Accounts (Lines ~133-145) */
+        .linked-accounts-container { display: grid; gap: 0.5rem; max-width: 350px; } /* Reduced gap and width */
+        .linked-account-card { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.8rem; background: var(--bg-1); border: 1px solid var(--border); border-radius: 10px; } /* Reduced padding */
+        .linked-account-info { display: flex; align-items: center; gap: 0.6rem; } /* Reduced gap */
+        .linked-account-info i { font-size: 14px; color: var(--muted); width: 20px; text-align: center; } /* Reduced font-size */
+        .linked-account-value { font-weight: 600; color: var(--text); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; } /* Reduced font-size and max-width */
+        .linked-account-actions button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; transition: color 0.2s ease; } /* Reduced font-size */
         .linked-account-actions button:hover { color: var(--error); }
 
         /* Modals */
@@ -336,13 +336,14 @@
         const toastContainer = document.getElementById('toast-container');
         const settingsContainer = document.getElementById('settings-container');
 
+        // UPDATED: Added `newRow: true` to twitter object (Line ~330)
         const socialPlatforms = {
             xbox: { name: 'Xbox Live', icon: 'fa-brands fa-xbox', color: '#107c10', type: 'oauth' },
             discord: { name: 'Discord', icon: 'fa-brands fa-discord', color: '#5865F2', modes: ['text', 'link'], defaultMode: 'text', placeholder: 'your_username' },
             spotify: { name: 'Spotify', icon: 'fa-brands fa-spotify', color: '#1DB954', modes: ['link'], defaultMode: 'link', placeholder: 'https://open.spotify.com/user/...' },
             reddit: { name: 'Reddit', icon: 'fa-brands fa-reddit-alien', color: '#FF4500', modes: ['link'], defaultMode: 'link', placeholder: 'https://reddit.com/user/...' },
             youtube: { name: 'YouTube', icon: 'fa-brands fa-youtube', color: '#FF0000', modes: ['link'], defaultMode: 'link', placeholder: 'https://youtube.com/c/...' },
-            twitter: { name: 'Twitter/X', icon: 'fa-brands fa-twitter', color: '#1DA1F2', modes: ['text', 'link'], defaultMode: 'text', placeholder: '@username' },
+            twitter: { name: 'Twitter/X', icon: 'fa-brands fa-twitter', color: '#1DA1F2', modes: ['text', 'link'], defaultMode: 'text', placeholder: '@username', newRow: true },
             github: { name: 'GitHub', icon: 'fa-brands fa-github', color: '#e8eefc', modes: ['link'], defaultMode: 'link', placeholder: 'https://github.com/...' },
         };
 
@@ -419,32 +420,32 @@
                         </section>
                         <section id="security-tab" class="content-area">
                              <div class="card">
-                                <div class="card-header"><h2>Account Security</h2><p>Manage your username and email address.</p></div>
-                                <form id="username-form">
-                                    <div class="card-body" style="border-bottom: 1px solid var(--border);">
-                                        <div class="form-group">
-                                            <label class="form-label" for="username">Username</label>
-                                            <input type="text" id="username" class="form-input" required minlength="3" maxlength="20" placeholder="Enter your username">
-                                            <div class="input-hint" id="username-hint">Your username can be changed once every 7 days.</div>
-                                        </div>
-                                    </div>
-                                    <div class="card-footer"><button type="submit" class="btn primary"><i class="fa-solid fa-user-edit"></i> Update Username</button></div>
-                                </form>
-                            </div>
+                                 <div class="card-header"><h2>Account Security</h2><p>Manage your username and email address.</p></div>
+                                 <form id="username-form">
+                                     <div class="card-body" style="border-bottom: 1px solid var(--border);">
+                                         <div class="form-group">
+                                             <label class="form-label" for="username">Username</label>
+                                             <input type="text" id="username" class="form-input" required minlength="3" maxlength="20" placeholder="Enter your username">
+                                             <div class="input-hint" id="username-hint">Your username can be changed once every 7 days.</div>
+                                         </div>
+                                     </div>
+                                     <div class="card-footer"><button type="submit" class="btn primary"><i class="fa-solid fa-user-edit"></i> Update Username</button></div>
+                                 </form>
+                             </div>
                         </section>
                         <section id="advanced-tab" class="content-area">
                              <div class="card">
-                                 <div class="card-header"><h2>Advanced Settings</h2><p>Privacy controls and account management options.</p></div>
-                                 <div class="card-body">
-                                     <div class="form-group">
-                                         <label class="form-label">Danger Zone</label>
-                                         <div style="padding: 20px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px;">
-                                             <h4 style="color: #ef4444; margin-bottom: 12px; font-weight: 700;">Delete Account</h4>
-                                             <p style="color: var(--muted); margin-bottom: 16px; line-height: 1.5;">Once you delete your account, there is no going back. All your data will be permanently deleted.</p>
-                                             <button type="button" id="delete-account-btn" class="btn danger"><i class="fa-solid fa-trash-alt"></i> Delete My Account</button>
-                                         </div>
-                                     </div>
-                                 </div>
+                                  <div class="card-header"><h2>Advanced Settings</h2><p>Privacy controls and account management options.</p></div>
+                                  <div class="card-body">
+                                      <div class="form-group">
+                                           <label class="form-label">Danger Zone</label>
+                                           <div style="padding: 20px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px;">
+                                               <h4 style="color: #ef4444; margin-bottom: 12px; font-weight: 700;">Delete Account</h4>
+                                               <p style="color: var(--muted); margin-bottom: 16px; line-height: 1.5;">Once you delete your account, there is no going back. All your data will be permanently deleted.</p>
+                                               <button type="button" id="delete-account-btn" class="btn danger"><i class="fa-solid fa-trash-alt"></i> Delete My Account</button>
+                                           </div>
+                                      </div>
+                                  </div>
                              </div>
                         </section>
                     </div>
@@ -575,8 +576,8 @@
 
              preview.addEventListener('click', () => input.click());
              input.addEventListener('change', (e) => {
-                handleFile(e.target.files[0]);
-                e.target.value = '';
+                 handleFile(e.target.files[0]);
+                 e.target.value = '';
              });
              preview.addEventListener('dragover', (e) => { e.preventDefault(); preview.style.borderColor = 'var(--brand-1)'; });
              preview.addEventListener('dragleave', () => { preview.style.borderColor = 'var(--border)'; });
@@ -595,9 +596,9 @@
                  cropperModal.classList.add('show');
                  if (cropper) cropper.destroy();
                  setTimeout(() => {
-                    cropper = new Cropper(document.getElementById('cropper-image'), { 
-                        aspectRatio, viewMode: 2, background: false, autoCropArea: 0.9
-                    });
+                     cropper = new Cropper(document.getElementById('cropper-image'), { 
+                         aspectRatio, viewMode: 2, background: false, autoCropArea: 0.9
+                     });
                  }, 200);
                  cropCallback = callback;
              };
@@ -633,14 +634,21 @@
             });
         }
 
+        // UPDATED: Renders socials with the new line break logic (Lines ~556-570)
         function renderSocials(profile) {
             const container = document.getElementById('socials-container');
             if (!container) return;
             const socialLinks = profile.social_links || {};
-            const gridHtml = Object.entries(socialPlatforms).map(([key, platform]) => {
+            
+            // Use reduce to build the HTML string, adding a line break div when platform.newRow is true
+            const gridHtml = Object.entries(socialPlatforms).reduce((html, [key, platform]) => {
+                if (platform.newRow) {
+                    html += `<div style="flex-basis: 100%; height: 0;"></div>`;
+                }
                 const isLinked = key === 'xbox' ? !!profile.bedrock_gamertag : !!socialLinks[key];
-                return `<button class="social-icon-btn ${isLinked ? 'linked' : ''}" data-social="${key}" title="Link ${platform.name}"><i class="${platform.icon}"></i></button>`;
-            }).join('');
+                html += `<button class="social-icon-btn ${isLinked ? 'linked' : ''}" data-social="${key}" title="Link ${platform.name}"><i class="${platform.icon}"></i></button>`;
+                return html;
+            }, '');
             
             let cardsHtml = '';
             if (profile.bedrock_gamertag) cardsHtml += createLinkedAccountCard('xbox', profile.bedrock_gamertag);
@@ -836,3 +844,4 @@
     <script type="module" src="auth.js"></script>
 </body>
 </html>
+
