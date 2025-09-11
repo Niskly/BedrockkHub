@@ -126,15 +126,15 @@
         }
         
         /* Forms */
-        .form-group { margin-bottom: 2.5rem; }
+        .form-group { margin-bottom: 1.5rem; }
         .form-label { 
-            display: block; margin-bottom: 1rem; font-weight: 700; 
-            color: var(--text); font-size: 15px; 
+            display: block; margin-bottom: 0.8rem; font-weight: 700; 
+            color: var(--text); font-size: 14px; 
         }
         .form-input { 
-            width: 100%; padding: 16px 20px; border-radius: 16px; 
+            width: 100%; padding: 14px 18px; border-radius: 12px; 
             border: 1px solid var(--border); background: var(--bg-1); 
-            color: var(--text); font-size: 15px; font-family: inherit; 
+            color: var(--text); font-size: 14px; font-family: inherit; 
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
         }
         .form-input:focus { 
@@ -142,40 +142,60 @@
             box-shadow: 0 0 0 4px rgba(222, 33, 42, 0.15); 
             background: rgba(18, 18, 18, 0.8);
         }
-        .form-textarea { min-height: 140px; resize: vertical; }
+        .form-textarea { min-height: 120px; resize: vertical; }
         .input-hint { margin-top: 0.8rem; font-size: 13px; color: var(--muted); line-height: 1.4; }
-        
-        /* Uploaders */
-        .uploader { 
-            background: var(--bg-1); border: 2px dashed var(--border); 
-            border-radius: 20px; padding: 2.5rem; text-align: center; 
-            cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+
+        /* MODIFIED: Profile Customization Layout */
+        .profile-customization-grid {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 2.5rem;
+            align-items: flex-start;
         }
-        .uploader:hover, .uploader.dragover { 
-            border-color: var(--brand-1); 
-            background: rgba(222, 33, 42, 0.08); 
-            box-shadow: 0 10px 30px rgba(222, 33, 42, 0.1);
-        }
-        .uploader-content { display: flex; align-items: center; gap: 2rem; }
-        .uploader-preview { flex-shrink: 0; border-radius: 16px; background: var(--bg-2); border: 1px solid var(--border); overflow: hidden; }
-        .avatar-preview { width: 100px; height: 100px; border-radius: 50%; }
-        .banner-preview { width: 200px; height: 67px; }
-        .uploader-text { text-align: left; }
-        .uploader-text strong { display: block; font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem; }
-        .uploader-text span { color: var(--muted); font-size: 14px; line-height: 1.4; }
         
+        /* MODIFIED: New Uploader Styles */
+        .compact-uploader {
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+        }
+        .avatar-uploader-preview {
+            width: 120px; height: 120px; border-radius: 50%;
+            border: 3px solid var(--border);
+            background: var(--bg-2);
+            object-fit: cover;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .avatar-uploader-preview:hover { border-color: var(--brand-1); }
+        .banner-uploader-preview {
+            width: 100%; height: 120px; border-radius: 12px;
+            border: 3px solid var(--border);
+            background: var(--bg-2);
+            object-fit: cover;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .banner-uploader-preview:hover { border-color: var(--brand-1); }
+        .uploader-btn {
+            width: 100%;
+        }
+
         /* --- SOCIALS UI STYLES --- */
-        .socials-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 1rem; margin-bottom: 2.5rem; }
+        /* MODIFIED: Auto-fit for better responsiveness */
+        .socials-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
         .social-icon-btn { aspect-ratio: 1 / 1; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; color: var(--muted); font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease-in-out; position: relative; }
         .social-icon-btn:hover { transform: translateY(-2px); border-color: var(--border-strong); color: var(--text); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         .social-icon-btn.linked { color: var(--text); border-color: var(--brand-1); background: rgba(222, 33, 42, 0.1); }
         .social-icon-btn.linked::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; top: 4px; right: 4px; font-size: 8px; color: var(--brand-1); background: var(--bg-1); border-radius: 50%; width: 14px; height: 14px; display: grid; place-items: center; }
-        .linked-accounts-container { display: grid; gap: 1rem; max-width: 500px; }
-        .linked-account-card { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; }
-        .linked-account-info { display: flex; align-items: center; gap: 1rem; }
-        .linked-account-info i { font-size: 20px; color: var(--muted); width: 25px; text-align: center; }
-        .linked-account-value { font-weight: 600; color: var(--text); max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .linked-account-actions button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; transition: color 0.2s ease; }
+        
+        /* MODIFIED: Compact Linked Accounts */
+        .linked-accounts-container { display: grid; gap: 0.8rem; max-width: 100%; }
+        .linked-account-card { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1rem; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; }
+        .linked-account-info { display: flex; align-items: center; gap: 0.8rem; }
+        .linked-account-info i { font-size: 18px; color: var(--muted); width: 22px; text-align: center; }
+        .linked-account-value { font-weight: 600; color: var(--text); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+        .linked-account-actions button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; transition: color 0.2s ease; }
         .linked-account-actions button:hover { color: var(--error); }
 
         /* Modals */
@@ -254,13 +274,12 @@
             .settings-sidebar { position: static; }
             .settings-tabs { flex-direction: row; overflow-x: auto; padding: 8px; }
             .settings-tab { flex-shrink: 0; min-width: 140px; padding: 12px 16px; }
-            .uploader-content { flex-direction: column; text-align: center; }
+            .profile-customization-grid { grid-template-columns: 1fr; }
             .card-header, .card-body, .card-footer { padding: 1.5rem; }
         }
     </style>
 </head>
 <body>
-    <!-- Overlays and Modals -->
     <div id="loading-overlay" class="loading-overlay"><div class="spinner"></div><p class="loading-text">Loading...</p></div>
     <div id="toast-container" class="toast-container"></div>
     <div id="cropper-modal" class="modal">
@@ -307,7 +326,6 @@
         </div>
     </div>
 
-    <!-- Header -->
     <header>
         <nav class="nav">
             <a class="brand" href="/">
@@ -321,7 +339,6 @@
         </nav>
     </header>
 
-    <!-- Main Content -->
     <main class="container" id="settings-container">
         <div class="loading-container"><div class="spinner"></div><p>Loading Settings...</p></div>
     </main>
@@ -397,11 +414,29 @@
                         <section id="profile-tab" class="content-area active">
                             <form id="profile-form">
                                 <div class="card">
-                                    <div class="card-header"><h2>Profile Customization</h2><p>Make your profile stand out with a custom avatar, banner, and bio</p></div>
+                                    <div class="card-header"><h2>Profile Customization</h2><p>Make your profile stand out with a custom avatar, banner, and bio.</p></div>
                                     <div class="card-body">
-                                        <div class="form-group"><label class="form-label">Profile Avatar</label><div id="avatar-uploader" class="uploader"><div class="uploader-content"><img id="avatar-preview" class="uploader-preview avatar-preview"><div class="uploader-text"><strong>Upload Your Avatar</strong><span>Square image recommended • PNG/JPG format • Max 5MB<br>Click here or drag and drop your image</span></div></div></div><input type="file" id="avatar-input" accept="image/png, image/jpeg" style="display:none;"></div>
-                                        <div class="form-group"><label class="form-label">Profile Banner</label><div id="banner-uploader" class="uploader"><div class="uploader-content"><img id="banner-preview" class="uploader-preview banner-preview"><div class="uploader-text"><strong>Upload Your Banner</strong><span>Wide format • 3:1 ratio recommended • PNG/JPG format • Max 10MB<br>This appears at the top of your profile</span></div></div></div><input type="file" id="banner-input" accept="image/png, image/jpeg" style="display:none;"></div>
-                                        <div class="form-group"><label class="form-label" for="bio">About You</label><textarea id="bio" class="form-input form-textarea" placeholder="Tell the MCHub community about yourself..." maxlength="500"></textarea><div class="input-hint">Maximum 500 characters • This appears on your public profile</div></div>
+                                        <div class="profile-customization-grid">
+                                            <div class="compact-uploader">
+                                                <label class="form-label">Profile Avatar</label>
+                                                <img id="avatar-preview" class="avatar-uploader-preview">
+                                                <button type="button" class="btn ghost uploader-btn" onclick="document.getElementById('avatar-input').click()">Change Avatar</button>
+                                                <input type="file" id="avatar-input" accept="image/png, image/jpeg" style="display:none;">
+                                            </div>
+                                            <div>
+                                                <div class="form-group">
+                                                    <label class="form-label">Profile Banner</label>
+                                                    <img id="banner-preview" class="banner-uploader-preview">
+                                                    <button type="button" class="btn ghost uploader-btn" onclick="document.getElementById('banner-input').click()">Change Banner</button>
+                                                    <input type="file" id="banner-input" accept="image/png, image/jpeg" style="display:none;">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="form-label" for="bio">About You</label>
+                                                    <textarea id="bio" class="form-input form-textarea" placeholder="Tell the MCHub community about yourself..." maxlength="500"></textarea>
+                                                    <div class="input-hint">Maximum 500 characters.</div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="card-footer"><button type="submit" class="btn primary"><i class="fa-solid fa-save"></i> Save Profile Changes</button></div>
                                 </div>
@@ -415,14 +450,32 @@
                         </section>
                         <section id="security-tab" class="content-area">
                              <div class="card">
-                                <div class="card-header"><h2>Account Security</h2><p>Manage your username and email address</p></div>
-                                <form id="username-form"><div class="card-body" style="border-bottom: 1px solid var(--border);"><div class="form-group"><label class="form-label" for="username">Username</label><input type="text" id="username" class="form-input" required minlength="3" maxlength="20" placeholder="Enter your username"><div class="input-hint" id="username-hint">Your username can be changed once every 7 days.</div></div></div><div class="card-footer"><button type="submit" class="btn primary"><i class="fa-solid fa-user-edit"></i> Update Username</button></div></form>
+                                <div class="card-header"><h2>Account Security</h2><p>Manage your username and email address.</p></div>
+                                <form id="username-form">
+                                    <div class="card-body" style="border-bottom: 1px solid var(--border);">
+                                        <div class="form-group">
+                                            <label class="form-label" for="username">Username</label>
+                                            <input type="text" id="username" class="form-input" required minlength="3" maxlength="20" placeholder="Enter your username">
+                                            <div class="input-hint" id="username-hint">Your username can be changed once every 7 days.</div>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer"><button type="submit" class="btn primary"><i class="fa-solid fa-user-edit"></i> Update Username</button></div>
+                                </form>
                             </div>
                         </section>
                         <section id="advanced-tab" class="content-area">
                              <div class="card">
-                                 <div class="card-header"><h2>Advanced Settings</h2><p>Privacy controls and account management options</p></div>
-                                 <div class="card-body"><div class="form-group"><label class="form-label">Danger Zone</label><div style="padding: 20px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px;"><h4 style="color: #ef4444; margin-bottom: 12px; font-weight: 700;">Delete Account</h4><p style="color: var(--muted); margin-bottom: 16px; line-height: 1.5;">Once you delete your account, there is no going back. All your data will be permanently deleted.</p><button type="button" id="delete-account-btn" class="btn danger"><i class="fa-solid fa-trash-alt"></i> Delete My Account</button></div></div></div>
+                                 <div class="card-header"><h2>Advanced Settings</h2><p>Privacy controls and account management options.</p></div>
+                                 <div class="card-body">
+                                     <div class="form-group">
+                                         <label class="form-label">Danger Zone</label>
+                                         <div style="padding: 20px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px;">
+                                             <h4 style="color: #ef4444; margin-bottom: 12px; font-weight: 700;">Delete Account</h4>
+                                             <p style="color: var(--muted); margin-bottom: 16px; line-height: 1.5;">Once you delete your account, there is no going back. All your data will be permanently deleted.</p>
+                                             <button type="button" id="delete-account-btn" class="btn danger"><i class="fa-solid fa-trash-alt"></i> Delete My Account</button>
+                                         </div>
+                                     </div>
+                                 </div>
                              </div>
                         </section>
                     </div>
@@ -528,37 +581,41 @@
         }
 
         function setupUploaders() {
-            setupUploader('avatar-uploader', 'avatar-input', 1, 'Avatar', (blob) => {
+            // Re-wires the uploader logic to the new preview elements
+            setupUploader('avatar-preview', 'avatar-input', 1, 'Avatar', (blob) => {
                 const url = URL.createObjectURL(blob);
                 document.getElementById('avatar-preview').src = url;
                 avatarBlob = blob;
             });
-            setupUploader('banner-uploader', 'banner-input', 3/1, 'Banner', (blob) => {
+            setupUploader('banner-preview', 'banner-input', 3/1, 'Banner', (blob) => {
                 const url = URL.createObjectURL(blob);
                 document.getElementById('banner-preview').src = url;
                 bannerBlob = blob;
             });
         }
 
-        function setupUploader(uploaderId, inputId, aspectRatio, title, blobSetter) {
-             const uploader = document.getElementById(uploaderId);
+        function setupUploader(previewId, inputId, aspectRatio, title, blobSetter) {
+             const preview = document.getElementById(previewId);
              const input = document.getElementById(inputId);
-             if (!uploader || !input) return;
+             if (!preview || !input) return;
+             
              const handleFile = (file) => {
                  if(file && file.type.startsWith('image/')) {
                      initializeCropper(file, aspectRatio, title, blobSetter);
                  }
              }
-             uploader.addEventListener('click', () => input.click());
+
+             // The preview image itself is now the drop area
+             preview.addEventListener('click', () => input.click());
              input.addEventListener('change', (e) => {
                 handleFile(e.target.files[0]);
                 e.target.value = '';
              });
-             uploader.addEventListener('dragover', (e) => { e.preventDefault(); uploader.classList.add('dragover'); });
-             uploader.addEventListener('dragleave', () => uploader.classList.remove('dragover'));
-             uploader.addEventListener('drop', (e) => {
+             preview.addEventListener('dragover', (e) => { e.preventDefault(); preview.style.borderColor = 'var(--brand-1)'; });
+             preview.addEventListener('dragleave', () => { preview.style.borderColor = 'var(--border)'; });
+             preview.addEventListener('drop', (e) => {
                  e.preventDefault();
-                 uploader.classList.remove('dragover');
+                 preview.style.borderColor = 'var(--border)';
                  handleFile(e.dataTransfer.files[0]);
              });
         }
@@ -781,8 +838,8 @@
                 const { data: profileData, error } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
                 if (error) throw error;
                 currentProfile = profileData;
-                document.getElementById('avatar-preview').src = currentProfile.avatar_url || `https://placehold.co/100x100/1c1c1c/de212a?text=${(currentProfile.username || 'U').charAt(0).toUpperCase()}`;
-                document.getElementById('banner-preview').src = currentProfile.banner_url || 'https://placehold.co/200x67/1c1c1c/de212a?text=BANNER';
+                document.getElementById('avatar-preview').src = currentProfile.avatar_url || `https://placehold.co/120x120/1c1c1c/de212a?text=${(currentProfile.username || 'U').charAt(0).toUpperCase()}`;
+                document.getElementById('banner-preview').src = currentProfile.banner_url || 'https://placehold.co/400x133/1c1c1c/de212a?text=BANNER';
                 document.getElementById('bio').value = currentProfile.bio || '';
                 document.getElementById('username').value = currentProfile.username || '';
                 renderSocials(currentProfile);
@@ -812,4 +869,3 @@
     <script type="module" src="auth.js"></script>
 </body>
 </html>
-
