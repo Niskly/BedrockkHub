@@ -380,73 +380,69 @@
         }
 
         // Enhanced Bedrock Skin Viewer Functions
-        async function initBedrockSkinViewer(profile) {
-            const viewerContainer = document.getElementById('bedrock-skin-viewer');
-            if (!viewerContainer) return;
+// IN: profile.html
 
-            try {
-                console.log(`[Skin Viewer] Initializing for ${profile.bedrock_gamertag} (${profile.xuid})`);
+async function initBedrockSkinViewer(profile) {
+    const viewerContainer = document.getElementById('bedrock-skin-viewer');
+    if (!viewerContainer) return;
 
-                // Create canvas element and replace loading spinner
-                viewerContainer.innerHTML = '<canvas id="skin-canvas" width="280" height="350"></canvas>';
-                const canvas = document.getElementById('skin-canvas');
-                if (!canvas) throw new Error('Canvas not created');
+    try {
+        console.log(`[Skin Viewer] Initializing for ${profile.bedrock_gamertag} (${profile.xuid})`);
 
-                // Initialize skinview3d
-                skinViewer = new skinview3d.SkinViewer({
-                    canvas: canvas,
-                    width: 280,
-                    height: 350,
-                    skin: null
-                });
+        viewerContainer.innerHTML = '<canvas id="skin-canvas" width="280" height="350"></canvas>';
+        const canvas = document.getElementById('skin-canvas');
+        if (!canvas) throw new Error('Canvas not created');
 
-                // Configure controls for better user experience
-                skinViewer.controls.enableRotate = true;
-                skinViewer.controls.enableZoom = true;
-                skinViewer.controls.enablePan = false;
-                skinViewer.controls.maxDistance = 70;
-                skinViewer.controls.minDistance = 25;
-                
-                // Set a nice initial angle
-                skinViewer.controls.object.position.set(25, 20, 25);
-                skinViewer.controls.object.lookAt(0, 0, 0);
+        skinViewer = new skinview3d.SkinViewer({
+            canvas: canvas,
+            width: 280,
+            height: 350,
+            skin: null
+        });
 
-                // Load the skin from our API
-                const skinUrl = `/api/bedrock-skin?xuid=${profile.xuid}`;
-                console.log(`[Skin Viewer] Loading skin from: ${skinUrl}`);
-                
-                await skinViewer.loadSkin(skinUrl);
-                
-                // Add subtle rotation animation
-                let animationId;
-                const rotateModel = () => {
-                    if (skinViewer && skinViewer.playerObject) {
-                        skinViewer.playerObject.rotation.y += 0.01;
-                        animationId = requestAnimationFrame(rotateModel);
-                    }
-                };
-                
-                // Start animation, but stop on user interaction
-                rotateModel();
-                
-                // Stop auto-rotation when user interacts
-                let userInteracted = false;
-                canvas.addEventListener('mousedown', () => {
-                    if (!userInteracted) {
-                        userInteracted = true;
-                        if (animationId) {
-                            cancelAnimationFrame(animationId);
-                        }
-                    }
-                });
-                
-                console.log('✅ Bedrock skin viewer initialized successfully');
-                
-            } catch (error) {
-                console.error('❌ Failed to initialize Bedrock skin viewer:', error);
-                showSkinError('Failed to load 3D skin', profile.xuid);
+        skinViewer.controls.enableRotate = true;
+        skinViewer.controls.enableZoom = true;
+        skinViewer.controls.enablePan = false;
+        skinViewer.controls.maxDistance = 70;
+        skinViewer.controls.minDistance = 25;
+        skinViewer.controls.object.position.set(25, 20, 25);
+        skinViewer.controls.object.lookAt(0, 0, 0);
+
+        // --- THIS IS THE FIX ---
+        // Replace your old line with this one to include the gamertag for the API's fallback methods.
+        const skinUrl = `/api/bedrock-skin?xuid=${profile.xuid}&gamertag=${encodeURIComponent(profile.bedrock_gamertag)}`;
+        
+        console.log(`[Skin Viewer] Loading skin from: ${skinUrl}`);
+        
+        await skinViewer.loadSkin(skinUrl);
+        
+        let animationId;
+        const rotateModel = () => {
+            if (skinViewer && skinViewer.playerObject) {
+                skinViewer.playerObject.rotation.y += 0.01;
+                animationId = requestAnimationFrame(rotateModel);
             }
-        }
+        };
+        
+        rotateModel();
+        
+        let userInteracted = false;
+        canvas.addEventListener('mousedown', () => {
+            if (!userInteracted) {
+                userInteracted = true;
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                }
+            }
+        });
+        
+        console.log('✅ Bedrock skin viewer initialized successfully');
+        
+    } catch (error) {
+        console.error('❌ Failed to initialize Bedrock skin viewer:', error);
+        showSkinError('Failed to load 3D skin', profile.xuid);
+    }
+}
         
         function showSkinError(message, xuid) {
             const viewerContainer = document.getElementById('bedrock-skin-viewer');
