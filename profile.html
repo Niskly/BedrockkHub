@@ -82,18 +82,13 @@
         .pfp-placeholder { width: 140px; height: 140px; border-radius: 50%; border: 4px solid #161616; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .pfp-placeholder span { font-size: 5rem; font-weight: 800; color: white; }
         .profile-main-info { padding-top: 70px; }
-        .profile-main-info h1 { font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, var(--brand-1), #ff525a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .profile-main-info h1 { display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap; font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, var(--brand-1), #ff525a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .profile-bio { color: var(--muted); margin-top: 0.5rem; max-width: 500px; line-height: 1.5; font-size: 13px; }
-        .header-stats { display: flex; gap: 1.5rem; align-items: center; margin-top: 0.8rem; }
-        .stat-item { text-align: left; }
-        .stat-item .count { font-size: 1.1rem; font-weight: 700; color: var(--text); }
-        .stat-item .label { font-size: .8rem; color: var(--muted); }
         
-        /* New position for follow button */
         .profile-actions { position: absolute; top: 1.5rem; right: 1.5rem; }
         
         .social-links-container { position: absolute; bottom: 1.5rem; right: 1.5rem; display: flex; gap: 0.8rem; }
-        .social-link { font-size: 1.2rem; color: var(--muted); transition: color .2s; }
+        .social-link { font-size: 1.2rem; color: var(--muted); transition: color .2s; cursor: pointer; }
         .social-link:hover { color: var(--text); }
         .social-link.discord { color: #5865F2; } .social-link.spotify { color: #1DB954; }
         .social-link.reddit { color: #FF4500; } .social-link.youtube { color: #FF0000; }
@@ -174,19 +169,31 @@
         function renderSocialLinks(socialLinks) {
             if (!socialLinks || typeof socialLinks !== 'object') return '';
             const platforms = [
-                { key: 'discord', icon: 'fa-brands fa-discord', class: 'discord', getUrl: (val) => `#` },
-                { key: 'spotify', icon: 'fa-brands fa-spotify', class: 'spotify', getUrl: (val) => val },
-                { key: 'reddit', icon: 'fa-brands fa-reddit-alien', class: 'reddit', getUrl: (val) => val },
-                { key: 'youtube', icon: 'fa-brands fa-youtube', class: 'youtube', getUrl: (val) => val },
-                { key: 'twitter', icon: 'fa-brands fa-twitter', class: 'twitter', getUrl: (val) => val.startsWith('@') ? `https://twitter.com/${val.slice(1)}` : val },
-                { key: 'github', icon: 'fa-brands fa-github', class: 'github', getUrl: (val) => val }
+                { key: 'discord', icon: 'fa-brands fa-discord', class: 'discord', getUrl: (val) => `#`, isUrl: false },
+                { key: 'spotify', icon: 'fa-brands fa-spotify', class: 'spotify', getUrl: (val) => val, isUrl: true },
+                { key: 'reddit', icon: 'fa-brands fa-reddit-alien', class: 'reddit', getUrl: (val) => val, isUrl: true },
+                { key: 'youtube', icon: 'fa-brands fa-youtube', class: 'youtube', getUrl: (val) => val, isUrl: true },
+                { key: 'twitter', icon: 'fa-brands fa-twitter', class: 'twitter', getUrl: (val) => val.startsWith('@') ? `https://twitter.com/${val.slice(1)}` : val, isUrl: true },
+                { key: 'github', icon: 'fa-brands fa-github', class: 'github', getUrl: (val) => val, isUrl: true }
             ];
             return platforms.filter(p => socialLinks[p.key]).map(p => {
-                const value = socialLinks[p.key], url = p.getUrl(value);
-                const target = p.key === 'discord' ? '' : 'target="_blank"';
-                const title = p.key === 'discord' ? value : '';
-                return `<a href="${url}" ${target} class="social-link ${p.class}" title="${title}"><i class="${p.icon}"></i></a>`;
+                const value = socialLinks[p.key];
+                const url = p.getUrl(value);
+                const target = p.isUrl ? 'target="_blank"' : '';
+                const title = p.isUrl ? '' : value;
+                const clickAction = p.isUrl ? '' : `onclick="copyToClipboard('${value}', this)"`;
+                return `<a href="${url}" ${target} class="social-link ${p.class}" title="${title}" ${clickAction}><i class="${p.icon}"></i></a>`;
             }).join('');
+        }
+        
+        window.copyToClipboard = function(text, element) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalIcon = element.innerHTML;
+                element.innerHTML = '<i class="fa-solid fa-check"></i>';
+                setTimeout(() => {
+                    element.innerHTML = originalIcon;
+                }, 1500);
+            });
         }
 
         function renderDashboard(profile, packs, currentUser) {
@@ -201,12 +208,14 @@
                         <button class="profile-type-btn active" id="bedrock-btn">Bedrock</button>
                         <button class="profile-type-btn" id="java-btn">Java</button>
                     </div>
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <span class="bedrock-gamertag">${profile.bedrock_gamertag}</span>
+                        <div class="bedrock-xuid tiny">XUID: ${profile.xuid}</div>
+                    </div>
                     <div class="bedrock-display">
                         <div class="bedrock-skin-viewer" id="bedrock-skin-viewer">
                             <div class="skin-loading"><div class="skin-spinner"></div><span>Loading 3D skin...</span></div>
                         </div>
-                        <span class="bedrock-gamertag">${profile.bedrock_gamertag}</span>
-                        <div class="bedrock-xuid tiny">XUID: ${profile.xuid}</div>
                     </div>`;
             } else {
                 bedrockHtml = `
@@ -229,13 +238,13 @@
                         <div class="profile-meta">
                             ${pfpHtml}
                             <div class="profile-main-info">
-                                <h1>${profile.username || 'Unnamed'}</h1>
+                                <h1>
+                                    <span>${profile.username || 'Unnamed'}</span>
+                                    <span class="tiny">- ${(profile.view_count || 0).toLocaleString()} views</span> 
+                                    <span class="tiny" id="follower-count-text">${(profile.followers_count || 0).toLocaleString()} followers</span>
+                                    <span class="tiny" id="following-count-text">${(profile.following_count || 0).toLocaleString()} following</span>
+                                </h1>
                                 <p class="profile-bio">${profile.bio || "This user hasn't written a bio yet."}</p>
-                                <div class="header-stats">
-                                    <div class="stat-item"><div class="count">${(profile.view_count || 0).toLocaleString()}</div><div class="label">Views</div></div>
-                                    <div class="stat-item"><div class="count" id="follower-count">${(profile.followers_count || 0).toLocaleString()}</div><div class="label">Followers</div></div>
-                                    <div class="stat-item"><div class="count" id="following-count">${(profile.following_count || 0).toLocaleString()}</div><div class="label">Following</div></div>
-                                </div>
                             </div>
                         </div>
                         <div class="social-links-container">
@@ -247,7 +256,6 @@
                     <div id="minecraft-container">
                         <div class="card glassy">
                             <div class="card-body">
-                                <h3><i class="fa-brands fa-xbox" style="color:#107C10; margin-right: 8px;"></i>Minecraft Profile</h3>
                                 ${bedrockHtml}
                             </div>
                         </div>
@@ -274,6 +282,13 @@
 
             if (profile.bedrock_gamertag && profile.xuid) {
                 initBedrockSkinViewer(profile);
+            }
+
+            const uploadBtn = document.querySelector('.upload-btn');
+            if (uploadBtn) {
+                uploadBtn.addEventListener('click', () => {
+                    window.location.href = '/texturepacks.html';
+                });
             }
         }
 
@@ -355,7 +370,7 @@
             let isFollowing = count > 0;
             
             function updateButtonState(newFollowerCount) {
-                document.getElementById('follower-count').textContent = newFollowerCount.toLocaleString();
+                document.getElementById('follower-count-text').textContent = `${newFollowerCount.toLocaleString()} followers`;
                 if (isFollowing) {
                     followButton.innerHTML = `<i class="fa-solid fa-user-check"></i> Following`;
                     followButton.classList.replace('primary', 'ghost');
