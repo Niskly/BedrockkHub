@@ -1,7 +1,7 @@
 import { createCanvas } from '@napi-rs/canvas';
 
 // api/bedrock-skin.js
-// Get Bedrock skins ONLY from GeyserMC API - the real MVP! 💪
+// Get Bedrock skins DIRECTLY from GeyserMC skin endpoint - THE RIGHT WAY! 🔥
 export default async function handler(req, res) {
     if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Method Not Allowed' });
@@ -13,29 +13,29 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'XUID is required' });
         }
 
-        console.log(`[bedrock-skin] Fetching REAL Bedrock skin for XUID: ${xuid} using GeyserMC 🔥`);
+        console.log(`[bedrock-skin] Getting REAL Bedrock skin for XUID: ${xuid} directly from GeyserMC! 🚀`);
 
-        // Only use GeyserMC - the GOAT for Bedrock skins
-        const skinData = await getSkinFromGeyserMC(xuid);
+        // Use the DIRECT GeyserMC skin endpoint - no Java UUID needed!
+        const skinData = await getBedrockSkinDirect(xuid);
         
-        if (skinData) {
-            console.log(`[bedrock-skin] SUCCESS: Found that fire skin via GeyserMC for ${xuid} 🎨`);
+        if (skinData && skinData.buffer && skinData.buffer.length > 0) {
+            console.log(`[bedrock-skin] SUCCESS! Got that fire skin from GeyserMC: ${skinData.buffer.length} bytes 🎨`);
             res.setHeader('Content-Type', skinData.contentType || 'image/png');
-            res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
+            res.setHeader('Cache-Control', 'public, max-age=3600');
             res.setHeader('Access-Control-Allow-Origin', '*');
             return res.send(skinData.buffer);
         } else {
-            // Generate a sick default skin if GeyserMC doesn't have it
-            console.warn(`[bedrock-skin] GeyserMC doesn't have skin for ${xuid}, making a fresh one 🎭`);
+            // Generate a fire default skin
+            console.warn(`[bedrock-skin] GeyserMC doesn't have skin for ${xuid}, making a custom one 🎭`);
             const defaultSkinBuffer = generateFireDefaultSkin(xuid);
             res.setHeader('Content-Type', 'image/png');
-            res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache default for 24 hours
+            res.setHeader('Cache-Control', 'public, max-age=1800'); // Shorter cache for defaults
             res.setHeader('Access-Control-Allow-Origin', '*');
             return res.send(defaultSkinBuffer);
         }
 
     } catch (error) {
-        console.error('[bedrock-skin] ERROR in the matrix:', error);
+        console.error('[bedrock-skin] ERROR:', error);
         const defaultSkinBuffer = generateFireDefaultSkin("error");
         res.setHeader('Content-Type', 'image/png');
         res.setHeader('Access-Control-Allow-Origin', '*');
@@ -44,91 +44,102 @@ export default async function handler(req, res) {
 }
 
 /**
- * Get skin from GeyserMC API - THE ONLY WAY! 🚀
- * GeyserMC stores the actual Bedrock skins that players use on servers
+ * Get Bedrock skin DIRECTLY from GeyserMC API - the GOAT method! 🐐
+ * This hits the direct skin endpoint that gets skins from Bedrock Geyser servers
  */
-async function getSkinFromGeyserMC(xuid) {
+async function getBedrockSkinDirect(xuid) {
     try {
-        console.log(`[GeyserMC] Hitting up the GeyserMC API for XUID: ${xuid}`);
+        console.log(`[GeyserMC Direct] Hitting the direct skin endpoint for XUID: ${xuid}`);
         
-        // Step 1: Get the Java UUID from GeyserMC using Bedrock XUID
-        const geyserResponse = await fetch(`https://api.geysermc.org/v2/xbox/xuid/${xuid}`, {
+        // Hit the DIRECT GeyserMC skin endpoint
+        const response = await fetch(`https://api.geysermc.org/v2/skin/${xuid}`, {
+            method: 'GET',
             headers: {
-                'User-Agent': 'MCHub-BedrockSkinFetcher/1.0'
+                'Accept': 'application/json',
+                'User-Agent': 'MCHub-BedrockSkinFetcher/2.0'
             }
         });
         
-        if (!geyserResponse.ok) {
-            console.log(`[GeyserMC] API said nah fam. Status: ${geyserResponse.status}`);
+        console.log(`[GeyserMC Direct] Response status: ${response.status}`);
+        
+        if (!response.ok) {
+            console.log(`[GeyserMC Direct] API response not OK: ${response.status} ${response.statusText}`);
             return null;
         }
         
-        const geyserData = await geyserResponse.json();
-        console.log(`[GeyserMC] Response data:`, geyserData);
-        
-        const javaUuid = geyserData.java_uuid;
-        
-        if (!javaUuid) {
-            console.log(`[GeyserMC] No Java UUID found for XUID ${xuid}. Player might not have linked accounts.`);
-            return null;
-        }
-
-        console.log(`[GeyserMC] Found Java UUID: ${javaUuid} for XUID: ${xuid} 🎯`);
-
-        // Step 2: Get the skin from Mojang's session server using the Java UUID
-        const mojangResponse = await fetch(`https://sessionserver.mojang.com/session/minecraft/profile/${javaUuid}`, {
-            headers: {
-                'User-Agent': 'MCHub-BedrockSkinFetcher/1.0'
-            }
+        // Get the JSON response which should contain the skin data
+        const skinData = await response.json();
+        console.log(`[GeyserMC Direct] Got response data:`, {
+            hasHash: !!skinData.hash,
+            hasSignature: !!skinData.signature,
+            hasTextureId: !!skinData.texture_id,
+            hasValue: !!skinData.value,
+            isSteve: skinData.is_steve
         });
         
-        if (!mojangResponse.ok) {
-            console.log(`[Mojang API] Failed to get profile for UUID ${javaUuid}. Status: ${mojangResponse.status}`);
-            return null;
-        }
-        
-        const mojangData = await mojangResponse.json();
-        console.log(`[Mojang API] Got profile data for ${mojangData.name || 'unknown'}`);
-
-        // Step 3: Decode the base64 texture data to find the skin URL
-        const textureProperty = mojangData.properties?.find(prop => prop.name === 'textures');
-        if (!textureProperty) {
-            console.log(`[Mojang API] No texture property found for UUID ${javaUuid}`);
-            return null;
-        }
-
-        const textureData = JSON.parse(Buffer.from(textureProperty.value, 'base64').toString());
-        const skinUrl = textureData.textures?.SKIN?.url;
-
-        if (!skinUrl) {
-            console.log(`[Mojang API] No skin URL found in texture data for UUID ${javaUuid}`);
-            return null;
-        }
-
-        console.log(`[Mojang API] Found skin URL: ${skinUrl.substring(0, 50)}...`);
-
-        // Step 4: Download the actual skin image - this is the REAL DEAL! 🔥
-        const skinResponse = await fetch(skinUrl, {
-            headers: {
-                'User-Agent': 'MCHub-BedrockSkinFetcher/1.0'
+        // The response contains skin data, now we need to get the actual texture
+        if (skinData.texture_id) {
+            console.log(`[GeyserMC Direct] Found texture_id: ${skinData.texture_id}`);
+            
+            // Convert texture_id to Minecraft texture URL
+            const textureUrl = `https://textures.minecraft.net/texture/${skinData.texture_id}`;
+            console.log(`[GeyserMC Direct] Fetching texture from: ${textureUrl}`);
+            
+            const textureResponse = await fetch(textureUrl, {
+                headers: {
+                    'User-Agent': 'MCHub-BedrockSkinFetcher/2.0'
+                }
+            });
+            
+            if (textureResponse.ok) {
+                const textureBuffer = await textureResponse.arrayBuffer();
+                console.log(`[GeyserMC Direct] SUCCESS! Downloaded texture: ${textureBuffer.byteLength} bytes 🎉`);
+                
+                return {
+                    buffer: Buffer.from(textureBuffer),
+                    contentType: textureResponse.headers.get('content-type') || 'image/png'
+                };
+            } else {
+                console.log(`[GeyserMC Direct] Failed to fetch texture: ${textureResponse.status}`);
             }
-        });
-        
-        if (!skinResponse.ok) {
-            console.log(`[Skin Download] Failed to download skin from ${skinUrl}. Status: ${skinResponse.status}`);
-            return null;
         }
         
-        const buffer = await skinResponse.arrayBuffer();
-        console.log(`[Skin Download] Successfully downloaded skin! Size: ${buffer.byteLength} bytes 💾`);
+        // Try to decode the value field if texture_id didn't work
+        if (skinData.value) {
+            console.log(`[GeyserMC Direct] Trying to decode value field...`);
+            try {
+                const decodedData = JSON.parse(Buffer.from(skinData.value, 'base64').toString());
+                const skinUrl = decodedData.textures?.SKIN?.url;
+                
+                if (skinUrl) {
+                    console.log(`[GeyserMC Direct] Found skin URL in value field: ${skinUrl.substring(0, 50)}...`);
+                    
+                    const skinResponse = await fetch(skinUrl, {
+                        headers: {
+                            'User-Agent': 'MCHub-BedrockSkinFetcher/2.0'
+                        }
+                    });
+                    
+                    if (skinResponse.ok) {
+                        const skinBuffer = await skinResponse.arrayBuffer();
+                        console.log(`[GeyserMC Direct] SUCCESS via value field! Downloaded: ${skinBuffer.byteLength} bytes 🎉`);
+                        
+                        return {
+                            buffer: Buffer.from(skinBuffer),
+                            contentType: skinResponse.headers.get('content-type') || 'image/png'
+                        };
+                    }
+                }
+            } catch (decodeError) {
+                console.log(`[GeyserMC Direct] Failed to decode value field:`, decodeError.message);
+            }
+        }
         
-        return {
-            buffer: Buffer.from(buffer),
-            contentType: skinResponse.headers.get('content-type') || 'image/png'
-        };
+        console.log(`[GeyserMC Direct] No usable skin data found in response`);
+        return null;
 
     } catch (error) {
-        console.error('[getSkinFromGeyserMC] Bruh something went wrong:', error.message);
+        console.error('[getBedrockSkinDirect] Error:', error.message);
         return null;
     }
 }
