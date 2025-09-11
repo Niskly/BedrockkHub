@@ -32,6 +32,10 @@
         /* Header Nav */
         header { position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(1.2) blur(10px); background: rgba(12, 12, 12, 0.75); border-bottom: 1px solid var(--border); }
         .nav { max-width: 1100px; margin: 0 auto; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; }
+        .brand { display: flex; align-items: center; gap: .8rem; }
+        .brand-badge { height: 40px; width: 40px; border-radius: 10px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); }
+        .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-11px); }
+        .brand-title { font-weight: 800; letter-spacing: .6px; font-size: 15px; }
         .nav-actions { display: flex; align-items: center; gap: 0.6rem; }
         
         /* Main Layout */
@@ -39,8 +43,8 @@
         .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; min-height: 60vh; color: var(--muted); }
         
         /* Profile Header Card */
-        .profile-header { border-radius: 16px; margin-bottom: 2rem; overflow: hidden; position: relative; background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); border: 1px solid var(--border); }
-        .profile-banner { height: 220px; background-size: cover; background-position: center; }
+        .profile-header { border-radius: 16px; margin-bottom: 2rem; position: relative; background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); border: 1px solid var(--border); }
+        .profile-banner { height: 220px; background-size: cover; background-position: center; border-radius: 16px 16px 0 0; }
         .profile-details { position: relative; padding: 1rem 1.5rem; display: flex; flex-direction: column; margin-top: -70px; z-index: 2; }
         .profile-meta { display: flex; align-items: flex-end; gap: 1.5rem; }
         .profile-avatar { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #161616; box-shadow: 0 10px 30px rgba(0,0,0,0.5); flex-shrink: 0; }
@@ -48,9 +52,9 @@
         .info-top { display: flex; align-items: baseline; gap: 1.5rem; flex-wrap: wrap; }
         .info-top h1 { font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, var(--brand-1), #ff525a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .profile-bio { color: var(--muted); margin-top: 0.5rem; max-width: 500px; line-height: 1.5; font-size: 13px; }
-        .header-stats { display: flex; gap: 1.5rem; align-items: center; margin-left: auto; }
+        .header-stats { display: flex; gap: 1.5rem; align-items: baseline; }
         .stat-item { text-align: left; }
-        .stat-item .count { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+        .stat-item .count { font-weight: 700; color: var(--text); }
         .stat-item .label { font-size: .8rem; color: var(--muted); }
         .profile-actions { position: absolute; top: 1.5rem; right: 1.5rem; z-index: 3; }
         .social-links-container { margin-top: 1rem; display: flex; gap: 0.8rem; }
@@ -103,7 +107,13 @@
 <body>
     <header>
         <div class="nav">
-             <a class="brand" href="/"><div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div></a>
+            <a class="brand" href="/">
+                <div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div>
+                <div>
+                    <div class="brand-title">MCHUB</div>
+                    <div class="tiny">Minecraft Bedrock • community</div>
+                </div>
+            </a>
             <div id="nav-actions" class="nav-actions"></div>
         </div>
     </header>
@@ -216,9 +226,9 @@
 
             profileContainer.innerHTML = `
                 <div class="profile-header glassy">
+                    ${profileActionsHtml}
                     <div class="profile-banner" style="background-image: url('${profile.banner_url || 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/default-banner.png'}')"></div>
                     <div class="profile-details">
-                        ${profileActionsHtml}
                         <div class="profile-meta">
                             <div style="position:relative;">${pfpHtml}</div>
                             <div class="profile-main-info">
