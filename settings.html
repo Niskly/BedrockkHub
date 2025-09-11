@@ -61,8 +61,8 @@
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         /* Settings Grid */
-        .settings-grid { display: grid; grid-template-columns: 300px 1fr; gap: 2.5rem; align-items: flex-start; }
-        /* UPDATED: Reduced max-width for a more compact UI */
+        /* UPDATED: Reduced gap to bring sidebar and content closer */
+        .settings-grid { display: grid; grid-template-columns: 300px 1fr; gap: 1.5rem; align-items: flex-start; }
         .content-container { max-width: 680px; margin: 0 auto; }
         
         /* Sidebar */
@@ -146,14 +146,14 @@
         .form-textarea { min-height: 120px; resize: vertical; }
         .input-hint { margin-top: 0.8rem; font-size: 13px; color: var(--muted); line-height: 1.4; }
 
-        /* UPDATED: Redesigned Profile Uploader Section */
+        /* Profile Uploader Section */
         .profile-layout { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
         .profile-uploader-container {
             width: 100%;
-            max-width: 450px; /* Control max width of the uploader */
+            max-width: 450px;
             position: relative;
-            height: 180px; /* Set a fixed height */
-            margin-bottom: 50px; /* Space for the avatar to overlap */
+            height: 180px;
+            margin-bottom: 50px;
         }
         .banner-uploader-preview {
             width: 100%;
@@ -177,7 +177,7 @@
             cursor: pointer;
             transition: border-color 0.2s;
             position: absolute;
-            bottom: 0px; /* Position it at the bottom, overlapping the banner */
+            bottom: 0px;
             left: 50%;
             transform: translateX(-50%);
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
@@ -232,10 +232,46 @@
         .cropper-modal-header h3 { font-size: 1.5rem; font-weight: 700; }
         #cropper-image-container { margin-bottom: 1.5rem; background: var(--bg-0); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; height: 300px; }
         #cropper-image { max-width: 100%; }
-        .cropper-controls { display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.5rem; }
-        .cropper-control-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--muted); width: 44px; height: 44px; border-radius: 12px; font-size: 18px; cursor: pointer; transition: all 0.2s ease; }
-        .cropper-control-btn:hover { background: var(--bg-1); color: var(--text); border-color: var(--border-strong); }
         .cropper-modal-footer { display: flex; gap: 1rem; justify-content: flex-end; }
+        
+        /* UPDATED: Redesigned Cropper Controls */
+        .cropper-controls {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        .cropper-controls-inner {
+            display: flex;
+            align-items: center;
+            background: var(--bg-2);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 4px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .cropper-control-btn {
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: grid;
+            place-items: center;
+        }
+        .cropper-control-btn:hover {
+            background: var(--bg-1);
+            color: var(--text);
+        }
+        .cropper-control-separator {
+            width: 1px;
+            height: 20px;
+            background-color: var(--border);
+        }
+
 
         /* Confirmation & Social Modals */
         .modal-dialog.confirmation-modal { max-width: 450px; text-align: center; padding: 2.5rem; }
@@ -293,11 +329,16 @@
         <div class="modal-dialog cropper-modal">
             <div class="cropper-modal-header"><h3 id="cropper-title">Crop Image</h3></div>
             <div id="cropper-image-container"><img id="cropper-image" style="max-width: 100%;"></div>
+            <!-- UPDATED: Redesigned cropper controls HTML structure -->
             <div class="cropper-controls">
-                <button id="zoom-in-btn" class="cropper-control-btn" title="Zoom In"><i class="fa-solid fa-search-plus"></i></button>
-                <button id="zoom-out-btn" class="cropper-control-btn" title="Zoom Out"><i class="fa-solid fa-search-minus"></i></button>
-                <button id="rotate-left-btn" class="cropper-control-btn" title="Rotate Left"><i class="fa-solid fa-rotate-left"></i></button>
-                <button id="rotate-right-btn" class="cropper-control-btn" title="Rotate Right"><i class="fa-solid fa-rotate-right"></i></button>
+                <div class="cropper-controls-inner">
+                    <button id="zoom-out-btn" class="cropper-control-btn" title="Zoom Out"><i class="fa-solid fa-search-minus"></i></button>
+                    <div class="cropper-control-separator"></div>
+                    <button id="rotate-left-btn" class="cropper-control-btn" title="Rotate Left"><i class="fa-solid fa-rotate-left"></i></button>
+                    <button id="rotate-right-btn" class="cropper-control-btn" title="Rotate Right"><i class="fa-solid fa-rotate-right"></i></button>
+                    <div class="cropper-control-separator"></div>
+                    <button id="zoom-in-btn" class="cropper-control-btn" title="Zoom In"><i class="fa-solid fa-search-plus"></i></button>
+                </div>
             </div>
             <div class="cropper-modal-footer">
                 <button id="cancel-crop-btn" class="btn ghost">Cancel</button>
@@ -369,7 +410,6 @@
         const toastContainer = document.getElementById('toast-container');
         const settingsContainer = document.getElementById('settings-container');
 
-        // UPDATED: Added modes, placeholders, and link prefixes for validation
         const socialPlatforms = {
             xbox: { name: 'Xbox Live', icon: 'fa-brands fa-xbox', color: '#107c10', type: 'oauth' },
             discord: { name: 'Discord', icon: 'fa-brands fa-discord', color: '#5865F2', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'your_username', link: 'https://discord.gg/invitecode' }, linkPrefix: 'https://discord.gg/' },
@@ -775,7 +815,6 @@
             document.getElementById('social-modal-input').focus();
         }
         
-        // UPDATED: Added validation logic
         async function saveSocial(key) {
             const platform = socialPlatforms[key];
             const input = document.getElementById('social-modal-input');
@@ -785,12 +824,11 @@
                 return showToast("Please enter a value.", 'error');
             }
 
-            // Validation logic
             if (currentSocialMode === 'link') {
                 if (platform.linkPrefix && !value.startsWith(platform.linkPrefix)) {
                     return showToast(`URL must start with "${platform.linkPrefix}"`, 'error');
                 }
-            } else { // 'text' mode
+            } else { 
                 if (value.includes('http') || value.includes('://')) {
                     return showToast('Please enter a username, not a link.', 'error');
                 }
