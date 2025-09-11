@@ -1,7 +1,7 @@
 import { createCanvas } from '@napi-rs/canvas';
 
 // api/bedrock-skin.js
-// Simplified endpoint to fetch Bedrock skins, prioritizing GeyserMC.
+// Fetches Bedrock skins directly from Xbox Live API
 export default async function handler(req, res) {
     if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Method Not Allowed' });
@@ -15,28 +15,36 @@ export default async function handler(req, res) {
 
         console.log(`[bedrock-skin] Fetching skin for XUID: ${xuid}`);
 
-        // --- PRIMARY METHOD: GeyserMC API ---
-        // This is the most reliable way to get the skin for a Bedrock player.
-        const skinData = await getSkinFromGeyser(xuid);
+        // Try to get skin from Xbox Live API first
+        const skinData = await getSkinFromXboxLive(xuid);
         
         if (skinData) {
-            console.log(`[bedrock-skin] Success: Found skin via GeyserMC for ${xuid}`);
+            console.log(`[bedrock-skin] Success: Found skin via Xbox Live for ${xuid}`);
             res.setHeader('Content-Type', skinData.contentType || 'image/png');
             res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
             return res.send(skinData.buffer);
         } else {
-            // --- FALLBACK METHOD: Generate a default skin ---
-            // This runs only if the GeyserMC API fails or finds no skin.
-            console.warn(`[bedrock-skin] Fallback: Could not find skin for ${xuid}, generating default.`);
-            const defaultSkinBuffer = generateDefaultSkinBuffer(xuid);
-            res.setHeader('Content-Type', 'image/png');
-            res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache default for 24 hours
-            return res.send(defaultSkinBuffer);
+            // Fallback: Try GeyserMC method (for linked accounts)
+            console.log(`[bedrock-skin] Trying GeyserMC fallback for ${xuid}`);
+            const geyserSkin = await getSkinFromGeyser(xuid);
+            
+            if (geyserSkin) {
+                console.log(`[bedrock-skin] Success: Found skin via GeyserMC for ${xuid}`);
+                res.setHeader('Content-Type', geyserSkin.contentType || 'image/png');
+                res.setHeader('Cache-Control', 'public, max-age=3600');
+                return res.send(geyserSkin.buffer);
+            } else {
+                // Generate default skin
+                console.warn(`[bedrock-skin] No skin found for ${xuid}, generating default`);
+                const defaultSkinBuffer = generateDefaultSkinBuffer(xuid);
+                res.setHeader('Content-Type', 'image/png');
+                res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache default for 24 hours
+                return res.send(defaultSkinBuffer);
+            }
         }
 
     } catch (error) {
         console.error('[bedrock-skin] Critical Error:', error);
-        // If anything breaks, send a default skin so the page doesn't show a broken image.
         const defaultSkinBuffer = generateDefaultSkinBuffer("error");
         res.setHeader('Content-Type', 'image/png');
         res.status(500).send(defaultSkinBuffer);
@@ -44,8 +52,81 @@ export default async function handler(req, res) {
 }
 
 /**
- * Fetches skin data from the GeyserMC API and Mojang sessionserver.
- * @param {string} xuid - The Xbox User ID.
+ * Fetches skin data directly from Xbox Live API using OpenXBL.io
+ * @param {string} xuid - The Xbox User ID
+ * @returns {Promise<{buffer: Buffer, contentType: string}|null>}
+ */
+async function getSkinFromXboxLive(xuid) {
+    try {
+        // Use OpenXBL.io to get the user's profile with avatar info
+        const profileResponse = await fetch(`https://xbl.io/api/v2/player/profile/${xuid}`, {
+            method: 'GET',
+            headers: {
+                'X-Authorization': process.env.OPENXBL_PUBLIC_KEY,
+                'Accept': 'application/json',
+                'Accept-Language': 'en-US'
+            }
+        });
+
+        if (!profileResponse.ok) {
+            console.log(`[Xbox Live API] Failed to get profile for XUID ${xuid}. Status: ${profileResponse.status}`);
+            return null;
+        }
+
+        const profileData = await profileResponse.json();
+        console.log('[Xbox Live API] Profile data received:', {
+            hasProfileUsers: !!profileData.profileUsers,
+            profileUsersLength: profileData.profileUsers?.length || 0
+        });
+
+        const profileUser = profileData.profileUsers?.[0];
+        if (!profileUser) {
+            console.log(`[Xbox Live API] No profile user found for XUID ${xuid}`);
+            return null;
+        }
+
+        // Look for the player's avatar/skin URL in their settings
+        const settings = profileUser.settings || [];
+        const gameDisplayPic = settings.find(s => s.id === 'GameDisplayPicRaw');
+        const gameDisplayPicSmall = settings.find(s => s.id === 'GameDisplayPic');
+        
+        // Try different avatar URLs
+        let avatarUrl = null;
+        if (gameDisplayPic?.value) {
+            avatarUrl = gameDisplayPic.value;
+        } else if (gameDisplayPicSmall?.value) {
+            avatarUrl = gameDisplayPicSmall.value;
+        }
+
+        console.log('[Xbox Live API] Avatar URL found:', avatarUrl ? 'Yes' : 'No');
+
+        if (!avatarUrl) {
+            console.log(`[Xbox Live API] No avatar URL found for XUID ${xuid}`);
+            return null;
+        }
+
+        // Download the avatar image
+        const avatarResponse = await fetch(avatarUrl);
+        if (!avatarResponse.ok) {
+            console.log(`[Xbox Live API] Failed to download avatar from ${avatarUrl}. Status: ${avatarResponse.status}`);
+            return null;
+        }
+
+        const buffer = await avatarResponse.arrayBuffer();
+        return {
+            buffer: Buffer.from(buffer),
+            contentType: avatarResponse.headers.get('content-type') || 'image/png'
+        };
+
+    } catch (error) {
+        console.error('[getSkinFromXboxLive] Error:', error.message);
+        return null;
+    }
+}
+
+/**
+ * Fallback: Fetches skin data from the GeyserMC API (for linked accounts)
+ * @param {string} xuid - The Xbox User ID
  * @returns {Promise<{buffer: Buffer, contentType: string}|null>}
  */
 async function getSkinFromGeyser(xuid) {
@@ -75,7 +156,7 @@ async function getSkinFromGeyser(xuid) {
         // 3. Decode the base64 texture data to find the skin URL
         const textureProperty = mojangData.properties?.find(prop => prop.name === 'textures');
         if (!textureProperty) {
-             console.log(`[Mojang API] No texture property found for UUID ${javaUuid}.`);
+            console.log(`[Mojang API] No texture property found for UUID ${javaUuid}.`);
             return null;
         }
 
@@ -83,14 +164,14 @@ async function getSkinFromGeyser(xuid) {
         const skinUrl = textureData.textures?.SKIN?.url;
 
         if (!skinUrl) {
-             console.log(`[Mojang API] No skin URL found for UUID ${javaUuid}.`);
+            console.log(`[Mojang API] No skin URL found for UUID ${javaUuid}.`);
             return null;
         }
 
         // 4. Download the skin image from the URL
         const skinResponse = await fetch(skinUrl);
         if (!skinResponse.ok) {
-             console.log(`[Skin Download] Failed to download skin from ${skinUrl}. Status: ${skinResponse.status}`);
+            console.log(`[Skin Download] Failed to download skin from ${skinUrl}. Status: ${skinResponse.status}`);
             return null;
         }
         
@@ -107,9 +188,9 @@ async function getSkinFromGeyser(xuid) {
 }
 
 /**
- * Generates a consistent, default skin based on the user's XUID.
- * @param {string} xuid - The Xbox User ID.
- * @returns {Buffer} - A PNG image buffer.
+ * Generates a consistent, default skin based on the user's XUID
+ * @param {string} xuid - The Xbox User ID
+ * @returns {Buffer} - A PNG image buffer
  */
 function generateDefaultSkinBuffer(xuid) {
     const canvas = createCanvas(64, 64);
@@ -126,18 +207,23 @@ function generateDefaultSkinBuffer(xuid) {
     const shirtColor = `hsl(${(hue + 150) % 360}, 70%, 45%)`;
     const pantsColor = `hsl(${(hue + 210) % 360}, 60%, 30%)`;
     
-    // Draw simple skin layout
+    // Draw simple Minecraft skin layout
     ctx.fillStyle = skinTone;
-    ctx.fillRect(8, 8, 8, 8); // Head
-    ctx.fillRect(44, 20, 4, 12); // Right Arm
-    ctx.fillRect(16, 20, 4, 12); // Left Arm (mirrored)
+    ctx.fillRect(8, 8, 8, 8);   // Head front
+    ctx.fillRect(20, 20, 8, 12); // Body front
+    ctx.fillRect(44, 20, 4, 12); // Right arm front
+    ctx.fillRect(36, 20, 4, 12); // Left arm front
+    ctx.fillRect(4, 20, 4, 12);  // Right leg front
+    ctx.fillRect(20, 52, 4, 12); // Left leg front
 
+    // Add some clothing details
     ctx.fillStyle = shirtColor;
-    ctx.fillRect(20, 20, 8, 12); // Body
+    ctx.fillRect(20, 20, 8, 6); // Shirt
 
     ctx.fillStyle = pantsColor;
-    ctx.fillRect(20, 32, 8, 12); // "Legs" part of body
+    ctx.fillRect(20, 26, 8, 6); // Pants on body
+    ctx.fillRect(4, 20, 4, 12); // Right leg pants
+    ctx.fillRect(20, 52, 4, 12); // Left leg pants
     
     return canvas.toBuffer('image/png');
 }
-
