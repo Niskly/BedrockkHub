@@ -62,7 +62,8 @@
         
         /* Settings Grid */
         .settings-grid { display: grid; grid-template-columns: 300px 1fr; gap: 2.5rem; align-items: flex-start; }
-        .content-container { max-width: 800px; }
+        /* UPDATED: Reduced max-width for a more compact UI */
+        .content-container { max-width: 680px; margin: 0 auto; }
         
         /* Sidebar */
         .settings-sidebar { 
@@ -145,21 +146,51 @@
         .form-textarea { min-height: 120px; resize: vertical; }
         .input-hint { margin-top: 0.8rem; font-size: 13px; color: var(--muted); line-height: 1.4; }
 
-        /* Profile Section */
-        .profile-layout { display: flex; flex-direction: column; align-items: center; text-align: center; }
-        .profile-images { display: flex; flex-direction: column; align-items: center; position: relative; margin-bottom: 1.5rem; width: 100%; }
-        .banner-uploader-preview { width: 100%; height: 150px; border-radius: 16px; background: var(--bg-2); border: 2px dashed var(--border); object-fit: cover; cursor: pointer; transition: border-color 0.2s; }
+        /* UPDATED: Redesigned Profile Uploader Section */
+        .profile-layout { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+        .profile-uploader-container {
+            width: 100%;
+            max-width: 450px; /* Control max width of the uploader */
+            position: relative;
+            height: 180px; /* Set a fixed height */
+            margin-bottom: 50px; /* Space for the avatar to overlap */
+        }
+        .banner-uploader-preview {
+            width: 100%;
+            height: 150px;
+            border-radius: 16px;
+            background: var(--bg-2);
+            border: 2px dashed var(--border);
+            object-fit: cover;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            display: block;
+        }
         .banner-uploader-preview:hover { border-color: var(--brand-1); }
-        .avatar-uploader-preview { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--bg-1); background: var(--bg-2); object-fit: cover; cursor: pointer; transition: border-color 0.2s; position: absolute; bottom: -60px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .avatar-uploader-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 4px solid var(--bg-1);
+            background: var(--bg-2);
+            object-fit: cover;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            position: absolute;
+            bottom: 0px; /* Position it at the bottom, overlapping the banner */
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
         .avatar-uploader-preview:hover { border-color: var(--brand-1); }
-        .profile-bio-section { padding-top: 70px; width: 100%; max-width: 500px; }
+        .profile-bio-section { width: 100%; max-width: 500px; }
 
         /* Social Connections Grid */
-        .socials-grid { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1.5rem; }
+        .socials-grid { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1.5rem; justify-content: center; }
         .social-icon-btn { 
-            width: 50px; height: 50px; /* Smaller icons */
+            width: 50px; height: 50px;
             background: var(--bg-1); border: 1px solid var(--border); border-radius: 10px; 
-            color: var(--muted); font-size: 22px; /* Smaller font size */
+            color: var(--muted); font-size: 22px;
             cursor: pointer; display: flex; align-items: center; justify-content: center; 
             transition: all 0.2s ease-in-out; position: relative; 
         }
@@ -167,13 +198,12 @@
         .social-icon-btn.linked { color: var(--text); border-color: var(--brand-1); background: rgba(222, 33, 42, 0.1); }
         .social-icon-btn.linked::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; top: 4px; right: 4px; font-size: 8px; color: var(--brand-1); background: var(--bg-1); border-radius: 50%; width: 14px; height: 14px; display: grid; place-items: center; }
         
-        /* UPDATED: Compact Linked Accounts (Lines ~133-145) */
-        .linked-accounts-container { display: grid; gap: 0.5rem; max-width: 350px; } /* Reduced gap and width */
-        .linked-account-card { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.8rem; background: var(--bg-1); border: 1px solid var(--border); border-radius: 10px; } /* Reduced padding */
-        .linked-account-info { display: flex; align-items: center; gap: 0.6rem; } /* Reduced gap */
-        .linked-account-info i { font-size: 14px; color: var(--muted); width: 20px; text-align: center; } /* Reduced font-size */
-        .linked-account-value { font-weight: 600; color: var(--text); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; } /* Reduced font-size and max-width */
-        .linked-account-actions button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; transition: color 0.2s ease; } /* Reduced font-size */
+        .linked-accounts-container { display: grid; gap: 0.5rem; max-width: 350px; margin: 0 auto; }
+        .linked-account-card { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.8rem; background: var(--bg-1); border: 1px solid var(--border); border-radius: 10px; }
+        .linked-account-info { display: flex; align-items: center; gap: 0.6rem; }
+        .linked-account-info i { font-size: 14px; color: var(--muted); width: 20px; text-align: center; }
+        .linked-account-value { font-weight: 600; color: var(--text); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+        .linked-account-actions button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; transition: color 0.2s ease; }
         .linked-account-actions button:hover { color: var(--error); }
 
         /* Modals */
@@ -244,11 +274,13 @@
         .toast.error i { color: var(--error); }
         
         /* Responsive Design */
-        @media (max-width: 768px) {
-            .settings-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+        @media (max-width: 992px) {
+            .settings-grid { grid-template-columns: 1fr; }
             .content-container { max-width: 100%; }
             .settings-sidebar { position: static; }
-            .settings-tabs { flex-direction: row; overflow-x: auto; padding: 8px; }
+            .settings-tabs { flex-direction: row; overflow-x: auto; padding: 8px; justify-content: center;}
+        }
+        @media (max-width: 768px) {
             .settings-tab { flex-shrink: 0; min-width: 140px; padding: 12px 16px; }
             .card-header, .card-body, .card-footer { padding: 1.5rem; }
         }
@@ -328,6 +360,7 @@
         
         let currentUser, currentProfile, isProcessing = false;
         let avatarBlob, bannerBlob, cropper, cropCallback, confirmCallback;
+        let currentSocialMode = 'text';
         
         const loadingOverlay = document.getElementById('loading-overlay');
         const cropperModal = document.getElementById('cropper-modal');
@@ -336,15 +369,15 @@
         const toastContainer = document.getElementById('toast-container');
         const settingsContainer = document.getElementById('settings-container');
 
-        // UPDATED: Added `newRow: true` to twitter object (Line ~330)
+        // UPDATED: Added modes, placeholders, and link prefixes for validation
         const socialPlatforms = {
             xbox: { name: 'Xbox Live', icon: 'fa-brands fa-xbox', color: '#107c10', type: 'oauth' },
-            discord: { name: 'Discord', icon: 'fa-brands fa-discord', color: '#5865F2', modes: ['text', 'link'], defaultMode: 'text', placeholder: 'your_username' },
-            spotify: { name: 'Spotify', icon: 'fa-brands fa-spotify', color: '#1DB954', modes: ['link'], defaultMode: 'link', placeholder: 'https://open.spotify.com/user/...' },
-            reddit: { name: 'Reddit', icon: 'fa-brands fa-reddit-alien', color: '#FF4500', modes: ['link'], defaultMode: 'link', placeholder: 'https://reddit.com/user/...' },
-            youtube: { name: 'YouTube', icon: 'fa-brands fa-youtube', color: '#FF0000', modes: ['link'], defaultMode: 'link', placeholder: 'https://youtube.com/c/...' },
-            twitter: { name: 'Twitter/X', icon: 'fa-brands fa-twitter', color: '#1DA1F2', modes: ['text', 'link'], defaultMode: 'text', placeholder: '@username', newRow: true },
-            github: { name: 'GitHub', icon: 'fa-brands fa-github', color: '#e8eefc', modes: ['link'], defaultMode: 'link', placeholder: 'https://github.com/...' },
+            discord: { name: 'Discord', icon: 'fa-brands fa-discord', color: '#5865F2', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'your_username', link: 'https://discord.gg/invitecode' }, linkPrefix: 'https://discord.gg/' },
+            spotify: { name: 'Spotify', icon: 'fa-brands fa-spotify', color: '#1DB954', modes: ['link'], defaultMode: 'link', placeholders: { link: 'https://open.spotify.com/user/...' }, linkPrefix: 'https://open.spotify.com/user/' },
+            reddit: { name: 'Reddit', icon: 'fa-brands fa-reddit-alien', color: '#FF4500', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'your_username', link: 'https://reddit.com/user/...' }, linkPrefix: 'https://reddit.com/user/' },
+            youtube: { name: 'YouTube', icon: 'fa-brands fa-youtube', color: '#FF0000', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'YourChannelName', link: 'https://youtube.com/...' }, linkPrefix: 'https://youtube.com/' },
+            twitter: { name: 'Twitter/X', icon: 'fa-brands fa-twitter', color: '#1DA1F2', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: '@username', link: 'https://x.com/username' }, newRow: true, linkPrefix: 'https://x.com/' },
+            github: { name: 'GitHub', icon: 'fa-brands fa-github', color: '#e8eefc', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'your-username', link: 'https://github.com/...' }, linkPrefix: 'https://github.com/' },
         };
 
         function showToast(message, type = 'success') {
@@ -393,7 +426,7 @@
                                     <div class="card-header"><h2>Profile Customization</h2><p>Make your profile stand out with a custom avatar, banner, and bio.</p></div>
                                     <div class="card-body">
                                         <div class="profile-layout">
-                                            <div class="profile-images">
+                                            <div class="profile-uploader-container">
                                                 <img id="banner-preview" class="banner-uploader-preview" title="Click or drag to change banner">
                                                 <img id="avatar-preview" class="avatar-uploader-preview" title="Click or drag to change avatar">
                                                 <input type="file" id="banner-input" accept="image/png, image/jpeg" style="display:none;">
@@ -634,13 +667,11 @@
             });
         }
 
-        // UPDATED: Renders socials with the new line break logic (Lines ~556-570)
         function renderSocials(profile) {
             const container = document.getElementById('socials-container');
             if (!container) return;
             const socialLinks = profile.social_links || {};
             
-            // Use reduce to build the HTML string, adding a line break div when platform.newRow is true
             const gridHtml = Object.entries(socialPlatforms).reduce((html, [key, platform]) => {
                 if (platform.newRow) {
                     html += `<div style="flex-basis: 100%; height: 0;"></div>`;
@@ -657,9 +688,9 @@
             }
             
             container.innerHTML = `
-                <div class="form-group"><label class="form-label">Link your profiles</label><div class="socials-grid">${gridHtml}</div></div>
-                <div class="form-group"><label class="form-label">Linked Accounts</label><div class="linked-accounts-container" id="linked-accounts-list">
-                    ${cardsHtml || '<p class="tiny">No accounts linked yet. Click an icon above to add one.</p>'}
+                <div class="form-group" style="text-align: center;"><label class="form-label">Link your profiles</label><div class="socials-grid">${gridHtml}</div></div>
+                <div class="form-group" style="text-align: center;"><label class="form-label">Linked Accounts</label><div class="linked-accounts-container" id="linked-accounts-list">
+                    ${cardsHtml || '<p class="tiny" style="text-align: center;">No accounts linked yet. Click an icon above to add one.</p>'}
                 </div></div>`;
             attachSocialsEventListeners();
         }
@@ -706,48 +737,72 @@
 
         function openSocialModal(key) {
             const platform = socialPlatforms[key];
+            if (!platform) return;
             const currentVal = currentProfile.social_links?.[key] || '';
-            let currentMode = platform.defaultMode;
+            
             document.getElementById('social-modal-icon').className = platform.icon;
             document.getElementById('social-modal-icon').style.color = platform.color;
             document.getElementById('social-modal-title').textContent = `Add ${platform.name}`;
             const switcherContainer = document.getElementById('social-mode-switcher-container');
-            if (platform.modes.length > 1) {
+            
+            if (platform.modes && platform.modes.length > 1) {
                 switcherContainer.style.display = 'flex';
                 switcherContainer.innerHTML = platform.modes.map(mode => `<button class="social-mode-btn" data-mode="${mode}"><i class="fa-solid ${mode === 'link' ? 'fa-link' : 'fa-at'}"></i> ${mode.charAt(0).toUpperCase() + mode.slice(1)}</button>`).join('');
             } else {
                 switcherContainer.style.display = 'none';
             }
+
             const updateInputForMode = (mode) => {
+                currentSocialMode = mode;
                 const input = document.getElementById('social-modal-input');
                 const inputIcon = document.getElementById('social-input-icon');
                 document.getElementById('social-modal-label').textContent = mode === 'link' ? 'Profile URL' : 'Username';
                 input.type = mode === 'link' ? 'url' : 'text';
-                input.placeholder = platform.placeholder;
+                input.placeholder = platform.placeholders[mode] || '';
                 inputIcon.className = `fa-solid ${mode === 'link' ? 'fa-link' : 'fa-at'}`;
                 switcherContainer.querySelectorAll('.social-mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
             };
-            updateInputForMode(currentMode);
+            
+            updateInputForMode(platform.defaultMode);
             document.getElementById('social-modal-input').value = currentVal;
+            
             switcherContainer.querySelectorAll('.social-mode-btn').forEach(btn => {
-                btn.onclick = () => { currentMode = btn.dataset.mode; updateInputForMode(currentMode); };
+                btn.onclick = () => updateInputForMode(btn.dataset.mode);
             });
+            
             document.getElementById('save-social-btn').dataset.key = key;
             socialModal.classList.add('show');
             document.getElementById('social-modal-input').focus();
         }
         
+        // UPDATED: Added validation logic
         async function saveSocial(key) {
+            const platform = socialPlatforms[key];
             const input = document.getElementById('social-modal-input');
             const value = input.value.trim();
-            if (!value) return showToast("Please enter a value.", 'error');
+
+            if (!value) {
+                return showToast("Please enter a value.", 'error');
+            }
+
+            // Validation logic
+            if (currentSocialMode === 'link') {
+                if (platform.linkPrefix && !value.startsWith(platform.linkPrefix)) {
+                    return showToast(`URL must start with "${platform.linkPrefix}"`, 'error');
+                }
+            } else { // 'text' mode
+                if (value.includes('http') || value.includes('://')) {
+                    return showToast('Please enter a username, not a link.', 'error');
+                }
+            }
+
             socialModal.classList.remove('show');
-            showLoading(`Saving ${socialPlatforms[key].name}...`);
+            showLoading(`Saving ${platform.name}...`);
             try {
                 const newSocials = { ...currentProfile.social_links, [key]: value };
                 const { error } = await supabase.from('profiles').update({ social_links: newSocials }).eq('id', currentUser.id);
                 if (error) throw error;
-                showToast(`${socialPlatforms[key].name} linked successfully.`, 'success');
+                showToast(`${platform.name} linked successfully.`, 'success');
                 await loadProfileAndPopulate();
             } catch (error) {
                 showToast(`Failed to save: ${error.message}`, 'error');
@@ -760,8 +815,6 @@
             const redirectUri = encodeURIComponent('https://mchub.vercel.app/api/bedrock-callback');
             const authUrl = `https://xbl.io/app/auth/${OPENXBL_PUBLIC_KEY}?redirect_uri=${redirectUri}&prompt=select_account`;
             
-            console.log("Attempting to open Xbox auth URL:", authUrl); // DEBUG LOG
-
             const popup = window.open(authUrl, 'xbox-auth', 'width=600,height=700');
             if (!popup) { return showToast('Popup blocked. Please allow popups.', 'error'); }
             
@@ -813,8 +866,8 @@
                 const { data: profileData, error } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
                 if (error) throw error;
                 currentProfile = profileData;
-                document.getElementById('avatar-preview').src = currentProfile.avatar_url || `https://placehold.co/120x120/1c1c1c/de212a?text=${(currentProfile.username || 'U').charAt(0).toUpperCase()}`;
-                document.getElementById('banner-preview').src = currentProfile.banner_url || 'https://placehold.co/400x150/1c1c1c/de212a?text=BANNER';
+                document.getElementById('avatar-preview').src = currentProfile.avatar_url || `https://placehold.co/100x100/1c1c1c/de212a?text=${(currentProfile.username || 'U').charAt(0).toUpperCase()}`;
+                document.getElementById('banner-preview').src = currentProfile.banner_url || 'https://placehold.co/450x150/1c1c1c/de212a?text=BANNER';
                 document.getElementById('bio').value = currentProfile.bio || '';
                 document.getElementById('username').value = currentProfile.username || '';
                 renderSocials(currentProfile);
