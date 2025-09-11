@@ -40,39 +40,10 @@
         .bedrock-skin-viewer canvas {
             display: block;
             border-radius: 12px;
+            cursor: grab;
         }
-
-        .bedrock-controls {
-            display: flex;
-            gap: 0.5rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .skin-control-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            background: var(--bg-2);
-            color: var(--muted);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-        }
-
-        .skin-control-btn:hover {
-            background: var(--bg-1);
-            color: var(--text);
-            border-color: var(--border-strong);
-            transform: translateY(-1px);
-        }
-
-        .skin-control-btn:active {
-            transform: translateY(0);
+        .bedrock-skin-viewer canvas:active {
+            cursor: grabbing;
         }
 
         .bedrock-gamertag {
@@ -96,6 +67,8 @@
             gap: 1rem;
             padding: 2rem;
             color: var(--muted);
+            width: 280px; /* Match canvas width */
+            height: 350px; /* Match canvas height */
         }
 
         .skin-spinner {
@@ -231,7 +204,6 @@
         // Global state for this page
         let loggedInUser = null;
         let skinViewer = null;
-        let isAnimating = true;
 
         function showError(title, message, showRetry = true) {
             profileContainer.innerHTML = `
@@ -289,13 +261,13 @@
                 .join('');
         }
 
-        // NEW: Enhanced renderDashboard with 3D skin viewer
+        // SIMPLIFIED renderDashboard
         function renderDashboard(profile, packs, currentUser) {
             const pfpHtml = profile.avatar_url
                 ? `<img src="${profile.avatar_url}" alt="${profile.username}'s avatar" class="profile-avatar">`
                 : `<div class="pfp-placeholder"><span>${(profile.username || '?').charAt(0).toUpperCase()}</span></div>`;
 
-            // NEW: Enhanced Bedrock section with 3D skin viewer
+            // SIMPLIFIED Bedrock HTML
             let bedrockHtml;
             if (profile.bedrock_gamertag) {
                 bedrockHtml = `
@@ -305,20 +277,6 @@
                                 <div class="skin-spinner"></div>
                                 <span>Loading 3D skin...</span>
                             </div>
-                        </div>
-                        <div class="bedrock-controls" id="bedrock-controls" style="display:none;">
-                            <button class="skin-control-btn" id="animation-toggle" title="Toggle Animation">
-                                <i class="fa-solid fa-pause"></i>
-                            </button>
-                            <button class="skin-control-btn" id="reset-view" title="Reset View">
-                                <i class="fa-solid fa-refresh"></i>
-                            </button>
-                            <button class="skin-control-btn" id="zoom-in" title="Zoom In">
-                                <i class="fa-solid fa-search-plus"></i>
-                            </button>
-                            <button class="skin-control-btn" id="zoom-out" title="Zoom Out">
-                                <i class="fa-solid fa-search-minus"></i>
-                            </button>
                         </div>
                         <span class="bedrock-gamertag">${profile.bedrock_gamertag}</span>
                         <div class="bedrock-xuid tiny">XUID: ${profile.xuid || 'N/A'}</div>
@@ -389,192 +347,49 @@
 
             // Initialize 3D skin viewer if bedrock account is linked
             if (profile.bedrock_gamertag) {
-                setTimeout(() => initBedrockSkinViewer(profile), 500);
+                initBedrockSkinViewer(profile);
             }
         }
 
-        // NEW: Bedrock Skin Viewer Functions
+        // SIMPLIFIED Bedrock Skin Viewer Functions
         async function initBedrockSkinViewer(profile) {
             try {
                 const viewerContainer = document.getElementById('bedrock-skin-viewer');
                 if (!viewerContainer) return;
 
-                // Create canvas element
+                // Create canvas element and replace loading spinner
                 viewerContainer.innerHTML = '<canvas id="skin-canvas" width="280" height="350"></canvas>';
-                
                 const canvas = document.getElementById('skin-canvas');
                 if (!canvas) throw new Error('Canvas not created');
 
-                // Initialize skinview3d
+                // Initialize skinview3d with no animation
                 skinViewer = new skinview3d.SkinViewer({
                     canvas: canvas,
                     width: 280,
                     height: 350,
-                    skin: null,
-                    animation: new skinview3d.WalkingAnimation()
+                    skin: null, // Skin will be loaded below
+                    animation: null // No animation
                 });
 
-                // Configure controls
+                // Configure controls - only allow rotation
                 skinViewer.controls.enableRotate = true;
-                skinViewer.controls.enableZoom = true;
+                skinViewer.controls.enableZoom = true; // Keep zoom for accessibility
                 skinViewer.controls.enablePan = false;
-                skinViewer.controls.maxDistance = 70;
-                skinViewer.controls.minDistance = 20;
+                skinViewer.controls.maxDistance = 80;
+                skinViewer.controls.minDistance = 30;
 
-                // Show controls
-                const controls = document.getElementById('bedrock-controls');
-                if (controls) {
-                    controls.style.display = 'flex';
-                    setupSkinControls();
-                }
-
-                // Load the skin
-                await loadBedrockSkin(profile.bedrock_gamertag, profile.xuid);
+                // Load the skin from our API
+                const skinUrl = `/api/bedrock-skin?xuid=${profile.xuid}`;
+                await skinViewer.loadSkin(skinUrl);
                 
                 console.log('✅ Bedrock skin viewer initialized successfully');
                 
             } catch (error) {
                 console.error('❌ Failed to initialize Bedrock skin viewer:', error);
-                showSkinError('Failed to load 3D skin viewer');
+                showSkinError('Failed to load 3D skin');
             }
         }
-
-        function setupSkinControls() {
-            document.getElementById('animation-toggle')?.addEventListener('click', toggleSkinAnimation);
-            document.getElementById('reset-view')?.addEventListener('click', resetSkinView);
-            document.getElementById('zoom-in')?.addEventListener('click', () => skinViewer?.controls?.dollyIn?.(1.2));
-            document.getElementById('zoom-out')?.addEventListener('click', () => skinViewer?.controls?.dollyOut?.(1.2));
-        }
-
-        async function loadBedrockSkin(gamertag, xuid) {
-            if (!skinViewer) return;
-
-            try {
-                console.log(`🎮 Loading Bedrock skin for ${gamertag} (${xuid})`);
-                
-                // Try multiple methods to get the skin
-                let skinUrl = await fetchSkinFromAPI(xuid, gamertag);
-                
-                if (skinUrl) {
-                    await skinViewer.loadSkin(skinUrl);
-                    console.log('✅ Bedrock skin loaded successfully');
-                } else {
-                    // Fallback to default skin
-                    console.log('⚠️ Using default skin as fallback');
-                    const defaultSkin = generateDefaultSkin(gamertag);
-                    await skinViewer.loadSkin(defaultSkin);
-                }
-
-            } catch (error) {
-                console.error('❌ Failed to load Bedrock skin:', error);
-                showSkinError('Failed to load skin texture');
-            }
-        }
-
-        async function fetchSkinFromAPI(xuid, gamertag) {
-            const methods = [
-                // Method 1: Your custom API endpoint
-                async () => {
-                    try {
-                        const response = await fetch(`/api/bedrock-skin?xuid=${xuid}`);
-                        if (response.ok) {
-                            const blob = await response.blob();
-                            return URL.createObjectURL(blob);
-                        }
-                    } catch (error) {
-                        console.log('Custom API failed:', error);
-                    }
-                    return null;
-                },
-                
-                // Method 2: GeyserMC API
-                async () => {
-                    try {
-                        const response = await fetch(`https://api.geysermc.org/v2/xbox/xuid/${xuid}`);
-                        if (response.ok) {
-                            const data = await response.json();
-                            if (data.java_uuid) {
-                                return await fetchJavaPlayerSkin(data.java_uuid);
-                            }
-                        }
-                    } catch (error) {
-                        console.log('GeyserMC API failed:', error);
-                    }
-                    return null;
-                },
-                
-                // Method 3: Generate procedural skin
-                async () => {
-                    return generateDefaultSkin(gamertag);
-                }
-            ];
-
-            for (const method of methods) {
-                const result = await method();
-                if (result) return result;
-            }
-
-            return null;
-        }
-
-        async function fetchJavaPlayerSkin(uuid) {
-            try {
-                const response = await fetch(`https://sessionserver.mojang.com/session/minecraft/profile/${uuid}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    const textures = JSON.parse(atob(data.properties[0].value));
-                    return textures.textures.SKIN?.url || null;
-                }
-            } catch (error) {
-                console.log('Java skin fetch failed:', error);
-            }
-            return null;
-        }
-
-        function generateDefaultSkin(username) {
-            const canvas = document.createElement('canvas');
-            canvas.width = 64;
-            canvas.height = 64;
-            const ctx = canvas.getContext('2d');
-            
-            // Create hash from username
-            let hash = 0;
-            for (let i = 0; i < username.length; i++) {
-                hash = username.charCodeAt(i) + ((hash << 5) - hash);
-            }
-            
-            // Generate colors
-            const hue = Math.abs(hash) % 360;
-            const skinColor = `hsl(${hue}, 60%, 70%)`;
-            const shirtColor = `hsl(${(hue + 120) % 360}, 80%, 50%)`;
-            const pantsColor = `hsl(${(hue + 240) % 360}, 70%, 35%)`;
-            
-            // Clear canvas
-            ctx.clearRect(0, 0, 64, 64);
-            
-            // Draw head
-            ctx.fillStyle = skinColor;
-            ctx.fillRect(8, 8, 8, 8);   // Front
-            ctx.fillRect(24, 8, 8, 8);  // Back
-            
-            // Draw body
-            ctx.fillStyle = shirtColor;
-            ctx.fillRect(20, 20, 8, 12); // Front
-            ctx.fillRect(32, 20, 8, 12); // Back
-            
-            // Draw arms
-            ctx.fillStyle = skinColor;
-            ctx.fillRect(44, 20, 4, 12); // Right arm
-            ctx.fillRect(36, 52, 4, 12); // Left arm
-            
-            // Draw legs
-            ctx.fillStyle = pantsColor;
-            ctx.fillRect(4, 20, 4, 12);  // Right leg
-            ctx.fillRect(20, 52, 4, 12); // Left leg
-            
-            return canvas.toDataURL();
-        }
-
+        
         function showSkinError(message) {
             const viewerContainer = document.getElementById('bedrock-skin-viewer');
             if (viewerContainer) {
@@ -582,37 +397,10 @@
                     <div class="skin-error">
                         <i class="fa-solid fa-exclamation-triangle" style="font-size: 2rem; color: var(--brand-1); margin-bottom: 0.5rem;"></i>
                         <p>${message}</p>
-                        <button class="btn ghost" style="margin-top: 1rem; font-size: 12px;" onclick="location.reload()">
-                            <i class="fa-solid fa-refresh"></i> Retry
-                        </button>
                     </div>
                 `;
             }
         }
-
-        // Skin viewer controls
-        function toggleSkinAnimation() {
-            if (!skinViewer) return;
-            
-            const btn = document.getElementById('animation-toggle');
-            if (isAnimating) {
-                skinViewer.animation = null;
-                btn.innerHTML = '<i class="fa-solid fa-play"></i>';
-            } else {
-                skinViewer.animation = new skinview3d.WalkingAnimation();
-                btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-            }
-            isAnimating = !isAnimating;
-        }
-
-        function resetSkinView() {
-            if (!skinViewer) return;
-            skinViewer.controls.reset();
-        }
-
-        // Make functions globally available
-        window.toggleSkinAnimation = toggleSkinAnimation;
-        window.resetSkinView = resetSkinView;
         
         async function setupFollowSystem(profile, currentUser) {
             const followButton = document.querySelector('.follow-btn');
@@ -620,7 +408,6 @@
                 return;
             }
 
-            // Check if currently following
             const { count, error: checkError } = await supabase
                 .from('followers')
                 .select('*', { count: 'exact', head: true })
@@ -654,7 +441,6 @@
                 
                 try {
                     if (isFollowing) {
-                        // Unfollow
                         const { error } = await supabase
                             .from('followers')
                             .delete()
@@ -662,7 +448,6 @@
                             .eq('following_id', profile.id);
                         if (error) throw error;
                     } else {
-                        // Follow
                         const { error } = await supabase
                             .from('followers')
                             .insert([{
@@ -672,7 +457,6 @@
                         if (error) throw error;
                     }
                     
-                    // Get updated count directly from our new, reliable VIEW
                     const { data: updatedProfile, error } = await supabase
                         .from('profiles_with_counts')
                         .select('followers_count')
@@ -704,7 +488,6 @@
 
                 console.log('👤 Looking for user:', username);
 
-                // Get target profile using a case-insensitive lookup (.ilike)
                 const { data: profile, error: profileError } = await supabase
                     .from('profiles_with_counts')
                     .select('*')
@@ -723,7 +506,6 @@
 
                 console.log('✅ Profile loaded:', profile.username);
 
-                // Increment view count if viewing someone else's profile
                 if (currentUser && currentUser.id !== profile.id) {
                     try {
                         const { error } = await supabase.rpc('increment_view_count', { 
@@ -735,8 +517,6 @@
                     }
                 }
                 
-                // Get user's packs
-                console.log('📦 Loading user packs...');
                 const { data: packs, error: packsError } = await supabase
                     .from('packs')
                     .select('*')
@@ -776,3 +556,4 @@
     <script type="module" src="auth.js"></script>
 </body>
 </html>
+
