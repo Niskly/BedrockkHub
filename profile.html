@@ -59,6 +59,7 @@
         /* Profile Header Card */
         .profile-header { border-radius: 16px; margin-bottom: 2rem; position: relative; background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); border: 1px solid var(--border); }
         .profile-banner { height: 220px; background-size: cover; background-position: center; border-radius: 16px 16px 0 0; }
+        /* MODIFIED: Added position:relative to this container */
         .profile-details { position: relative; padding: 1rem 1.5rem; display: flex; flex-direction: column; margin-top: -70px; z-index: 2; }
         .profile-meta { display: flex; align-items: flex-end; gap: 1.5rem; }
         .profile-avatar { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #161616; box-shadow: 0 10px 30px rgba(0,0,0,0.5); flex-shrink: 0; }
@@ -67,16 +68,34 @@
         .info-top h1 { font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, var(--brand-1), #ff525a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .profile-bio { color: var(--muted); margin-top: 0.5rem; max-width: 500px; line-height: 1.5; font-size: 13px; }
         .header-stats { display: flex; gap: 1.5rem; align-items: baseline; }
-        /* FIX 3: Made stat items flex containers to align count and label horizontally */
         .stat-item { display: flex; align-items: baseline; gap: 0.4rem; }
         .stat-item .count { font-weight: 700; color: var(--text); }
         .stat-item .label { font-size: .8rem; color: var(--muted); }
         .profile-actions { position: absolute; top: 1.5rem; right: 1.5rem; z-index: 3; }
-        /* FIX 2: Added a specific style for the 'Following' button state */
         .profile-actions .btn.ghost { background-color: var(--bg-2); color: var(--muted); }
-        .social-links-container { margin-top: 1rem; display: flex; gap: 0.8rem; }
-        .social-link { font-size: 1.2rem; color: var(--muted); transition: color .2s; }
         
+        /* NEW: Styles for the social icons in the corner */
+        .profile-social-icons {
+            position: absolute;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            display: flex;
+            gap: 0.8rem;
+        }
+        .social-link {
+            font-size: 1.2rem;
+            color: var(--muted);
+            transition: color .2s ease-in-out, transform .2s ease-in-out;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+        .social-link:hover {
+            color: var(--text);
+            transform: translateY(-2px);
+        }
+
         /* Content Grid & Cards */
         .profile-content-grid { display: grid; grid-template-columns: 300px 1fr; gap: 1.5rem; align-items: flex-start; }
         .card { border-radius: 16px; background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); border: 1px solid var(--border); }
@@ -202,6 +221,7 @@
             });
         }
 
+        // MODIFIED: This function now checks the "type" property from settings.html
         function renderSocialLinks(socialLinks) {
             if (!socialLinks || typeof socialLinks !== 'object') return '';
             const platforms = [
@@ -209,14 +229,20 @@
                 { key: 'reddit', icon: 'fa-brands fa-reddit-alien' }, { key: 'youtube', icon: 'fa-brands fa-youtube' },
                 { key: 'twitter', icon: 'fa-brands fa-twitter' }, { key: 'github', icon: 'fa-brands fa-github' }
             ];
-            return platforms.filter(p => socialLinks[p.key] && socialLinks[p.key].value).map(p => {
-                const link = socialLinks[p.key];
-                if (link.type === 'url') {
-                    return `<a href="${link.value}" target="_blank" class="social-link" title="${p.key}"><i class="${p.icon}"></i></a>`;
-                } else {
-                    return `<button class="social-link" style="background:none;border:none;cursor:pointer;" onclick="copyToClipboard('${link.value}', '${p.key}')" title="Copy ${p.key} ID"><i class="${p.icon}"></i></button>`;
-                }
-            }).join('');
+            
+            return platforms
+                .filter(p => socialLinks[p.key])
+                .map(p => {
+                    const value = socialLinks[p.key];
+                    // Logic to decide if it's a link or text to copy
+                    const isLink = value.startsWith('http://') || value.startsWith('https://');
+                    
+                    if (isLink) {
+                        return `<a href="${value}" target="_blank" class="social-link" title="${p.key}"><i class="${p.icon}"></i></a>`;
+                    } else {
+                        return `<button class="social-link" onclick="copyToClipboard('${value}', '${p.key}')" title="Copy ${p.key} ID"><i class="${p.icon}"></i></button>`;
+                    }
+                }).join('');
         }
 
         function renderDashboard(profile, packs, currentUser) {
@@ -258,9 +284,9 @@
                                     </div>
                                 </div>
                                 <p class="profile-bio">${profile.bio || "This user hasn't written a bio yet."}</p>
-                                <div class="social-links-container">${socialLinksHtml}</div>
                             </div>
                         </div>
+                        <div class="profile-social-icons">${socialLinksHtml}</div>
                     </div>
                 </div>
                 <div class="profile-content-grid">
@@ -386,6 +412,7 @@
             loadProfilePage(loggedInUser);
         });
 
+        // Make this globally accessible for the inline onclick handlers
         window.copyToClipboard = copyToClipboard;
     </script>
     <script type="module" src="auth.js"></script>
