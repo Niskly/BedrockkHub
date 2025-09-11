@@ -26,26 +26,13 @@
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn.primary { background: linear-gradient(90deg, var(--brand-1), var(--brand-2)); box-shadow: 0 10px 30px rgba(222, 33, 42, .22); color: white; }
         .btn.ghost { border-color: var(--border); background: transparent; color: var(--text); }
-        .btn.sm { padding: .25rem .5rem; border-radius: 8px; font-weight: 700; display: inline-flex; align-items: center; gap: .4rem; min-width: auto; }
         .spinner { width: 1em; height: 1em; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         /* Header Nav */
         header { position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(1.2) blur(10px); background: rgba(12, 12, 12, 0.75); border-bottom: 1px solid var(--border); }
         .nav { max-width: 1100px; margin: 0 auto; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; }
-        .brand { display: flex; align-items: center; gap: .8rem; }
-        .brand-badge { height: 40px; width: 40px; border-radius: 10px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); }
-        .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-11px); }
-        .brand-title { font-weight: 800; letter-spacing: .6px; font-size: 15px; }
         .nav-actions { display: flex; align-items: center; gap: 0.6rem; }
-        .user-dropdown { position: relative; display: inline-block; }
-        .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
-        .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
-        .user-menu-btn:hover { border-color: var(--border-strong); }
-        .dropdown-content { display: none; position: absolute; right: 0; top: 110%; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; }
-        .dropdown-content.show { display: block; }
-        .dropdown-content a { color: var(--muted); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 600; }
-        .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
         
         /* Main Layout */
         .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
@@ -55,28 +42,26 @@
         .profile-header { border-radius: 16px; margin-bottom: 2rem; overflow: hidden; position: relative; background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); border: 1px solid var(--border); }
         .profile-banner { height: 220px; background-size: cover; background-position: center; }
         .profile-details { position: relative; padding: 1rem 1.5rem; display: flex; flex-direction: column; margin-top: -70px; z-index: 2; }
-        .profile-meta { display: flex; align-items: center; gap: 1.5rem; }
-        .profile-avatar { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #161616; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .profile-meta { display: flex; align-items: flex-end; gap: 1.5rem; }
+        .profile-avatar { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #161616; box-shadow: 0 10px 30px rgba(0,0,0,0.5); flex-shrink: 0; }
         .profile-main-info { padding-top: 70px; width: 100%; }
         .info-top { display: flex; align-items: baseline; gap: 1.5rem; flex-wrap: wrap; }
-        .info-top h1 { font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, var(--brand-1), #ff525a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; flex-shrink: 0; }
+        .info-top h1 { font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, var(--brand-1), #ff525a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .profile-bio { color: var(--muted); margin-top: 0.5rem; max-width: 500px; line-height: 1.5; font-size: 13px; }
-        .header-stats { display: flex; gap: 1.5rem; align-items: center; }
+        .header-stats { display: flex; gap: 1.5rem; align-items: center; margin-left: auto; }
         .stat-item { text-align: left; }
         .stat-item .count { font-size: 1.1rem; font-weight: 700; color: var(--text); }
         .stat-item .label { font-size: .8rem; color: var(--muted); }
         .profile-actions { position: absolute; top: 1.5rem; right: 1.5rem; z-index: 3; }
         .social-links-container { margin-top: 1rem; display: flex; gap: 0.8rem; }
         .social-link { font-size: 1.2rem; color: var(--muted); transition: color .2s; }
-        .social-link:hover { color: var(--text); }
-
-        /* Content Grid */
+        
+        /* Content Grid & Cards */
         .profile-content-grid { display: grid; grid-template-columns: 300px 1fr; gap: 1.5rem; align-items: flex-start; }
         .card { border-radius: 16px; background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); border: 1px solid var(--border); }
         .card-body { padding: 1.2rem; }
-        h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; }
-
-        /* Minecraft Profile Card */
+        
+        /* Minecraft Card */
         .minecraft-profile-card { display: flex; flex-direction: column; }
         .bedrock-display { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
         .bedrock-skin-viewer { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); position: relative; width: 100%; max-width: 280px; height: 350px; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg'); background-size: cover; background-position: center; }
@@ -87,44 +72,38 @@
         .profile-type-btn { flex: 1; padding: 0.5rem; border: none; background: transparent; color: var(--muted); font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
         .profile-type-btn.active { background: var(--bg-0); color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
         
-        /* Texture Packs Card */
+        /* Packs Card */
         .packs-header { display: flex; justify-content: space-between; align-items: center; }
         .upload-btn { height: 36px; width: 36px; border-radius: 10px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); color: white; font-size: 1rem; cursor: pointer; }
         .packs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin-top: 1.2rem; }
         .pack-card { background: var(--bg-1); border-radius: 16px; overflow: hidden; transition: all 0.2s; border: 1px solid transparent; }
-        .pack-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.2); box-shadow: 0 10px 30px rgba(0, 0, 0, .4); }
         .thumb { height: 120px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-        .thumb .pack-icon-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; filter: blur(8px) brightness(0.7); transform: scale(1.1); }
         .thumb .pack-icon { position: relative; width: 80px; height: 80px; border-radius: 8px; object-fit: cover; z-index: 1; }
         .content { padding: 14px; }
         
-        /* Modals and Overlays */
+        /* Modal */
         .backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, .8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 60; }
-        .modal { width: 100%; max-width: 420px; background: var(--bg-1); border-radius: 12px; overflow-y: auto; max-height: 90vh; border: 1px solid var(--border); }
+        .modal { width: 100%; max-width: 420px; background: var(--bg-1); border-radius: 12px; border: 1px solid var(--border); }
         .modal .panel { padding: 20px; }
-        .modal-footer { display: flex; justify-content: flex-end; align-items: center; gap: 10px; padding: 12px 20px 20px; }
-        .file-upload-area { margin-top: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; border: 2px dashed var(--border); border-radius: 12px; background: var(--bg-0); text-align: center; cursor: pointer; }
-        .file-upload-area:hover { border-color: var(--brand-1); background: rgba(222, 33, 42, .05); }
-        .file-upload-area i { font-size: 24px; margin-bottom: 12px; color: var(--brand-1); }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 12px 20px 20px; }
+        .file-upload-area { margin-top: 1rem; padding: 24px; border: 2px dashed var(--border); border-radius: 12px; text-align: center; cursor: pointer; }
         .file-hint { margin-top: 6px; color: var(--muted); }
-        input[type="text"] { width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-2);color:var(--text); font-family: inherit; font-size: inherit; }
-        #toast-container { position: fixed; top: 80px; right: 20px; z-index: 100; display: flex; flex-direction: column; gap: 10px; }
-        .toast { padding: 12px 18px; border-radius: 8px; color: white; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; background: var(--bg-1); border: 1px solid var(--border); }
-        .toast.error { border-left: 4px solid var(--danger); }
-        .toast.success { border-left: 4px solid var(--success); }
+        input[type="text"] { width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-2);color:var(--text); }
+        #toast-container { position: fixed; top: 80px; right: 20px; z-index: 100; }
+        .toast { padding: 12px 18px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; background: var(--bg-1); border: 1px solid var(--border); }
         @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
 
         @media (max-width: 768px) {
             .profile-content-grid { grid-template-columns: 1fr; }
             .info-top { flex-direction: column; align-items: flex-start; }
-            .header-stats { margin-top: 1rem; }
+            .header-stats { margin-left: 0; margin-top: 1rem; }
         }
     </style>
 </head>
 <body>
     <header>
         <div class="nav">
-            <a class="brand" href="/"><div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div><div><div class="brand-title">MCHUB</div><div class="tiny">Minecraft Bedrock • community</div></div></a>
+             <a class="brand" href="/"><div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div></a>
             <div id="nav-actions" class="nav-actions"></div>
         </div>
     </header>
@@ -149,14 +128,10 @@
                         <input id="packName" required placeholder="e.g. Crystal PvP" type="text">
                     </div>
                     <div class="file-upload-area" id="pack-file-area" onclick="document.getElementById('fileInput').click()">
-                        <i class="fa-solid fa-file-arrow-up"></i>
-                        <div><span style="color:var(--brand-1)">Browse</span> for a pack file</div>
                         <div class="file-hint" id="fileHint">.mcpack or .zip required</div>
                         <input id="fileInput" type="file" accept=".mcpack,.zip" style="display:none" onchange="hintFile()" />
                     </div>
                      <div class="file-upload-area" id="pack-icon-area" onclick="document.getElementById('iconInput').click()">
-                        <i class="fa-solid fa-image"></i>
-                        <div><span style="color:var(--brand-1)">Browse</span> for a pack icon</div>
                         <div class="file-hint" id="iconHint">.png required</div>
                         <input id="iconInput" type="file" accept=".png" style="display:none" onchange="hintIcon()" />
                     </div>
@@ -287,7 +262,7 @@
                 packs.forEach(pack => {
                     const card = document.createElement('div');
                     card.className = 'pack-card';
-                    const thumbContent = pack.icon_url ? `<div class="pack-icon-bg" style="background-image: url('${pack.icon_url}');"></div><img class="pack-icon" src="${pack.icon_url}" alt="${pack.name} Icon">` : `<div style="width:100%; height:100%; display:grid; place-items:center; background:#2c2c2c"><i class="fa-solid fa-cube fa-2x"></i></div>`;
+                    const thumbContent = pack.icon_url ? `<img class="pack-icon" src="${pack.icon_url}" alt="${pack.name} Icon">` : `<div style="width:100%; height:100%; display:grid; place-items:center; background:#2c2c2c"><i class="fa-solid fa-cube fa-2x"></i></div>`;
                     card.innerHTML = `<a href="#"><div class="thumb">${thumbContent}</div><div class="content"><h4 style="font-size:0.9rem; font-weight:600;">${pack.name}</h4></div></a>`;
                     packsGridEl.appendChild(card);
                 });
