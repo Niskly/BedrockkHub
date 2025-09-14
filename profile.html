@@ -21,11 +21,12 @@
 
         /* General UI */
         a { color: inherit; text-decoration: none; }
-        .tiny { font-size: 11px; color: var(--muted); }
+        .tiny { font-size: 12px; color: var(--muted); }
         .btn { padding: .5rem 1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn.primary { background: linear-gradient(90deg, var(--brand-1), var(--brand-2)); box-shadow: 0 10px 30px rgba(222, 33, 42, .22); color: white; }
         .btn.ghost { border-color: var(--border); background: transparent; color: var(--text); }
+        .btn.sm { padding: .25rem .5rem; border-radius: 8px; font-weight: 700; }
         .spinner { width: 1em; height: 1em; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
@@ -36,12 +37,6 @@
         .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-11px); }
         .brand-title { font-weight: 800; letter-spacing: .6px; font-size: 15px; }
         .nav-actions { display: flex; align-items: center; gap: 0.6rem; }
-        .btn { padding: .5rem 1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .btn.primary { background: linear-gradient(90deg, var(--brand-1), var(--brand-2)); box-shadow: 0 10px 30px rgba(222, 33, 42, .22); color: white; }
-        .btn.ghost { border-color: var(--border); background: transparent; color: var(--text); }
-        .btn.danger { background: linear-gradient(90deg, var(--error), #dc2626); color: white; }
-        .tiny { font-size: 11px; color: var(--muted); }
         
         .user-dropdown { position: relative; display: inline-block; }
         .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
@@ -52,17 +47,26 @@
         .dropdown-content a { color: var(--muted); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 600; }
         .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
         
-        /* Main Layout */
         .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
         .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; min-height: 60vh; color: var(--muted); }
         
-        /* Profile Header Card */
         .profile-header { border-radius: 16px; margin-bottom: 2rem; position: relative; background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); border: 1px solid var(--border); }
         .profile-banner { height: 220px; background-size: cover; background-position: center; border-radius: 16px 16px 0 0; }
-        /* MODIFIED: Added position:relative to this container */
         .profile-details { position: relative; padding: 1rem 1.5rem; display: flex; flex-direction: column; margin-top: -70px; z-index: 2; }
         .profile-meta { display: flex; align-items: flex-end; gap: 1.5rem; }
         .profile-avatar { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #161616; box-shadow: 0 10px 30px rgba(0,0,0,0.5); flex-shrink: 0; }
+        
+        /* --- FIX: STYLES FOR THE PFP PLACEHOLDER --- */
+        .pfp-placeholder {
+            width: 140px; height: 140px; border-radius: 50%;
+            border: 4px solid #161616; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            flex-shrink: 0; background-color: var(--bg-2);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .pfp-placeholder span {
+            font-size: 4rem; font-weight: 900; color: var(--brand-1);
+        }
+
         .profile-main-info { padding-top: 70px; width: 100%; }
         .info-top { display: flex; align-items: baseline; gap: 1.5rem; flex-wrap: wrap; }
         .info-top h1 { font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, var(--brand-1), #ff525a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
@@ -73,35 +77,14 @@
         .stat-item .label { font-size: .8rem; color: var(--muted); }
         .profile-actions { position: absolute; top: 1.5rem; right: 1.5rem; z-index: 3; }
         .profile-actions .btn.ghost { background-color: var(--bg-2); color: var(--muted); }
-        
-        /* NEW: Styles for the social icons in the corner */
-        .profile-social-icons {
-            position: absolute;
-            bottom: 1.5rem;
-            right: 1.5rem;
-            display: flex;
-            gap: 0.8rem;
-        }
-        .social-link {
-            font-size: 1.2rem;
-            color: var(--muted);
-            transition: color .2s ease-in-out, transform .2s ease-in-out;
-            background: none;
-            border: none;
-            padding: 0;
-            cursor: pointer;
-        }
-        .social-link:hover {
-            color: var(--text);
-            transform: translateY(-2px);
-        }
+        .profile-social-icons { position: absolute; bottom: 1.5rem; right: 1.5rem; display: flex; gap: 0.8rem; }
+        .social-link { font-size: 1.2rem; color: var(--muted); transition: all .2s ease-in-out; background: none; border: none; padding: 0; cursor: pointer; }
+        .social-link:hover { color: var(--text); transform: translateY(-2px); }
 
-        /* Content Grid & Cards */
         .profile-content-grid { display: grid; grid-template-columns: 300px 1fr; gap: 1.5rem; align-items: flex-start; }
         .card { border-radius: 16px; background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); border: 1px solid var(--border); }
         .card-body { padding: 1.2rem; }
         
-        /* Minecraft Card */
         .minecraft-profile-card { display: flex; flex-direction: column; }
         .bedrock-display { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
         .bedrock-skin-viewer { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); position: relative; width: 100%; max-width: 280px; height: 350px; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg'); background-size: cover; background-position: center; }
@@ -112,23 +95,26 @@
         .profile-type-btn { flex: 1; padding: 0.5rem; border: none; background: transparent; color: var(--muted); font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
         .profile-type-btn.active { background: var(--bg-0); color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
         
-        /* Packs Card */
         .packs-header { display: flex; justify-content: space-between; align-items: center; }
         .upload-btn { height: 36px; width: 36px; border-radius: 10px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); color: white; font-size: 1rem; cursor: pointer; }
         .packs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin-top: 1.2rem; }
         .pack-card { background: var(--bg-1); border-radius: 16px; overflow: hidden; transition: all 0.2s; border: 1px solid transparent; }
+        .pack-card:hover { border-color: var(--border-strong); transform: translateY(-2px); }
         .thumb { height: 120px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
         .thumb .pack-icon { position: relative; width: 80px; height: 80px; border-radius: 8px; object-fit: cover; z-index: 1; }
-        .content { padding: 14px; }
-        
-        /* Modal */
+        .content { padding: 10px; }
+        .pack-stats { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 8px; }
+
+        /* --- STYLES FOR SIMPLIFIED UPLOAD MODAL --- */
         .backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, .8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 60; }
-        .modal { width: 100%; max-width: 420px; background: var(--bg-1); border-radius: 12px; border: 1px solid var(--border); }
+        .modal { width: 100%; max-width: 420px; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; }
         .modal .panel { padding: 20px; }
         .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 12px 20px 20px; }
-        .file-upload-area { margin-top: 1rem; padding: 24px; border: 2px dashed var(--border); border-radius: 12px; text-align: center; cursor: pointer; }
-        .file-hint { margin-top: 6px; color: var(--muted); }
-        input[type="text"] { width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-2);color:var(--text); }
+        .file-upload-area { margin-top: 1rem; padding: 24px; border: 2px dashed var(--border); border-radius: 12px; text-align: center; cursor: pointer; background: var(--bg-0); }
+        .file-upload-area:hover { border-color: var(--brand-1); background: rgba(222, 33, 42, .05); }
+        .file-hint { color: var(--muted); }
+        input[type="text"] { width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-2);color:var(--text); font-family: inherit; font-size: inherit; }
+
         #toast-container { position: fixed; top: 80px; right: 20px; z-index: 100; }
         .toast { padding: 12px 18px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; background: var(--bg-1); border: 1px solid var(--border); }
         @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
@@ -157,7 +143,8 @@
     <main class="container" id="profile-container">
         <div class="loading-container"><div class="spinner"></div><p>Loading Profile...</p></div>
     </main>
-
+    
+    <!-- --- SIMPLIFIED UPLOAD MODAL --- -->
     <div id="backdrop" class="backdrop">
         <div class="modal">
             <div class="panel">
@@ -165,21 +152,19 @@
                     <strong>Upload Texture Pack</strong>
                     <button class="btn sm ghost" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
                 </div>
-                <p class="tiny">Select a .mcpack or .zip file, set a name, and upload an icon.</p>
+                <p class="tiny">Select a .mcpack or .zip file. The pack icon will be automatically extracted.</p>
             </div>
             <div class="panel" style="padding-top:0">
                 <form id="uploadForm" onsubmit="handleUpload(event)">
-                    <div>
-                        <label class="tiny">Pack Name</label>
-                        <input id="packName" required placeholder="e.g. Crystal PvP" type="text">
-                    </div>
-                    <div class="file-upload-area" id="pack-file-area" onclick="document.getElementById('fileInput').click()">
-                        <div class="file-hint" id="fileHint">.mcpack or .zip required</div>
-                        <input id="fileInput" type="file" accept=".mcpack,.zip" style="display:none" onchange="hintFile()" />
-                    </div>
-                     <div class="file-upload-area" id="pack-icon-area" onclick="document.getElementById('iconInput').click()">
-                        <div class="file-hint" id="iconHint">.png required</div>
-                        <input id="iconInput" type="file" accept=".png" style="display:none" onchange="hintIcon()" />
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div>
+                            <label class="tiny">Pack Name</label>
+                            <input id="packName" required placeholder="e.g. My PvP Pack" type="text">
+                        </div>
+                        <div class="file-upload-area" id="pack-file-area" onclick="document.getElementById('fileInput').click()">
+                            <div class="file-hint" id="fileHint">Click to select .mcpack or .zip file</div>
+                            <input id="fileInput" type="file" accept=".mcpack,.zip" style="display:none" onchange="hintFile()" />
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn ghost" onclick="closeModal()">Cancel</button>
@@ -189,6 +174,7 @@
             </div>
         </div>
     </div>
+
     <div id="toast-container"></div>
     
     <script type="module">
@@ -200,8 +186,9 @@
 
         let loggedInUser = null;
         let skinViewer = null;
+        let currentProfileData = null;
 
-        function showToast(message, type = 'success') {
+        function showToast(message, type = 'error') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
@@ -221,7 +208,6 @@
             });
         }
 
-        // MODIFIED: This function now checks the "type" property from settings.html
         function renderSocialLinks(socialLinks) {
             if (!socialLinks || typeof socialLinks !== 'object') return '';
             const platforms = [
@@ -230,29 +216,33 @@
                 { key: 'twitter', icon: 'fa-brands fa-twitter' }, { key: 'github', icon: 'fa-brands fa-github' }
             ];
             
-            return platforms
-                .filter(p => socialLinks[p.key])
-                .map(p => {
-                    const value = socialLinks[p.key];
-                    // Logic to decide if it's a link or text to copy
-                    const isLink = value.startsWith('http://') || value.startsWith('https://');
-                    
-                    if (isLink) {
-                        return `<a href="${value}" target="_blank" class="social-link" title="${p.key}"><i class="${p.icon}"></i></a>`;
-                    } else {
-                        return `<button class="social-link" onclick="copyToClipboard('${value}', '${p.key}')" title="Copy ${p.key} ID"><i class="${p.icon}"></i></button>`;
-                    }
-                }).join('');
+            return platforms.filter(p => socialLinks[p.key]).map(p => {
+                const value = socialLinks[p.key];
+                const isLink = value.startsWith('http');
+                if (isLink) {
+                    return `<a href="${value}" target="_blank" class="social-link" title="${p.key}"><i class="${p.icon}"></i></a>`;
+                } else {
+                    return `<button class="social-link" onclick="copyToClipboard('${value}', '${p.key}')" title="Copy ${p.key} ID"><i class="${p.icon}"></i></button>`;
+                }
+            }).join('');
+        }
+        
+        function escapeHtml(str) { 
+            return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); 
         }
 
+        function formatDate(isoString) {
+            if (!isoString) return '';
+            const date = new Date(isoString);
+            return `${date.getMonth() + 1}/${date.getDate()}/${String(date.getFullYear()).slice(-2)}`;
+        }
+
+
         function renderDashboard(profile, packs, currentUser) {
+            currentProfileData = profile;
             const pfpHtml = profile.avatar_url ? `<img src="${profile.avatar_url}" alt="${profile.username}'s avatar" class="profile-avatar">` : `<div class="pfp-placeholder"><span>${(profile.username || '?').charAt(0).toUpperCase()}</span></div>`;
             const bedrockHtml = (profile.bedrock_gamertag && profile.xuid) 
                 ? `<div class="minecraft-profile-card">
-                        <div class="profile-type-switcher">
-                            <button class="profile-type-btn active">Bedrock</button>
-                            <button class="profile-type-btn">Java</button>
-                        </div>
                         <div class="bedrock-gamertag">${profile.bedrock_gamertag}</div>
                         <div class="tiny" style="text-align:center; margin-bottom: 0.5rem;">XUID: ${profile.xuid}</div>
                         <div class="bedrock-display">
@@ -264,24 +254,19 @@
                 : `<div style="text-align: center; padding: 2rem; color: var(--muted);"><i class="fa-brands fa-xbox fa-3x" style="opacity: 0.3; margin-bottom: 1rem;"></i><p>No Bedrock account linked</p></div>`;
             
             const socialLinksHtml = renderSocialLinks(profile.social_links);
-            const showFollowButton = currentUser && currentUser.id !== profile.id;
-            const profileActionsHtml = showFollowButton ? `<div class="profile-actions"><button class="btn primary follow-btn"><i class="fa-solid fa-user-plus"></i> Follow</button></div>` : '';
+            const isOwnProfile = currentUser && currentUser.id === profile.id;
+            const profileActionsHtml = !isOwnProfile && currentUser ? `<div class="profile-actions"><button class="btn primary follow-btn"><i class="fa-solid fa-user-plus"></i> Follow</button></div>` : (isOwnProfile ? `<div class="profile-actions"><a href="/settings.html" class="btn ghost"><i class="fa-solid fa-pencil"></i> Edit Profile</a></div>` : '');
 
             profileContainer.innerHTML = `
-                <div class="profile-header glassy">
+                <div class="profile-header">
                     ${profileActionsHtml}
                     <div class="profile-banner" style="background-image: url('${profile.banner_url || 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/default-banner.png'}')"></div>
                     <div class="profile-details">
                         <div class="profile-meta">
-                            <div style="position:relative;">${pfpHtml}</div>
+                            <div>${pfpHtml}</div>
                             <div class="profile-main-info">
                                 <div class="info-top">
                                     <h1>${profile.username || 'Unnamed'}</h1>
-                                    <div class="header-stats">
-                                        <div class="stat-item"><div class="count">${(profile.view_count || 0).toLocaleString()}</div><div class="label">Views</div></div>
-                                        <div class="stat-item"><div class="count" id="follower-count">${(profile.followers_count || 0).toLocaleString()}</div><div class="label">Followers</div></div>
-                                        <div class="stat-item"><div class="count" id="following-count">${(profile.following_count || 0).toLocaleString()}</div><div class="label">Following</div></div>
-                                    </div>
                                 </div>
                                 <p class="profile-bio">${profile.bio || "This user hasn't written a bio yet."}</p>
                             </div>
@@ -291,18 +276,18 @@
                 </div>
                 <div class="profile-content-grid">
                     <div id="minecraft-container">
-                        <div class="card glassy">
+                        <div class="card">
                             <div class="card-body">
                                 ${bedrockHtml}
                             </div>
                         </div>
                     </div>
                     <div id="packs-container">
-                        <div class="card glassy">
+                        <div class="card">
                             <div class="card-body">
                                 <div class="packs-header">
                                     <h3>Texture Packs</h3>
-                                    ${(currentUser && currentUser.id === profile.id) ? '<div class="upload-btn" title="Upload new pack"><i class="fa-solid fa-plus"></i></div>' : ''}
+                                    ${(currentUser && currentUser.role === 'admin' && isOwnProfile) ? '<div class="upload-btn" title="Upload new pack"><i class="fa-solid fa-plus"></i></div>' : ''}
                                 </div>
                                 <div class="packs-grid" id="packs-grid-placeholder"></div>
                             </div>
@@ -315,8 +300,18 @@
                 packs.forEach(pack => {
                     const card = document.createElement('div');
                     card.className = 'pack-card';
-                    const thumbContent = pack.icon_url ? `<img class="pack-icon" src="${pack.icon_url}" alt="${pack.name} Icon">` : `<div style="width:100%; height:100%; display:grid; place-items:center; background:#2c2c2c"><i class="fa-solid fa-cube fa-2x"></i></div>`;
-                    card.innerHTML = `<a href="#"><div class="thumb">${thumbContent}</div><div class="content"><h4 style="font-size:0.9rem; font-weight:600;">${pack.name}</h4></div></a>`;
+                    const thumbContent = pack.icon_url ? `<img class="pack-icon" src="${pack.icon_url}" alt="${pack.name} Icon">` : `<div style="width:100%; height:100%; display:grid; place-items:center; background:var(--bg-2)"><i class="fa-solid fa-cube fa-2x"></i></div>`;
+                    card.innerHTML = `
+                        <a href="#">
+                            <div class="thumb">${thumbContent}</div>
+                            <div class="content">
+                                <h4 style="font-size:0.9rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow: ellipsis;">${escapeHtml(pack.name)}</h4>
+                                <div class="pack-stats">
+                                    <span><i class="fa-solid fa-download fa-xs"></i> ${(pack.download_count || 0).toLocaleString()}</span>
+                                    <span>${formatDate(pack.created_at)}</span>
+                                </div>
+                            </div>
+                        </a>`;
                     packsGridEl.appendChild(card);
                 });
             } else {
@@ -325,7 +320,11 @@
             if (profile.bedrock_gamertag && profile.xuid) { initBedrockSkinViewer(profile); }
             
             const uploadBtn = document.querySelector('.upload-btn');
-            if (uploadBtn) { uploadBtn.addEventListener('click', () => document.getElementById('backdrop').style.display = 'flex'); }
+            if (uploadBtn) {
+                uploadBtn.addEventListener('click', () => {
+                    document.getElementById('backdrop').style.display = 'flex';
+                });
+            }
         }
 
         async function initBedrockSkinViewer(profile) {
@@ -342,69 +341,94 @@
                 canvas.addEventListener('mousedown', () => skinViewer.autoRotateAnimation.paused = true, { once: true });
             } catch (error) { console.error('Failed to init skin viewer:', error); }
         }
-        
-        async function setupFollowSystem(profile, currentUser) {
-            const followButton = document.querySelector('.follow-btn');
-            if (!followButton) return;
-            const { count } = await supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', currentUser.id).eq('following_id', profile.id);
-            let isFollowing = count > 0;
-            const updateButtonState = (newCount) => {
-                document.getElementById('follower-count').textContent = newCount.toLocaleString();
-                followButton.innerHTML = isFollowing ? `<i class="fa-solid fa-user-check"></i> Following` : `<i class="fa-solid fa-user-plus"></i> Follow`;
-                followButton.classList.toggle('ghost', isFollowing); followButton.classList.toggle('primary', !isFollowing);
-            };
-            updateButtonState(profile.followers_count || 0);
-            followButton.addEventListener('click', async () => {
-                followButton.disabled = true;
-                const action = isFollowing ? supabase.from('followers').delete().match({ follower_id: currentUser.id, following_id: profile.id }) : supabase.from('followers').insert({ follower_id: currentUser.id, following_id: profile.id });
-                await action;
-                const { data: updatedProfile } = await supabase.from('profiles_with_counts').select('followers_count').eq('id', profile.id).single();
-                isFollowing = !isFollowing;
-                updateButtonState(updatedProfile?.followers_count || 0);
-                followButton.disabled = false;
-            });
-        }
-        
+
         async function loadProfilePage(currentUser) {
             try {
                 const username = new URLSearchParams(window.location.search).get('user');
-                if (!username) return showError('No User Specified', 'Please provide a username.', false); 
-                const { data: profile, error } = await supabase.from('profiles_with_counts').select('*').ilike('username', username).single();
-                if (error || !profile) return showError('User Not Found', `User "${username}" was not found.`, false);
-                if (currentUser && currentUser.id !== profile.id) { supabase.rpc('increment_view_count', { profile_id_to_update: profile.id }).then(() => {}); }
-                const { data: packs } = await supabase.from('packs').select('*').eq('user_id', profile.id).order('created_at', { ascending: false });
+                if (!username) { profileContainer.innerHTML = `<div class="loading-container"><p>No user specified.</p></div>`; return; }
+                const { data: profile, error } = await supabase.from('profiles').select('*').ilike('username', username).single();
+                if (error || !profile) { profileContainer.innerHTML = `<div class="loading-container"><p>User "${username}" not found.</p></div>`; return; }
+                
+                // --- MODIFIED: Fetch from 'profile_packs' table ---
+                const { data: packs } = await supabase.from('profile_packs').select('*').eq('user_id', profile.id).order('created_at', { ascending: false });
+                
                 renderDashboard(profile, packs || [], currentUser);
-                await setupFollowSystem(profile, currentUser);
-            } catch (error) { showError('Loading Error', 'An unexpected error occurred.'); }
+            } catch (error) { 
+                profileContainer.innerHTML = `<div class="loading-container"><p>An error occurred loading the profile.</p></div>`;
+                console.error(error);
+            }
         }
         
-        window.closeModal = () => { document.getElementById('backdrop').style.display = 'none'; document.getElementById('uploadForm').reset(); document.getElementById('fileHint').textContent = '.mcpack or .zip required'; document.getElementById('iconHint').textContent = '.png required'; };
-        window.hintFile = () => { const f = document.getElementById('fileInput').files[0]; if(f) document.getElementById('fileHint').textContent = f.name; };
-        window.hintIcon = () => { const f = document.getElementById('iconInput').files[0]; if(f) document.getElementById('iconHint').textContent = f.name; };
+        // --- GLOBALLY SCOPED FUNCTIONS FOR MODAL ---
+        window.closeModal = () => { 
+            document.getElementById('backdrop').style.display = 'none'; 
+            document.getElementById('uploadForm').reset(); 
+            document.getElementById('fileHint').textContent = 'Click to select .mcpack or .zip file';
+        };
+        window.hintFile = () => { 
+            const f = document.getElementById('fileInput').files[0]; 
+            if(f) document.getElementById('fileHint').textContent = f.name; 
+        };
+        
+        // --- SIMPLIFIED UPLOAD HANDLER ---
         window.handleUpload = async (event) => {
             event.preventDefault();
-            const submitBtn = document.getElementById('submitBtn'), packFile = document.getElementById('fileInput').files[0], iconFile = document.getElementById('iconInput').files[0], packName = document.getElementById('packName').value.trim();
-            if (!packFile || !iconFile || !packName) return showToast('All fields are required.');
-            if (!packFile.name.match(/\.(mcpack|zip)$/i)) return showToast('Invalid pack file type.');
-            if (!iconFile.name.match(/\.png$/i)) return showToast('Icon must be a .png file.');
-            submitBtn.disabled = true; submitBtn.innerHTML = '<div class="spinner"></div> Uploading...';
+            const submitBtn = document.getElementById('submitBtn');
+            const packFile = document.getElementById('fileInput').files[0];
+            const packName = document.getElementById('packName').value.trim();
+
+            if (!packFile || !packName) return showToast('Pack name and file are required.', 'error');
+            if (!packFile.name.match(/\.(mcpack|zip)$/i)) return showToast('Invalid pack file type (.mcpack or .zip only).', 'error');
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="spinner"></div> Uploading...';
+            
             try {
-                const iconPath = `pack_icons/${loggedInUser.id}-${Date.now()}.png`;
-                let { error: iconError } = await supabase.storage.from('packs').upload(iconPath, iconFile);
-                if (iconError) throw new Error(`Icon upload: ${iconError.message}`);
-                const { data: { publicUrl: icon_url } } = supabase.storage.from('packs').getPublicUrl(iconPath);
+                let iconUrl = null;
+                // --- Icon Extraction Logic ---
+                const zip = new JSZip();
+                const contents = await zip.loadAsync(packFile);
+                let iconFile = null;
+                const iconPath = Object.keys(contents.files).find(path => path.toLowerCase().endsWith('pack_icon.png'));
+                if (iconPath) {
+                    iconFile = contents.file(iconPath);
+                }
                 
-                const packPath = `pack_files/${loggedInUser.id}-${Date.now()}-${packFile.name}`;
-                let { error: packError } = await supabase.storage.from('packs').upload(packPath, packFile);
-                if (packError) throw new Error(`Pack file upload: ${packError.message}`);
+                if (iconFile) {
+                    const iconBlob = await iconFile.async('blob');
+                    const iconStoragePath = `pack_icons/${loggedInUser.id}-${Date.now()}.png`;
+                    let { error: iconError } = await supabase.storage.from('pack_icons').upload(iconStoragePath, iconBlob);
+                    if (iconError) throw new Error(`Icon upload failed: ${iconError.message}`);
+                    const { data } = supabase.storage.from('pack_icons').getPublicUrl(iconStoragePath);
+                    iconUrl = data.publicUrl;
+                }
                 
-                let { error: dbError } = await supabase.from('packs').insert({ user_id: loggedInUser.id, name: packName, filename: packPath, icon_url: icon_url, color: 'gray', tags: 'user-upload', resolution: '16x', version: packFile.name.endsWith('.mcpack') ? 'bedrock' : 'java' });
-                if (dbError) throw new Error(`Database insert: ${dbError.message}`);
+                // --- Pack File Upload Logic ---
+                const packStoragePath = `pack_files/${loggedInUser.id}-${Date.now()}-${packFile.name}`;
+                let { error: packError } = await supabase.storage.from('pack_files').upload(packStoragePath, packFile);
+                if (packError) throw new Error(`Pack file upload failed: ${packError.message}`);
+                const { data: { publicUrl: packUrl } } = supabase.storage.from('pack_files').getPublicUrl(packStoragePath);
+
+                // --- Database Insert Logic ---
+                let { error: dbError } = await supabase.from('profile_packs').insert({ 
+                    user_id: loggedInUser.id, 
+                    name: packName, 
+                    filename: packStoragePath, // Store path, not full URL
+                    download_url: packUrl, 
+                    icon_url: iconUrl,
+                    version: packFile.name.endsWith('.mcpack') ? 'bedrock' : 'java' 
+                });
+                if (dbError) throw new Error(`Database insert failed: ${dbError.message}`);
+                
                 showToast('Pack uploaded successfully!', 'success');
                 closeModal();
-                loadProfilePage(loggedInUser);
-            } catch (error) { showToast(error.message, 'error');
-            } finally { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; }
+                loadProfilePage(loggedInUser); // Reload profile to show new pack
+            } catch (error) { 
+                showToast(error.message, 'error');
+            } finally { 
+                submitBtn.disabled = false; 
+                submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; 
+            }
         };
 
         document.addEventListener('auth-ready', (event) => {
@@ -412,7 +436,6 @@
             loadProfilePage(loggedInUser);
         });
 
-        // Make this globally accessible for the inline onclick handlers
         window.copyToClipboard = copyToClipboard;
     </script>
     <script type="module" src="auth.js"></script>
