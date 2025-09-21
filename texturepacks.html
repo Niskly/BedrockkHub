@@ -460,7 +460,117 @@
             render();
         }
         
-        async function handleUpload(e){e.preventDefault();const t=document.getElementById("submitBtn"),o=document.getElementById("uploadFormFieldset"),a=document.getElementById("fileInput").files[0],n=document.getElementById("packName").value.trim(),i=document.getElementById("packDescription").value.trim();if(!a||!a.name.toLowerCase().endsWith(".mcpack")&&!a.name.toLowerCase().endsWith(".zip"))return void showToast("Please select a valid .mcpack or .zip file");if(!state.modalColor)return void showToast("You forgot to select a primary color.");if(!state.modalResolution)return void showToast("You forgot to select a resolution.");let l="";a.name.toLowerCase().endsWith(".mcpack")?l="bedrock":a.name.toLowerCase().endsWith(".zip")&&(l="java"),t.disabled=!0,o.disabled=!0,t.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Processing...';try{let e=null;const r=new JSZip,d=await r.loadAsync(a);let s=null;if(d.forEach((e,t)=>{const o=e.toLowerCase();o.endsWith("pack_icon.png")&&(s=t)}),!s&&d.forEach((e,t)=>{const o=e.toLowerCase();o.endsWith("pack.png")&&(s=t)}),s){t.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...';const o=await s.async("blob"),a=`icons/${Date.now()}-icon.png`,{error:n}=await supabase.storage.from("packs").upload(a,o);if(n)throw n;const{data:i}=supabase.storage.from("packs").getPublicUrl(a);e=i.publicUrl}t.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Uploading Pack...';const c=a.name.replace(/[^a-zA-Z0-9-._]/g,"").replace(/\s+/g,"-"),p=`${Date.now()}-${c}`;await supabase.storage.from("packs").upload(p,a);const m=await fetch("/api/addpacks",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:n||a.name.replace(/\.(mcpack|zip)$/i,""),color:state.modalColor,tags:[...state.modalTags],filename:p,resolution:state.modalResolution,version:l,description:i,icon_url:e})});if(!m.ok)throw new Error((await m.json()).details||"Failed to add pack metadata.");await loadPacksOnStartup(),closeModal()}catch(e){showToast("Upload failed: "+e.message)}finally{t.disabled=!1,o.disabled=!1,t.innerHTML='<i class="fa-solid fa-upload"></i> Upload'}}
+      async function handleUpload(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById("submitBtn");
+            const formFieldset = document.getElementById("uploadFormFieldset");
+            const packFile = document.getElementById("fileInput").files[0];
+            const packName = document.getElementById("packName").value.trim();
+            const packDescription = document.getElementById("packDescription").value.trim();
+
+            if (!packFile || (!packFile.name.toLowerCase().endsWith(".mcpack") && !packFile.name.toLowerCase().endsWith(".zip"))) {
+                return showToast("Please select a valid .mcpack or .zip file");
+            }
+            if (!state.modalColor) {
+                return showToast("You forgot to select a primary color.");
+            }
+            if (!state.modalResolution) {
+                return showToast("You forgot to select a resolution.");
+            }
+
+            let version = "";
+            if (packFile.name.toLowerCase().endsWith(".mcpack")) {
+                version = "bedrock";
+            } else if (packFile.name.toLowerCase().endsWith(".zip")) {
+                version = "java";
+            }
+
+            submitBtn.disabled = true;
+            formFieldset.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+
+            try {
+                // Get the current session token
+                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                if (sessionError || !session) {
+                    throw new Error("You must be logged in to upload packs.");
+                }
+
+                let iconUrl = null;
+                const zip = new JSZip();
+                const contents = await zip.loadAsync(packFile);
+                let iconPath = null;
+
+                // Look for pack_icon.png first
+                Object.keys(contents.files).forEach(path => {
+                    const lowerPath = path.toLowerCase();
+                    if (lowerPath.endsWith('pack_icon.png')) {
+                        iconPath = path;
+                    }
+                });
+
+                // If no pack_icon.png, look for pack.png
+                if (!iconPath) {
+                    Object.keys(contents.files).forEach(path => {
+                        const lowerPath = path.toLowerCase();
+                        if (lowerPath.endsWith('pack.png')) {
+                            iconPath = path;
+                        }
+                    });
+                }
+
+                if (iconPath) {
+                    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...';
+                    const iconFile = contents.files[iconPath];
+                    const iconBlob = await iconFile.async("blob");
+                    const iconStoragePath = `icons/${Date.now()}-icon.png`;
+                    const { error: iconError } = await supabase.storage.from("packs").upload(iconStoragePath, iconBlob);
+                    if (iconError) throw iconError;
+                    const { data: iconData } = supabase.storage.from("packs").getPublicUrl(iconStoragePath);
+                    iconUrl = iconData.publicUrl;
+                }
+
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Pack...';
+                const sanitizedName = packFile.name.replace(/[^a-zA-Z0-9-._]/g, "").replace(/\s+/g, "-");
+                const packStoragePath = `${Date.now()}-${sanitizedName}`;
+                await supabase.storage.from("packs").upload(packStoragePath, packFile);
+
+                // Make the API call with proper authorization header
+                const response = await fetch("/api/addpacks", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${session.access_token}`
+                    },
+                    body: JSON.stringify({
+                        name: packName || packFile.name.replace(/\.(mcpack|zip)$/i, ""),
+                        color: state.modalColor,
+                        tags: [...state.modalTags],
+                        filename: packStoragePath,
+                        resolution: state.modalResolution,
+                        version: version,
+                        description: packDescription,
+                        icon_url: iconUrl
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.details || errorData.error || "Failed to add pack metadata.");
+                }
+
+                await loadPacksOnStartup();
+                closeModal();
+                showToast("Pack uploaded successfully!", "success");
+
+            } catch (error) {
+                showToast("Upload failed: " + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                formFieldset.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload';
+            }
+        }
         async function saveEdit(e){e.preventDefault();if(!currentEditId)return;const{error:t}=await supabase.from("packs").update({name:document.getElementById("editPackName").value.trim(),description:document.getElementById("editPackDescription").value.trim(),color:state.editColor,tags:[...state.editTags].join(","),resolution:state.editResolution}).eq("id",currentEditId);t?showToast("Save failed: "+t.message):(await loadPacksOnStartup(),closeEditModal())}
         async function confirmDelete(){if(!currentEditId)return;const e=packs.find(e=>e.id===currentEditId);if(!e)return void cancelDelete();try{await supabase.storage.from("packs").remove([e.filename]),e.icon_url&&await supabase.storage.from("packs").remove([`icons/${e.icon_url.split("/").pop()}`]);const{error:t}=await supabase.from("packs").delete().eq("id",currentEditId);if(t)throw t;await loadPacksOnStartup()}catch(e){showToast("Delete failed: "+e.message)}finally{cancelDelete(),closeEditModal()}}
         async function handleDownload(e,t,o,a){e.preventDefault();try{await fetch("/api/increment-download",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:t})});const e=document.getElementById(`downloads-${t}`);if(e){const t=parseInt(e.textContent.replace(/,/g,""),10);e.textContent=(t+1).toLocaleString()}}catch(e){console.error("Failed to update download count:",e)}finally{fetch(o).then(e=>e.blob()).then(e=>{const t=document.createElement("a");t.href=URL.createObjectURL(e),t.download=a,document.body.appendChild(t),t.click(),document.body.removeChild(t)})}}
