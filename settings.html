@@ -223,251 +223,46 @@
             justify-content: center; z-index: 1000; 
         }
         .modal.show { display: flex; animation: modal-bg-fade-in 0.3s ease; }
+        @keyframes modal-bg-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+        /* NEW Cropper Modal Styles from complete-profile.html */
+        .crop-modal-backdrop {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center; z-index: 1100;
+        }
+        .crop-modal-content {
+            background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px;
+            width: 90%; max-width: 400px; padding: 1.5rem;
+            animation: modal-content-fade-in 0.3s ease;
+        }
+         @keyframes modal-content-fade-in {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .cropper-container { max-height: 40vh; margin-top: 1rem; }
+        .cropper-container img { max-width: 100%; }
+        .crop-controls { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1rem; }
+        .zoom-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; }
+        .crop-actions { display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
+        
+        /* Cropper.js specific styling for a circular crop area */
+        #crop-modal[data-crop-type="avatar"] .cropper-view-box,
+        #crop-modal[data-crop-type="avatar"] .cropper-face {
+            border-radius: 50% !important;
+        }
+        .cropper-view-box {
+            box-shadow: 0 0 0 3px var(--brand-1);
+            outline: none;
+        }
+        .cropper-bg { background-image: none !important; }
+
+        /* Confirmation & Social Modals */
         .modal-dialog { 
             background: rgba(18, 18, 18, 0.95); backdrop-filter: blur(30px); 
             border: 1px solid var(--border); border-radius: 20px; 
             box-shadow: 0 25px 50px rgba(0,0,0,0.5);
             animation: modal-content-fade-in 0.3s ease;
         }
-
-        @keyframes modal-bg-fade-in { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes modal-content-fade-in {
-            from { opacity: 0; transform: scale(0.95) translateY(10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-/* Cropper Modal Styles */
-        .cropper-modal { 
-            padding: 0; 
-            max-width: 800px; 
-            width: 90%; 
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .cropper-modal-header { 
-            padding: 2rem 2rem 1.5rem;
-            border-bottom: 1px solid var(--border);
-            background: linear-gradient(135deg, rgba(222, 33, 42, 0.05), rgba(222, 33, 42, 0.02));
-        }
-        .cropper-modal-header h3 { 
-            font-size: 1.8rem; 
-            font-weight: 800; 
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--brand-1), #ff525a);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-align: center;
-        }
-        .cropper-modal-header p {
-            color: var(--muted);
-            font-size: 14px;
-            text-align: center;
-        }
-        
-        .cropper-modal-body {
-            flex: 1;
-            padding: 2rem;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.5rem;
-        }
-        
-        #cropper-image-container { 
-            width: 100%;
-            max-width: 600px;
-            height: 400px;
-            background: var(--bg-0); 
-            border-radius: 20px; 
-            border: 2px solid var(--border); 
-            overflow: hidden; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        #cropper-image { 
-            max-width: 100%; 
-            display: block;
-        }
-        
-        .cropper-modal-footer { 
-            padding: 1.5rem 2rem 2rem;
-            border-top: 1px solid var(--border);
-            background: rgba(255, 255, 255, 0.02);
-            display: flex; 
-            gap: 1rem; 
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .cropper-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            width: 100%;
-            max-width: 600px;
-        }
-        
-        .cropper-main-controls {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-        
-        .cropper-control-group {
-            display: flex;
-            align-items: center;
-            background: var(--bg-2);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 4px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        
-        .cropper-control-btn {
-            background: transparent;
-            border: none;
-            color: var(--muted);
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            font-size: 18px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: grid;
-            place-items: center;
-            position: relative;
-        }
-        .cropper-control-btn:hover {
-            background: var(--bg-1);
-            color: var(--text);
-            transform: scale(1.05);
-        }
-        .cropper-control-btn.active {
-            background: rgba(222, 33, 42, 0.15);
-            color: var(--brand-1);
-            border: 1px solid rgba(222, 33, 42, 0.3);
-        }
-        .cropper-control-separator {
-            width: 1px;
-            height: 24px;
-            background-color: var(--border);
-            margin: 0 4px;
-        }
-        
-        /* Zoom Slider */
-        .zoom-slider-container {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            background: var(--bg-2);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 1rem 1.5rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        .zoom-slider-container i {
-            color: var(--muted);
-            font-size: 16px;
-        }
-        .zoom-slider {
-            flex: 1;
-            -webkit-appearance: none;
-            appearance: none;
-            height: 6px;
-            background: var(--bg-1);
-            border-radius: 3px;
-            outline: none;
-            position: relative;
-        }
-        .zoom-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(222, 33, 42, 0.3);
-            transition: transform 0.2s ease;
-        }
-        .zoom-slider::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-        }
-        .zoom-slider::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(222, 33, 42, 0.3);
-            transition: transform 0.2s ease;
-            border: none;
-        }
-        .zoom-slider::-moz-range-thumb:hover {
-            transform: scale(1.2);
-        }
-        .zoom-value {
-            min-width: 45px;
-            text-align: center;
-            font-weight: 700;
-            color: var(--text);
-            font-size: 14px;
-        }
-        
-        /* Preset Filters */
-        .preset-filters {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .preset-filter-btn {
-            padding: 8px 16px;
-            background: var(--bg-2);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            color: var(--muted);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .preset-filter-btn:hover {
-            background: var(--bg-1);
-            color: var(--text);
-            border-color: var(--border-strong);
-            transform: translateY(-1px);
-        }
-        .preset-filter-btn.active {
-            background: rgba(222, 33, 42, 0.15);
-            color: var(--brand-1);
-            border-color: rgba(222, 33, 42, 0.4);
-        }
-        
-        /* Aspect Ratio Info */
-        .aspect-ratio-info {
-            text-align: center;
-            padding: 0.75rem 1.5rem;
-            background: rgba(222, 33, 42, 0.1);
-            border: 1px solid rgba(222, 33, 42, 0.2);
-            border-radius: 12px;
-            color: var(--text);
-            font-size: 13px;
-            font-weight: 600;
-        }
-        .aspect-ratio-info i {
-            color: var(--brand-1);
-            margin-right: 0.5rem;
-        }
-
-
-        /* Confirmation & Social Modals */
         .modal-dialog.confirmation-modal { max-width: 450px; text-align: center; padding: 2.5rem; }
         .modal-dialog.social-modal { max-width: 450px; padding: 2.5rem; }
         
@@ -519,26 +314,24 @@
 <body>
     <div id="loading-overlay" class="loading-overlay"><div class="spinner"></div><p class="loading-text">Loading...</p></div>
     <div id="toast-container" class="toast-container"></div>
-    <div id="cropper-modal" class="modal">
-        <div class="modal-dialog cropper-modal">
-            <div class="cropper-modal-header"><h3 id="cropper-title">Crop Image</h3></div>
-            <div id="cropper-image-container"><img id="cropper-image" style="max-width: 100%;"></div>
-            <div class="cropper-controls">
-                <div class="cropper-controls-inner">
-                    <button id="zoom-out-btn" class="cropper-control-btn" title="Zoom Out"><i class="fa-solid fa-search-minus"></i></button>
-                    <div class="cropper-control-separator"></div>
-                    <button id="rotate-left-btn" class="cropper-control-btn" title="Rotate Left"><i class="fa-solid fa-rotate-left"></i></button>
-                    <button id="rotate-right-btn" class="cropper-control-btn" title="Rotate Right"><i class="fa-solid fa-rotate-right"></i></button>
-                    <div class="cropper-control-separator"></div>
-                    <button id="zoom-in-btn" class="cropper-control-btn" title="Zoom In"><i class="fa-solid fa-search-plus"></i></button>
-                </div>
+    
+    <!-- NEW Cropper Modal HTML -->
+    <div id="crop-modal" class="crop-modal-backdrop">
+        <div class="crop-modal-content">
+            <h2 id="cropper-title-h2" style="text-align: center; margin-bottom: 0.5rem;">Crop Image</h2>
+            <div class="cropper-container"><img id="cropper-image" src=""></div>
+            <div class="crop-controls">
+                <button id="zoom-out-btn" class="zoom-btn" title="Zoom Out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                <button id="rotate-btn" class="zoom-btn" title="Rotate Right"><i class="fa-solid fa-rotate-right"></i></button>
+                <button id="zoom-in-btn" class="zoom-btn" title="Zoom In"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
             </div>
-            <div class="cropper-modal-footer">
-                <button id="cancel-crop-btn" class="btn ghost">Cancel</button>
-                <button id="confirm-crop-btn" class="btn primary"><i class="fa-solid fa-crop-simple"></i> Crop & Save</button>
+            <div class="crop-actions">
+                <button id="cancel-crop-btn" class="btn ghost" style="width: auto;">Cancel</button>
+                <button id="save-crop-btn" class="btn primary" style="width: auto;"><i class="fa-solid fa-crop-simple"></i> Crop & Save</button>
             </div>
         </div>
     </div>
+
     <div id="confirmation-modal" class="modal">
         <div class="modal-dialog confirmation-modal">
             <i class="fa-solid fa-exclamation-triangle" style="font-size: 48px; color: #f59e0b; margin-bottom: 16px;"></i>
@@ -597,13 +390,11 @@
         let currentSocialMode = 'text';
         
         const loadingOverlay = document.getElementById('loading-overlay');
-        const cropperModal = document.getElementById('cropper-modal');
         const confirmationModal = document.getElementById('confirmation-modal');
         const socialModal = document.getElementById('social-modal');
         const toastContainer = document.getElementById('toast-container');
         const settingsContainer = document.getElementById('settings-container');
 
-        // UPDATED: Removed placeholders for link modes
         const socialPlatforms = {
             xbox: { name: 'Xbox Live', icon: 'fa-brands fa-xbox', color: '#107c10', type: 'oauth' },
             discord: { name: 'Discord', icon: 'fa-brands fa-discord', color: '#5865F2', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'your_username', link: '' }, linkPrefix: 'https://discord.gg/' },
@@ -632,10 +423,7 @@
             confirmationModal.classList.add('show');
         }
 
-        function hideLoading() {
-            loadingOverlay.style.display = 'none';
-        }
-
+        function hideLoading() { loadingOverlay.style.display = 'none'; }
         function showLoading(text = 'Loading...') {
             loadingOverlay.querySelector('.loading-text').textContent = text;
             loadingOverlay.style.display = 'flex';
@@ -733,17 +521,12 @@
             tabsContainer.addEventListener('click', (e) => {
                 const tab = e.target.closest('.settings-tab');
                 if (!tab) return;
-
                 tabsContainer.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                
                 document.querySelectorAll('.content-area').forEach(area => area.classList.remove('active'));
-                
                 const tabName = tab.dataset.tab;
                 const contentArea = document.getElementById(tabName + '-tab');
-                if (contentArea) {
-                    contentArea.classList.add('active');
-                }
+                if (contentArea) contentArea.classList.add('active');
             });
         }
         
@@ -792,9 +575,7 @@
                         changesMade = true;
                     }
                     
-                    if(updates.bio !== currentProfile.bio) {
-                        changesMade = true;
-                    }
+                    if(updates.bio !== currentProfile.bio) { changesMade = true; }
 
                     if (changesMade) {
                         const { data, error: profileError } = await supabase.from('profiles').update(updates).eq('id', currentUser.id).select().single();
@@ -804,12 +585,8 @@
                     } else {
                         showToast('No changes to save.', 'warning');
                     }
-                    
-                    avatarBlob = null;
-                    bannerBlob = null;
-                } finally {
-                    hideLoading();
-                }
+                    avatarBlob = null; bannerBlob = null;
+                } finally { hideLoading(); }
             });
 
             handleForm(document.getElementById('username-form'), async () => {});
@@ -858,37 +635,48 @@
         function initializeCropper(file, aspectRatio, title, callback) {
              const reader = new FileReader();
              reader.onload = (e) => {
+                 const cropModal = document.getElementById('crop-modal');
                  document.getElementById('cropper-image').src = e.target.result;
-                 document.getElementById('cropper-title').textContent = `Crop ${title}`;
-                 cropperModal.classList.add('show');
+                 document.getElementById('cropper-title-h2').textContent = `Crop ${title}`;
+                 cropModal.style.display = 'flex';
                  if (cropper) cropper.destroy();
+
+                 const isAvatar = aspectRatio === 1;
+                 cropModal.dataset.cropType = isAvatar ? 'avatar' : 'banner';
+
                  setTimeout(() => {
                      cropper = new Cropper(document.getElementById('cropper-image'), { 
-                         aspectRatio, viewMode: 2, background: false, autoCropArea: 0.9
+                         aspectRatio, viewMode: 1, dragMode: 'move', background: false,
+                         autoCropArea: 0.9, cropBoxMovable: false, cropBoxResizable: false,
                      });
-                 }, 200);
+                 }, 50);
                  cropCallback = callback;
              };
              reader.readAsDataURL(file);
         }
         
         function setupModalHandlers() {
+            const cropModal = document.getElementById('crop-modal');
             document.getElementById('cancel-crop-btn').addEventListener('click', () => {
-                cropperModal.classList.remove('show');
+                cropModal.style.display = 'none';
                 if (cropper) cropper.destroy();
             });
-            document.getElementById('confirm-crop-btn').addEventListener('click', () => {
+            document.getElementById('save-crop-btn').addEventListener('click', () => {
                 if (!cropper) return;
-                cropper.getCroppedCanvas({ width: 1024, height: 1024, imageSmoothingQuality: 'high' }).toBlob((blob) => {
+                const isAvatar = cropModal.dataset.cropType === 'avatar';
+                const canvasOptions = isAvatar 
+                    ? { width: 512, height: 512, imageSmoothingQuality: 'high' } 
+                    : { width: 1500, height: 500, imageSmoothingQuality: 'high' };
+
+                cropper.getCroppedCanvas(canvasOptions).toBlob((blob) => {
                     if (cropCallback) cropCallback(blob);
-                    cropperModal.classList.remove('show');
+                    cropModal.style.display = 'none';
                     if (cropper) cropper.destroy();
-                }, 'image/jpeg', 0.92);
+                }, 'image/jpeg', 0.9);
             });
             document.getElementById('zoom-in-btn').addEventListener('click', () => cropper?.zoom(0.1));
             document.getElementById('zoom-out-btn').addEventListener('click', () => cropper?.zoom(-0.1));
-            document.getElementById('rotate-left-btn').addEventListener('click', () => cropper?.rotate(-45));
-            document.getElementById('rotate-right-btn').addEventListener('click', () => cropper?.rotate(45));
+            document.getElementById('rotate-btn').addEventListener('click', () => cropper?.rotate(90));
             document.getElementById('cancel-confirmation-btn')?.addEventListener('click', () => confirmationModal.classList.remove('show'));
             document.getElementById('confirm-action-btn')?.addEventListener('click', () => {
                 confirmationModal.classList.remove('show');
@@ -905,22 +693,17 @@
             const container = document.getElementById('socials-container');
             if (!container) return;
             const socialLinks = profile.social_links || {};
-            
             const gridHtml = Object.entries(socialPlatforms).reduce((html, [key, platform]) => {
-                if (platform.newRow) {
-                    html += `<div style="flex-basis: 100%; height: 0;"></div>`;
-                }
+                if (platform.newRow) html += `<div style="flex-basis: 100%; height: 0;"></div>`;
                 const isLinked = key === 'xbox' ? !!profile.bedrock_gamertag : !!socialLinks[key];
                 html += `<button class="social-icon-btn ${isLinked ? 'linked' : ''}" data-social="${key}" title="Link ${platform.name}"><i class="${platform.icon}"></i></button>`;
                 return html;
             }, '');
-            
             let cardsHtml = '';
             if (profile.bedrock_gamertag) cardsHtml += createLinkedAccountCard('xbox', profile.bedrock_gamertag);
             for (const [key, value] of Object.entries(socialLinks)) {
                 if (value && socialPlatforms[key]) cardsHtml += createLinkedAccountCard(key, value);
             }
-            
             container.innerHTML = `
                 <div class="form-group" style="text-align: center;"><label class="form-label">Link your profiles</label><div class="socials-grid">${gridHtml}</div></div>
                 <div class="form-group" style="text-align: center;"><label class="form-label">Linked Accounts</label><div class="linked-accounts-container" id="linked-accounts-list">
@@ -968,36 +751,29 @@
                 await loadProfileAndPopulate();
             } catch (error) {
                 showToast(`Failed to unlink: ${error.message}`, 'error');
-            } finally {
-                hideLoading();
-            }
+            } finally { hideLoading(); }
         }
 
         function openSocialModal(key) {
             const platform = socialPlatforms[key];
             if (!platform) return;
             const currentVal = currentProfile.social_links?.[key] || '';
-            
             document.getElementById('social-modal-icon').className = platform.icon;
             document.getElementById('social-modal-icon').style.color = platform.color;
             document.getElementById('social-modal-title').textContent = `Add ${platform.name}`;
             const switcherContainer = document.getElementById('social-mode-switcher-container');
-            
             if (platform.modes && platform.modes.length > 1) {
                 switcherContainer.style.display = 'flex';
                 switcherContainer.innerHTML = platform.modes.map(mode => `<button class="social-mode-btn" data-mode="${mode}"><i class="fa-solid ${mode === 'link' ? 'fa-link' : 'fa-at'}"></i> ${mode.charAt(0).toUpperCase() + mode.slice(1)}</button>`).join('');
             } else {
                 switcherContainer.style.display = 'none';
             }
-
             const updateInputForMode = (mode) => {
                 currentSocialMode = mode;
                 const input = document.getElementById('social-modal-input');
                 const prefixSpan = document.getElementById('social-input-prefix');
-                
                 document.getElementById('social-modal-label').textContent = mode === 'link' ? 'Profile URL' : 'Username';
                 input.placeholder = platform.placeholders[mode] || '';
-
                 if (mode === 'link' && platform.linkPrefix) {
                     prefixSpan.textContent = platform.linkPrefix;
                     const prefixWidth = (prefixSpan.textContent.length * 8) + 'px'; // Approximate width
@@ -1012,16 +788,12 @@
                     input.style.paddingLeft = '18px';
                     input.value = currentVal;
                 }
-                
                 switcherContainer.querySelectorAll('.social-mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
             };
-            
             updateInputForMode(platform.defaultMode);
-            
             switcherContainer.querySelectorAll('.social-mode-btn').forEach(btn => {
                 btn.onclick = () => updateInputForMode(btn.dataset.mode);
             });
-            
             document.getElementById('save-social-btn').dataset.key = key;
             socialModal.classList.add('show');
             document.getElementById('social-modal-input').focus();
@@ -1031,20 +803,13 @@
             const platform = socialPlatforms[key];
             const input = document.getElementById('social-modal-input');
             const userTypedValue = input.value.trim();
-
-            if (!userTypedValue) {
-                return showToast("Please enter a value.", 'error');
-            }
-
+            if (!userTypedValue) { return showToast("Please enter a value.", 'error'); }
             let finalValue = userTypedValue;
             if (currentSocialMode === 'link' && platform.linkPrefix) {
                 finalValue = platform.linkPrefix + userTypedValue;
-            } else if (currentSocialMode === 'text') {
-                 if (userTypedValue.includes('http') || userTypedValue.includes('://')) {
-                    return showToast('Please enter a username, not a link.', 'error');
-                }
+            } else if (currentSocialMode === 'text' && (userTypedValue.includes('http') || userTypedValue.includes('://'))) {
+                return showToast('Please enter a username, not a link.', 'error');
             }
-
             socialModal.classList.remove('show');
             showLoading(`Saving ${platform.name}...`);
             try {
@@ -1055,43 +820,31 @@
                 await loadProfileAndPopulate();
             } catch (error) {
                 showToast(`Failed to save: ${error.message}`, 'error');
-            } finally {
-                hideLoading();
-            }
+            } finally { hideLoading(); }
         }
 
         function initiateXboxConnection() {
             const redirectUri = encodeURIComponent('https://mchub.vercel.app/api/bedrock-callback');
             const authUrl = `https://xbl.io/app/auth/${OPENXBL_PUBLIC_KEY}?redirect_uri=${redirectUri}&prompt=select_account`;
-            
             const popup = window.open(authUrl, 'xbox-auth', 'width=600,height=700');
             if (!popup) { return showToast('Popup blocked. Please allow popups.', 'error'); }
-            
             const handleMessage = async ({ origin, data }) => {
                 if (origin !== window.location.origin) return;
                 window.removeEventListener('message', handleMessage);
-                
-                if (data.type !== 'BEDROCK_AUTH_SUCCESS') { 
-                    return showToast(`Xbox connection failed: ${data.message || 'Unknown error'}`, 'error'); 
-                }
-
+                if (data.type !== 'BEDROCK_AUTH_SUCCESS') { return showToast(`Xbox connection failed: ${data.message || 'Unknown error'}`, 'error'); }
                 showLoading('Linking Xbox account...');
                 try {
                     const { data: { session } } = await supabase.auth.getSession();
                     const response = await fetch('/api/link-bedrock', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ mchub_token: session.access_token, xbl_token: data.token })
                     });
                     const result = await response.json();
                     if (!response.ok) throw new Error(result.details || 'Failed to link account');
                     showToast(`Xbox account linked: ${result.bedrock_gamertag}`, 'success');
                     await loadProfileAndPopulate();
-                } catch (error) { 
-                    showToast(error.message, 'error');
-                } finally { 
-                    hideLoading(); 
-                }
+                } catch (error) { showToast(error.message, 'error');
+                } finally { hideLoading(); }
             };
             window.addEventListener('message', handleMessage);
         }
@@ -1105,9 +858,7 @@
                 await loadProfileAndPopulate();
             } catch (error) {
                 showToast(error.message, 'error');
-            } finally {
-                hideLoading();
-            }
+            } finally { hideLoading(); }
         }
 
         async function loadProfileAndPopulate() {
@@ -1128,15 +879,12 @@
 
         document.addEventListener('auth-ready', async (event) => {
             const { user, profile, error } = event.detail;
-
             if (error || !user) {
                 settingsContainer.innerHTML = `<div class="loading-container"><p>Please log in to view your settings.</p><a href="/login.html" class="btn primary" style="margin-top: 1rem;">Login</a></div>`;
                 return;
             }
-            
             currentUser = user;
             currentProfile = profile;
-            
             buildPageStructure();
             await loadProfileAndPopulate();
             setupAllEventListeners();
@@ -1146,4 +894,3 @@
     <script type="module" src="auth.js"></script>
 </body>
 </html>
-
