@@ -236,20 +236,90 @@
             to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
-        /* Cropper Modal Styles */
-        .cropper-modal { padding: 1.5rem; max-width: 450px; width: 90%; }
-        .cropper-modal-header { text-align: center; margin-bottom: 1.5rem; }
-        .cropper-modal-header h3 { font-size: 1.5rem; font-weight: 700; }
-        #cropper-image-container { margin-bottom: 1.5rem; background: var(--bg-0); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; height: 300px; }
-        #cropper-image { max-width: 100%; }
-        .cropper-modal-footer { display: flex; gap: 1rem; justify-content: flex-end; }
+/* Cropper Modal Styles */
+        .cropper-modal { 
+            padding: 0; 
+            max-width: 800px; 
+            width: 90%; 
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .cropper-modal-header { 
+            padding: 2rem 2rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(135deg, rgba(222, 33, 42, 0.05), rgba(222, 33, 42, 0.02));
+        }
+        .cropper-modal-header h3 { 
+            font-size: 1.8rem; 
+            font-weight: 800; 
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--brand-1), #ff525a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+        .cropper-modal-header p {
+            color: var(--muted);
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .cropper-modal-body {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        #cropper-image-container { 
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            background: var(--bg-0); 
+            border-radius: 20px; 
+            border: 2px solid var(--border); 
+            overflow: hidden; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        #cropper-image { 
+            max-width: 100%; 
+            display: block;
+        }
+        
+        .cropper-modal-footer { 
+            padding: 1.5rem 2rem 2rem;
+            border-top: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.02);
+            display: flex; 
+            gap: 1rem; 
+            justify-content: space-between;
+            align-items: center;
+        }
         
         .cropper-controls {
             display: flex;
-            justify-content: center;
-            margin-bottom: 1.5rem;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+            max-width: 600px;
         }
-        .cropper-controls-inner {
+        
+        .cropper-main-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .cropper-control-group {
             display: flex;
             align-items: center;
             background: var(--bg-2);
@@ -258,27 +328,142 @@
             padding: 4px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
+        
         .cropper-control-btn {
             background: transparent;
             border: none;
             color: var(--muted);
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             border-radius: 12px;
-            font-size: 16px;
+            font-size: 18px;
             cursor: pointer;
             transition: all 0.2s ease;
             display: grid;
             place-items: center;
+            position: relative;
         }
         .cropper-control-btn:hover {
             background: var(--bg-1);
             color: var(--text);
+            transform: scale(1.05);
+        }
+        .cropper-control-btn.active {
+            background: rgba(222, 33, 42, 0.15);
+            color: var(--brand-1);
+            border: 1px solid rgba(222, 33, 42, 0.3);
         }
         .cropper-control-separator {
             width: 1px;
-            height: 20px;
+            height: 24px;
             background-color: var(--border);
+            margin: 0 4px;
+        }
+        
+        /* Zoom Slider */
+        .zoom-slider-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: var(--bg-2);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .zoom-slider-container i {
+            color: var(--muted);
+            font-size: 16px;
+        }
+        .zoom-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: var(--bg-1);
+            border-radius: 3px;
+            outline: none;
+            position: relative;
+        }
+        .zoom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(222, 33, 42, 0.3);
+            transition: transform 0.2s ease;
+        }
+        .zoom-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+        .zoom-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(222, 33, 42, 0.3);
+            transition: transform 0.2s ease;
+            border: none;
+        }
+        .zoom-slider::-moz-range-thumb:hover {
+            transform: scale(1.2);
+        }
+        .zoom-value {
+            min-width: 45px;
+            text-align: center;
+            font-weight: 700;
+            color: var(--text);
+            font-size: 14px;
+        }
+        
+        /* Preset Filters */
+        .preset-filters {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .preset-filter-btn {
+            padding: 8px 16px;
+            background: var(--bg-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .preset-filter-btn:hover {
+            background: var(--bg-1);
+            color: var(--text);
+            border-color: var(--border-strong);
+            transform: translateY(-1px);
+        }
+        .preset-filter-btn.active {
+            background: rgba(222, 33, 42, 0.15);
+            color: var(--brand-1);
+            border-color: rgba(222, 33, 42, 0.4);
+        }
+        
+        /* Aspect Ratio Info */
+        .aspect-ratio-info {
+            text-align: center;
+            padding: 0.75rem 1.5rem;
+            background: rgba(222, 33, 42, 0.1);
+            border: 1px solid rgba(222, 33, 42, 0.2);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .aspect-ratio-info i {
+            color: var(--brand-1);
+            margin-right: 0.5rem;
         }
 
 
