@@ -19,13 +19,13 @@
         body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 14px/1.6 Inter, sans-serif; min-height: 100vh; }
         body::before { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg'); background-size: cover; filter: blur(8px); opacity: 0.2; z-index: -1; }
 
-        /* General UI */
         a { color: inherit; text-decoration: none; }
         .tiny { font-size: 11px; color: var(--muted); }
         .btn { padding: .5rem 1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn.primary { background: linear-gradient(90deg, var(--brand-1), var(--brand-2)); box-shadow: 0 10px 30px rgba(222, 33, 42, .22); color: white; }
         .btn.ghost { border-color: var(--border); background: transparent; color: var(--text); }
+        .btn.sm { padding: .25rem .5rem; border-radius: 8px; font-weight: 700; }
         .spinner { width: 1em; height: 1em; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
@@ -47,17 +47,16 @@
         .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
         
         .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
-        .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; min-height: 60vh; color: var(--muted); }
+        .loading-container, .error-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; min-height: 60vh; color: var(--muted); text-align: center;}
+        .error-container h2 { color: var(--text); }
         
         .profile-header { border-radius: 16px; margin-bottom: 2rem; position: relative; background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); border: 1px solid var(--border); }
         .profile-banner { height: 220px; background-size: cover; background-position: center; border-radius: 16px 16px 0 0; }
         .profile-details { position: relative; padding: 1rem 1.5rem; display: flex; flex-direction: column; margin-top: -70px; z-index: 2; }
         .profile-meta { display: flex; align-items: flex-end; gap: 1.5rem; }
         .profile-avatar { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #161616; box-shadow: 0 10px 30px rgba(0,0,0,0.5); flex-shrink: 0; }
-        
         .pfp-placeholder { width: 140px; height: 140px; border-radius: 50%; border: 4px solid #161616; box-shadow: 0 10px 30px rgba(0,0,0,0.5); flex-shrink: 0; background-color: var(--bg-2); display: flex; align-items: center; justify-content: center; }
         .pfp-placeholder span { font-size: 4rem; font-weight: 900; color: var(--brand-1); }
-
         .profile-main-info { padding-top: 70px; width: 100%; }
         .info-top { display: flex; align-items: baseline; gap: 1.5rem; flex-wrap: wrap; }
         .info-top h1 { font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, var(--brand-1), #ff525a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
@@ -67,7 +66,7 @@
         .stat-item .count { font-weight: 700; color: var(--text); }
         .stat-item .label { font-size: .8rem; color: var(--muted); }
         .profile-actions { position: absolute; top: 1.5rem; right: 1.5rem; z-index: 3; }
-        .profile-actions .btn.ghost { background-color: var(--bg-2); color: var(--muted); }
+        .profile-actions .btn.ghost { background-color: rgba(28,28,28,0.7); backdrop-filter: blur(5px); }
         .profile-social-icons { position: absolute; bottom: 1.5rem; right: 1.5rem; display: flex; gap: 0.8rem; }
         .social-link { font-size: 1.2rem; color: var(--muted); transition: all .2s ease-in-out; background: none; border: none; padding: 0; cursor: pointer; }
         .social-link:hover { color: var(--text); transform: translateY(-2px); }
@@ -82,37 +81,39 @@
         .bedrock-skin-viewer canvas { display: block; cursor: grab; width: 100% !important; height: 100% !important; }
         .bedrock-gamertag { font-size: 1.2rem; font-weight: 700; text-align: center; color: var(--text); }
         .skin-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; color: var(--muted); width: 100%; height: 100%; text-align: center; backdrop-filter: blur(4px); background: rgba(0,0,0,0.3); }
-        .profile-type-switcher { display: flex; gap: 0.5rem; margin-bottom: 1rem; background: var(--bg-2); padding: 0.25rem; border-radius: 8px; border: 1px solid var(--border); }
-        .profile-type-btn { flex: 1; padding: 0.5rem; border: none; background: transparent; color: var(--muted); font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
-        .profile-type-btn.active { background: var(--bg-0); color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
         
         .packs-header { display: flex; justify-content: space-between; align-items: center; }
         .upload-btn { height: 36px; width: 36px; border-radius: 10px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); color: white; font-size: 1rem; cursor: pointer; }
         .packs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin-top: 1.2rem; }
-        .pack-card { background: var(--bg-1); border-radius: 16px; overflow: hidden; transition: all 0.2s; border: 1px solid transparent; }
-        .pack-card:hover { border-color: var(--border-strong); transform: translateY(-2px); }
+        .pack-card { background: var(--bg-1); border-radius: 16px; overflow: hidden; position: relative; border: 1px solid var(--border); }
+        .pack-card-link { display: block; color: inherit; text-decoration: none; }
         .thumb { height: 120px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
         .thumb .pack-icon { position: relative; width: 80px; height: 80px; border-radius: 8px; object-fit: cover; z-index: 1; }
         .content { padding: 10px; }
         .pack-stats { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 8px; }
+        .pack-options-btn { position: absolute; top: 8px; right: 8px; z-index: 2; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); color: var(--muted); border: 1px solid var(--border); border-radius: 8px; width: 30px; height: 30px; cursor: pointer; display: grid; place-items: center; }
+        .pack-options-menu { display: none; position: absolute; top: 42px; right: 8px; z-index: 3; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.4); min-width: 120px; }
+        .pack-options-menu a, .pack-options-menu button { display: flex; align-items: center; gap: 10px; padding: 8px 14px; font-size: 14px; background: none; border: none; color: var(--muted); font-family: inherit; width: 100%; text-align: left; cursor: pointer; }
+        .pack-options-menu a:hover, .pack-options-menu button:hover { background: var(--bg-1); color: var(--text); }
+        .pack-options-menu .delete-option:hover { background: var(--danger); color: white; }
+        .pack-options-menu i { width: 16px; text-align: center; }
 
         .backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, .8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 60; }
-        .modal { width: 100%; max-width: 420px; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; }
+        .modal { width: 100%; max-width: 420px; background: var(--bg-1); border-radius: 12px; border: 1px solid var(--border); }
         .modal .panel { padding: 20px; }
         .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 12px 20px 20px; }
         .file-upload-area { margin-top: 1rem; padding: 24px; border: 2px dashed var(--border); border-radius: 12px; text-align: center; cursor: pointer; background: var(--bg-0); }
         .file-upload-area:hover { border-color: var(--brand-1); background: rgba(222, 33, 42, .05); }
         .file-hint { color: var(--muted); }
         input[type="text"] { width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-2);color:var(--text); font-family: inherit; font-size: inherit; }
-
-        #toast-container { position: fixed; top: 80px; right: 20px; z-index: 100; }
+        #toast-container { position: fixed; top: 80px; right: 20px; z-index: 1000; }
         .toast { padding: 12px 18px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; background: var(--bg-1); border: 1px solid var(--border); }
         @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
 
         @media (max-width: 768px) {
             .profile-content-grid { grid-template-columns: 1fr; }
-            .info-top { flex-direction: column; align-items: flex-start; }
-            .header-stats { margin-left: 0; margin-top: 1rem; }
+            .info-top { flex-direction: column; align-items: flex-start; gap: .5rem; }
+            .header-stats { margin-left: 0; margin-top: .5rem; }
         }
     </style>
 </head>
@@ -141,17 +142,17 @@
                     <strong>Upload Texture Pack</strong>
                     <button class="btn sm ghost" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
                 </div>
-                <p class="tiny">Select a .mcpack or .zip file. The pack icon will be automatically extracted.</p>
+                <p class="tiny">Select a .mcpack or .zip. Name and icon are detected automatically.</p>
             </div>
             <div class="panel" style="padding-top:0">
                 <form id="uploadForm" onsubmit="handleUpload(event)">
                     <div style="display: flex; flex-direction: column; gap: 1rem;">
                         <div>
-                            <label class="tiny">Pack Name</label>
-                            <input id="packName" required placeholder="e.g. My PvP Pack" type="text">
+                            <label class="tiny">Pack Name (can be changed)</label>
+                            <input id="packName" required placeholder="Auto-detected from filename" type="text">
                         </div>
                         <div class="file-upload-area" id="pack-file-area" onclick="document.getElementById('fileInput').click()">
-                            <div class="file-hint" id="fileHint">Click to select .mcpack or .zip file</div>
+                            <div class="file-hint" id="fileHint">📦 Click to select .mcpack or .zip</div>
                             <input id="fileInput" type="file" accept=".mcpack,.zip" style="display:none" onchange="hintFile()" />
                         </div>
                     </div>
@@ -160,6 +161,18 @@
                         <button id="submitBtn" class="btn primary" type="submit"><i class="fa-solid fa-upload"></i> Upload</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+    
+    <div id="confirmation-modal" class="backdrop">
+        <div class="modal" style="max-width: 400px;">
+            <div class="panel" style="text-align: center;">
+                <p id="confirmation-message" style="font-size: 1.1rem; margin: 1rem 0;">Are you sure?</p>
+                <div style="display:flex;justify-content:center;gap:10px;">
+                    <button id="cancel-confirmation-btn" class="btn ghost">Cancel</button>
+                    <button id="confirm-action-btn" class="btn" style="background: var(--danger);">Confirm</button>
+                </div>
             </div>
         </div>
     </div>
@@ -176,12 +189,14 @@
         let loggedInUser = null;
         let skinViewer = null;
         let currentProfileData = null;
+        let confirmCallback = null;
 
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> <span>${message}</span>`;
+            toast.className = `toast`;
+            toast.style.borderColor = type === 'success' ? 'var(--success)' : 'var(--danger)';
+            toast.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}" style="color: ${type === 'success' ? 'var(--success)' : 'var(--danger)'};"></i> <span>${message}</span>`;
             container.appendChild(toast);
             setTimeout(() => {
                 toast.style.transform = 'translateX(120%)';
@@ -191,11 +206,12 @@
 
         function copyToClipboard(text, type) {
             navigator.clipboard.writeText(text).then(() => {
-                showToast(`Copied ${type} ID to clipboard!`, 'success');
+                showToast(`Copied ${type} to clipboard!`, 'success');
             }).catch(err => {
                 showToast(`Failed to copy: ${err}`, 'error');
             });
         }
+        window.copyToClipboard = copyToClipboard;
 
         function renderSocialLinks(socialLinks) {
             if (!socialLinks || typeof socialLinks !== 'object') return '';
@@ -226,6 +242,32 @@
             return `${date.getMonth() + 1}/${date.getDate()}/${String(date.getFullYear()).slice(-2)}`;
         }
 
+        function renderPackCard(pack, isOwnProfile) {
+            const card = document.createElement('div');
+            card.className = 'pack-card';
+            const thumbContent = pack.icon_url ? `<img class="pack-icon" src="${pack.icon_url}" alt="${pack.name} Icon">` : `<div style="width:100%; height:100%; display:grid; place-items:center; background:var(--bg-2)"><i class="fa-solid fa-cube fa-2x"></i></div>`;
+            
+            let optionsMenu = `<a href="#" onclick="handleDownload(event, ${pack.id}, '${pack.filename}')"><i class="fa-solid fa-download"></i> Download</a>`;
+            if (isOwnProfile) {
+                optionsMenu += `<button class="delete-option" onclick="promptDeletePack(${pack.id})"><i class="fa-solid fa-trash-can"></i> Delete</button>`;
+            }
+
+            card.innerHTML = `
+                ${isOwnProfile ? `<button class="pack-options-btn" onclick="toggleOptionsMenu(event, ${pack.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>` : ''}
+                <div class="pack-options-menu" id="options-menu-${pack.id}">${optionsMenu}</div>
+                <div class="pack-card-link" onclick="handleDownload(event, ${pack.id}, '${pack.filename}')">
+                    <div class="thumb">${thumbContent}</div>
+                    <div class="content">
+                        <h4 style="font-size:0.9rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow: ellipsis;">${escapeHtml(pack.name)}</h4>
+                        <div class="pack-stats">
+                            <span><i class="fa-solid fa-download fa-xs"></i> <span id="downloads-${pack.id}">${(pack.download_count || 0).toLocaleString()}</span></span>
+                            <span>${formatDate(pack.created_at)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return card;
+        }
 
         function renderDashboard(profile, packs, currentUser) {
             currentProfileData = profile;
@@ -276,18 +318,14 @@
                 </div>
                 <div class="profile-content-grid">
                     <div id="minecraft-container">
-                        <div class="card">
-                            <div class="card-body">
-                                ${bedrockHtml}
-                            </div>
-                        </div>
+                        <div class="card"> <div class="card-body"> ${bedrockHtml} </div> </div>
                     </div>
                     <div id="packs-container">
                         <div class="card">
                             <div class="card-body">
                                 <div class="packs-header">
                                     <h3>Texture Packs</h3>
-                                    ${(currentUser && currentUser.id === profile.id) ? '<div class="upload-btn" title="Upload new pack"><i class="fa-solid fa-plus"></i></div>' : ''}
+                                    ${isOwnProfile ? '<div class="upload-btn" title="Upload new pack"><i class="fa-solid fa-plus"></i></div>' : ''}
                                 </div>
                                 <div class="packs-grid" id="packs-grid-placeholder"></div>
                             </div>
@@ -297,33 +335,15 @@
             
             const packsGridEl = document.getElementById('packs-grid-placeholder');
             if (packs && packs.length > 0) {
-                packs.forEach(pack => {
-                    const card = document.createElement('div');
-                    card.className = 'pack-card';
-                    const thumbContent = pack.icon_url ? `<img class="pack-icon" src="${pack.icon_url}" alt="${pack.name} Icon">` : `<div style="width:100%; height:100%; display:grid; place-items:center; background:var(--bg-2)"><i class="fa-solid fa-cube fa-2x"></i></div>`;
-                    card.innerHTML = `
-                        <a href="#">
-                            <div class="thumb">${thumbContent}</div>
-                            <div class="content">
-                                <h4 style="font-size:0.9rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow: ellipsis;">${escapeHtml(pack.name)}</h4>
-                                <div class="pack-stats">
-                                    <span><i class="fa-solid fa-download fa-xs"></i> ${(pack.download_count || 0).toLocaleString()}</span>
-                                    <span>${formatDate(pack.created_at)}</span>
-                                </div>
-                            </div>
-                        </a>`;
-                    packsGridEl.appendChild(card);
-                });
+                packs.forEach(pack => packsGridEl.appendChild(renderPackCard(pack, isOwnProfile)));
             } else {
-                packsGridEl.innerHTML = `<p class="tiny">This user hasn't uploaded any packs yet.</p>`;
+                packsGridEl.innerHTML = `<p class="tiny" style="padding-top: 1rem;">This user hasn't uploaded any packs yet.</p>`;
             }
             if (profile.bedrock_gamertag && profile.xuid) { initBedrockSkinViewer(profile); }
             
             const uploadBtn = document.querySelector('.upload-btn');
             if (uploadBtn) {
-                uploadBtn.addEventListener('click', () => {
-                    document.getElementById('backdrop').style.display = 'flex';
-                });
+                uploadBtn.addEventListener('click', () => document.getElementById('backdrop').style.display = 'flex');
             }
         }
 
@@ -344,7 +364,7 @@
         
         async function setupFollowSystem(profile, currentUser) {
             const followButton = document.querySelector('.follow-btn');
-            if (!followButton) return; // Exit if no follow button (e.g., own profile)
+            if (!followButton) return;
             
             const { count } = await supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', currentUser.id).eq('following_id', profile.id);
             let isFollowing = count > 0;
@@ -372,7 +392,6 @@
                 
                 await action;
                 
-                // Manually update count for immediate feedback
                 const currentFollowerCount = parseInt(document.getElementById('follower-count').textContent.replace(/,/g, ''));
                 const newFollowerCount = isFollowing ? currentFollowerCount - 1 : currentFollowerCount + 1;
                 
@@ -383,11 +402,12 @@
         }
         
         function showError(title, message) {
-            profileContainer.innerHTML = `<div class="loading-container"><h2>${title}</h2><p>${message}</p></div>`;
+            profileContainer.innerHTML = `<div class="error-container"><h2>${title}</h2><p>${message}</p></div>`;
         }
 
         async function loadProfilePage(currentUser) {
             try {
+                profileContainer.innerHTML = `<div class="loading-container"><div class="spinner"></div><p>Loading Profile...</p></div>`;
                 const username = new URLSearchParams(window.location.search).get('user');
                 if (!username) { return showError("No User Specified", "Please provide a username in the URL."); }
 
@@ -395,7 +415,6 @@
                 
                 if (error || !profile) { return showError("User Not Found", `The user "${escapeHtml(username)}" could not be found.`); }
 
-                // Increment view count, but don't wait for it
                 if (currentUser && currentUser.id !== profile.id) {
                     supabase.rpc('increment_view_count', { profile_id_to_update: profile.id }).then(({ error }) => {
                         if(error) console.error("View count error:", error);
@@ -419,11 +438,16 @@
         window.closeModal = () => { 
             document.getElementById('backdrop').style.display = 'none'; 
             document.getElementById('uploadForm').reset(); 
-            document.getElementById('fileHint').textContent = 'Click to select .mcpack or .zip file';
+            document.getElementById('fileHint').textContent = '📦 Click to select .mcpack or .zip';
         };
         window.hintFile = () => { 
-            const f = document.getElementById('fileInput').files[0]; 
-            if(f) document.getElementById('fileHint').textContent = f.name; 
+            const fileInput = document.getElementById('fileInput');
+            const packNameInput = document.getElementById('packName');
+            const file = fileInput.files[0]; 
+            if(file) {
+                document.getElementById('fileHint').textContent = escapeHtml(file.name);
+                packNameInput.value = file.name.replace(/\.(mcpack|zip)$/i, '');
+            }
         };
         
         window.handleUpload = async (event) => {
@@ -433,7 +457,7 @@
             const packName = document.getElementById('packName').value.trim();
 
             if (!packFile || !packName) return showToast('Pack name and file are required.', 'error');
-            if (!packFile.name.match(/\.(mcpack|zip)$/i)) return showToast('Invalid pack file type (.mcpack or .zip only).', 'error');
+            if (!packFile.name.match(/\.(mcpack|zip)$/i)) return showToast('Invalid file type (.mcpack or .zip only).', 'error');
 
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<div class="spinner"></div> Uploading...';
@@ -442,13 +466,12 @@
                 let iconUrl = null;
                 const zip = new JSZip();
                 const contents = await zip.loadAsync(packFile);
-                let iconFile = null;
-                const iconPath = Object.keys(contents.files).find(path => path.toLowerCase().endsWith('pack_icon.png'));
-                if (iconPath) {
-                    iconFile = contents.file(iconPath);
-                }
                 
-                if (iconFile) {
+                const iconPath = Object.keys(contents.files).find(path => path.toLowerCase().endsWith('pack_icon.png')) 
+                              || Object.keys(contents.files).find(path => path.toLowerCase().endsWith('pack.png'));
+                
+                if (iconPath) {
+                    const iconFile = contents.file(iconPath);
                     const iconBlob = await iconFile.async('blob');
                     const iconStoragePath = `pack_icons/${loggedInUser.id}-${Date.now()}.png`;
                     let { error: iconError } = await supabase.storage.from('packs').upload(iconStoragePath, iconBlob);
@@ -462,15 +485,9 @@
                 if (packError) throw new Error(`Pack file upload failed: ${packError.message}`);
                 
                 let { error: dbError } = await supabase.from('packs').insert({ 
-                    user_id: loggedInUser.id, 
-                    name: packName, 
-                    filename: packStoragePath, 
-                    icon_url: iconUrl,
-                    version: packFile.name.endsWith('.mcpack') ? 'bedrock' : 'java',
-                    // Default values for fields not in the simple upload form
-                    color: 'gray',
-                    tags: 'user-upload',
-                    resolution: '16x'
+                    user_id: loggedInUser.id, name: packName, filename: packStoragePath, 
+                    icon_url: iconUrl, version: packFile.name.endsWith('.mcpack') ? 'bedrock' : 'java',
+                    tags: 'user-upload'
                 });
                 if (dbError) throw new Error(`Database insert failed: ${dbError.message}`);
                 
@@ -484,14 +501,79 @@
                 submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; 
             }
         };
+        
+        window.handleDownload = async (event, packId, filename) => {
+            event.preventDefault();
+            event.stopPropagation();
+            try {
+                fetch("/api/increment-download", {
+                    method: "POST", headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({ id: packId })
+                }).then(() => {
+                    const el = document.getElementById(`downloads-${packId}`);
+                    if(el) el.textContent = (parseInt(el.textContent.replace(/,/g, ''), 10) + 1).toLocaleString();
+                });
+                const { data } = supabase.storage.from('packs').getPublicUrl(filename);
+                window.open(data.publicUrl, '_blank');
+            } catch (error) {
+                showToast('Failed to start download.', 'error');
+            }
+        };
+
+        window.toggleOptionsMenu = (event, packId) => {
+            event.stopPropagation();
+            const menu = document.getElementById(`options-menu-${packId}`);
+            const isVisible = menu.style.display === 'block';
+            document.querySelectorAll('.pack-options-menu').forEach(m => m.style.display = 'none');
+            if (!isVisible) menu.style.display = 'block';
+        };
+
+        window.promptDeletePack = (packId) => {
+            const modal = document.getElementById('confirmation-modal');
+            document.getElementById('confirmation-message').textContent = "Are you sure you want to permanently delete this pack?";
+            modal.style.display = 'flex';
+            confirmCallback = () => deletePack(packId);
+        };
+        
+        async function deletePack(packId) {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                const response = await fetch('/api/delete-pack', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+                    body: JSON.stringify({ packId: packId })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.details);
+                showToast('Pack deleted successfully!', 'success');
+                loadProfilePage(loggedInUser);
+            } catch(error) {
+                showToast(error.message, 'error');
+            }
+        }
+        
+        document.getElementById('cancel-confirmation-btn').addEventListener('click', () => {
+            document.getElementById('confirmation-modal').style.display = 'none';
+            confirmCallback = null;
+        });
+
+        document.getElementById('confirm-action-btn').addEventListener('click', () => {
+            if (confirmCallback) confirmCallback();
+            document.getElementById('confirmation-modal').style.display = 'none';
+            confirmCallback = null;
+        });
 
         document.addEventListener('auth-ready', (event) => {
             loggedInUser = event.detail.user; 
             loadProfilePage(loggedInUser);
         });
 
-        window.copyToClipboard = copyToClipboard;
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.pack-options-menu').forEach(m => m.style.display = 'none');
+        });
+
     </script>
     <script type="module" src="auth.js"></script>
 </body>
 </html>
+
