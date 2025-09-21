@@ -86,7 +86,7 @@
         .upload-btn { height: 36px; width: 36px; border-radius: 10px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); color: white; font-size: 1rem; cursor: pointer; }
         .packs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin-top: 1.2rem; }
         .pack-card { background: var(--bg-1); border-radius: 16px; overflow: hidden; position: relative; border: 1px solid var(--border); }
-        .pack-card-link { display: block; color: inherit; text-decoration: none; }
+        .pack-card-link { display: block; color: inherit; text-decoration: none; cursor: pointer; }
         .thumb { height: 120px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
         .thumb .pack-icon { position: relative; width: 80px; height: 80px; border-radius: 8px; object-fit: cover; z-index: 1; }
         .content { padding: 10px; }
@@ -190,6 +190,7 @@
         let skinViewer = null;
         let currentProfileData = null;
         let confirmCallback = null;
+        let localPacksCache = [];
 
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
@@ -245,17 +246,18 @@
         function renderPackCard(pack, isOwnProfile) {
             const card = document.createElement('div');
             card.className = 'pack-card';
+            card.id = `pack-card-${pack.id}`; // Add unique ID for removal
             const thumbContent = pack.icon_url ? `<img class="pack-icon" src="${pack.icon_url}" alt="${pack.name} Icon">` : `<div style="width:100%; height:100%; display:grid; place-items:center; background:var(--bg-2)"><i class="fa-solid fa-cube fa-2x"></i></div>`;
             
-            let optionsMenu = `<a href="#" onclick="handleDownload(event, ${pack.id}, '${pack.filename}')"><i class="fa-solid fa-download"></i> Download</a>`;
+            let optionsMenu = `<a href="#" onclick="handleDownload(event, ${pack.id}, '${pack.filename}', '${escapeHtml(pack.name)}')"><i class="fa-solid fa-download"></i> Download</a>`;
             if (isOwnProfile) {
                 optionsMenu += `<button class="delete-option" onclick="promptDeletePack(${pack.id})"><i class="fa-solid fa-trash-can"></i> Delete</button>`;
             }
 
             card.innerHTML = `
-                ${isOwnProfile ? `<button class="pack-options-btn" onclick="toggleOptionsMenu(event, ${pack.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>` : ''}
+                <button class="pack-options-btn" onclick="toggleOptionsMenu(event, ${pack.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                 <div class="pack-options-menu" id="options-menu-${pack.id}">${optionsMenu}</div>
-                <div class="pack-card-link" onclick="handleDownload(event, ${pack.id}, '${pack.filename}')">
+                <div class="pack-card-link" onclick="handleDownload(event, ${pack.id}, '${pack.filename}', '${escapeHtml(pack.name)}')">
                     <div class="thumb">${thumbContent}</div>
                     <div class="content">
                         <h4 style="font-size:0.9rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow: ellipsis;">${escapeHtml(pack.name)}</h4>
@@ -271,6 +273,7 @@
 
         function renderDashboard(profile, packs, currentUser) {
             currentProfileData = profile;
+            localPacksCache = packs;
             const pfpHtml = profile.avatar_url ? `<img src="${profile.avatar_url}" alt="${profile.username}'s avatar" class="profile-avatar">` : `<div class="pfp-placeholder"><span>${(profile.username || '?').charAt(0).toUpperCase()}</span></div>`;
             const bedrockHtml = (profile.bedrock_gamertag && profile.xuid) 
                 ? `<div class="minecraft-profile-card">
@@ -484,16 +487,22 @@
                 let { error: packError } = await supabase.storage.from('packs').upload(packStoragePath, packFile);
                 if (packError) throw new Error(`Pack file upload failed: ${packError.message}`);
                 
-                let { error: dbError } = await supabase.from('packs').insert({ 
+                const { data: newPack, error: dbError } = await supabase.from('packs').insert({ 
                     user_id: loggedInUser.id, name: packName, filename: packStoragePath, 
                     icon_url: iconUrl, version: packFile.name.endsWith('.mcpack') ? 'bedrock' : 'java',
                     tags: 'user-upload'
-                });
+                }).select().single();
+
                 if (dbError) throw new Error(`Database insert failed: ${dbError.message}`);
                 
+                localPacksCache.unshift(newPack);
+                const packsGridEl = document.getElementById('packs-grid-placeholder');
+                if (packsGridEl.querySelector('.tiny')) packsGridEl.innerHTML = '';
+                packsGridEl.prepend(renderPackCard(newPack, true));
+
                 showToast('Pack uploaded successfully!', 'success');
                 closeModal();
-                loadProfilePage(loggedInUser);
+
             } catch (error) { 
                 showToast(error.message, 'error');
             } finally { 
@@ -502,9 +511,10 @@
             }
         };
         
-        window.handleDownload = async (event, packId, filename) => {
+        window.handleDownload = async (event, packId, filename, packName) => {
             event.preventDefault();
             event.stopPropagation();
+            showToast('Starting download...', 'success');
             try {
                 fetch("/api/increment-download", {
                     method: "POST", headers: {"Content-Type": "application/json"},
@@ -513,9 +523,25 @@
                     const el = document.getElementById(`downloads-${packId}`);
                     if(el) el.textContent = (parseInt(el.textContent.replace(/,/g, ''), 10) + 1).toLocaleString();
                 });
-                const { data } = supabase.storage.from('packs').getPublicUrl(filename);
-                window.open(data.publicUrl, '_blank');
+
+                const { data: urlData } = supabase.storage.from('packs').getPublicUrl(filename);
+                if (!urlData) throw new Error('Could not get download URL.');
+
+                const response = await fetch(urlData.publicUrl);
+                if (!response.ok) throw new Error('Download link failed.');
+                const blob = await response.blob();
+
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                const extension = filename.split('.').pop();
+                link.download = `${packName}.${extension}`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+
             } catch (error) {
+                console.error("Download Error:", error);
                 showToast('Failed to start download.', 'error');
             }
         };
@@ -545,8 +571,24 @@
                 });
                 const result = await response.json();
                 if (!response.ok) throw new Error(result.details);
+                
+                const cardToRemove = document.getElementById(`pack-card-${packId}`);
+                if (cardToRemove) {
+                    cardToRemove.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    cardToRemove.style.opacity = '0';
+                    cardToRemove.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        cardToRemove.remove();
+                        localPacksCache = localPacksCache.filter(p => p.id !== packId);
+                        const packsGrid = document.getElementById('packs-grid-placeholder');
+                        if (packsGrid && localPacksCache.length === 0) {
+                            packsGrid.innerHTML = `<p class="tiny" style="padding-top: 1rem;">This user hasn't uploaded any packs yet.</p>`;
+                        }
+                    }, 300);
+                }
+                
                 showToast('Pack deleted successfully!', 'success');
-                loadProfilePage(loggedInUser);
+
             } catch(error) {
                 showToast(error.message, 'error');
             }
