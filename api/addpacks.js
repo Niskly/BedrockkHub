@@ -12,8 +12,18 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. Get the user from the authorization header
-    const token = req.headers.authorization.split(' ')[1];
+    // 1. Check if authorization header exists and is properly formatted
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized: Missing or invalid authorization header.' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized: No token provided.' });
+    }
+
+    // 2. Get the user from the token
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
 
     if (userError || !user) {
@@ -26,7 +36,7 @@ export default async function handler(req, res) {
          return res.status(403).json({ error: 'Forbidden: You do not have permission to upload.' });
     }
 
-    // 2. Proceed with the upload, now with the user's ID
+    // 3. Proceed with the upload, now with the user's ID
     const { name, color, tags, filename, resolution, version, description, icon_url } = req.body;
 
     if (!name || !filename) {
@@ -46,7 +56,7 @@ export default async function handler(req, res) {
           version, 
           description, 
           icon_url,
-          user_id: user.id // <-- ADD THIS LINE
+          user_id: user.id
         }])
       .select()
       .single();
