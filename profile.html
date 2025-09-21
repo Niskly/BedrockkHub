@@ -21,12 +21,11 @@
 
         /* General UI */
         a { color: inherit; text-decoration: none; }
-        .tiny { font-size: 12px; color: var(--muted); }
+        .tiny { font-size: 11px; color: var(--muted); }
         .btn { padding: .5rem 1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn.primary { background: linear-gradient(90deg, var(--brand-1), var(--brand-2)); box-shadow: 0 10px 30px rgba(222, 33, 42, .22); color: white; }
         .btn.ghost { border-color: var(--border); background: transparent; color: var(--text); }
-        .btn.sm { padding: .25rem .5rem; border-radius: 8px; font-weight: 700; }
         .spinner { width: 1em; height: 1em; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
@@ -56,16 +55,8 @@
         .profile-meta { display: flex; align-items: flex-end; gap: 1.5rem; }
         .profile-avatar { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #161616; box-shadow: 0 10px 30px rgba(0,0,0,0.5); flex-shrink: 0; }
         
-        /* --- FIX: STYLES FOR THE PFP PLACEHOLDER --- */
-        .pfp-placeholder {
-            width: 140px; height: 140px; border-radius: 50%;
-            border: 4px solid #161616; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            flex-shrink: 0; background-color: var(--bg-2);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .pfp-placeholder span {
-            font-size: 4rem; font-weight: 900; color: var(--brand-1);
-        }
+        .pfp-placeholder { width: 140px; height: 140px; border-radius: 50%; border: 4px solid #161616; box-shadow: 0 10px 30px rgba(0,0,0,0.5); flex-shrink: 0; background-color: var(--bg-2); display: flex; align-items: center; justify-content: center; }
+        .pfp-placeholder span { font-size: 4rem; font-weight: 900; color: var(--brand-1); }
 
         .profile-main-info { padding-top: 70px; width: 100%; }
         .info-top { display: flex; align-items: baseline; gap: 1.5rem; flex-wrap: wrap; }
@@ -105,7 +96,6 @@
         .content { padding: 10px; }
         .pack-stats { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 8px; }
 
-        /* --- STYLES FOR SIMPLIFIED UPLOAD MODAL --- */
         .backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, .8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 60; }
         .modal { width: 100%; max-width: 420px; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; }
         .modal .panel { padding: 20px; }
@@ -144,7 +134,6 @@
         <div class="loading-container"><div class="spinner"></div><p>Loading Profile...</p></div>
     </main>
     
-    <!-- --- SIMPLIFIED UPLOAD MODAL --- -->
     <div id="backdrop" class="backdrop">
         <div class="modal">
             <div class="panel">
@@ -188,7 +177,7 @@
         let skinViewer = null;
         let currentProfileData = null;
 
-        function showToast(message, type = 'error') {
+        function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
@@ -255,7 +244,13 @@
             
             const socialLinksHtml = renderSocialLinks(profile.social_links);
             const isOwnProfile = currentUser && currentUser.id === profile.id;
-            const profileActionsHtml = !isOwnProfile && currentUser ? `<div class="profile-actions"><button class="btn primary follow-btn"><i class="fa-solid fa-user-plus"></i> Follow</button></div>` : (isOwnProfile ? `<div class="profile-actions"><a href="/settings.html" class="btn ghost"><i class="fa-solid fa-pencil"></i> Edit Profile</a></div>` : '');
+            
+            let profileActionsHtml = '';
+            if (isOwnProfile) {
+                profileActionsHtml = `<div class="profile-actions"><a href="/settings.html" class="btn ghost"><i class="fa-solid fa-pencil"></i> Edit Profile</a></div>`;
+            } else if (currentUser) {
+                profileActionsHtml = `<div class="profile-actions"><button class="btn primary follow-btn"><i class="fa-solid fa-user-plus"></i> Follow</button></div>`;
+            }
 
             profileContainer.innerHTML = `
                 <div class="profile-header">
@@ -267,6 +262,11 @@
                             <div class="profile-main-info">
                                 <div class="info-top">
                                     <h1>${profile.username || 'Unnamed'}</h1>
+                                    <div class="header-stats">
+                                        <div class="stat-item"><div class="count">${(profile.view_count || 0).toLocaleString()}</div><div class="label">Views</div></div>
+                                        <div class="stat-item"><div class="count" id="follower-count">${(profile.followers_count || 0).toLocaleString()}</div><div class="label">Followers</div></div>
+                                        <div class="stat-item"><div class="count" id="following-count">${(profile.following_count || 0).toLocaleString()}</div><div class="label">Following</div></div>
+                                    </div>
                                 </div>
                                 <p class="profile-bio">${profile.bio || "This user hasn't written a bio yet."}</p>
                             </div>
@@ -287,7 +287,7 @@
                             <div class="card-body">
                                 <div class="packs-header">
                                     <h3>Texture Packs</h3>
-                                    ${(currentUser && currentUser.role === 'admin' && isOwnProfile) ? '<div class="upload-btn" title="Upload new pack"><i class="fa-solid fa-plus"></i></div>' : ''}
+                                    ${(currentUser && currentUser.id === profile.id) ? '<div class="upload-btn" title="Upload new pack"><i class="fa-solid fa-plus"></i></div>' : ''}
                                 </div>
                                 <div class="packs-grid" id="packs-grid-placeholder"></div>
                             </div>
@@ -341,25 +341,81 @@
                 canvas.addEventListener('mousedown', () => skinViewer.autoRotateAnimation.paused = true, { once: true });
             } catch (error) { console.error('Failed to init skin viewer:', error); }
         }
+        
+        async function setupFollowSystem(profile, currentUser) {
+            const followButton = document.querySelector('.follow-btn');
+            if (!followButton) return; // Exit if no follow button (e.g., own profile)
+            
+            const { count } = await supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', currentUser.id).eq('following_id', profile.id);
+            let isFollowing = count > 0;
+            
+            const updateButtonState = (newCount) => {
+                document.getElementById('follower-count').textContent = newCount.toLocaleString();
+                if (isFollowing) {
+                    followButton.innerHTML = `<i class="fa-solid fa-user-check"></i> Following`;
+                    followButton.classList.remove('primary');
+                    followButton.classList.add('ghost');
+                } else {
+                    followButton.innerHTML = `<i class="fa-solid fa-user-plus"></i> Follow`;
+                    followButton.classList.remove('ghost');
+                    followButton.classList.add('primary');
+                }
+            };
+            
+            updateButtonState(profile.followers_count || 0);
+            
+            followButton.addEventListener('click', async () => {
+                followButton.disabled = true;
+                const action = isFollowing
+                    ? supabase.from('followers').delete().match({ follower_id: currentUser.id, following_id: profile.id })
+                    : supabase.from('followers').insert({ follower_id: currentUser.id, following_id: profile.id });
+                
+                await action;
+                
+                // Manually update count for immediate feedback
+                const currentFollowerCount = parseInt(document.getElementById('follower-count').textContent.replace(/,/g, ''));
+                const newFollowerCount = isFollowing ? currentFollowerCount - 1 : currentFollowerCount + 1;
+                
+                isFollowing = !isFollowing;
+                updateButtonState(newFollowerCount);
+                followButton.disabled = false;
+            });
+        }
+        
+        function showError(title, message) {
+            profileContainer.innerHTML = `<div class="loading-container"><h2>${title}</h2><p>${message}</p></div>`;
+        }
 
         async function loadProfilePage(currentUser) {
             try {
                 const username = new URLSearchParams(window.location.search).get('user');
-                if (!username) { profileContainer.innerHTML = `<div class="loading-container"><p>No user specified.</p></div>`; return; }
-                const { data: profile, error } = await supabase.from('profiles').select('*').ilike('username', username).single();
-                if (error || !profile) { profileContainer.innerHTML = `<div class="loading-container"><p>User "${username}" not found.</p></div>`; return; }
+                if (!username) { return showError("No User Specified", "Please provide a username in the URL."); }
+
+                const { data: profile, error } = await supabase.from('profiles_with_counts').select('*').ilike('username', username).single();
                 
-                // --- MODIFIED: Fetch from 'profile_packs' table ---
-                const { data: packs } = await supabase.from('profile_packs').select('*').eq('user_id', profile.id).order('created_at', { ascending: false });
+                if (error || !profile) { return showError("User Not Found", `The user "${escapeHtml(username)}" could not be found.`); }
+
+                // Increment view count, but don't wait for it
+                if (currentUser && currentUser.id !== profile.id) {
+                    supabase.rpc('increment_view_count', { profile_id_to_update: profile.id }).then(({ error }) => {
+                        if(error) console.error("View count error:", error);
+                    });
+                }
+                
+                const { data: packs } = await supabase.from('packs').select('*').eq('user_id', profile.id).order('created_at', { ascending: false });
                 
                 renderDashboard(profile, packs || [], currentUser);
+                
+                if (currentUser && currentUser.id !== profile.id) {
+                    await setupFollowSystem(profile, currentUser);
+                }
+
             } catch (error) { 
-                profileContainer.innerHTML = `<div class="loading-container"><p>An error occurred loading the profile.</p></div>`;
                 console.error(error);
+                showError("Loading Error", "An unexpected error occurred while loading the profile.");
             }
         }
         
-        // --- GLOBALLY SCOPED FUNCTIONS FOR MODAL ---
         window.closeModal = () => { 
             document.getElementById('backdrop').style.display = 'none'; 
             document.getElementById('uploadForm').reset(); 
@@ -370,7 +426,6 @@
             if(f) document.getElementById('fileHint').textContent = f.name; 
         };
         
-        // --- SIMPLIFIED UPLOAD HANDLER ---
         window.handleUpload = async (event) => {
             event.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
@@ -385,7 +440,6 @@
             
             try {
                 let iconUrl = null;
-                // --- Icon Extraction Logic ---
                 const zip = new JSZip();
                 const contents = await zip.loadAsync(packFile);
                 let iconFile = null;
@@ -397,32 +451,32 @@
                 if (iconFile) {
                     const iconBlob = await iconFile.async('blob');
                     const iconStoragePath = `pack_icons/${loggedInUser.id}-${Date.now()}.png`;
-                    let { error: iconError } = await supabase.storage.from('pack_icons').upload(iconStoragePath, iconBlob);
+                    let { error: iconError } = await supabase.storage.from('packs').upload(iconStoragePath, iconBlob);
                     if (iconError) throw new Error(`Icon upload failed: ${iconError.message}`);
-                    const { data } = supabase.storage.from('pack_icons').getPublicUrl(iconStoragePath);
+                    const { data } = supabase.storage.from('packs').getPublicUrl(iconStoragePath);
                     iconUrl = data.publicUrl;
                 }
                 
-                // --- Pack File Upload Logic ---
                 const packStoragePath = `pack_files/${loggedInUser.id}-${Date.now()}-${packFile.name}`;
-                let { error: packError } = await supabase.storage.from('pack_files').upload(packStoragePath, packFile);
+                let { error: packError } = await supabase.storage.from('packs').upload(packStoragePath, packFile);
                 if (packError) throw new Error(`Pack file upload failed: ${packError.message}`);
-                const { data: { publicUrl: packUrl } } = supabase.storage.from('pack_files').getPublicUrl(packStoragePath);
-
-                // --- Database Insert Logic ---
-                let { error: dbError } = await supabase.from('profile_packs').insert({ 
+                
+                let { error: dbError } = await supabase.from('packs').insert({ 
                     user_id: loggedInUser.id, 
                     name: packName, 
-                    filename: packStoragePath, // Store path, not full URL
-                    download_url: packUrl, 
+                    filename: packStoragePath, 
                     icon_url: iconUrl,
-                    version: packFile.name.endsWith('.mcpack') ? 'bedrock' : 'java' 
+                    version: packFile.name.endsWith('.mcpack') ? 'bedrock' : 'java',
+                    // Default values for fields not in the simple upload form
+                    color: 'gray',
+                    tags: 'user-upload',
+                    resolution: '16x'
                 });
                 if (dbError) throw new Error(`Database insert failed: ${dbError.message}`);
                 
                 showToast('Pack uploaded successfully!', 'success');
                 closeModal();
-                loadProfilePage(loggedInUser); // Reload profile to show new pack
+                loadProfilePage(loggedInUser);
             } catch (error) { 
                 showToast(error.message, 'error');
             } finally { 
