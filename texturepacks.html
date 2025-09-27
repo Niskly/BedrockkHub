@@ -117,8 +117,8 @@
             gap: 18px;
         }
         .pack { overflow: hidden; }
-        a.pack.card { box-shadow: 0 24px 70px rgba(0, 0, 0, .55); transition: box-shadow .2s, transform .2s, border-color .2s; }
-        a.pack.card:hover { transform: translateY(-4px); box-shadow: 0 28px 75px rgba(0, 0, 0, .65); border-color: rgba(255,255,255,.2); }
+        .pack.card { box-shadow: 0 24px 70px rgba(0, 0, 0, .55); transition: box-shadow .2s, transform .2s, border-color .2s; }
+        .pack.card:hover { transform: translateY(-4px); box-shadow: 0 28px 75px rgba(0, 0, 0, .65); border-color: rgba(255,255,255,.2); }
         .thumb { height: 140px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
         .pack .thumb { border-bottom-color: var(--border) !important; }
         .thumb .pack-icon-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; filter: blur(8px) brightness(0.7); transform: scale(1.1); }
@@ -765,22 +765,21 @@
 
         function renderCard(p) {
             const color = COLORS.find(c => c.key === p.color)?.hex || '#6b7280';
+            const downloadUrl = supabase.storage.from('packs').getPublicUrl(p.filename).data.publicUrl;
             const thumbContent = p.icon_url 
                 ? `<div class="pack-icon-bg" style="background-image: url('${p.icon_url}');"></div><img class="pack-icon" src="${p.icon_url}" alt="${escapeHtml(p.name)} Icon">`
                 : `<div class="glyph" style="background:${color}"><i class="fa-solid fa-cube"></i></div>`;
             const thumbBackgroundStyle = p.icon_url ? `background: linear-gradient(135deg,#1f2937,#0f172a);` : `background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})`;
             
-            // The editLink logic remains the same for admins
-            const editLink = currentUserRole === 'admin' ? `<a href="#" onclick="openEditModal(${p.id}); event.preventDefault(); event.stopPropagation();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>` : '';
-            const optionsButton = currentUserRole === 'admin' ? `<button class="pack-options-btn" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>` : '';
-            
-            // The entire card is now a link to the details page
+            const downloadLink = `<a href="#" onclick="handleDownload(event, ${p.id}, '${p.filename}', '${escapeHtml(p.name)}')"><i class="fa-solid fa-download"></i> Download</a>`;
+            const editLink = currentUserRole === 'admin' ? `<a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>` : '';
+
             return `
-                <a href="/pack.html?id=${p.id}" class="card pack">
+                <div class="card pack">
                     <div class="thumb" style="${thumbBackgroundStyle}">
                         ${thumbContent}
-                        ${optionsButton}
-                        <div class="pack-options-menu" id="options-menu-${p.id}">${editLink}</div>
+                        <button class="pack-options-btn" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                        <div class="pack-options-menu" id="options-menu-${p.id}">${downloadLink}${editLink}</div>
                     </div>
                     <div class="content">
                         <div class="pack-stats-top">
@@ -795,7 +794,7 @@
                             ${(p.tags||[]).map(t=>`<span class="badge">${escapeHtml(capitalizeFirst(t))}</span>`).join('')}
                         </div>
                     </div>
-                </a>`;
+                </div>`;
         }
 
         function buildSwatches(container, onSelect, selected) {
