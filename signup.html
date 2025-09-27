@@ -21,8 +21,9 @@
         }
         body::before {
             content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg');
+            background-image: var(--bg-image, url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg'));
             background-size: cover; filter: blur(8px); opacity: 0.25; z-index: -1;
+            transition: background-image 0.5s ease-in-out;
         }
         a { color: inherit; text-decoration: none; }
         header {
@@ -54,12 +55,12 @@
             text-align: center;
         }
         .brand-icon {
-            width: 50px; height: 50px; border-radius: 14px; margin: 0 auto 0.5rem; /* ADJUSTED MARGIN */
+            width: 50px; height: 50px; border-radius: 14px; margin: 0 auto 0.5rem;
             display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1));
             box-shadow: var(--shadow-brand);
         }
         .brand-icon img { width: 100%; height: 100%; object-fit: contain; padding: 6px; transform: translateY(-13px); }
-        h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 0.25rem; } /* ADJUSTED MARGIN */
+        h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 0.25rem; }
         .form-group { margin-bottom: 1rem; text-align: left; position: relative; }
         label { display: block; margin-bottom: .5rem; font-weight: 600; color: var(--muted); }
         input {
@@ -109,13 +110,13 @@
 
         .progress-bar-container {
             width: 100%; background: var(--bg-2); border-radius: 99px; height: 8px;
-            margin-bottom: 1rem; /* ADJUSTED MARGIN */ overflow: hidden;
+            margin-bottom: 1rem; overflow: hidden;
         }
         .progress-bar-fill {
             width: 33%; height: 100%; background: var(--brand-1);
             border-radius: 99px;
         }
-        .progress-label { font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 1.5rem; } /* ADJUSTED MARGIN */
+        .progress-label { font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 1.5rem; }
         
         .password-strength-container {
             display: flex; align-items: center; gap: 8px; margin-top: 8px;
@@ -137,6 +138,47 @@
             width: 1.2em; height: 1.2em; border: 2px solid rgba(255,255,255,0.3);
             border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite;
         }
+        
+        /* ====== NEW MOBILE SIDEBAR STYLES ====== */
+        .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
+        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
+        .mobile-nav-backdrop.show { display: block; opacity: 1; }
+        .mobile-nav-sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: 280px; background: var(--bg-1);
+            z-index: 999; transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            display: flex; flex-direction: column;
+            border-right: 1px solid var(--border);
+        }
+        .mobile-nav-sidebar.show { transform: translateX(0); }
+        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
+        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
+        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+        .mobile-nav-user-info { display: flex; flex-direction: column; }
+        .mobile-nav-username { font-weight: 700; color: var(--text); }
+        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
+        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
+        .mobile-nav-main-links { flex-grow: 1; }
+        .mobile-nav-main-links a, .mobile-nav-footer-links a {
+            padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem;
+            font-weight: 600; color: var(--muted); transition: all 0.2s ease;
+        }
+        .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
+        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
+        .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
+
+        /* ====== MOBILE RESPONSIVENESS ====== */
+        @media (max-width: 768px) {
+            .nav-actions { display: none; }
+            .mobile-nav-toggle { display: block; }
+        }
+        @media (max-width: 480px) {
+            .main-content { padding: 1rem; }
+            .signup-card { padding: 1.5rem; }
+            h1 { font-size: 1.4rem; }
+        }
+
     </style>
 </head>
 <body>
@@ -197,6 +239,8 @@
     
     <div id="toast-container"></div>
 
+    <script type="module" src="/theme.js"></script>
+    <script type="module" src="/auth.js"></script>
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
@@ -317,7 +361,5 @@
             }
         });
     </script>
-    <script type="module" src="/auth.js"></script>
 </body>
 </html>
-
