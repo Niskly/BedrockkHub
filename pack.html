@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pack Details - MCHub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+    /* Prevents the "flash of the wrong theme" by keeping the body hidden until the theme is ready */
+    body {
+        opacity: 0;
+        transition: opacity 0.2s ease-in;
+    }
+    </style>
+    <style>
+        :root {
+            --bg-0: #000000;
+            --bg-1: #1c1c1c;
+            --bg-2: #2c2c2c;
+            --muted: #a8b3cf;
+            --text: #e8eefc;
+            --border: rgba(255, 255, 255, .12);
+            --brand-1: #de212a;
+            --brand-2: #b21a22;
+            --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
+            --danger: #ef4444;
+            --success: #22c55e;
+            --border-strong: rgba(255, 255, 255, .2);
+            --primary: var(--brand-1);
+        }
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            margin: 0;
+            background-color: var(--bg-0);
+            color: var(--text);
+            font: 500 15px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: var(--bg-image, url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg'));
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            filter: blur(8px);
+            opacity: 0.25;
+            z-index: -1;
+            transition: background-image 0.5s ease-in-out;
+        }
+        a { color: inherit; text-decoration: none; }
+        .container { max-width: 900px; margin: 0 auto; padding: 28px 18px; }
+        .card { background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 24px 70px rgba(0, 0, 0, .55); }
+        .btn { padding: .6rem 1rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; }
+        .btn.primary { background: linear-gradient(90deg, var(--brand-1), var(--brand-2)); box-shadow: var(--shadow-brand); color: white; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .tiny { font-size: 0.8rem; color: var(--muted); }
+        .spinner { width: 1.2em; height: 1.2em; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* Header */
+        header { position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(1.2) blur(10px); background: rgba(12, 12, 12, 0.7); border-bottom: 1px solid var(--border); }
+        .nav { max-width: 1200px; margin: 0 auto; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+        .brand { display: flex; align-items: center; gap: .8rem; }
+        .brand-badge { height: 44px; width: 44px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); }
+        .brand-title { font-weight: 800; letter-spacing: .6px; }
+        .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-13px); }
+        .nav-actions { display: flex; gap: .6rem; }
+
+        /* Pack Header */
+        .pack-header { display: flex; gap: 1.5rem; align-items: flex-start; padding: 2rem; }
+        .pack-icon { width: 120px; height: 120px; border-radius: 16px; object-fit: cover; flex-shrink: 0; }
+        .pack-info h1 { font-size: 2.5rem; margin: 0; line-height: 1.2; }
+        .pack-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+        .badge { font-size: 12px; padding: .25rem .55rem; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-2); color: white; font-weight: 700; text-transform: capitalize; }
+        .pack-actions { margin-top: 1.5rem; display: flex; gap: 1rem; }
+        
+        /* Gallery & Description */
+        .gallery-container { margin-top: 1.5rem; }
+        .gallery-placeholder { background: var(--bg-2); border-radius: 16px; height: 400px; display: grid; place-items: center; color: var(--muted); }
+        .description-container { margin-top: 1.5rem; padding: 1.5rem; }
+        
+        /* Comments Section */
+        .comments-container { margin-top: 1.5rem; padding: 1.5rem; }
+        .comment-form { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 2rem; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .comment-input-wrapper { flex-grow: 1; }
+        textarea.comment-box { width: 100%; min-height: 80px; background: var(--bg-2); border-radius: 12px; border: 1px solid var(--border); color: var(--text); padding: 0.8rem 1rem; font-family: inherit; resize: vertical; }
+        textarea.comment-box:focus { outline: none; border-color: var(--brand-1); }
+        .comment-submit-area { display: flex; justify-content: flex-end; margin-top: 0.5rem; }
+        .login-prompt { text-align: center; padding: 1.5rem; background: var(--bg-2); border-radius: 12px; margin-bottom: 2rem; }
+
+        .comment-list { display: flex; flex-direction: column; gap: 1.5rem; }
+        .comment { display: flex; gap: 1rem; align-items: flex-start; }
+        .comment-content { flex-grow: 1; }
+        .comment-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem; }
+        .comment-author { font-weight: 700; }
+        .comment-timestamp { font-size: 0.75rem; color: var(--muted); }
+        .comment-text { line-height: 1.5; }
+        .comment-actions button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.8rem; padding: 0.2rem; }
+
+        #toast-container { position: fixed; top: 80px; right: 20px; z-index: 100; }
+        .toast { padding: 12px 18px; border-radius: 8px; color: white; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; }
+        .toast.error { background: var(--danger); }
+        .toast.success { background: var(--success); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        @media (max-width: 600px) {
+            .pack-header { flex-direction: column; align-items: center; text-align: center; }
+            .pack-info h1 { font-size: 2rem; }
+            .pack-meta, .pack-actions { justify-content: center; }
+            .gallery-placeholder { height: 250px; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="toast-container"></div>
+    <header>
+        <div class="nav">
+            <a class="brand" href="/">
+                <div class="brand-badge">
+                    <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
+                </div>
+                <div>
+                    <div class="brand-title">MCHUB</div>
+                    <div class="tiny">Minecraft Bedrock • community</div>
+                </div>
+            </a>
+            <div id="nav-actions" class="nav-actions"></div>
+        </div>
+    </header>
+
+    <main class="container" id="page-content">
+        <!-- Content will be generated by JavaScript -->
+        <div style="display:grid; place-items: center; min-height: 50vh;">
+            <div class="spinner"></div>
+        </div>
+    </main>
+
+    <script type="module" src="/theme.js"></script>
+    <script type="module" src="/auth.js"></script>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DK_mfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentUser = null;
+        let currentProfile = null;
+        const pageContent = document.getElementById('page-content');
+        const packId = new URLSearchParams(window.location.search).get('id');
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        function renderPage(pack, comments) {
+            const uploader = pack.profiles;
+            const uploaderPfp = uploader.avatar_url || `https://placehold.co/40x40/1c1c1c/e8eefc?text=${uploader.username.charAt(0).toUpperCase()}`;
+
+            pageContent.innerHTML = `
+                <div class="card pack-header-card">
+                    <div class="pack-header">
+                        <img src="${pack.icon_url || 'https://placehold.co/120x120/1c1c1c/de212a?text=Icon'}" alt="${pack.name} Icon" class="pack-icon">
+                        <div class="pack-info">
+                            <div class="tiny">Uploaded by <a href="/profile.html?user=${uploader.username}" style="font-weight: bold;">${uploader.username}</a></div>
+                            <h1>${pack.name}</h1>
+                            <div class="pack-meta">
+                                ${pack.color && pack.color !== 'none' ? `<span class="badge">${pack.color}</span>` : ''}
+                                ${pack.resolution ? `<span class="badge">${pack.resolution}</span>` : ''}
+                                ${pack.version ? `<span class="badge">${pack.version}</span>` : ''}
+                                ${(pack.tags || '').split(',').filter(t => t).map(t => `<span class="badge">${t}</span>`).join('')}
+                            </div>
+                            <div class="pack-actions">
+                                <button class="btn primary" onclick="handleDownload(event, '${pack.filename}', '${pack.name}')">
+                                    <i class="fa-solid fa-download"></i>
+                                    Download (${(pack.download_count || 0).toLocaleString()})
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card gallery-container">
+                     <div class="gallery-placeholder">
+                        <p><i class="fa-solid fa-images"></i> Image & Video Gallery Coming Soon!</p>
+                    </div>
+                </div>
+
+                <div class="card description-container">
+                    <h2>Description</h2>
+                    <p class="tiny">${pack.description || 'No description provided.'}</p>
+                </div>
+
+                <div class="card comments-container">
+                    <h2>Comments (${comments.length})</h2>
+                    <div id="comment-form-area"></div>
+                    <div class="comment-list" id="comment-list"></div>
+                </div>
+            `;
+            renderCommentList(comments);
+            renderCommentForm();
+        }
+        
+        function renderCommentForm() {
+            const container = document.getElementById('comment-form-area');
+            if (currentUser && currentProfile) {
+                const userPfp = currentProfile.avatar_url || `https://placehold.co/40x40/1c1c1c/e8eefc?text=${currentProfile.username.charAt(0).toUpperCase()}`;
+                container.innerHTML = `
+                    <form class="comment-form" id="new-comment-form">
+                        <img src="${userPfp}" alt="Your avatar" class="avatar">
+                        <div class="comment-input-wrapper">
+                            <textarea id="comment-text" class="comment-box" placeholder="Add a comment..." required></textarea>
+                            <div class="comment-submit-area">
+                                <button type="submit" class="btn primary">Post Comment</button>
+                            </div>
+                        </div>
+                    </form>
+                `;
+                document.getElementById('new-comment-form').addEventListener('submit', handleCommentSubmit);
+            } else {
+                container.innerHTML = `
+                    <div class="login-prompt">
+                        <p>You must be <a href="/login.html" style="font-weight:bold;">logged in</a> to comment.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function renderCommentList(comments) {
+            const list = document.getElementById('comment-list');
+            if (comments.length === 0) {
+                list.innerHTML = `<p class="tiny" style="text-align:center;">Be the first to comment!</p>`;
+                return;
+            }
+            list.innerHTML = comments.map(comment => {
+                 const pfp = comment.profiles.avatar_url || `https://placehold.co/40x40/1c1c1c/e8eefc?text=${comment.profiles.username.charAt(0).toUpperCase()}`;
+                 const isOwnComment = currentUser && currentUser.id === comment.user_id;
+                 return `
+                    <div class="comment" id="comment-${comment.id}">
+                        <img src="${pfp}" alt="${comment.profiles.username}'s avatar" class="avatar">
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <a href="/profile.html?user=${comment.profiles.username}" class="comment-author">${comment.profiles.username}</a>
+                                <span class="comment-timestamp">${new Date(comment.created_at).toLocaleDateString()}</span>
+                            </div>
+                            <p class="comment-text">${comment.content.replace(/\n/g, '<br>')}</p>
+                            <div class="comment-actions">
+                                ${isOwnComment ? `<button onclick="deleteComment(${comment.id})">Delete</button>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                 `;
+            }).join('');
+        }
+        
+        async function handleCommentSubmit(event) {
+            event.preventDefault();
+            const content = document.getElementById('comment-text').value.trim();
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            if (!content) return;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="spinner"></div>';
+
+            try {
+                const { data, error } = await supabase.from('comments').insert({
+                    content,
+                    pack_id: packId,
+                    user_id: currentUser.id
+                }).select('*, profiles(*)').single();
+                
+                if (error) throw error;
+
+                const list = document.getElementById('comment-list');
+                if (list.querySelector('p')) list.innerHTML = ''; // Clear "Be the first" message
+                list.insertAdjacentHTML('afterbegin', renderCommentList([data])); // Add new comment
+                document.getElementById('comment-text').value = '';
+                
+            } catch (error) {
+                showToast("Failed to post comment: " + error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Post Comment';
+            }
+        }
+        
+        window.deleteComment = async (commentId) => {
+            if (!confirm('Are you sure you want to delete this comment?')) return;
+            try {
+                const { error } = await supabase.from('comments').delete().eq('id', commentId);
+                if (error) throw error;
+                document.getElementById(`comment-${commentId}`).remove();
+                showToast('Comment deleted.', 'success');
+            } catch (error) {
+                showToast('Failed to delete comment: ' + error.message, 'error');
+            }
+        };
+
+        window.handleDownload = async (event, filename, packName) => {
+            event.target.disabled = true;
+            event.target.innerHTML = '<div class="spinner"></div> Downloading...';
+            try {
+                await supabase.rpc('increment_download_count', { pack_id_to_update: packId });
+                const { data } = supabase.storage.from('packs').getPublicUrl(filename);
+                const a = document.createElement('a');
+                a.href = data.publicUrl;
+                a.download = `${packName}.${filename.split('.').pop()}`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } catch (error) {
+                showToast('Download failed. Please try again.', 'error');
+            } finally {
+                 event.target.disabled = false;
+                 event.target.innerHTML = `<i class="fa-solid fa-download"></i> Download`;
+            }
+        };
+
+
+        async function loadPage() {
+            if (!packId) {
+                pageContent.innerHTML = '<h1>Error: No pack ID provided.</h1>';
+                return;
+            }
+            try {
+                const { data: packData, error: packError } = await supabase
+                    .from('packs')
+                    .select('*, profiles(*)')
+                    .eq('id', packId)
+                    .single();
+
+                if (packError) throw packError;
+
+                const { data: commentsData, error: commentsError } = await supabase
+                    .from('comments')
+                    .select('*, profiles(*)')
+                    .eq('pack_id', packId)
+                    .order('created_at', { ascending: false });
+
+                if (commentsError) throw commentsError;
+                
+                renderPage(packData, commentsData || []);
+
+            } catch (error) {
+                pageContent.innerHTML = `<h1>Error loading pack: ${error.message}</h1>`;
+                console.error(error);
+            }
+        }
+
+        document.addEventListener('auth-ready', (e) => {
+            currentUser = e.detail.user;
+            currentProfile = e.detail.profile;
+            loadPage();
+        });
+
+    </script>
+</body>
+</html>
+```
+
+### Part 3: Link the Pages Together
+
+Finally, we need to make it so clicking a pack on the `texturepacks.html` page actually takes you to the new details page.
+
+This is a very small change. In your `texturepacks.html` file, find the `renderCard` function and **replace it** with this new version:
+
+```javascript
+        function renderCard(p) {
+            const color = COLORS.find(c => c.key === p.color)?.hex || '#6b7280';
+            const thumbContent = p.icon_url 
+                ? `<div class="pack-icon-bg" style="background-image: url('${p.icon_url}');"></div><img class="pack-icon" src="${p.icon_url}" alt="${escapeHtml(p.name)} Icon">`
+                : `<div class="glyph" style="background:${color}"><i class="fa-solid fa-cube"></i></div>`;
+            const thumbBackgroundStyle = p.icon_url ? `background: linear-gradient(135deg,#1f2937,#0f172a);` : `background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})`;
+            
+            // The editLink logic remains the same for admins
+            const editLink = currentUserRole === 'admin' ? `<a href="#" onclick="openEditModal(${p.id}); event.preventDefault(); event.stopPropagation();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>` : '';
+            const optionsButton = currentUserRole === 'admin' ? `<button class="pack-options-btn" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>` : '';
+            
+            // The entire card is now a link to the details page
+            return `
+                <a href="/pack.html?id=${p.id}" class="card pack">
+                    <div class="thumb" style="${thumbBackgroundStyle}">
+                        ${thumbContent}
+                        ${optionsButton}
+                        <div class="pack-options-menu" id="options-menu-${p.id}">${editLink}</div>
+                    </div>
+                    <div class="content">
+                        <div class="pack-stats-top">
+                            <div class="stat-item"><i class="fa-solid fa-download"></i><span id="downloads-${p.id}">${(p.download_count || 0).toLocaleString()}</span></div>
+                            <div class="stat-item"><i class="fa-solid fa-calendar-day"></i><span>${formatDate(p.created_at)}</span></div>
+                        </div>
+                        <h4>${escapeHtml(p.name)}</h4>
+                        <div class="meta">
+                            ${(p.color && p.color !== 'none') ? `<span class="badge">${escapeHtml(p.color)}</span>` : ''}
+                            ${p.resolution ? `<span class="badge">${escapeHtml(p.resolution)}</span>` : ''}
+                            ${p.version ? `<span class="badge">${escapeHtml(p.version)}</span>` : ''}
+                            ${(p.tags||[]).map(t=>`<span class="badge">${escapeHtml(capitalizeFirst(t))}</span>`).join('')}
+                        </div>
+                    </div>
+                </a>`;
+        }
