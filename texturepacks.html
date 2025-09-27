@@ -30,8 +30,6 @@
             background-color: var(--bg-0);
             color: var(--text);
             font: 500 15px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;
-            position: relative;
-            z-index: 1;
         }
         body::before {
             content: '';
@@ -207,10 +205,6 @@
             gap: 10px; cursor: pointer; font-weight: 600;
         }
         .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
-        .nav-avatar-default {
-            width: 28px; height: 28px; border-radius: 50%; background: var(--bg-0);
-            display: flex; align-items: center; justify-content: center;
-        }
         .user-menu-btn .fa-chevron-down { font-size: 0.8em; transition: transform 0.2s; }
         .user-menu-btn:hover { border-color: var(--border-strong); }
         .dropdown-content {
@@ -228,47 +222,54 @@
 
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         
-        /* HAMBURGER FIX: Mobile Navigation Styles */
+        /* ====== NEW MOBILE SIDEBAR STYLES ====== */
         .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
-        .mobile-nav-overlay { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; }
-        .mobile-nav-overlay.show { display: flex; }
-        .mobile-nav-overlay .btn { font-size: 1.2rem; padding: 0.8rem 1.5rem; min-width: 200px; text-align: center; justify-content: center; }
-        .mobile-nav-close { position: absolute; top: 1.5rem; right: 1.5rem; }
+        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
+        .mobile-nav-backdrop.show { display: block; opacity: 1; }
+        .mobile-nav-sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: 280px; background: var(--bg-1);
+            z-index: 999; transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            display: flex; flex-direction: column;
+            border-right: 1px solid var(--border);
+        }
+        .mobile-nav-sidebar.show { transform: translateX(0); }
+        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
+        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
+        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+        .mobile-nav-user-info { display: flex; flex-direction: column; }
+        .mobile-nav-username { font-weight: 700; color: var(--text); }
+        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
+        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
+        .mobile-nav-main-links { flex-grow: 1; }
+        .mobile-nav-main-links a, .mobile-nav-footer-links a {
+            padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem;
+            font-weight: 600; color: var(--muted); transition: all 0.2s ease;
+        }
+        .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
+        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
+        .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
 
-        /* ====== MOBILE COMPATIBILITY ====== */
+        /* ====== MOBILE RESPONSIVENESS ====== */
         @media (max-width: 1024px) { 
-            .layout { 
-                grid-template-columns: 1fr; 
-            } 
-            .sidebar { 
-                position: static;
-                margin-bottom: 20px;
-            } 
-            .packs { 
-                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
-            } 
+            .layout { grid-template-columns: 1fr; } 
+            .sidebar { position: static; margin-bottom: 20px; } 
+            .packs { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); } 
         }
         @media (max-width: 768px) { 
             .nav-actions { display: none; }
-            .mobile-nav-toggle { display: block; } /* HAMBURGER FIX: Show hamburger on mobile */
-            .packs { 
-                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            }
-            .modal {
-                max-width: 95vw;
-                max-height: 95vh;
-            }
-            #uploadForm > fieldset > div {
-                grid-template-columns: 1fr;
-            }
-            .file-upload-area {
-                grid-column: span 1;
-            }
+            .mobile-nav-toggle { display: block; }
+            .packs { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+            .modal { max-width: 95vw; max-height: 95vh; }
+            #uploadForm > fieldset > div { grid-template-columns: 1fr; }
+            .file-upload-area { grid-column: span 1; }
         }
         @media (max-width: 480px) {
-            .packs {
-                grid-template-columns: 1fr;
-            }
+            .packs { grid-template-columns: 1fr; }
+            .filter-bar { flex-direction: column; gap: 1rem; align-items: stretch; }
+            .filter-bar .search, .filter-bar .row { width: 100%; }
+            .filter-bar .row .btn { flex-grow: 1; justify-content: center; }
         }
     </style>
 </head>
@@ -316,7 +317,7 @@
                 <div class="row" style="margin-top:8px"><button class="btn sm btn-clear" onclick="clearTags()">Clear tags</button></div>
             </aside>
             <div>
-                <div class="card panel" style="display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:14px; flex-wrap: wrap;">
+                <div class="card panel filter-bar" style="display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:14px; flex-wrap: wrap;">
                     <div class="sort-container" id="sortContainer">
                         <button class="btn sm ghost sort-btn" onclick="toggleSortMenu()">
                             <span class="tiny">Sort by:</span>
@@ -477,6 +478,7 @@
     <div id="toast-container"></div>
     
     <script type="module" src="/theme.js"></script>
+    <script type="module" src="/auth.js"></script>
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -526,19 +528,10 @@
             if (!packFile || (!packFile.name.toLowerCase().endsWith(".mcpack") && !packFile.name.toLowerCase().endsWith(".zip"))) {
                 return showToast("Please select a valid .mcpack or .zip file", "error");
             }
-            if (!state.modalColor) {
-                return showToast("You forgot to select a primary color.", "error");
-            }
-            if (!state.modalResolution) {
-                return showToast("You forgot to select a resolution.", "error");
-            }
+            if (!state.modalColor) { return showToast("You forgot to select a primary color.", "error"); }
+            if (!state.modalResolution) { return showToast("You forgot to select a resolution.", "error"); }
 
-            let version = "";
-            if (packFile.name.toLowerCase().endsWith(".mcpack")) {
-                version = "bedrock";
-            } else if (packFile.name.toLowerCase().endsWith(".zip")) {
-                version = "java";
-            }
+            let version = packFile.name.toLowerCase().endsWith(".mcpack") ? "bedrock" : "java";
 
             submitBtn.disabled = true;
             formFieldset.disabled = true;
@@ -546,17 +539,12 @@
 
             try {
                 const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-                if (sessionError || !session) {
-                    throw new Error("You must be logged in to upload packs.");
-                }
+                if (sessionError || !session) throw new Error("You must be logged in to upload packs.");
 
                 let iconUrl = null;
                 const zip = new JSZip();
                 const contents = await zip.loadAsync(packFile);
-                let iconPath = null;
-                
-                iconPath = Object.keys(contents.files).find(path => path.toLowerCase().endsWith('pack_icon.png')) 
-                        || Object.keys(contents.files).find(path => path.toLowerCase().endsWith('pack.png'));
+                const iconPath = Object.keys(contents.files).find(path => /pack_icon\.png$/i.test(path) || /pack\.png$/i.test(path));
 
                 if (iconPath) {
                     submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...';
@@ -565,8 +553,7 @@
                     const iconStoragePath = `icons/${Date.now()}-icon.png`;
                     const { error: iconError } = await supabase.storage.from("packs").upload(iconStoragePath, iconBlob);
                     if (iconError) throw iconError;
-                    const { data: iconData } = supabase.storage.from("packs").getPublicUrl(iconStoragePath);
-                    iconUrl = iconData.publicUrl;
+                    iconUrl = supabase.storage.from("packs").getPublicUrl(iconStoragePath).data.publicUrl;
                 }
 
                 submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Pack...';
@@ -576,19 +563,11 @@
 
                 const response = await fetch("/api/addpacks", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${session.access_token}`
-                    },
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session.access_token}` },
                     body: JSON.stringify({
                         name: packName || packFile.name.replace(/\.(mcpack|zip)$/i, ""),
-                        color: state.modalColor,
-                        tags: [...state.modalTags],
-                        filename: packStoragePath,
-                        resolution: state.modalResolution,
-                        version: version,
-                        description: packDescription,
-                        icon_url: iconUrl
+                        color: state.modalColor, tags: [...state.modalTags], filename: packStoragePath,
+                        resolution: state.modalResolution, version, description: packDescription, icon_url: iconUrl
                     })
                 });
 
@@ -613,177 +592,289 @@
         async function saveEdit(e) {
             e.preventDefault();
             if (!currentEditId) return;
-
             try {
                 const updates = {
                     name: document.getElementById("editPackName").value.trim(),
                     description: document.getElementById("editPackDescription").value.trim(),
-                    color: state.editColor,
-                    tags: [...state.editTags].join(","),
+                    color: state.editColor, tags: [...state.editTags].join(","),
                     resolution: state.editResolution
                 };
-
                 const { error } = await supabase.from("packs").update(updates).eq("id", currentEditId);
-
-                if (error) {
-                    throw error;
-                }
-
+                if (error) throw error;
                 showToast("Pack saved successfully!", "success");
                 await loadPacksOnStartup();
                 closeEditModal();
+            } catch (error) { showToast("Save failed: " + error.message, "error"); }
+        }
 
+        async function confirmDelete() {
+            if (!currentEditId) return;
+            const pack = packs.find(p => p.id === currentEditId);
+            if (!pack) return cancelDelete();
+            try {
+                if (pack.filename) await supabase.storage.from("packs").remove([pack.filename]);
+                if (pack.icon_url) await supabase.storage.from("packs").remove([`icons/${pack.icon_url.split("/").pop()}`]);
+                const { error } = await supabase.from("packs").delete().eq("id", currentEditId);
+                if (error) throw error;
+                await loadPacksOnStartup();
             } catch (error) {
-                showToast("Save failed: " + error.message, "error");
+                showToast("Delete failed: " + error.message, "error");
+            } finally {
+                cancelDelete();
+                closeEditModal();
             }
         }
 
-        async function confirmDelete(){if(!currentEditId)return;const e=packs.find(e=>e.id===currentEditId);if(!e)return void cancelDelete();try{await supabase.storage.from("packs").remove([e.filename]),e.icon_url&&await supabase.storage.from("packs").remove([`icons/${e.icon_url.split("/").pop()}`]);const{error:t}=await supabase.from("packs").delete().eq("id",currentEditId);if(t)throw t;await loadPacksOnStartup()}catch(e){showToast("Delete failed: "+e.message, "error")}finally{cancelDelete(),closeEditModal()}}
-        async function handleDownload(e,t,o,a){e.preventDefault();try{await fetch("/api/increment-download",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:t})});const e=document.getElementById(`downloads-${t}`);if(e){const t=parseInt(e.textContent.replace(/,/g,""),10);e.textContent=(t+1).toLocaleString()}}catch(e){console.error("Failed to update download count:",e)}finally{fetch(o).then(e=>e.blob()).then(e=>{const t=document.createElement("a");t.href=URL.createObjectURL(e),t.download=a,document.body.appendChild(t),t.click(),document.body.removeChild(t)})}}
+        async function handleDownload(event, packId, filename, packName) {
+            event.preventDefault();
+            try {
+                await fetch("/api/increment-download", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id: packId })
+                });
+                const el = document.getElementById(`downloads-${packId}`);
+                if (el) el.textContent = (parseInt(el.textContent.replace(/,/g, ''), 10) + 1).toLocaleString();
+            } catch (error) { console.error("Failed to update download count:", error); }
+            finally {
+                const { data } = supabase.storage.from('packs').getPublicUrl(filename);
+                fetch(data.publicUrl).then(res => res.blob()).then(blob => {
+                    const a = document.createElement("a");
+                    a.href = URL.createObjectURL(blob);
+                    a.download = `${packName}.${filename.split('.').pop()}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                });
+            }
+        }
 
         /* ====== UI RENDERING ====== */
         function render() {
             const grid = document.getElementById('grid');
-            const filtered = packs.filter(p => {
-                const qOk = !state.q || p.name.toLowerCase().includes(state.q);
-                const cOk = state.colors.size === 0 || state.colors.has(p.color);
-                const tOk = state.tags.size === 0 || [...state.tags].every(t => (p.tags || []).includes(t));
-                const rOk = state.resolutions.size === 0 || state.resolutions.has(p.resolution);
-                const vOk = state.versions.size === 0 || state.versions.has(p.version);
-                return qOk && cOk && tOk && rOk && vOk;
-            });
+            const filtered = packs.filter(p => 
+                (!state.q || p.name.toLowerCase().includes(state.q)) &&
+                (state.colors.size === 0 || state.colors.has(p.color)) &&
+                (state.tags.size === 0 || [...state.tags].every(t => (p.tags || []).includes(t))) &&
+                (state.resolutions.size === 0 || state.resolutions.has(p.resolution)) &&
+                (state.versions.size === 0 || state.versions.has(p.version))
+            );
 
             const startIndex = (state.currentPage - 1) * packsPerPage;
-            const endIndex = startIndex + packsPerPage;
-            const packsForPage = filtered.slice(startIndex, endIndex);
+            const packsForPage = filtered.slice(startIndex, startIndex + packsPerPage);
 
-            grid.innerHTML = '';
-            if (packsForPage.length === 0) {
-                grid.innerHTML = '<div class="card panel tiny" style="grid-column: 1 / -1;">No packs match your filters.</div>';
-            } else {
-                packsForPage.forEach(p => grid.appendChild(renderCard(p)));
-            }
+            grid.innerHTML = packsForPage.length === 0 
+                ? '<div class="card panel tiny" style="grid-column: 1 / -1;">No packs match your filters.</div>' 
+                : packsForPage.map(renderCard).join('');
 
             renderPagination(filtered.length);
         }
 
-        function renderPagination(e){const t=document.getElementById("pagination-controls");t.innerHTML="";const o=Math.ceil(e/9);if(o<=1)return;if(state.currentPage>1){const e=document.createElement("button");e.className="pagination-btn",e.innerHTML='<i class="fa-solid fa-arrow-left"></i>',e.onclick=prevPage,t.appendChild(e)}const a=document.createElement("span");a.className="tiny",a.textContent=`Page ${state.currentPage} of ${o}`,t.appendChild(a),state.currentPage<o&&(()=>{const e=document.createElement("button");e.className="pagination-btn",e.innerHTML='<i class="fa-solid fa-arrow-right"></i>',e.onclick=nextPage,t.appendChild(e)})()}
-        function scrollToContentTop(){const e=document.querySelector("header"),t=document.getElementById("main-content");if(!e||!t)return;const o=e.offsetHeight,a=t.offsetTop;window.scrollTo({top:a-o-14,behavior:"smooth"})}
-        function nextPage(){state.currentPage++,scrollToContentTop(),render()}
-        function prevPage(){state.currentPage--,scrollToContentTop(),render()}
+        function renderPagination(totalPacks) {
+            const controls = document.getElementById("pagination-controls");
+            controls.innerHTML = "";
+            const totalPages = Math.ceil(totalPacks / packsPerPage);
+            if (totalPages <= 1) return;
 
-        function renderCard(p) {
-            const colorKey = p.color || 'gray';
-            const color = COLORS.find(c => c.key === colorKey)?.hex || '#6b7280';
-            const card = document.createElement('div');
-            card.className = 'card pack';
-            
-            let downloadUrl = '#';
-            let downloadName = `${p.name || 'pack'}.mcpack`;
-            
-            if (p.filename) {
-                const { data } = supabase.storage.from('packs').getPublicUrl(p.filename);
-                downloadUrl = data.publicUrl;
-                const extension = p.filename.split('.').pop();
-                downloadName = `${p.name}.${extension}`;
+            if (state.currentPage > 1) {
+                controls.innerHTML += `<button class="pagination-btn" onclick="prevPage()"><i class="fa-solid fa-arrow-left"></i></button>`;
             }
-
-            let thumbContent;
-            let thumbBackgroundStyle;
-            if (p.icon_url) {
-                thumbContent = `<div class="pack-icon-bg" style="background-image: url('${p.icon_url}');"></div><img class="pack-icon" src="${p.icon_url}" alt="${escapeHtml(p.name)} Icon">`;
-                thumbBackgroundStyle = `background: linear-gradient(135deg,#1f2937,#0f172a);`;
-            } else {
-                thumbContent = `<div class="glyph" style="background:${color}"><i class="fa-solid fa-cube"></i></div>`;
-                thumbBackgroundStyle = `background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})`;
+            controls.innerHTML += `<span class="tiny">Page ${state.currentPage} of ${totalPages}</span>`;
+            if (state.currentPage < totalPages) {
+                controls.innerHTML += `<button class="pagination-btn" onclick="nextPage()"><i class="fa-solid fa-arrow-right"></i></button>`;
             }
-
-            const downloadLink = p.filename 
-                ? `<a href="${downloadUrl}" onclick="handleDownload(event, ${p.id}, '${downloadUrl}', '${escapeHtml(downloadName)}')"><i class="fa-solid fa-download"></i> Download</a>`
-                : `<a href="#" onclick="alert('Download not available'); return false;"><i class="fa-solid fa-download"></i> Download Unavailable</a>`;
-            
-            const editLink = currentUserRole === 'admin' ? `<a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>` : '';
-
-            card.innerHTML = `
-                <div class="thumb" style="${thumbBackgroundStyle}">
-                    ${thumbContent}
-                    <button class="pack-options-btn" style="display: grid;" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                    <div class="pack-options-menu" id="options-menu-${p.id}">
-                        ${downloadLink}
-                        ${editLink}
-                    </div>
-                </div>
-                <div class="content">
-                    <div class="pack-stats-top">
-                        <div class="stat-item"><i class="fa-solid fa-download"></i><span id="downloads-${p.id}">${(p.download_count || 0).toLocaleString()}</span></div>
-                        <div class="stat-item"><i class="fa-solid fa-calendar-day"></i><span>${formatDate(p.created_at)}</span></div>
-                    </div>
-                    <h4>${escapeHtml(p.name)}</h4>
-                    <div class="meta">
-                        ${(p.color && p.color !== 'none') ? `<span class="badge" style="text-transform: capitalize;">${escapeHtml(p.color)}</span>` : ''}
-                        ${p.resolution ? `<span class="badge">${escapeHtml(p.resolution)}</span>` : ''}
-                        ${p.version ? `<span class="badge" style="text-transform: capitalize;">${escapeHtml(p.version)}</span>` : ''}
-                        ${(p.tags||[]).map(t=>`<span class="badge">${escapeHtml(capitalizeFirst(t))}</span>`).join('')}
-                    </div>
-                </div>`;
-            return card;
+        }
+        
+        function scrollToContentTop() {
+            const header = document.querySelector("header");
+            const mainContent = document.getElementById("main-content");
+            if (!header || !mainContent) return;
+            const headerHeight = header.offsetHeight;
+            const contentTop = mainContent.offsetTop;
+            window.scrollTo({ top: contentTop - headerHeight - 14, behavior: "smooth" });
         }
 
-        function buildSwatches(e,t,o){e.innerHTML="",COLORS.forEach(a=>{const n=document.createElement("button");n.type="button",n.className="swatch"+(o&&o.has(a.key)?" active":""),n.style.background=a.hex,n.title=a.key,a.icon&&(n.innerHTML=`<i class="${a.icon}"></i>`),n.onclick=()=>t(a.key,n),e.appendChild(n)})}
-        function buildModalTags(e,t,o=""){e.innerHTML="";const a=TAGS.filter(e=>e.toLowerCase().includes(o.toLowerCase()));0===a.length&&(e.innerHTML='<div class="tiny" style="grid-column: 1 / -1; text-align: center;">No tags found.</div>'),a.forEach(o=>{const a=document.createElement("span");a.className="tag-checkbox",t.has(o)&&a.classList.add("selected"),a.textContent=capitalizeFirst(o),a.onclick=()=>{toggleSet(tempModalTags,o),a.classList.toggle("selected")},e.appendChild(a)})}
-        function buildSidebarTags(e,t,o){e.innerHTML="",TAGS.forEach(a=>{const n=document.createElement("button");n.type="button",n.className="tag"+(o?.has(a)?" active":""),n.textContent=capitalizeFirst(a),n.onclick=()=>{t(a,n),n.classList.toggle("active")},e.appendChild(n)})}
-        function buildSelectorBoxes(e,t,o,a){e.innerHTML="";const n=o instanceof Set;a.forEach(a=>{const i=document.createElement("button");i.type="button";const l=n?o.has(a):o===a;i.className="res-box"+(l?" active":""),i.textContent=a,i.onclick=()=>t(a,i),e.appendChild(i)})}
-        function openModal(){document.getElementById("backdrop").style.display="flex",state.modalColor=null,state.modalResolution=null,state.modalTags=new Set,buildSwatches(document.getElementById("modalSwatches"),(e,t)=>{state.modalColor=e,highlightOne(t.parentElement,t)},null),buildSelectorBoxes(document.getElementById("modalResolutions"),(e,t)=>{state.modalResolution=e,highlightOne(t.parentElement,t)},null,RESOLUTIONS),updateTagButtonText()}
-        function closeModal(){document.getElementById("backdrop").style.display="none",document.getElementById("uploadForm").reset()}
-        function openTagModal(){isEditingTags=!1,tempModalTags=new Set(state.modalTags);const e=document.getElementById("tagSearchInput");e.value="",buildModalTags(document.querySelector("#tagSelectModal .modal-body"),tempModalTags),e.oninput=()=>{buildModalTags(document.querySelector("#tagSelectModal .modal-body"),tempModalTags,e.value)},document.getElementById("tag-select-backdrop").style.display="flex"}
-        function openEditTagModal(){isEditingTags=!0,tempModalTags=new Set(state.editTags);const e=document.getElementById("tagSearchInput");e.value="",buildModalTags(document.querySelector("#tagSelectModal .modal-body"),tempModalTags),e.oninput=()=>{buildModalTags(document.querySelector("#tagSelectModal .modal-body"),tempModalTags,e.value)},document.getElementById("tag-select-backdrop").style.display="flex"}
-        function closeTagModal(e){if(e)if(isEditingTags){state.editTags=new Set(tempModalTags),updateEditTagButtonText()}else state.modalTags=new Set(tempModalTags),updateTagButtonText();const t=document.getElementById("tagSearchInput");t.value="",t.oninput=null,document.getElementById("tag-select-backdrop").style.display="none"}
-        function openEditModal(e){const t=packs.find(t=>t.id===e);if(!t)return alert("Pack not found");currentEditId=e,document.getElementById("editId").value=e,document.getElementById("editPackName").value=t.name||"",document.getElementById("editPackDescription").value=t.description||"",state.editColor=t.color||null,state.editTags=new Set(t.tags||[]),state.editResolution=t.resolution||null,buildSwatches(document.getElementById("editModalSwatches"),(e,t)=>{state.editColor=e,highlightOne(t.parentElement,t)},new Set([state.editColor])),updateEditTagButtonText(),buildSelectorBoxes(document.getElementById("editModalResolutions"),(e,t)=>{state.editResolution=e,highlightOne(t.parentElement,t)},state.editResolution,RESOLUTIONS),document.getElementById("editBackdrop").style.display="flex"}
-        function closeEditModal(){currentEditId=null,document.getElementById("editBackdrop").style.display="none"}
-        function promptDelete(){if(currentEditId)document.getElementById("confirmDeleteBackdrop").style.display="flex"}
-        function cancelDelete(){document.getElementById("confirmDeleteBackdrop").style.display="none"}
-        function applyFilters(){state.currentPage=1,state.q=document.getElementById("q").value.trim().toLowerCase(),render()}
-        function clearSearch(){state.currentPage=1,document.getElementById("q").value="",applyFilters()}
-        function clearColors(){state.currentPage=1,state.colors.clear(),buildSwatches(document.getElementById("colorSwatches"),(e,t)=>{toggleSet(state.colors,e),t.classList.toggle("active"),render()},state.colors),render()}
-        function clearTags(){state.currentPage=1,state.tags.clear(),buildSidebarTags(document.getElementById("tagCloud"),(e,t)=>{toggleSet(state.tags,e),t.classList.toggle("active"),render()},state.tags),render()}
-        function clearResolutions(){state.currentPage=1,state.resolutions.clear(),buildSelectorBoxes(document.getElementById("resolutionBoxes"),(e,t)=>{toggleSet(state.resolutions,e),t.classList.toggle("active"),render()},state.resolutions,RESOLUTIONS),render()}
-        function clearVersions(){state.currentPage=1,state.versions.clear(),buildSelectorBoxes(document.getElementById("versionBoxes"),(e,t)=>{toggleSet(state.versions,e),t.classList.toggle("active"),render()},state.versions,VERSIONS),render()}
-        function resetAll(){state.currentPage=1,clearSearch(),clearColors(),clearTags(),clearResolutions(), clearVersions()}
-        function hintFile(){const e=document.getElementById("fileInput"),t=e.files[0];if(t){document.getElementById("fileHint").textContent=t.name;const o=document.getElementById("packName");o.value=t.name.replace(/\.(mcpack|zip)$/i,"")}}
-        function toggleOptionsMenu(e,t){e.stopPropagation();const o=document.getElementById(`options-menu-${t}`),a="block"===o.style.display;document.querySelectorAll(".pack-options-menu").forEach(e=>e.style.display="none"),a||(o.style.display="block")}
-        function toggleSortMenu(){const e=document.getElementById("sortMenu"),t=document.getElementById("sortContainer"),o="block"===e.style.display;e.style.display=o?"none":"block",t.classList.toggle("open",!o)}
-        function setSort(e,t){event.preventDefault(),state.sortBy=e,state.currentPage=1;const o=document.getElementById("currentSort");o.textContent=t.textContent,document.querySelectorAll("#sortMenu a").forEach(e=>e.classList.remove("active")),t.classList.add("active"),toggleSortMenu(),loadPacksOnStartup()}
-        function updateTagButtonText(){const e=document.getElementById("tagSelectorBtnText");0===state.modalTags.size?e.textContent="Select Tags":1===state.modalTags.size?e.textContent="1 Tag Selected":e.textContent=`${state.modalTags.size} Tags Selected`}
-        function updateEditTagButtonText(){const e=document.getElementById("editTagSelectorBtnText");0===state.editTags.size?e.textContent="Select Tags":1===state.editTags.size?e.textContent="1 Tag Selected":e.textContent=`${state.editTags.size} Tags Selected`}
-        function capitalizeFirst(e){return e?e.charAt(0).toUpperCase()+e.slice(1).toLowerCase():""}
-        function showToast(e,t="error"){const o=document.getElementById("toast-container"),a=document.createElement("div");a.className=`toast ${t}`,a.innerHTML=`<i class="fa-solid fa-circle-exclamation"></i> ${escapeHtml(e)}`,o.appendChild(a),setTimeout(()=>{a.remove()},4e3)}
-        function formatDate(e){if(!e)return"";const t=new Date(e),o=t.getDate(),a=t.getMonth()+1;return`${o}/${a}/${String(t.getFullYear()).slice(-2)}`}
-        function escapeHtml(e){return String(e||"").replace(/[&<>"']/g,e=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[e])}
-        function shade(e,t){let o=e.replace("#","");3===o.length&&(o=o.split("").map(e=>e+e).join(""));let[a,n,i]=[0,0,0].map((e,t)=>parseInt(o.slice(2*t,2*t+2),16));return[a,n,i]=[a+t,n+t,i+t].map(e=>Math.max(0,Math.min(255,e))),`#${[a,n,i].map(e=>e.toString(16).padStart(2,"0")).join("")}`}
-        function highlightOne(e,t){[...e.children].forEach(e=>e.classList.remove("active")),t.classList.add("active")}
-        function toggleSet(e,t){e.has(t)?e.delete(t):e.add(t)}
+        function nextPage() { state.currentPage++; scrollToContentTop(); render(); }
+        function prevPage() { state.currentPage--; scrollToContentTop(); render(); }
+
+        function renderCard(p) {
+            const color = COLORS.find(c => c.key === p.color)?.hex || '#6b7280';
+            const downloadUrl = supabase.storage.from('packs').getPublicUrl(p.filename).data.publicUrl;
+            const thumbContent = p.icon_url 
+                ? `<div class="pack-icon-bg" style="background-image: url('${p.icon_url}');"></div><img class="pack-icon" src="${p.icon_url}" alt="${escapeHtml(p.name)} Icon">`
+                : `<div class="glyph" style="background:${color}"><i class="fa-solid fa-cube"></i></div>`;
+            const thumbBackgroundStyle = p.icon_url ? `background: linear-gradient(135deg,#1f2937,#0f172a);` : `background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})`;
+            
+            const downloadLink = `<a href="#" onclick="handleDownload(event, ${p.id}, '${p.filename}', '${escapeHtml(p.name)}')"><i class="fa-solid fa-download"></i> Download</a>`;
+            const editLink = currentUserRole === 'admin' ? `<a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>` : '';
+
+            return `
+                <div class="card pack">
+                    <div class="thumb" style="${thumbBackgroundStyle}">
+                        ${thumbContent}
+                        <button class="pack-options-btn" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                        <div class="pack-options-menu" id="options-menu-${p.id}">${downloadLink}${editLink}</div>
+                    </div>
+                    <div class="content">
+                        <div class="pack-stats-top">
+                            <div class="stat-item"><i class="fa-solid fa-download"></i><span id="downloads-${p.id}">${(p.download_count || 0).toLocaleString()}</span></div>
+                            <div class="stat-item"><i class="fa-solid fa-calendar-day"></i><span>${formatDate(p.created_at)}</span></div>
+                        </div>
+                        <h4>${escapeHtml(p.name)}</h4>
+                        <div class="meta">
+                            ${(p.color && p.color !== 'none') ? `<span class="badge">${escapeHtml(p.color)}</span>` : ''}
+                            ${p.resolution ? `<span class="badge">${escapeHtml(p.resolution)}</span>` : ''}
+                            ${p.version ? `<span class="badge">${escapeHtml(p.version)}</span>` : ''}
+                            ${(p.tags||[]).map(t=>`<span class="badge">${escapeHtml(capitalizeFirst(t))}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function buildSwatches(container, onSelect, selected) {
+            container.innerHTML = COLORS.map(c => `<button type="button" class="swatch${selected && selected.has(c.key) ? ' active' : ''}" style="background:${c.hex}" title="${c.key}" onclick="this.dispatchEvent(new CustomEvent('swatch-select', {bubbles: true, detail: {key: '${c.key}', el: this}}))">${c.icon ? `<i class="${c.icon}"></i>` : ''}</button>`).join('');
+            container.addEventListener('swatch-select', e => onSelect(e.detail.key, e.detail.el));
+        }
+        function buildModalTags(container, selected, filter = '') {
+            const filteredTags = TAGS.filter(tag => tag.toLowerCase().includes(filter.toLowerCase()));
+            container.innerHTML = filteredTags.length === 0 ? '<div class="tiny" style="grid-column: 1 / -1; text-align: center;">No tags found.</div>'
+                : filteredTags.map(tag => `<span class="tag-checkbox${selected.has(tag) ? ' selected' : ''}" onclick="this.dispatchEvent(new CustomEvent('tag-select', {bubbles: true, detail: {key: '${tag}', el: this}}))">${capitalizeFirst(tag)}</span>`).join('');
+            container.addEventListener('tag-select', e => { toggleSet(tempModalTags, e.detail.key); e.detail.el.classList.toggle('selected'); });
+        }
+        function buildSidebarTags(container, onSelect, selected) {
+            container.innerHTML = TAGS.map(tag => `<button type="button" class="tag${selected?.has(tag) ? ' active' : ''}" onclick="this.dispatchEvent(new CustomEvent('sidebar-tag-select', {bubbles: true, detail: {key: '${tag}', el: this}}))">${capitalizeFirst(tag)}</button>`).join('');
+            container.addEventListener('sidebar-tag-select', e => { onSelect(e.detail.key, e.detail.el); e.detail.el.classList.toggle('active'); });
+        }
+        function buildSelectorBoxes(container, onSelect, selected, options) {
+            container.innerHTML = options.map(opt => `<button type="button" class="res-box${(selected instanceof Set ? selected.has(opt) : selected === opt) ? ' active' : ''}" onclick="this.dispatchEvent(new CustomEvent('box-select', {bubbles: true, detail: {key: '${opt}', el: this}}))">${opt}</button>`).join('');
+            container.addEventListener('box-select', e => onSelect(e.detail.key, e.detail.el));
+        }
+
+        window.openModal = () => {
+            document.getElementById("backdrop").style.display = "flex";
+            state.modalColor = null; state.modalResolution = null; state.modalTags.clear();
+            buildSwatches(document.getElementById("modalSwatches"), (key, el) => { state.modalColor = key; highlightOne(el.parentElement, el); }, null);
+            buildSelectorBoxes(document.getElementById("modalResolutions"), (key, el) => { state.modalResolution = key; highlightOne(el.parentElement, el); }, null, RESOLUTIONS);
+            updateTagButtonText();
+        }
+        window.closeModal = () => { document.getElementById("backdrop").style.display = "none"; document.getElementById("uploadForm").reset(); }
+        window.openTagModal = () => openTagEditor(false);
+        window.openEditTagModal = () => openTagEditor(true);
+        function openTagEditor(isEditMode) {
+            isEditingTags = isEditMode;
+            tempModalTags = new Set(isEditMode ? state.editTags : state.modalTags);
+            const searchInput = document.getElementById("tagSearchInput");
+            searchInput.value = "";
+            const body = document.querySelector("#tagSelectModal .modal-body");
+            const update = () => buildModalTags(body, tempModalTags, searchInput.value);
+            searchInput.oninput = update;
+            update();
+            document.getElementById("tag-select-backdrop").style.display = "flex";
+        }
+        window.closeTagModal = (save) => {
+            if (save) {
+                if (isEditingTags) { state.editTags = new Set(tempModalTags); updateEditTagButtonText(); } 
+                else { state.modalTags = new Set(tempModalTags); updateTagButtonText(); }
+            }
+            document.getElementById("tag-select-backdrop").style.display = "none";
+        };
+        window.openEditModal = (id) => {
+            const pack = packs.find(p => p.id === id);
+            if (!pack) return alert("Pack not found");
+            currentEditId = id;
+            document.getElementById("editId").value = id;
+            document.getElementById("editPackName").value = pack.name || "";
+            document.getElementById("editPackDescription").value = pack.description || "";
+            state.editColor = pack.color || null;
+            state.editTags = new Set(pack.tags || []);
+            state.editResolution = pack.resolution || null;
+            buildSwatches(document.getElementById("editModalSwatches"), (k, el) => { state.editColor = k; highlightOne(el.parentElement, el); }, new Set([state.editColor]));
+            buildSelectorBoxes(document.getElementById("editModalResolutions"), (k, el) => { state.editResolution = k; highlightOne(el.parentElement, el); }, state.editResolution, RESOLUTIONS);
+            updateEditTagButtonText();
+            document.getElementById("editBackdrop").style.display = "flex";
+        };
+        window.closeEditModal = () => { currentEditId = null; document.getElementById("editBackdrop").style.display = "none"; };
+        window.promptDelete = () => { if(currentEditId) document.getElementById("confirmDeleteBackdrop").style.display = "flex"; };
+        window.cancelDelete = () => document.getElementById("confirmDeleteBackdrop").style.display = "none";
+        window.applyFilters = () => { state.currentPage = 1; state.q = document.getElementById("q").value.trim().toLowerCase(); render(); };
+        window.clearSearch = () => { document.getElementById("q").value = ""; applyFilters(); };
+        window.clearColors = () => { state.colors.clear(); buildSwatches(document.getElementById("colorSwatches"), (k, el) => { toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors); render(); };
+        window.clearTags = () => { state.tags.clear(); buildSidebarTags(document.getElementById("tagCloud"), (k, el) => { toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags); render(); };
+        window.clearResolutions = () => { state.resolutions.clear(); buildSelectorBoxes(document.getElementById("resolutionBoxes"), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions, RESOLUTIONS); render(); };
+        window.clearVersions = () => { state.versions.clear(); buildSelectorBoxes(document.getElementById("versionBoxes"), (v, el) => { toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS); render(); };
+        window.resetAll = () => { state.q = ''; state.currentPage = 1; clearSearch(); clearColors(); clearTags(); clearResolutions(); clearVersions(); };
+        window.hintFile = () => {
+            const file = document.getElementById("fileInput").files[0];
+            if (file) {
+                document.getElementById("fileHint").textContent = file.name;
+                document.getElementById("packName").value = file.name.replace(/\.(mcpack|zip)$/i, "");
+            }
+        };
+        window.toggleOptionsMenu = (e, id) => {
+            e.stopPropagation();
+            const menu = document.getElementById(`options-menu-${id}`);
+            const isVisible = menu.style.display === 'block';
+            document.querySelectorAll(".pack-options-menu").forEach(m => m.style.display = 'none');
+            if (!isVisible) menu.style.display = 'block';
+        };
+        window.toggleSortMenu = () => {
+            document.getElementById("sortMenu").style.display = document.getElementById("sortMenu").style.display === 'block' ? 'none' : 'block';
+            document.getElementById("sortContainer").classList.toggle('open');
+        };
+        window.setSort = (sortBy, el) => {
+            event.preventDefault();
+            state.sortBy = sortBy; state.currentPage = 1;
+            document.getElementById("currentSort").textContent = el.textContent;
+            document.querySelectorAll("#sortMenu a").forEach(a => a.classList.remove('active'));
+            el.classList.add('active');
+            toggleSortMenu();
+            loadPacksOnStartup();
+        };
+
+        function updateTagButtonText() {
+            const btnText = document.getElementById("tagSelectorBtnText");
+            const count = state.modalTags.size;
+            btnText.textContent = count === 0 ? "Select Tags" : `${count} Tag${count > 1 ? 's' : ''} Selected`;
+        }
+        function updateEditTagButtonText() {
+            const btnText = document.getElementById("editTagSelectorBtnText");
+            const count = state.editTags.size;
+            btnText.textContent = count === 0 ? "Select Tags" : `${count} Tag${count > 1 ? 's' : ''} Selected`;
+        }
+
+        function capitalizeFirst(str) { return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : ""; }
+        function showToast(message, type = "error") {
+            const container = document.getElementById("toast-container");
+            const toast = document.createElement("div");
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${escapeHtml(message)}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+        function formatDate(iso) {
+            if (!iso) return "";
+            const d = new Date(iso);
+            return `${d.getDate()}/${d.getMonth() + 1}/${String(d.getFullYear()).slice(-2)}`;
+        }
+        function escapeHtml(str) { return String(str || "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])); }
+        function shade(color, percent) {
+            let f = parseInt(color.slice(1), 16), t = percent < 0 ? 0 : 255, p = percent < 0 ? percent * -1 : percent, R = f >> 16, G = f >> 8 & 0x00FF, B = f & 0x0000FF;
+            return "#" + (0x1000000 + (Math.round((t - R) * p) + R) * 0x10000 + (Math.round((t - G) * p) + G) * 0x100 + (Math.round((t - B) * p) + B)).toString(16).slice(1);
+        }
+        function highlightOne(parent, el) { [...parent.children].forEach(c => c.classList.remove('active')); el.classList.add('active'); }
+        function toggleSet(set, item) { set.has(item) ? set.delete(item) : set.add(item); }
 
         /* ====== INITIALIZATION ====== */
         async function checkUserAndInitialize() {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', user.id)
-                    .single();
+                const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
                 if (profile) currentUserRole = profile.role;
             }
-            if (currentUserRole === 'admin') {
-                document.getElementById('admin-actions').style.display = 'block';
-            }
+            if (currentUserRole === 'admin') { document.getElementById('admin-actions').style.display = 'block'; }
             await loadPacksOnStartup();
         }
 
         function init() {
-            window.openModal = openModal; window.closeModal = closeModal; window.openTagModal = openTagModal; window.closeTagModal = closeTagModal; window.openEditModal = openEditModal; window.closeEditModal = closeEditModal; window.openEditTagModal = openEditTagModal; window.handleUpload = handleUpload; window.saveEdit = saveEdit; window.promptDelete = promptDelete; window.cancelDelete = cancelDelete; window.confirmDelete = confirmDelete; window.applyFilters = applyFilters; window.clearSearch = clearSearch; window.clearColors = clearColors; window.clearTags = clearTags; window.clearResolutions = clearResolutions; window.resetAll = resetAll; window.hintFile = hintFile; window.toggleOptionsMenu = toggleOptionsMenu; window.handleDownload = handleDownload; window.toggleSortMenu = toggleSortMenu; window.setSort = setSort; window.nextPage = nextPage; window.prevPage = prevPage;
-            window.clearVersions = clearVersions;
-            
             if (document.getElementById('grid')) {
                 buildSwatches(document.getElementById('colorSwatches'), (k, el) => { toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
                 buildSidebarTags(document.getElementById('tagCloud'), (k, el) => { toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
@@ -791,8 +882,11 @@
                 buildSelectorBoxes(document.getElementById('versionBoxes'), (v, el) => { toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS);
                 
                 window.addEventListener('click', (e) => {
-                    if (!e.target.closest('.pack-options-btn')) { document.querySelectorAll('.pack-options-menu').forEach(menu => menu.style.display = 'none'); }
-                    if (!e.target.closest('.sort-container')) { document.getElementById('sortMenu').style.display = 'none'; document.getElementById('sortContainer').classList.remove('open'); }
+                    if (!e.target.closest('.pack-options-btn')) document.querySelectorAll('.pack-options-menu').forEach(menu => menu.style.display = 'none');
+                    if (!e.target.closest('.sort-container')) {
+                        document.getElementById('sortMenu').style.display = 'none';
+                        document.getElementById('sortContainer').classList.remove('open');
+                    }
                 });
                 
                 checkUserAndInitialize();
@@ -800,7 +894,6 @@
         }
         init();
     </script>
-    <script type="module" src="/auth.js"></script>
 </body>
 
 </html>
