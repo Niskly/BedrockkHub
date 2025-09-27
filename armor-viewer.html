@@ -16,6 +16,7 @@
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
             --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
             --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
+            --brand-1-rgb: 222, 33, 42;
             --border-strong: rgba(255, 255, 255, .2);
             --gradient-brand: linear-gradient(135deg, var(--brand-1), var(--brand-2));
         }
@@ -49,7 +50,7 @@
         .container { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
         .viewer-layout {
             display: grid;
-            grid-template-columns: 320px 1fr; /* Adjusted for smaller viewer */
+            grid-template-columns: 320px 1fr; /* Controls wider, viewer smaller */
             gap: 1.5rem;
             align-items: flex-start;
         }
@@ -111,7 +112,7 @@
         .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
         .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
         .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
-        
+
         /* ====== MOBILE RESPONSIVENESS ====== */
         @media (max-width: 768px) {
             .nav-actions { display: none; }
@@ -274,8 +275,39 @@
             if (!skinViewer || !foundArmor[armorName]) return;
             
             const armorSet = foundArmor[armorName];
-            skinViewer.loadArmor(armorSet.layer1, { layer: 1 });
-            skinViewer.loadArmor(armorSet.layer2, { layer: 2 });
+            const armorObject = skinViewer.playerObject.skin.armor;
+
+            // **FIXED**: Access THREE from the global skinview3d object
+            const textureLoader = new skinview3d.THREE.TextureLoader();
+            
+            const applyTexture = (part, url) => {
+                if (url && part) {
+                    textureLoader.load(url, (texture) => {
+                        // **FIXED**: Set correct texture properties for Minecraft
+                        texture.magFilter = skinview3d.THREE.NearestFilter;
+                        texture.minFilter = skinview3d.THREE.NearestFilter;
+                        part.material.map = texture;
+                        part.material.needsUpdate = true;
+                        part.visible = true;
+                    });
+                } else if (part) {
+                    part.visible = false;
+                }
+            };
+            
+            // Apply layer 1 textures to all relevant parts
+            applyTexture(armorObject.head, armorSet.layer1);
+            applyTexture(armorObject.body, armorSet.layer1);
+            applyTexture(armorObject.leftArm, armorSet.layer1);
+            applyTexture(armorObject.rightArm, armorSet.layer1);
+            
+            // Layer 2 is only for leggings on the body
+            applyTexture(armorObject.leftLeg, armorSet.layer2);
+            applyTexture(armorObject.rightLeg, armorSet.layer2);
+
+            // Layer 1 is used again for the boots
+            applyTexture(armorObject.leftFoot, armorSet.layer1);
+            applyTexture(armorObject.rightFoot, armorSet.layer1);
         }
 
         uploadArea.addEventListener('click', () => fileInput.click());
