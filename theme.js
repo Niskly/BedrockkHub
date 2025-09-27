@@ -1,4 +1,5 @@
-document.addEventListener('DOMContentLoaded', () => {
+// This script is designed to run immediately to prevent a "flash of unstyled content" (FOUC).
+(function() {
     const themes = {
         red: {
             '--brand-1': '#de212a',
@@ -32,21 +33,41 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const applyTheme = (themeName) => {
-        const theme = themes[themeName];
-        if (!theme) {
-            console.warn(`Theme "${themeName}" not found. Defaulting to "red".`);
-            return;
-        }
+    /**
+     * Converts a hex color string to an RGB string "r, g, b".
+     * @param {string} hex - The hex color.
+     * @returns {string|null} - The RGB string or null if invalid.
+     */
+    function hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : null;
+    }
 
+    /**
+     * Applies a theme by setting CSS variables on the root element.
+     * @param {string} themeName - The name of the theme to apply.
+     */
+    const applyTheme = (themeName) => {
+        const theme = themes[themeName] || themes.red;
         const root = document.documentElement;
-        root.setAttribute('data-theme', themeName);
         
+        root.setAttribute('data-theme', themeName);
+
         for (const [key, value] of Object.entries(theme)) {
             root.style.setProperty(key, value);
         }
+
+        // Set the RGB version of the brand color for use in rgba()
+        const brand1 = theme['--brand-1'];
+        if (brand1) {
+            root.style.setProperty('--brand-1-rgb', hexToRgb(brand1));
+        }
     };
 
+    /**
+     * Sets the theme and saves the preference to localStorage.
+     * @param {string} themeName - The name of the theme to set.
+     */
     const setTheme = (themeName) => {
         try {
             localStorage.setItem('mchub-theme', themeName);
@@ -56,10 +77,15 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTheme(themeName);
     };
 
-    // Make setTheme globally accessible for buttons
+    // Make the setTheme function globally accessible so the settings page can call it.
     window.setMCHubTheme = setTheme;
 
-    // Apply the saved theme on initial load
-    const savedTheme = localStorage.getItem('mchub-theme') || 'red';
-    applyTheme(savedTheme);
-});
+    // Immediately apply the saved theme on script load.
+    try {
+        const savedTheme = localStorage.getItem('mchub-theme') || 'red';
+        applyTheme(savedTheme);
+    } catch (e) {
+        console.error('Failed to apply initial theme:', e);
+        applyTheme('red'); // Fallback to default
+    }
+})();
