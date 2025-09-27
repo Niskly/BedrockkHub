@@ -6,6 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MCHub — Texture Packs</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+    /* Prevents the "flash of the wrong theme" by keeping the body hidden until the theme is ready */
+    body {
+        opacity: 0;
+        transition: opacity 0.2s ease-in;
+    }
+</style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root {
