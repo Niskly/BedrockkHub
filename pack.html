@@ -316,7 +316,7 @@
                     content,
                     pack_id: packId,
                     user_id: currentUser.id
-                }).select('*, profiles:user_id(*)').single();
+                }).select('*, profiles!user_id(*)').single();
                 
                 if (error) throw error;
 
@@ -374,7 +374,7 @@
             try {
                 const { data: packData, error: packError } = await supabase
                     .from('packs')
-                    .select('*, profiles:user_id(*)')
+                    .select('*, profiles!user_id(*)')
                     .eq('id', packId)
                     .single();
 
@@ -382,7 +382,7 @@
 
                 const { data: commentsData, error: commentsError } = await supabase
                     .from('comments')
-                    .select('*, profiles:user_id(*)')
+                    .select('*, profiles!user_id(*)')
                     .eq('pack_id', packId)
                     .order('created_at', { ascending: false });
 
