@@ -16,8 +16,7 @@
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
             --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
             --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
-            --brand-1-rgb: 222, 33, 42; --border-strong: rgba(255, 255, 255, .2);
-        }
+ }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 14px/1.6 Inter, sans-serif; }
         body::before { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-image: var(--bg-image, url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg')); background-size: cover; filter: blur(8px); opacity: 0.2; z-index: -1; transition: background-image 0.5s ease-in-out; }
@@ -54,51 +53,32 @@
         .card-header h2 { font-weight: 800; font-size: 1.2rem; margin: 0; }
         .card-body { padding: 1.2rem; }
 
-        .upload-area { border: 2px dashed var(--border); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s ease; }
+        .upload-area {
+            border: 2px dashed var(--border); border-radius: 12px; padding: 2rem;
+            text-align: center; cursor: pointer; transition: all 0.2s ease;
+        }
         .upload-area:hover { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.1); }
         .upload-area i { font-size: 2.5rem; color: var(--brand-1); margin-bottom: 1rem; }
         .upload-area p { color: var(--muted); font-weight: 600; }
         #file-input { display: none; }
 
-        .armor-set-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 400px; overflow-y: auto; }
-        .armor-set > summary { padding: 0.75rem 1rem; background: var(--bg-2); border-radius: 10px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; font-weight: 600; text-transform: capitalize; list-style: none; }
-        .armor-set > summary::-webkit-details-marker { display: none; }
-        .armor-set > summary:hover { border-color: var(--text); }
-        .armor-set[open] > summary { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: white; }
-        .armor-pieces { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.5rem 0 0 1rem; }
-        .armor-piece-btn { background: var(--bg-1); border: 1px solid var(--border); color: var(--muted); text-align: left; padding: 0.5rem 1rem; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
-        .armor-piece-btn:hover { border-color: var(--border-strong); color: var(--text); }
-        .armor-piece-btn.active { border-color: var(--brand-1); color: var(--text); }
+        .armor-selection-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 400px; overflow-y: auto; }
+        .armor-item {
+            padding: 0.75rem 1rem; background: var(--bg-2); border-radius: 10px;
+            border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease;
+            font-weight: 600; text-transform: capitalize;
+        }
+        .armor-item:hover { border-color: var(--text); }
+        .armor-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: white; }
         
-        #viewer-canvas { border-radius: 16px; width: 100%; aspect-ratio: 3/4; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg'); background-size: cover; background-position: center; cursor: grab; }
+        #viewer-canvas { border-radius: 16px; width: 100%; aspect-ratio: 3/4; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg'); background-size: cover; background-position: center; }
         #viewer-canvas.dragging { cursor: grabbing; }
 
         .placeholder-text { text-align: center; color: var(--muted); padding: 2rem 0; }
-        
-        .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
-        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
-        .mobile-nav-backdrop.show { display: block; opacity: 1; }
-        .mobile-nav-sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; background: var(--bg-1); z-index: 999; transform: translateX(-100%); transition: transform 0.3s ease; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
-        .mobile-nav-sidebar.show { transform: translateX(0); }
-        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
-        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
-        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
-        .mobile-nav-user-info { display: flex; flex-direction: column; }
-        .mobile-nav-username { font-weight: 700; color: var(--text); }
-        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
-        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
-        .mobile-nav-main-links { flex-grow: 1; }
-        .mobile-nav-main-links a, .mobile-nav-footer-links a { padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem; font-weight: 600; color: var(--muted); transition: all 0.2s ease; }
-        .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
-        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
-        .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
-
 
         @media (max-width: 768px) {
             .viewer-layout { grid-template-columns: 1fr; }
             .controls-panel { position: static; }
-            .nav-actions { display: none; }
-            .mobile-nav-toggle { display: block; }
         }
     </style>
 </head>
@@ -106,12 +86,10 @@
     <header>
         <nav class="nav">
             <a class="brand" href="/">
-                <div class="brand-badge">
-                    <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
-                </div>
+                <div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div>
                 <div>
                     <div class="brand-title">MCHUB</div>
-                    <div class="tiny">Armor Viewer</div>
+                    <div class="tiny">Minecraft Bedrock • community</div>
                 </div>
             </a>
             <div id="nav-actions" class="nav-actions"></div>
@@ -135,7 +113,7 @@
                 <div class="card" style="margin-top: 1.5rem;">
                     <div class="card-header"><h2>Found Armor</h2></div>
                     <div class="card-body">
-                        <div id="armor-list" class="armor-set-list">
+                        <div id="armor-list" class="armor-selection-list">
                             <p class="placeholder-text">Upload a pack to see armor sets</p>
                         </div>
                     </div>
@@ -164,103 +142,40 @@
             'textures/models/armor/diamond_1.png', 'textures/models/armor/diamond_2.png',
             'textures/models/armor/iron_1.png', 'textures/models/armor/iron_2.png',
             'textures/models/armor/gold_1.png', 'textures/models/armor/gold_2.png',
-            'textures/models/armor/chain_1.png', 'textures/models/armor/chain_2.png',
+            'textures/models/armor/chainmail_1.png', 'textures/models/armor/chainmail_2.png',
             'textures/models/armor/leather_1.png', 'textures/models/armor/leather_2.png',
             'textures/models/armor/turtle_1.png'
         ];
 
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+        const armorList = document.getElementById('armor-list');
+        const canvas = document.getElementById('viewer-canvas');
+
         let skinViewer;
         let foundArmor = {};
 
-        function init() {
-            const uploadArea = document.getElementById('upload-area');
-            const fileInput = document.getElementById('file-input');
-            const canvas = document.getElementById('viewer-canvas');
-
-            try {
-                skinViewer = new skinview3d.SkinViewer({
-                    canvas: canvas,
-                    width: canvas.clientWidth,
-                    height: canvas.clientHeight
-                });
-                
-                new ResizeObserver(() => {
-                    if (skinViewer) skinViewer.setSize(canvas.clientWidth, canvas.clientHeight);
-                }).observe(canvas);
-
-                canvas.addEventListener('mousedown', () => canvas.classList.add('dragging'));
-                canvas.addEventListener('mouseup', () => canvas.classList.remove('dragging'));
-
-                skinViewer.playerObject.skin.visible = false;
-
-            } catch (error) {
-                console.error("Failed to initialize Skin Viewer:", error);
-                if(canvas) canvas.parentElement.innerHTML = `<p class="placeholder-text">Error initializing 3D viewer.</p>`;
-            }
-            
-            uploadArea.addEventListener('click', () => fileInput.click());
-            fileInput.addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
-            uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.borderColor = 'var(--brand-1)'; });
-            uploadArea.addEventListener('dragleave', () => uploadArea.style.borderColor = 'var(--border)'; });
-            uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                uploadArea.style.borderColor = 'var(--border)';
-                if (e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files[0]);
+        function initSkinViewer() {
+            skinViewer = new skinview3d.SkinViewer({
+                canvas: canvas,
+                width: canvas.clientWidth,
+                height: canvas.clientHeight,
+                skin: "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png"
             });
-        }
-        
-        function getArmorNameFromPath(path) {
-            let fileName = path.split('/').pop();
-            return fileName.replace(/_layer_[12]\.png|_overlay\.png|_[12]\.png/g, '');
-        }
-
-        function applySinglePiece(armorName, piece) {
-            if (!skinViewer || !foundArmor[armorName]) return;
             
-            const armorSet = foundArmor[armorName];
-            const armorObject = skinViewer.playerObject.armor;
-            const textureLoader = new skinViewer.THREE.TextureLoader();
+            // Handle canvas resizing
+            new ResizeObserver(() => {
+                skinViewer.setSize(canvas.clientWidth, canvas.clientHeight);
+            }).observe(canvas);
 
-            // Hide all pieces first
-            Object.values(armorObject).forEach(part => part.visible = false);
-
-            const applyTexture = (part, url) => {
-                if (url) {
-                    textureLoader.load(url, (texture) => {
-                        texture.magFilter = skinViewer.THREE.NearestFilter;
-                        texture.minFilter = skinViewer.THREE.NearestFilter;
-                        part.material.map = texture;
-                        part.material.transparent = true;
-                        part.material.needsUpdate = true;
-                        part.visible = true;
-                    });
-                }
-            };
-            
-            switch(piece) {
-                case 'helmet':
-                    applyTexture(armorObject.head, armorSet.layer1);
-                    break;
-                case 'chestplate':
-                    applyTexture(armorObject.body, armorSet.layer1);
-                    applyTexture(armorObject.leftArm, armorSet.layer1);
-                    applyTexture(armorObject.rightArm, armorSet.layer1);
-                    break;
-                case 'leggings':
-                    applyTexture(armorObject.leftLeg, armorSet.layer2);
-                    applyTexture(armorObject.rightLeg, armorSet.layer2);
-                    break;
-                case 'boots':
-                    applyTexture(armorObject.leftLeg, armorSet.layer1);
-                    applyTexture(armorObject.rightLeg, armorSet.layer1);
-                    break;
-            }
+            // Add dragging class for cursor style
+            canvas.addEventListener('mousedown', () => canvas.classList.add('dragging'));
+            canvas.addEventListener('mouseup', () => canvas.classList.remove('dragging'));
         }
 
         function handleFileSelect(file) {
             if (!file) return;
-            const armorList = document.getElementById('armor-list');
-            armorList.innerHTML = `<p class="placeholder-text"><span class="spinner"></span> Searching pack...</p>`;
+            armorList.innerHTML = `<p class="placeholder-text">Searching pack...</p>`;
             foundArmor = {};
 
             const reader = new FileReader();
@@ -270,13 +185,13 @@
                     const allArmorPaths = [...ARMOR_PATHS_JAVA, ...ARMOR_PATHS_BEDROCK];
                     
                     for (const path of allArmorPaths) {
-                        const fileInZip = zip.file(path);
-                        if (fileInZip) {
-                            const blob = await fileInZip.async('blob');
+                        const file = zip.file(path);
+                        if (file) {
+                            const blob = await file.async('blob');
                             const url = URL.createObjectURL(blob);
                             
-                            let armorName = getArmorNameFromPath(path);
-                             if (armorName === 'chainmail') armorName = 'chain';
+                            let armorName = path.split('/').pop().split('_')[0];
+                            if (armorName === 'chainmail') armorName = 'chain'; // Shorten name
                             
                             const layer = path.includes('layer_2') || path.includes('_2.png') ? 'layer2' : 'layer1';
                             
@@ -294,60 +209,83 @@
         }
         
         function renderArmorList() {
-            const armorList = document.getElementById('armor-list');
             const armorNames = Object.keys(foundArmor);
-
             if (armorNames.length === 0) {
-                armorList.innerHTML = `<p class="placeholder-text">No standard armor textures found.</p>`;
-                Object.values(skinViewer.playerObject.armor).forEach(part => { if(part.visible) part.visible = false; });
+                armorList.innerHTML = `<p class="placeholder-text">No standard armor textures found in this pack.</p>`;
                 return;
             }
             
-            let html = '';
-            armorNames.forEach(name => {
-                html += `<details class="armor-set" data-armor-set="${name}"><summary>${name}</summary><div class="armor-pieces">`;
-                const armorSet = foundArmor[name];
-                if (armorSet.layer1) {
-                    html += `<button class="armor-piece-btn" data-piece="helmet">Helmet</button>`;
-                    html += `<button class="armor-piece-btn" data-piece="chestplate">Chestplate</button>`;
-                    html += `<button class="armor-piece-btn" data-piece="boots">Boots</button>`;
-                }
-                if (armorSet.layer2) {
-                    html += `<button class="armor-piece-btn" data-piece="leggings">Leggings</button>`;
-                }
-                html += `</div></details>`;
-            });
-            armorList.innerHTML = html;
+            armorList.innerHTML = armorNames.map(name => 
+                `<div class="armor-item" data-armor="${name}">${name}</div>`
+            ).join('');
             
-            armorList.querySelectorAll('.armor-piece-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const piece = e.target.dataset.piece;
-                    const setName = e.target.closest('.armor-set').dataset.armorSet;
-                    
-                    armorList.querySelectorAll('.armor-piece-btn').forEach(b => b.classList.remove('active'));
-                    e.target.classList.add('active');
-
-                    applySinglePiece(setName, piece);
+            armorList.querySelectorAll('.armor-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    armorList.querySelectorAll('.armor-item').forEach(el => el.classList.remove('active'));
+                    item.classList.add('active');
+                    applyArmor(item.dataset.armor);
                 });
             });
 
-            armorList.querySelectorAll('.armor-set').forEach(details => {
-                details.addEventListener('toggle', (e) => {
-                    if(e.target.open) {
-                         armorList.querySelectorAll('.armor-set').forEach(d => {
-                            if (d !== e.target) d.removeAttribute('open');
-                        });
-                        e.target.querySelector('.armor-piece-btn')?.click();
-                    }
-                });
-            });
-
-            const firstSet = armorList.querySelector('.armor-set');
-            if(firstSet) firstSet.setAttribute('open', '');
+            // Automatically select and apply the first found armor set
+            const firstItem = armorList.querySelector('.armor-item');
+            if (firstItem) {
+                firstItem.click();
+            }
         }
-        
-        document.addEventListener('DOMContentLoaded', init);
+
+        function applyArmor(armorName) {
+            if (!skinViewer || !foundArmor[armorName]) return;
+            
+            const armorSet = foundArmor[armorName];
+            const armorObject = skinViewer.playerObject.skin.armor;
+
+            // This is the key part: we access the underlying three.js objects
+            // and replace their textures.
+            const textureLoader = new skinViewer.THREE.TextureLoader();
+            
+            const applyTexture = (part, url) => {
+                if (url) {
+                    textureLoader.load(url, (texture) => {
+                        texture.magFilter = skinViewer.THREE.NearestFilter;
+                        texture.minFilter = skinViewer.THREE.NearestFilter;
+                        part.material.map = texture;
+                        part.material.needsUpdate = true;
+                        part.visible = true;
+                    });
+                } else {
+                    part.visible = false;
+                }
+            };
+            
+            // Apply layer 1 textures
+            applyTexture(armorObject.head, armorSet.layer1);
+            applyTexture(armorObject.body, armorSet.layer1);
+            applyTexture(armorObject.leftArm, armorSet.layer1);
+            applyTexture(armorObject.rightArm, armorSet.layer1);
+            applyTexture(armorObject.rightFoot, armorSet.layer1);
+            applyTexture(armorObject.leftFoot, armorSet.layer1);
+            
+            // Apply layer 2 textures (only for legs)
+            applyTexture(armorObject.leftLeg, armorSet.layer2);
+            applyTexture(armorObject.rightLeg, armorSet.layer2);
+        }
+
+        // Event Listeners
+        uploadArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
+        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.borderColor = 'var(--brand-1)'; });
+        uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = 'var(--border)'; });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'var(--border)';
+            if (e.dataTransfer.files.length > 0) {
+                handleFileSelect(e.dataTransfer.files[0]);
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', initSkinViewer);
     </script>
 </body>
 </html>
-
