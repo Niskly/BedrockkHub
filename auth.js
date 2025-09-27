@@ -54,11 +54,11 @@ function setupMobileNav(profile) {
 
     mobileMenu.innerHTML = `
         <button class="mobile-nav-toggle mobile-nav-close"><i class="fa-solid fa-xmark"></i></button>
-        ${menuLinks}
+        <div class="mobile-nav-links">${menuLinks}</div>
     `;
 
     // Append new elements
-    navContainer.appendChild(hamburgerBtn); // Append to the main nav container
+    navContainer.appendChild(hamburgerBtn);
     document.body.appendChild(mobileMenu);
 
     // Add Event Listeners
@@ -72,7 +72,6 @@ function setupMobileNav(profile) {
         mobileMenu.querySelector('#mobile-logout-btn').addEventListener('click', async (e) => {
             e.preventDefault();
             await supabase.auth.signOut();
-            window.location.href = '/';
         });
     }
 }
@@ -115,7 +114,6 @@ function renderUserDropdown(profile) {
         document.getElementById('logout-btn').addEventListener('click', async (e) => {
             e.preventDefault();
             await supabase.auth.signOut();
-            window.location.href = '/';
         });
     }
     setupMobileNav(profile); // Also setup mobile nav for logged-in users
@@ -198,18 +196,18 @@ if (document.readyState === 'loading') {
 }
 
 supabase.auth.onAuthStateChange((event, session) => {
-    // Avoid full reloads on SIGNED_IN to prevent loops with OAuth redirects
     if (event === 'SIGNED_OUT') {
-        authInitialized = false;
-        currentUserId = null;
-        renderLoginButtons();
         if (window.location.pathname !== '/') {
             window.location.href = '/';
         } else {
-             window.location.reload();
+            window.location.reload();
         }
-    } else if (event === 'SIGNED_IN' && !authInitialized) {
-        handleAuthState();
+    } else if (event === 'SIGNED_IN') {
+        const newUserId = session?.user?.id;
+        if (newUserId !== currentUserId) {
+            authInitialized = false; 
+            handleAuthState();
+        }
     }
 });
 
