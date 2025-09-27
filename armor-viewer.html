@@ -207,10 +207,7 @@
         
         function getArmorNameFromPath(path) {
             let fileName = path.split('/').pop();
-            return fileName.replace('_layer_1.png', '')
-                           .replace('_layer_2.png', '')
-                           .replace('_1.png', '')
-                           .replace('_2.png', '');
+            return fileName.replace(/_layer_[12]\.png|_overlay\.png|[12]\.png/g, '');
         }
 
         function applyArmor(armorName) {
@@ -236,18 +233,15 @@
                 }
             };
             
-            // This is the corrected part. There are no separate "foot" meshes.
-            // The boot texture is applied to the leg meshes.
             applyTexture(armorObject.head, armorSet.layer1);
             applyTexture(armorObject.body, armorSet.layer1);
             applyTexture(armorObject.leftArm, armorSet.layer1);
             applyTexture(armorObject.rightArm, armorSet.layer1);
             
-            // Layer 1 is used for boots, Layer 2 is used for leggings.
+            // Layer 1 is for boots, Layer 2 is for leggings.
+            // When layer 2 exists, it draws over layer 1 on the legs.
             applyTexture(armorObject.rightLeg, armorSet.layer1);
             applyTexture(armorObject.leftLeg, armorSet.layer1);
-            
-            // Re-apply layer 2 texture to leggings over the top.
             if (armorSet.layer2) {
                  applyTexture(armorObject.rightLeg, armorSet.layer2);
                  applyTexture(armorObject.leftLeg, armorSet.layer2);
@@ -296,7 +290,7 @@
             console.log("Finished searching. Found sets:", armorNames);
 
             if (armorNames.length === 0) {
-                armorList.innerHTML = `<p class="placeholder-text">No standard armor textures found in this pack.</p>`;
+                armorList.innerHTML = `<p class="placeholder-text">No standard armor textures found.</p>`;
                 Object.values(skinViewer.playerObject.armor).forEach(part => { if(part.visible) part.visible = false; });
                 return;
             }
