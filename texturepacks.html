@@ -555,7 +555,7 @@
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const COLORS = [{key: 'none', hex: '#4b5563', icon: 'fa-solid fa-ban'}, {key: 'red',hex: '#ef4444'}, {key: 'blue',hex: '#3b82f6'}, {key: 'green',hex: '#22c55e'}, {key: 'yellow',hex: '#eab308'}, {key: 'purple',hex: '#a855f7'}, {key: 'pink',hex: '#ec4899'}, {key: 'orange',hex: '#f97316'}, {key: 'teal',hex: '#14b8a6'}, {key: 'gray',hex: '#6b7280'}, {key: 'black',hex: '#1f2937'}];
         const TAGS = ['pvp', 'bedwars', 'skywars', 'anime', 'crystal pvp', 'survival', 'visual'];
-        const RESOLUTIONS = ['8x', '16x', '32x', '64x'];
+        const RESOLUTIONS = ['16x', '32x', '64', '128x'];
         const VERSIONS = ['bedrock', 'java'];
         const packsPerPage = 9;
         let packs = [];
@@ -584,7 +584,7 @@
             render();
         }
         
-      async function handleUpload(e) {
+      window.handleUpload = async function(e) {
             e.preventDefault();
             const submitBtn = document.getElementById("submitBtn");
             const formFieldset = document.getElementById("uploadFormFieldset");
@@ -656,7 +656,7 @@
             }
         }
         
-        async function saveEdit(e) {
+        window.saveEdit = async function(e) {
             e.preventDefault();
             if (!currentEditId) return;
             try {
@@ -674,7 +674,7 @@
             } catch (error) { showToast("Save failed: " + error.message, "error"); }
         }
 
-        async function confirmDelete() {
+        window.confirmDelete = async function() {
             if (!currentEditId) return;
             const pack = packs.find(p => p.id === currentEditId);
             if (!pack) return cancelDelete();
@@ -692,7 +692,7 @@
             }
         }
 
-        async function handleDownload(event, packId, filename, packName) {
+        window.handleDownload = async function(event, packId, filename, packName) {
             event.preventDefault();
             try {
                 await fetch("/api/increment-download", {
@@ -816,14 +816,14 @@
             container.addEventListener('box-select', e => onSelect(e.detail.key, e.detail.el));
         }
 
-        window.openModal = () => {
+        window.openModal = function() {
             document.getElementById("backdrop").style.display = "flex";
             state.modalColor = null; state.modalResolution = null; state.modalTags.clear();
             buildSwatches(document.getElementById("modalSwatches"), (key, el) => { state.modalColor = key; highlightOne(el.parentElement, el); }, null);
             buildSelectorBoxes(document.getElementById("modalResolutions"), (key, el) => { state.modalResolution = key; highlightOne(el.parentElement, el); }, null, RESOLUTIONS);
             updateTagButtonText();
         }
-        window.closeModal = () => { document.getElementById("backdrop").style.display = "none"; document.getElementById("uploadForm").reset(); }
+        window.closeModal = function() { document.getElementById("backdrop").style.display = "none"; document.getElementById("uploadForm").reset(); }
         window.openTagModal = () => openTagEditor(false);
         window.openEditTagModal = () => openTagEditor(true);
         function openTagEditor(isEditMode) {
@@ -837,14 +837,14 @@
             update();
             document.getElementById("tag-select-backdrop").style.display = "flex";
         }
-        window.closeTagModal = (save) => {
+        window.closeTagModal = function(save) {
             if (save) {
                 if (isEditingTags) { state.editTags = new Set(tempModalTags); updateEditTagButtonText(); } 
                 else { state.modalTags = new Set(tempModalTags); updateTagButtonText(); }
             }
             document.getElementById("tag-select-backdrop").style.display = "none";
         };
-        window.openEditModal = (id) => {
+        window.openEditModal = function(id) {
             const pack = packs.find(p => p.id === id);
             if (!pack) return alert("Pack not found");
             currentEditId = id;
@@ -859,9 +859,9 @@
             updateEditTagButtonText();
             document.getElementById("editBackdrop").style.display = "flex";
         };
-        window.closeEditModal = () => { currentEditId = null; document.getElementById("editBackdrop").style.display = "none"; };
-        window.promptDelete = () => { if(currentEditId) document.getElementById("confirmDeleteBackdrop").style.display = "flex"; };
-        window.cancelDelete = () => document.getElementById("confirmDeleteBackdrop").style.display = "none";
+        window.closeEditModal = function() { currentEditId = null; document.getElementById("editBackdrop").style.display = "none"; };
+        window.promptDelete = function() { if(currentEditId) document.getElementById("confirmDeleteBackdrop").style.display = "flex"; };
+        window.cancelDelete = function() { document.getElementById("confirmDeleteBackdrop").style.display = "none"; };
         
         function applySearch(query) {
             state.currentPage = 1; 
