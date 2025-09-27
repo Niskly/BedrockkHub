@@ -17,57 +17,55 @@ function setupMobileNav(profile) {
     const navContainer = header.querySelector('.nav');
     if (!navContainer) return;
 
-    // Clear any previous mobile nav elements to prevent duplicates
+    // Clean up previous mobile elements to prevent duplicates.
     const existingToggle = navContainer.querySelector('.mobile-nav-toggle');
     const existingOverlay = document.querySelector('.mobile-nav-overlay');
     if (existingToggle) existingToggle.remove();
     if (existingOverlay) existingOverlay.remove();
 
-    // Create Hamburger Button
+    // Create the hamburger button that will be visible on mobile.
     const hamburgerBtn = document.createElement('button');
     hamburgerBtn.className = 'mobile-nav-toggle';
     hamburgerBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
     hamburgerBtn.setAttribute('aria-label', 'Open navigation menu');
     
-    // Create Mobile Menu Overlay
+    // Create the full-screen overlay menu.
     const mobileMenu = document.createElement('div');
     mobileMenu.className = 'mobile-nav-overlay';
     
-    let menuLinks = '';
-    if (profile) {
-        // Logged-in user links
-        menuLinks = `
+    // Determine which links to show based on login status.
+    const menuLinks = profile
+        ? `
             <a class="btn ghost" href="/">Home</a>
             <a class="btn ghost" href="/texturepacks.html">Texture Packs</a>
             <a class="btn primary" href="/profile.html?user=${profile.username}">My Profile</a>
             <a class="btn ghost" href="/settings.html">Settings</a>
             <a href="#" id="mobile-logout-btn" class="btn" style="background: transparent; border-color: var(--danger); color: var(--danger);">Logout</a>
-        `;
-    } else {
-        // Logged-out user links
-        menuLinks = `
+        `
+        : `
             <a class="btn ghost" href="/">Home</a>
             <a class="btn ghost" href="/texturepacks.html">Texture Packs</a>
             <a class="btn primary" href="/login.html">Login</a>
+            <a class="btn ghost" href="/signup.html">Sign Up</a>
         `;
-    }
 
     mobileMenu.innerHTML = `
-        <button class="mobile-nav-toggle mobile-nav-close"><i class="fa-solid fa-xmark"></i></button>
+        <button class="mobile-nav-toggle mobile-nav-close" aria-label="Close navigation menu"><i class="fa-solid fa-xmark"></i></button>
         <div class="mobile-nav-links">${menuLinks}</div>
     `;
 
-    // Append new elements
+    // Add the new elements to the page.
     navContainer.appendChild(hamburgerBtn);
     document.body.appendChild(mobileMenu);
 
-    // Add Event Listeners
+    // Wire up the open and close events for the menu.
     const openMenu = () => mobileMenu.classList.add('show');
     const closeMenu = () => mobileMenu.classList.remove('show');
 
     hamburgerBtn.addEventListener('click', openMenu);
     mobileMenu.querySelector('.mobile-nav-close').addEventListener('click', closeMenu);
     
+    // Add logout functionality if the user is logged in.
     if (profile) {
         mobileMenu.querySelector('#mobile-logout-btn').addEventListener('click', async (e) => {
             e.preventDefault();
@@ -76,9 +74,8 @@ function setupMobileNav(profile) {
     }
 }
 
-
 /**
- * Renders the user dropdown menu in the navigation bar for desktop.
+ * Renders the user dropdown menu in the desktop navigation bar.
  * @param {object} profile - The user's profile data.
  */
 function renderUserDropdown(profile) {
@@ -91,7 +88,7 @@ function renderUserDropdown(profile) {
             <a class="btn ghost" href="/">Home</a>
             <a class="btn ghost" href="/texturepacks.html">Texture Packs</a>
             <div class="user-dropdown">
-                <button class="user-menu-btn">
+                <button class="user-menu-btn" aria-haspopup="true" aria-expanded="false">
                     ${avatarContent}
                     <span>${profile.username}</span>
                     <i class="fa-solid fa-chevron-down"></i>
@@ -108,7 +105,8 @@ function renderUserDropdown(profile) {
 
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
-            content.classList.toggle('show');
+            const isExpanded = content.classList.toggle('show');
+            btn.setAttribute('aria-expanded', isExpanded);
         });
 
         document.getElementById('logout-btn').addEventListener('click', async (e) => {
@@ -116,7 +114,7 @@ function renderUserDropdown(profile) {
             await supabase.auth.signOut();
         });
     }
-    setupMobileNav(profile); // Also setup mobile nav for logged-in users
+    setupMobileNav(profile);
 }
 
 /**
@@ -129,13 +127,14 @@ function renderLoginButtons() {
             <a class="btn ghost" href="/texturepacks.html">Texture Packs</a>
             <a class="btn primary" href="/login.html">Login</a>`;
     }
-    setupMobileNav(null); // Setup mobile nav for logged-out users
+    setupMobileNav(null);
 }
 
 /**
- * Central function to handle the authentication state of the user.
+ * Central function to handle the authentication state of the user. This is the single source of truth.
  */
 async function handleAuthState() {
+    // This flag prevents the function from running multiple times on a single page load.
     if (authInitialized) return;
 
     let user = null;
@@ -152,33 +151,38 @@ async function handleAuthState() {
             
             const { data: profileData, error: profileError } = await supabase
                 .from('profiles')
-                .select('username, avatar_url, bio, social_links, bedrock_gamertag')
+                .select('*') // Select all to have more data if needed
                 .eq('id', user.id)
                 .single();
 
             if (profileError && profileError.code !== 'PGRST116') throw profileError;
 
+            // If the user has a complete profile, show the logged-in UI.
             if (profileData && profileData.username) {
                 profile = profileData;
                 renderUserDropdown(profile);
             } else {
+                // If the profile is incomplete, redirect to the setup page.
                 authError = 'Profile setup is not complete.';
                 const allowedPaths = ['/complete-profile.html', '/verify.html'];
                 if (!allowedPaths.includes(window.location.pathname)) {
                     window.location.replace('/complete-profile.html');
-                    return;
+                    return; // Stop further execution to allow redirect to happen.
                 }
             }
         } else {
+            // If there's no user session, show the logged-out UI.
             currentUserId = null;
             renderLoginButtons();
         }
     } catch (error) {
-        console.error("Critical error in handleAuthState:", error);
+        console.error("Authentication state error:", error);
         authError = error.message;
         currentUserId = null;
-        renderLoginButtons();
+        renderLoginButtons(); // Fallback to logged-out state on error
     } finally {
+        // Dispatch a custom event to let other scripts know that auth is ready.
+        // This is useful for pages like settings.html to wait for user data.
         if (!authInitialized) {
             document.dispatchEvent(new CustomEvent('auth-ready', { 
                 detail: { user, profile, error: authError } 
@@ -188,32 +192,40 @@ async function handleAuthState() {
     }
 }
 
-// === INITIALIZATION ===
+// --- Event Listeners and Initialization ---
+
+// Handle initial page load
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', handleAuthState);
 } else {
     handleAuthState();
 }
 
+// Listen for changes in authentication state (login, logout)
 supabase.auth.onAuthStateChange((event, session) => {
+    // On logout, always redirect to the homepage to ensure a clean state.
     if (event === 'SIGNED_OUT') {
-        if (window.location.pathname !== '/') {
-            window.location.href = '/';
-        } else {
-            window.location.reload();
-        }
-    } else if (event === 'SIGNED_IN') {
+        window.location.href = '/';
+    } 
+    // On login, re-run the auth state handler only if the user has changed.
+    // This prevents re-running on tab focus, fixing the refresh bug.
+    else if (event === 'SIGNED_IN') {
         const newUserId = session?.user?.id;
         if (newUserId !== currentUserId) {
-            authInitialized = false; 
+            authInitialized = false; // Reset the flag to allow re-initialization
             handleAuthState();
         }
     }
 });
 
+// Global click listener to close the dropdown menu if open.
 window.addEventListener('click', (event) => {
     if (navActions && !event.target.closest('.user-dropdown')) {
         const content = navActions.querySelector('.dropdown-content.show');
-        if (content) content.classList.remove('show');
+        if (content) {
+            content.classList.remove('show');
+            const btn = navActions.querySelector('.user-menu-btn');
+            if (btn) btn.setAttribute('aria-expanded', 'false');
+        }
     }
 });
