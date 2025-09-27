@@ -197,7 +197,6 @@
                 canvas.addEventListener('mousedown', () => canvas.classList.add('dragging'));
                 canvas.addEventListener('mouseup', () => canvas.classList.remove('dragging'));
 
-                // Start with an invisible player
                 skinViewer.playerObject.skin.visible = false;
 
             } catch (error) {
@@ -206,7 +205,16 @@
             }
         }
         
+        function getArmorNameFromPath(path) {
+            let fileName = path.split('/').pop();
+            return fileName.replace('_layer_1.png', '')
+                           .replace('_layer_2.png', '')
+                           .replace('_1.png', '')
+                           .replace('_2.png', '');
+        }
+
         function applyArmor(armorName) {
+            console.log(`Applying armor: ${armorName}`);
             if (!skinViewer || !foundArmor[armorName]) return;
             
             const armorSet = foundArmor[armorName];
@@ -219,7 +227,7 @@
                         texture.magFilter = skinViewer.THREE.NearestFilter;
                         texture.minFilter = skinViewer.THREE.NearestFilter;
                         part.material.map = texture;
-                        part.material.transparent = true; // Enable transparency
+                        part.material.transparent = true;
                         part.material.needsUpdate = true;
                         part.visible = true;
                     });
@@ -228,15 +236,22 @@
                 }
             };
             
-            // Apply textures to armor parts
+            // This is the corrected part. There are no separate "foot" meshes.
+            // The boot texture is applied to the leg meshes.
             applyTexture(armorObject.head, armorSet.layer1);
             applyTexture(armorObject.body, armorSet.layer1);
             applyTexture(armorObject.leftArm, armorSet.layer1);
             applyTexture(armorObject.rightArm, armorSet.layer1);
-            applyTexture(armorObject.rightFoot, armorSet.layer1);
-            applyTexture(armorObject.leftFoot, armorSet.layer1);
-            applyTexture(armorObject.leftLeg, armorSet.layer2);
-            applyTexture(armorObject.rightLeg, armorSet.layer2);
+            
+            // Layer 1 is used for boots, Layer 2 is used for leggings.
+            applyTexture(armorObject.rightLeg, armorSet.layer1);
+            applyTexture(armorObject.leftLeg, armorSet.layer1);
+            
+            // Re-apply layer 2 texture to leggings over the top.
+            if (armorSet.layer2) {
+                 applyTexture(armorObject.rightLeg, armorSet.layer2);
+                 applyTexture(armorObject.leftLeg, armorSet.layer2);
+            }
         }
 
         function handleFileSelect(file) {
@@ -250,19 +265,21 @@
                     const zip = await JSZip.loadAsync(event.target.result);
                     const allArmorPaths = [...ARMOR_PATHS_JAVA, ...ARMOR_PATHS_BEDROCK];
                     
+                    console.log("Searching for armor textures...");
                     for (const path of allArmorPaths) {
                         const fileInZip = zip.file(path);
                         if (fileInZip) {
                             const blob = await fileInZip.async('blob');
                             const url = URL.createObjectURL(blob);
                             
-                            let armorName = path.split('/').pop().split(/[_12.]/)[0];
-                            if (armorName === 'chainmail') armorName = 'chain';
+                            let armorName = getArmorNameFromPath(path);
+                             if (armorName === 'chainmail') armorName = 'chain';
                             
                             const layer = path.includes('layer_2') || path.includes('_2.png') ? 'layer2' : 'layer1';
                             
                             if (!foundArmor[armorName]) foundArmor[armorName] = {};
                             foundArmor[armorName][layer] = url;
+                            console.log(`Found: ${armorName} (${layer}) at path ${path}`);
                         }
                     }
                     renderArmorList();
@@ -276,9 +293,11 @@
         
         function renderArmorList() {
             const armorNames = Object.keys(foundArmor);
+            console.log("Finished searching. Found sets:", armorNames);
+
             if (armorNames.length === 0) {
                 armorList.innerHTML = `<p class="placeholder-text">No standard armor textures found in this pack.</p>`;
-                Object.values(skinViewer.playerObject.armor).forEach(part => part.visible = false);
+                Object.values(skinViewer.playerObject.armor).forEach(part => { if(part.visible) part.visible = false; });
                 return;
             }
             
