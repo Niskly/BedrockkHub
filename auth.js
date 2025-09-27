@@ -10,16 +10,19 @@ let authInitialized = false;
 let currentUserId = null;
 
 /**
- * Creates and manages the mobile navigation menu.
+ * Creates and manages the mobile navigation menu sidebar.
+ * @param {object|null} profile - The user's profile data.
+ * @param {object|null} user - The user's auth data.
  */
-function setupMobileNav(profile) {
+function setupMobileNav(profile, user) {
     if (!header) return;
     const navContainer = header.querySelector('.nav');
     if (!navContainer) return;
 
-    // Prevent duplicates
+    // Clean up any old menu elements
     navContainer.querySelector('.mobile-nav-toggle')?.remove();
-    document.querySelector('.mobile-nav-overlay')?.remove();
+    document.querySelector('.mobile-nav-sidebar')?.remove();
+    document.querySelector('.mobile-nav-backdrop')?.remove();
 
     // Hamburger button
     const hamburgerBtn = document.createElement('button');
@@ -27,56 +30,107 @@ function setupMobileNav(profile) {
     hamburgerBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
     hamburgerBtn.setAttribute('aria-label', 'Open navigation menu');
 
-    // Mobile menu overlay
-    const mobileMenu = document.createElement('div');
-    mobileMenu.className = 'mobile-nav-overlay';
+    // Sidebar
+    const sidebar = document.createElement('div');
+    sidebar.className = 'mobile-nav-sidebar';
 
-    // Links (based on auth state)
-    const menuLinks = profile
-        ? `
-            <a class="btn ghost" href="/">Home</a>
-            <a class="btn ghost" href="/texturepacks.html">Texture Packs</a>
-            <a class="btn primary" href="/profile.html?user=${profile.username}">My Profile</a>
-            <a class="btn ghost" href="/settings.html">Settings</a>
-            <a href="#" id="mobile-logout-btn" class="btn" style="background:transparent; border-color: var(--danger); color: var(--danger);">Logout</a>
-        `
-        : `
-            <a class="btn ghost" href="/">Home</a>
-            <a class="btn ghost" href="/texturepacks.html">Texture Packs</a>
-            <a class="btn primary" href="/login.html">Login</a>
-            <a class="btn ghost" href="/signup.html">Sign Up</a>
+    // Backdrop
+    const backdrop = document.createElement('div');
+    backdrop.className = 'mobile-nav-backdrop';
+
+    let userHeader = '';
+    let mainLinks = '';
+    let footerLinks = '';
+
+    if (profile && user) {
+        const avatarSrc = profile.avatar_url 
+            ? profile.avatar_url 
+            : `https://placehold.co/60x60/1c1c1c/de212a?text=${profile.username.charAt(0).toUpperCase()}`;
+        
+        userHeader = `
+            <div class="mobile-nav-header">
+                <img src="${avatarSrc}" alt="Avatar" class="mobile-nav-avatar">
+                <div class="mobile-nav-user-info">
+                    <span class="mobile-nav-username">${profile.username}</span>
+                    <span class="mobile-nav-email">${user.email}</span>
+                </div>
+            </div>`;
+
+        mainLinks = `
+            <a href="/"><i class="fa-solid fa-house"></i><span>Home</span></a>
+            <a href="/texturepacks.html"><i class="fa-solid fa-palette"></i><span>Texture Packs</span></a>
+            <a href="/profile.html?user=${profile.username}"><i class="fa-solid fa-user"></i><span>My Profile</span></a>
         `;
+        
+        footerLinks = `
+            <a href="/settings.html"><i class="fa-solid fa-cog"></i><span>Settings</span></a>
+            <a href="#" id="mobile-logout-btn"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>
+        `;
+    } else {
+        userHeader = `
+            <div class="mobile-nav-header">
+                 <div class="mobile-nav-avatar" style="background: var(--brand-1); display: grid; place-items:center;">
+                    <i class="fa-solid fa-question"></i>
+                </div>
+                <div class="mobile-nav-user-info">
+                    <span class="mobile-nav-username">Guest</span>
+                    <span class="mobile-nav-email">Not logged in</span>
+                </div>
+            </div>`;
+        mainLinks = `
+            <a href="/"><i class="fa-solid fa-house"></i><span>Home</span></a>
+            <a href="/texturepacks.html"><i class="fa-solid fa-palette"></i><span>Texture Packs</span></a>
+        `;
+        footerLinks = `
+            <a href="/login.html"><i class="fa-solid fa-right-to-bracket"></i><span>Login</span></a>
+            <a href="/signup.html" class="primary-mobile-link"><i class="fa-solid fa-user-plus"></i><span>Sign Up</span></a>
+        `;
+    }
 
-    mobileMenu.innerHTML = `
-        <button class="mobile-nav-toggle mobile-nav-close" aria-label="Close navigation menu">
-            <i class="fa-solid fa-xmark"></i>
-        </button>
-        <div class="mobile-nav-links">${menuLinks}</div>
+    sidebar.innerHTML = `
+        <button class="mobile-nav-close" aria-label="Close navigation menu"><i class="fa-solid fa-xmark"></i></button>
+        ${userHeader}
+        <nav class="mobile-nav-main-links">${mainLinks}</nav>
+        <nav class="mobile-nav-footer-links">${footerLinks}</nav>
     `;
 
-    // Add to DOM
+    // Add elements to the DOM
     navContainer.appendChild(hamburgerBtn);
-    document.body.appendChild(mobileMenu);
+    document.body.appendChild(sidebar);
+    document.body.appendChild(backdrop);
 
-    // Open/close events
-    const openMenu = () => mobileMenu.classList.add('show');
-    const closeMenu = () => mobileMenu.classList.remove('show');
+    // Event listeners
+    const openMenu = () => {
+        sidebar.classList.add('show');
+        backdrop.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    };
+    const closeMenu = () => {
+        sidebar.classList.remove('show');
+        backdrop.classList.remove('show');
+        document.body.style.overflow = '';
+    };
+
     hamburgerBtn.addEventListener('click', openMenu);
-    mobileMenu.querySelector('.mobile-nav-close').addEventListener('click', closeMenu);
+    sidebar.querySelector('.mobile-nav-close').addEventListener('click', closeMenu);
+    backdrop.addEventListener('click', closeMenu);
 
-    // Mobile logout
     if (profile) {
-        mobileMenu.querySelector('#mobile-logout-btn')?.addEventListener('click', async (e) => {
+        sidebar.querySelector('#mobile-logout-btn')?.addEventListener('click', async (e) => {
             e.preventDefault();
+            closeMenu();
             await supabase.auth.signOut();
         });
     }
 }
 
+
 /**
  * Renders desktop user dropdown menu.
+ * @param {object} profile - The user's profile data.
+ * @param {object} user - The user's auth data.
  */
-function renderUserDropdown(profile) {
+function renderUserDropdown(profile, user) {
     const avatarContent = profile.avatar_url 
         ? `<img src="${profile.avatar_url}" alt="User Avatar" class="nav-avatar-img">`
         : `<img src="https://placehold.co/28x28/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}" class="nav-avatar-img">`;
@@ -113,7 +167,7 @@ function renderUserDropdown(profile) {
         });
     }
 
-    setupMobileNav(profile);
+    setupMobileNav(profile, user);
 }
 
 /**
@@ -126,18 +180,18 @@ function renderLoginButtons() {
             <a class="btn ghost" href="/texturepacks.html">Texture Packs</a>
             <a class="btn primary" href="/login.html">Login</a>`;
     }
-    setupMobileNav(null);
+    setupMobileNav(null, null);
 }
 
 /**
- * Central function to handle auth state.
+ * Central function to handle auth state changes.
  */
-async function handleAuthState() {
-    if (authInitialized) return;
-
+async function handleAuthStateChange() {
     let user = null;
     let profile = null;
     let authError = null;
+    
+    authInitialized = false;
 
     try {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -154,17 +208,17 @@ async function handleAuthState() {
                 .single();
 
             if (profileError && profileError.code !== 'PGRST116') throw profileError;
-
+            
             if (profileData?.username) {
                 profile = profileData;
-                renderUserDropdown(profile);
+                renderUserDropdown(profile, user);
             } else {
-                // Incomplete profile → redirect
                 const allowedPaths = ['/complete-profile.html', '/verify.html'];
                 if (!allowedPaths.includes(window.location.pathname)) {
                     window.location.replace('/complete-profile.html');
                     return;
                 }
+                 renderLoginButtons(); // Render basic nav on profile completion pages
             }
         } else {
             currentUserId = null;
@@ -187,24 +241,27 @@ async function handleAuthState() {
 
 // --- Event Listeners ---
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', handleAuthState);
+    document.addEventListener('DOMContentLoaded', handleAuthStateChange);
 } else {
-    handleAuthState();
+    handleAuthStateChange();
 }
 
 supabase.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_OUT') {
-        window.location.href = '/';
-    } else if (event === 'SIGNED_IN') {
-        const newUserId = session?.user?.id;
-        if (newUserId !== currentUserId) {
-            authInitialized = false; // allow re-initialization
-            handleAuthState();
+    // This logic ensures a smooth transition without full page reloads on sign-in/out
+    // while still redirecting when necessary.
+    const newUserId = session?.user?.id || null;
+    if (newUserId !== currentUserId) {
+        if (event === 'SIGNED_OUT') {
+             // A hard redirect on sign-out is often the cleanest approach
+             window.location.href = '/';
+        } else {
+            // On sign-in or user change, re-run the auth state logic
+            handleAuthStateChange();
         }
     }
 });
 
-// Close dropdown when clicking outside
+// Close desktop dropdown when clicking outside
 window.addEventListener('click', (event) => {
     if (navActions && !event.target.closest('.user-dropdown')) {
         const content = navActions.querySelector('.dropdown-content.show');
