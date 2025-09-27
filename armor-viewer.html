@@ -16,7 +16,9 @@
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
             --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
             --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
- }
+            --border-strong: rgba(255, 255, 255, .2);
+            --gradient-brand: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 14px/1.6 Inter, sans-serif; }
         body::before { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-image: var(--bg-image, url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg')); background-size: cover; filter: blur(8px); opacity: 0.2; z-index: -1; transition: background-image 0.5s ease-in-out; }
@@ -44,8 +46,13 @@
         .dropdown-content a { color: var(--muted); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 600; }
         .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
 
-        .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
-        .viewer-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; align-items: flex-start; }
+        .container { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
+        .viewer-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr; /* Adjusted for smaller viewer */
+            gap: 1.5rem;
+            align-items: flex-start;
+        }
         
         .controls-panel { position: sticky; top: 100px; }
         .card { border-radius: 16px; background: rgba(18, 18, 18, 0.9); backdrop-filter: saturate(1.2) blur(20px); border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
@@ -71,12 +78,44 @@
         .armor-item:hover { border-color: var(--text); }
         .armor-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: white; }
         
-        #viewer-canvas { border-radius: 16px; width: 100%; aspect-ratio: 3/4; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg'); background-size: cover; background-position: center; }
+        #viewer-canvas { border-radius: 16px; width: 100%; aspect-ratio: 4/5; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg'); background-size: cover; background-position: center; }
         #viewer-canvas.dragging { cursor: grabbing; }
 
         .placeholder-text { text-align: center; color: var(--muted); padding: 2rem 0; }
 
+        /* ====== NEW MOBILE SIDEBAR STYLES ====== */
+        .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
+        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
+        .mobile-nav-backdrop.show { display: block; opacity: 1; }
+        .mobile-nav-sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: 280px; background: var(--bg-1);
+            z-index: 999; transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            display: flex; flex-direction: column;
+            border-right: 1px solid var(--border);
+        }
+        .mobile-nav-sidebar.show { transform: translateX(0); }
+        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
+        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
+        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+        .mobile-nav-user-info { display: flex; flex-direction: column; }
+        .mobile-nav-username { font-weight: 700; color: var(--text); }
+        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
+        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
+        .mobile-nav-main-links { flex-grow: 1; }
+        .mobile-nav-main-links a, .mobile-nav-footer-links a {
+            padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem;
+            font-weight: 600; color: var(--muted); transition: all 0.2s ease;
+        }
+        .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
+        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
+        .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
+        
+        /* ====== MOBILE RESPONSIVENESS ====== */
         @media (max-width: 768px) {
+            .nav-actions { display: none; }
+            .mobile-nav-toggle { display: block; }
             .viewer-layout { grid-template-columns: 1fr; }
             .controls-panel { position: static; }
         }
@@ -163,12 +202,10 @@
                 skin: "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png"
             });
             
-            // Handle canvas resizing
             new ResizeObserver(() => {
                 skinViewer.setSize(canvas.clientWidth, canvas.clientHeight);
             }).observe(canvas);
 
-            // Add dragging class for cursor style
             canvas.addEventListener('mousedown', () => canvas.classList.add('dragging'));
             canvas.addEventListener('mouseup', () => canvas.classList.remove('dragging'));
         }
@@ -191,7 +228,7 @@
                             const url = URL.createObjectURL(blob);
                             
                             let armorName = path.split('/').pop().split('_')[0];
-                            if (armorName === 'chainmail') armorName = 'chain'; // Shorten name
+                            if (armorName === 'chainmail') armorName = 'chain';
                             
                             const layer = path.includes('layer_2') || path.includes('_2.png') ? 'layer2' : 'layer1';
                             
@@ -227,7 +264,6 @@
                 });
             });
 
-            // Automatically select and apply the first found armor set
             const firstItem = armorList.querySelector('.armor-item');
             if (firstItem) {
                 firstItem.click();
@@ -238,40 +274,10 @@
             if (!skinViewer || !foundArmor[armorName]) return;
             
             const armorSet = foundArmor[armorName];
-            const armorObject = skinViewer.playerObject.skin.armor;
-
-            // This is the key part: we access the underlying three.js objects
-            // and replace their textures.
-            const textureLoader = new skinViewer.THREE.TextureLoader();
-            
-            const applyTexture = (part, url) => {
-                if (url) {
-                    textureLoader.load(url, (texture) => {
-                        texture.magFilter = skinViewer.THREE.NearestFilter;
-                        texture.minFilter = skinViewer.THREE.NearestFilter;
-                        part.material.map = texture;
-                        part.material.needsUpdate = true;
-                        part.visible = true;
-                    });
-                } else {
-                    part.visible = false;
-                }
-            };
-            
-            // Apply layer 1 textures
-            applyTexture(armorObject.head, armorSet.layer1);
-            applyTexture(armorObject.body, armorSet.layer1);
-            applyTexture(armorObject.leftArm, armorSet.layer1);
-            applyTexture(armorObject.rightArm, armorSet.layer1);
-            applyTexture(armorObject.rightFoot, armorSet.layer1);
-            applyTexture(armorObject.leftFoot, armorSet.layer1);
-            
-            // Apply layer 2 textures (only for legs)
-            applyTexture(armorObject.leftLeg, armorSet.layer2);
-            applyTexture(armorObject.rightLeg, armorSet.layer2);
+            skinViewer.loadArmor(armorSet.layer1, { layer: 1 });
+            skinViewer.loadArmor(armorSet.layer2, { layer: 2 });
         }
 
-        // Event Listeners
         uploadArea.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
         uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.borderColor = 'var(--brand-1)'; });
@@ -284,7 +290,6 @@
             }
         });
 
-        // Initialize
         document.addEventListener('DOMContentLoaded', initSkinViewer);
     </script>
 </body>
