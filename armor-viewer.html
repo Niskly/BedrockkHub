@@ -174,15 +174,14 @@
             'textures/models/armor/turtle_1.png'
         ];
 
-        const uploadArea = document.getElementById('upload-area');
-        const fileInput = document.getElementById('file-input');
-        const armorList = document.getElementById('armor-list');
-        const canvas = document.getElementById('viewer-canvas');
-
         let skinViewer;
         let foundArmor = {};
 
-        function initSkinViewer() {
+        function init() {
+            const uploadArea = document.getElementById('upload-area');
+            const fileInput = document.getElementById('file-input');
+            const canvas = document.getElementById('viewer-canvas');
+
             try {
                 skinViewer = new skinview3d.SkinViewer({
                     canvas: canvas,
@@ -203,6 +202,16 @@
                 console.error("Failed to initialize Skin Viewer:", error);
                 canvas.parentElement.innerHTML = `<p class="placeholder-text">Error initializing 3D viewer.</p>`;
             }
+            
+            uploadArea.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
+            uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.borderColor = 'var(--brand-1)'; });
+            uploadArea.addEventListener('dragleave', () => uploadArea.style.borderColor = 'var(--border)'; });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--border)';
+                if (e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files[0]);
+            });
         }
         
         function getArmorNameFromPath(path) {
@@ -211,7 +220,6 @@
         }
 
         function applyArmor(armorName) {
-            console.log(`Applying armor: ${armorName}`);
             if (!skinViewer || !foundArmor[armorName]) return;
             
             const armorSet = foundArmor[armorName];
@@ -238,8 +246,6 @@
             applyTexture(armorObject.leftArm, armorSet.layer1);
             applyTexture(armorObject.rightArm, armorSet.layer1);
             
-            // Layer 1 is for boots, Layer 2 is for leggings.
-            // When layer 2 exists, it draws over layer 1 on the legs.
             applyTexture(armorObject.rightLeg, armorSet.layer1);
             applyTexture(armorObject.leftLeg, armorSet.layer1);
             if (armorSet.layer2) {
@@ -250,6 +256,7 @@
 
         function handleFileSelect(file) {
             if (!file) return;
+            const armorList = document.getElementById('armor-list');
             armorList.innerHTML = `<p class="placeholder-text"><span class="spinner"></span> Searching pack...</p>`;
             foundArmor = {};
 
@@ -259,7 +266,6 @@
                     const zip = await JSZip.loadAsync(event.target.result);
                     const allArmorPaths = [...ARMOR_PATHS_JAVA, ...ARMOR_PATHS_BEDROCK];
                     
-                    console.log("Searching for armor textures...");
                     for (const path of allArmorPaths) {
                         const fileInZip = zip.file(path);
                         if (fileInZip) {
@@ -273,7 +279,6 @@
                             
                             if (!foundArmor[armorName]) foundArmor[armorName] = {};
                             foundArmor[armorName][layer] = url;
-                            console.log(`Found: ${armorName} (${layer}) at path ${path}`);
                         }
                     }
                     renderArmorList();
@@ -286,8 +291,8 @@
         }
         
         function renderArmorList() {
+            const armorList = document.getElementById('armor-list');
             const armorNames = Object.keys(foundArmor);
-            console.log("Finished searching. Found sets:", armorNames);
 
             if (armorNames.length === 0) {
                 armorList.innerHTML = `<p class="placeholder-text">No standard armor textures found.</p>`;
@@ -310,18 +315,11 @@
             const firstItem = armorList.querySelector('.armor-item');
             if (firstItem) firstItem.click();
         }
-
-        uploadArea.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
-        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.borderColor = 'var(--brand-1)'; });
-        uploadArea.addEventListener('dragleave', () => uploadArea.style.borderColor = 'var(--border)'; });
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.style.borderColor = 'var(--border)';
-            if (e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files[0]);
-        });
-
-        document.addEventListener('DOMContentLoaded', initSkinViewer);
+        
+        // This is the key fix: wait for the DOM to be fully loaded before running any scripts
+        // that interact with the page's elements.
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
+
