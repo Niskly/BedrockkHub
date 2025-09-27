@@ -17,554 +17,156 @@
     
     <style>
         :root {
-            /* Your exact colors */
-            --bg-0: #000000;
-            --bg-1: #1c1c1c;
-            --bg-2: #2c2c2c;
-            --muted: #a8b3cf;
-            --text: #e8eefc;
-            --border: rgba(255, 255, 255, .12);
-            --brand-1: #de212a;
-            --brand-2: #b21a22;
-            
-            /* Enhanced design system */
-            --surface-1: #1c1c1c;
-            --surface-2: #2c2c2c;
-            --surface-3: #404040;
-            --foreground: #e8eefc;
-            --muted-foreground: #a8b3cf;
-            --primary: var(--brand-1); /* THEME UPDATE: Use theme variable */
-            --primary-dark: var(--brand-2); /* THEME UPDATE: Use theme variable */
-            --primary-glow: #ff4d56;
+            --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c;
+            --muted: #a8b3cf; --text: #e8eefc; --border: rgba(255, 255, 255, .12);
+            --brand-1: #de212a; --brand-2: #b21a22; --primary: var(--brand-1);
+            --primary-dark: var(--brand-2); --primary-glow: #ff4d56;
             --border-strong: rgba(255, 255, 255, .2);
-            
-            /* Gradients */
             --gradient-brand: linear-gradient(135deg, var(--brand-1), var(--brand-2));
-            --gradient-surface: linear-gradient(135deg, var(--surface-1), var(--surface-2));
-            --gradient-glow: linear-gradient(135deg, var(--primary-glow), var(--primary));
-            
-            /* Shadows */
             --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
             --shadow-card: 0 24px 70px rgba(0, 0, 0, .55);
             --shadow-glow: 0 0 40px rgba(222, 33, 42, .3);
-            --shadow-elegant: 0 10px 30px -10px rgba(0,0,0, .2);
         }
-
-        * { 
-            box-sizing: border-box; 
-            margin: 0;
-            padding: 0;
-        }
-        
-        html { 
-            height: 100%; 
-            scroll-behavior: smooth;
-        }
-        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { height: 100%; scroll-behavior: smooth; }
         body {
-            margin: 0;
-            background-color: var(--bg-0);
-            color: var(--text);
-            font: 500 15px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;
-            position: relative;
-            z-index: 1;
-            min-height: 100vh;
+            margin: 0; background-color: var(--bg-0); color: var(--text);
+            font: 500 15px/1.6 Inter, sans-serif;
         }
-
         body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw;
-            height: 100vh;
-            /* THEME UPDATE: Use CSS variable for background image with a fallback */
+            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background-image: var(--bg-image, url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg'));
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            filter: blur(8px);
-            opacity: 0.25;
-            z-index: -1;
+            background-size: cover; background-position: center; background-attachment: fixed;
+            filter: blur(8px); opacity: 0.25; z-index: -1;
             transition: background-image 0.5s ease-in-out;
         }
-
         a { color: inherit; text-decoration: none; }
 
         header {
             position: sticky; top: 0; z-index: 50;
-            backdrop-filter: saturate(1.2) blur(10px);
-            background: rgba(12, 12, 12, 0.7);
+            backdrop-filter: saturate(1.2) blur(10px); background: rgba(12, 12, 12, 0.7);
             border-bottom: 1px solid var(--border);
         }
-
-        .nav { 
-            max-width: 1200px; 
-            margin: 0 auto; 
-            padding: 14px 18px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-        }
-
-        .brand { 
-            display: flex; 
-            align-items: center; 
-            gap: .8rem; 
-        }
-
-        .brand-badge {
-            height: 44px;
-            width: 44px;
-            border-radius: 12px;
-            display: grid;
-            place-items: center;
-            background: var(--gradient-brand); /* THEME UPDATE */
-            box-shadow: var(--shadow-brand); /* THEME UPDATE */
-        }
-
-        .brand-icon-custom {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            padding: 4px;
-            transform: translateY(-13px);
-        }
-
-        .brand-title { 
-            font-weight: 800; 
-            letter-spacing: .6px; 
-        }
-
-        .nav-actions { 
-            display: flex; 
-            gap: .6rem; 
-        }
-
-        .btn { 
-            padding: .6rem 1rem; 
-            border-radius: 12px; 
-            font-weight: 700; 
-            display: inline-flex; 
-            align-items: center; 
-            gap: .55rem; 
-            cursor: pointer; 
-            border: 1px solid transparent; 
-            transition: all 0.3s ease;
-            text-decoration: none;
-        }
-
-        .ghost { 
-            border-color: var(--border); 
-            background: transparent; 
-            color: var(--text); 
-        }
-
-        .ghost:hover {
-            border-color: var(--border-strong);
-            background: rgba(255, 255, 255, 0.05);
-            transform: translateY(-1px);
-        }
-
-        .primary {
-            background: var(--gradient-brand); /* THEME UPDATE */
-            box-shadow: var(--shadow-brand); /* THEME UPDATE */
-            color: white;
-            border: none;
-        }
-
-        .primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 16px 40px rgba(222, 33, 42, .35); /* This shadow might need tweaking per theme, but is ok for now */
-        }
-
-        .container { 
-            max-width: 1200px; 
-            margin: 0 auto; 
-            padding: 28px 18px; 
-        }
-
-        .card { 
-            background: var(--bg-1); 
-            border: 1px solid var(--border); 
-            border-radius: 18px; 
-            box-shadow: var(--shadow-card);
-        }
+        .nav { max-width: 1200px; margin: 0 auto; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+        .brand { display: flex; align-items: center; gap: .8rem; }
+        .brand-badge { height: 44px; width: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--gradient-brand); box-shadow: var(--shadow-brand); }
+        .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-13px); }
+        .brand-title { font-weight: 800; letter-spacing: .6px; }
+        .nav-actions { display: flex; gap: .6rem; }
+        .btn { padding: .6rem 1rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.3s ease; }
+        .ghost { border-color: var(--border); background: transparent; color: var(--text); }
+        .ghost:hover { border-color: var(--border-strong); background: rgba(255, 255, 255, 0.05); transform: translateY(-1px); }
+        .primary { background: var(--gradient-brand); box-shadow: var(--shadow-brand); color: white; border: none; }
+        .primary:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(222, 33, 42, .35); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 28px 18px; }
         
-        .hero {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4rem;
-            padding: 40px 0;
-        }
-
-        .hero-content {
-            padding: 50px 40px;
-            text-align: center;
-            max-width: 900px;
-        }
+        .hero { padding: 40px 0; }
+        .hero-content { padding: 50px 20px; text-align: center; max-width: 900px; margin: 0 auto; }
+        .title { font-size: 3.5rem; line-height: 1.05; font-weight: 900; margin: 0 0 24px 0; background: linear-gradient(135deg, var(--text), var(--muted)); background-clip: text; -webkit-background-clip: text; color: transparent; }
+        .title .grad { background: var(--gradient-brand); -webkit-background-clip: text; background-clip: text; color: transparent; animation: glow-pulse 2s ease-in-out infinite alternate; }
+        @keyframes glow-pulse { from { filter: brightness(1); } to { filter: brightness(1.2) drop-shadow(0 0 20px var(--primary)); } }
+        .muted { color: var(--muted); font-size: 1.2rem; line-height: 1.6; margin-bottom: 32px; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .hero-cta { display: flex; gap: 1rem; margin-top: 18px; justify-content: center; flex-wrap: wrap; }
+        .btn-hero { padding: 1rem 2rem; font-size: 1.1rem; border-radius: 16px; min-width: 200px; }
         
-        .title { 
-            font-size: 3.5rem; 
-            line-height: 1.05; 
-            font-weight: 900; 
-            margin: 0 0 24px 0;
-            background: linear-gradient(135deg, var(--text), var(--muted));
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-
-        .title .grad, .glowing-title .grad {
-            background: var(--gradient-brand); /* THEME UPDATE */
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            animation: glow-pulse 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow-pulse {
-            from { filter: brightness(1); }
-            to { filter: brightness(1.2) drop-shadow(0 0 20px var(--primary)); }
-        }
-
-        .muted { 
-            color: var(--muted); 
-            font-size: 1.2rem;
-            line-height: 1.6;
-            margin-bottom: 32px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .hero-cta { 
-            display: flex; 
-            gap: 1rem; 
-            margin-top: 18px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn-hero {
-            padding: 1rem 2rem;
-            font-size: 1.1rem;
-            border-radius: 16px;
-            min-width: 200px;
-        }
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 3rem; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .stat { text-align: center; }
+        .stat-number { font-size: 2rem; font-weight: 900; color: var(--primary); display: block; margin-bottom: 0.5rem; }
+        .stat-label { color: var(--muted); font-size: 0.9rem; font-weight: 600; }
         
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2rem;
-            margin-top: 3rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .stat {
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 900;
-            color: var(--primary);
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-label {
-            color: var(--muted);
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
+        .preview { width: 100%; scroll-margin-top: 100px; padding-top: 4rem; }
+        .preview-head { text-align: center; margin-bottom: 2rem; }
+        .preview-head strong { font-size: 1.5rem; font-weight: 800; display: inline-flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+        .preview-head i { color: var(--primary); }
+        .preview-head .muted { font-size: 1.1rem; margin-bottom: 0; }
         
-        .preview {
-            width: 100%;
-            scroll-margin-top: 170px;
-        }
-
-        .preview-head { 
-            text-align: center;
-            margin-bottom: 2rem;
-        }
+        .packs-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+        .latest-pack-card { background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; padding: 1rem; display: flex; flex-direction: column; gap: 12px; transition: all 0.2s ease; }
+        .latest-pack-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: 0 10px 30px -10px rgba(0,0,0, .2); }
+        .pack-header { display: flex; align-items: center; gap: 12px; }
+        .pack-icon { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); flex-shrink: 0; }
+        .pack-name { font-size: 1.1rem; font-weight: 600; margin: 0; }
+        .pack-stats-details { display: flex; justify-content: space-between; width: 100%; font-size: 0.9rem; color: var(--muted); }
+        .stat-item { display: flex; align-items: center; gap: 6px; }
+        .pack-download-btn { background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; padding: 10px 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; color: var(--text); transition: all 0.2s ease; margin-top: auto; }
+        .pack-download-btn:hover { border-color: var(--primary); box-shadow: 0 0 15px rgba(222, 33, 42, .2); color: white; }
+        .tiny { font-size: 12px; color: var(--muted); }
         
-        .preview-head strong {
-            font-size: 1.5rem;
-            font-weight: 800;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 0.5rem;
-        }
+        .loading { display: flex; align-items: center; justify-content: center; padding: 2rem; color: var(--muted); grid-column: 1 / -1; }
+        .loading::after { content: ''; width: 20px; height: 20px; border: 2px solid var(--border); border-top: 2px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-left: 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .preview-head i {
-            color: var(--primary);
-            animation: pulse 2s infinite;
-        }
-        
-        .preview-head .muted {
-            font-size: 1.1rem;
-            margin-bottom: 0;
-        }
+        .community { margin-top: 4rem; text-align: center; }
+        .glowing-title { font-size: 2.5rem; font-weight: 900; margin-bottom: 1rem; }
+        .community-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 2rem; }
+        .community-card { background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; transition: all 0.3s ease; }
+        .community-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: var(--shadow-glow); }
+        .community-icon { width: 60px; height: 60px; background: var(--gradient-brand); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem; }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .packs-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 18px;
-        }
-        
-        .latest-pack-card {
-            background: var(--surface-1);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            transition: all 0.2s ease;
-        }
-        .latest-pack-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--border-strong);
-            box-shadow: var(--shadow-elegant);
-        }
-        .pack-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .pack-icon { 
-            width: 48px; 
-            height: 48px; 
-            border-radius: 8px; 
-            object-fit: cover; 
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); 
-            flex-shrink: 0;
-        }
-        .pack-name {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin: 0;
-        }
-        .pack-stats-details {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            font-size: 0.9rem;
-            color: var(--muted-foreground);
-        }
-        .stat-item { 
-            display: flex; 
-            align-items: center; 
-            gap: 6px; 
-        }
-        .stat-item i {
-            font-size: 0.8em;
-        }
-        .pack-download-btn {
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 10px 15px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-            color: var(--text);
-            transition: all 0.2s ease;
-            margin-top: auto;
-        }
-        .pack-download-btn:hover {
-            border-color: var(--primary);
-            box-shadow: 0 0 15px rgba(222, 33, 42, .2);
-            color: white;
-        }
-        .tiny { 
-            font-size: 12px; 
-            color: var(--muted); 
-        }
-        
-        .loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            color: var(--muted);
-            grid-column: 1 / -1;
-        }
-
-        .loading::after {
-            content: '';
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--border);
-            border-top: 2px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-left: 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .community {
-            margin-top: 4rem;
-            text-align: center;
-        }
-        
-        .glowing-title {
-             font-size: 2.5rem; font-weight: 900; margin-bottom: 1rem;
-        }
-
-        .community-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        .community-card {
-            background: var(--surface-1);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 2rem;
-            transition: all 0.3s ease;
-        }
-
-        .community-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary);
-            box-shadow: var(--shadow-glow);
-        }
-
-        .community-icon {
-            width: 60px;
-            height: 60px;
-            background: var(--gradient-brand);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1rem;
-            font-size: 1.5rem;
-        }
-
-        footer {
-            margin-top: 6rem;
-            padding: 3rem 0;
-            border-top: 1px solid var(--border);
-            background: var(--surface-1);
-            text-align: center;
-        }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .footer-links a {
-            color: var(--muted);
-            font-weight: 600;
-            transition: color 0.3s ease;
-        }
-
-        .footer-links a:hover {
-            color: var(--primary);
-        }
+        footer { margin-top: 6rem; padding: 3rem 0; border-top: 1px solid var(--border); background: var(--bg-1); text-align: center; }
+        .footer-content { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+        .footer-links { display: flex; justify-content: center; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap; }
+        .footer-links a { color: var(--muted); font-weight: 600; transition: color 0.3s ease; }
+        .footer-links a:hover { color: var(--primary); }
 
         .user-dropdown { position: relative; display: inline-block; }
-        .user-menu-btn {
-            background: var(--bg-2); border: 1px solid var(--border); color: var(--text);
-            padding: 8px 12px; border-radius: 12px; display: flex; align-items: center;
-            gap: 10px; cursor: pointer; font-weight: 600;
-        }
+        .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
         .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
-        .nav-avatar-default {
-            width: 28px; height: 28px; border-radius: 50%; background: var(--bg-0);
-            display: flex; align-items: center; justify-content: center;
-        }
         .user-menu-btn .fa-chevron-down { font-size: 0.8em; transition: transform 0.2s; }
         .user-menu-btn:hover { border-color: var(--border-strong); }
-        .dropdown-content {
-            display: none; position: absolute; right: 0; top: 110%;
-            background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px;
-            min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10;
-            overflow: hidden;
-        }
+        .dropdown-content { display: none; position: absolute; right: 0; top: 110%; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; }
         .dropdown-content.show { display: block; }
-        .dropdown-content a {
-            color: var(--muted); padding: 12px 16px; text-decoration: none;
-            display: flex; align-items: center; gap: 10px; font-weight: 600;
-        }
+        .dropdown-content a { color: var(--muted); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 600; }
         .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
-        
-        /* HAMBURGER FIX: Mobile Navigation Styles */
-        .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
-        .mobile-nav-overlay { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; }
-        .mobile-nav-overlay.show { display: flex; }
-        .mobile-nav-overlay .btn { font-size: 1.2rem; padding: 0.8rem 1.5rem; min-width: 200px; text-align: center; justify-content: center; }
-        .mobile-nav-close { position: absolute; top: 1.5rem; right: 1.5rem; }
 
-        /* ====== MOBILE COMPATIBILITY ====== */
+        /* ====== NEW MOBILE SIDEBAR STYLES ====== */
+        .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
+        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
+        .mobile-nav-backdrop.show { display: block; opacity: 1; }
+        .mobile-nav-sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: 280px; background: var(--bg-1);
+            z-index: 999; transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            display: flex; flex-direction: column;
+            border-right: 1px solid var(--border);
+        }
+        .mobile-nav-sidebar.show { transform: translateX(0); }
+        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
+        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
+        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+        .mobile-nav-user-info { display: flex; flex-direction: column; }
+        .mobile-nav-username { font-weight: 700; color: var(--text); }
+        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
+        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
+        .mobile-nav-main-links { flex-grow: 1; }
+        .mobile-nav-main-links a, .mobile-nav-footer-links a {
+            padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem;
+            font-weight: 600; color: var(--muted); transition: all 0.2s ease;
+        }
+        .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
+        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
+        .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
+
+        /* ====== MOBILE RESPONSIVENESS ====== */
         @media (max-width: 1024px) { 
             .title { font-size: 2.8rem; }
-            .hero-content { padding: 40px 30px; }
             .packs-grid { grid-template-columns: repeat(2, 1fr); } 
         }
-
         @media (max-width: 768px) { 
             .nav-actions { display: none; }
-            .mobile-nav-toggle { display: block; } /* HAMBURGER FIX: Show hamburger on mobile */
-            .stats { 
-                grid-template-columns: 1fr; 
-                gap: 1.5rem; 
-            }
+            .mobile-nav-toggle { display: block; }
+            .stats { grid-template-columns: 1fr; gap: 1.5rem; }
             .title { font-size: 2.2rem; }
             .muted { font-size: 1.1rem; }
-            .hero-content { padding: 30px 20px; }
             .btn-hero { min-width: auto; width: 100%; }
             .hero-cta { flex-direction: column; align-items: center; }
             .packs-grid { grid-template-columns: 1fr; } 
-        }
-
-        @media (max-width: 480px) {
-            .container { padding: 20px 15px; }
-            .title { font-size: 2rem; }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-            }
         }
     </style>
 </head>
 
 <body>
-    <script type="module" src="/theme.js"></script>
     <header>
         <div class="nav">
             <a class="brand" href="/">
@@ -639,7 +241,7 @@
         </section>
 
         <section class="container community">
-           <div style="padding: 3rem;">
+           <div style="padding: 3rem 0;">
                 <h2 class="glowing-title">
                     <span class="grad">Join the MCHub Community</span>
                 </h2>
@@ -685,7 +287,9 @@
             <p class="tiny">Made with ❤️ for the Minecraft Bedrock community</p>
         </div>
     </footer>
-
+    
+    <script type="module" src="/theme.js"></script>
+    <script type="module" src="/auth.js"></script>
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -696,45 +300,28 @@
         const ADMIN_USER_ID = '7ae6fa34-9960-4b06-81be-ae28e8fb8e71';
 
         const COLORS = [
-            {key: 'red', hex: '#de212a'}, 
-            {key: 'blue', hex: '#3b82f6'}, 
-            {key: 'green', hex: '#22c55e'}, 
-            {key: 'yellow', hex: '#eab308'}, 
-            {key: 'purple', hex: '#a855f7'}, 
-            {key: 'pink', hex: '#ec4899'}, 
-            {key: 'orange', hex: '#f97316'}, 
-            {key: 'teal', hex: '#14b8a6'}, 
-            {key: 'gray', hex: '#6b7280'}, 
-            {key: 'black', hex: '#1f2937'}
+            {key: 'red', hex: '#de212a'}, {key: 'blue', hex: '#3b82f6'}, 
+            {key: 'green', hex: '#22c55e'}, {key: 'yellow', hex: '#eab308'}, 
+            {key: 'purple', hex: '#a855f7'}, {key: 'pink', hex: '#ec4899'}, 
+            {key: 'orange', hex: '#f97316'}, {key: 'teal', hex: '#14b8a6'}, 
+            {key: 'gray', hex: '#6b7280'}, {key: 'black', hex: '#1f2937'}
         ];
 
         function escapeHtml(str) { 
-            return String(str || '').replace(/[&<>"']/g, s => ({ 
-                '&': '&amp;', 
-                '<': '&lt;', 
-                '>': '&gt;', 
-                '"': '&quot;', 
-                "'": '&#39;' 
-            }[s])); 
+            return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); 
         }
         
         function formatDate(isoString) {
             if (!isoString) return '';
             const date = new Date(isoString);
-            const day = date.getDate();
-            const month = date.getMonth() + 1;
-            const year = String(date.getFullYear()).slice(-2);
-            return `${day}/${month}/${year}`;
+            return `${date.getDate()}/${date.getMonth() + 1}/${String(date.getFullYear()).slice(-2)}`;
         }
 
         function formatDownloads(count) {
-            if (!count) return '0';
-            if (count >= 1000000) {
-                return (count / 1000000).toFixed(1) + 'M';
-            } else if (count >= 1000) {
-                return (count / 1000).toFixed(1) + 'K';
-            }
-            return count.toLocaleString();
+            const num = count || 0;
+            if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+            return num.toLocaleString();
         }
 
         async function loadLatestPacks() {
@@ -742,54 +329,31 @@
             if (!grid) return;
 
             try {
-                const { data, error } = await supabase
-                    .from('packs')
-                    .select('*')
-                    .eq('user_id', ADMIN_USER_ID)
-                    .order('created_at', { ascending: false })
-                    .limit(4);
+                const { data, error } = await supabase.from('packs').select('*')
+                    .eq('user_id', ADMIN_USER_ID).order('created_at', { ascending: false }).limit(4);
 
-                if (error) {
-                    console.error("Failed to load latest packs", error);
-                    throw error;
-                }
+                if (error) throw error;
 
                 if (data && data.length > 0) {
                     grid.innerHTML = '';
                     data.forEach(pack => {
-                        const colorKey = pack.color || 'gray';
-                        const color = COLORS.find(c => c.key === colorKey)?.hex || '#6b7280';
-                        
-                        let iconContent;
-                        if (pack.icon_url) {
-                            iconContent = `<img class="pack-icon" src="${pack.icon_url}" alt="${escapeHtml(pack.name)} Icon">`;
-                        } else {
-                            iconContent = `<div class="pack-icon" style="background:${color}; display:grid; place-items:center;"><i class="fa-solid fa-cube" style="color:white; font-size:1.8em;"></i></div>`;
-                        }
+                        const color = COLORS.find(c => c.key === pack.color)?.hex || '#6b7280';
+                        const iconContent = pack.icon_url 
+                            ? `<img class="pack-icon" src="${pack.icon_url}" alt="${escapeHtml(pack.name)} Icon">`
+                            : `<div class="pack-icon" style="background:${color}; display:grid; place-items:center;"><i class="fa-solid fa-cube" style="color:white; font-size:1.8em;"></i></div>`;
 
                         const packElement = document.createElement('div');
                         packElement.className = 'latest-pack-card';
                         packElement.innerHTML = `
                             <div class="pack-header">
                                 ${iconContent}
-                                <div>
-                                    <h4 class="pack-name">${escapeHtml(pack.name)}</h4>
-                                </div>
+                                <div><h4 class="pack-name">${escapeHtml(pack.name)}</h4></div>
                             </div>
                             <div class="pack-stats-details">
-                                <div class="stat-item">
-                                    <i class="fa-solid fa-download"></i>
-                                    <span>${formatDownloads(pack.download_count)}</span>
-                                </div>
-                                <div class="stat-item">
-                                    <i class="fa-solid fa-calendar-day"></i>
-                                    <span>${formatDate(pack.created_at)}</span>
-                                </div>
+                                <div class="stat-item"><i class="fa-solid fa-download"></i><span>${formatDownloads(pack.download_count)}</span></div>
+                                <div class="stat-item"><i class="fa-solid fa-calendar-day"></i><span>${formatDate(pack.created_at)}</span></div>
                             </div>
-                            <a href="/texturepacks.html" class="pack-download-btn">
-                                <i class="fa-solid fa-download"></i> Download Pack
-                            </a>
-                        `;
+                            <a href="/texturepacks.html" class="pack-download-btn"><i class="fa-solid fa-download"></i> Download Pack</a>`;
                         grid.appendChild(packElement);
                     });
                 } else {
@@ -800,13 +364,7 @@
             }
         }
         
-        function init() {
-            document.addEventListener('DOMContentLoaded', loadLatestPacks);
-        }
-
-        init();
+        document.addEventListener('DOMContentLoaded', loadLatestPacks);
     </script>
-    
-    <script type="module" src="/auth.js"></script>
 </body>
 </html>
