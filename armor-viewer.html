@@ -1,49 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Armor Only 3D</title>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<meta charset="UTF-8">
+<title>3D Armor Viewer</title>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<style>
+  body { margin: 0; background: #111; }
+  canvas { display: block; }
+</style>
 </head>
-<body style="margin:0;background:#000;">
-  <canvas id="armorCanvas"></canvas>
-  <script>
-    const canvas = document.getElementById("armorCanvas");
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
+<body>
+<canvas id="armorCanvas"></canvas>
+<script>
+const canvas = document.getElementById("armorCanvas");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
 
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x111111);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x111111);
 
-    const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 1000);
-    camera.position.z = 5;
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 1000);
+camera.position.set(5, 5, 10);
+camera.lookAt(0, 2, 0);
 
-    // light
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(2, 2, 5);
-    scene.add(light);
+// Lights
+const ambient = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambient);
+const directional = new THREE.DirectionalLight(0xffffff, 1);
+directional.position.set(10, 10, 10);
+scene.add(directional);
 
-    // load armor texture (replace with any *_layer_1.png)
-    const loader = new THREE.TextureLoader();
-    loader.load("https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.20.1/assets/minecraft/textures/models/armor/diamond_layer_1.png", tex => {
-      tex.magFilter = THREE.NearestFilter;
-      tex.minFilter = THREE.NearestFilter;
+// Simple orbit controls
+let isDragging = false, previousMousePosition = { x: 0, y: 0 };
+canvas.addEventListener('mousedown', e => isDragging=true);
+canvas.addEventListener('mouseup', e => isDragging=false);
+canvas.addEventListener('mousemove', e => {
+  if(!isDragging) return;
+  const deltaMove = { x: e.offsetX - previousMousePosition.x, y: e.offsetY - previousMousePosition.y };
+  mannequin.rotation.y += deltaMove.x * 0.01;
+  mannequin.rotation.x += deltaMove.y * 0.01;
+  previousMousePosition = {x: e.offsetX, y: e.offsetY};
+});
+canvas.addEventListener('mousedown', e => previousMousePosition = {x:e.offsetX, y:e.offsetY});
 
-      const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true });
+// Load texture
+const loader = new THREE.TextureLoader();
+loader.load(
+  'https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.20.1/assets/minecraft/textures/models/armor/diamond_layer_1.png',
+  texture => {
+    texture.magFilter = THREE.NearestFilter;
+    texture.minFilter = THREE.NearestFilter;
 
-      // Example: make a cube that "wears" the armor texture
-      const geom = new THREE.BoxGeometry(2, 2, 2);
-      const cube = new THREE.Mesh(geom, mat);
-      scene.add(cube);
+    const mat = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
 
-      // animate
-      function animate() {
-        requestAnimationFrame(animate);
-        cube.rotation.y += 0.01;
-        renderer.render(scene, camera);
-      }
-      animate();
-    });
-  </script>
+    // Armature: head, body, arms, legs, feet
+    const mannequin = new THREE.Group();
+
+    const head = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), mat);
+    head.position.set(0,4.5,0);
+    mannequin.add(head);
+
+    const body = new THREE.Mesh(new THREE.BoxGeometry(1.5,2,1), mat);
+    body.position.set(0,3,0);
+    mannequin.add(body);
+
+    const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.5,2,0.5), mat);
+    leftArm.position.set(-1.25,3,0);
+    mannequin.add(leftArm);
+
+    const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.5,2,0.5), mat);
+    rightArm.position.set(1.25,3,0);
+    mannequin.add(rightArm);
+
+    const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.5,2,0.5), mat);
+    leftLeg.position.set(-0.5,1,0);
+    mannequin.add(leftLeg);
+
+    const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.5,2,0.5), mat);
+    rightLeg.position.set(0.5,1,0);
+    mannequin.add(rightLeg);
+
+    scene.add(mannequin);
+
+    function animate() {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    }
+    animate();
+  }
+);
+</script>
 </body>
 </html>
