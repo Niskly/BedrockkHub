@@ -274,7 +274,7 @@
 
         @media (max-width: 1024px) { 
             .layout { grid-template-columns: 1fr; } 
-            .sidebar, .filter-bar { display: none; } 
+            .sidebar, .filter-bar { display: none !important; } 
             .mobile-filter-controls { display: block; } 
             
             .mobile-actions {
@@ -286,9 +286,13 @@
             #mobile-filter-btn {
                 grid-column: 1 / -1; 
             }
+            .mobile-actions .sort-container {
+                width: 100%;
+            }
             .mobile-actions .sort-btn {
                 width: 100%;
                 justify-content: space-between;
+                height: 100%;
             }
             .mobile-actions .sort-btn > div {
                  display: flex;
@@ -356,14 +360,10 @@
             </aside>
             
             <div class="main-content-area">
-                <!-- DESKTOP FILTER BAR -->
-                <div class="card panel filter-bar">
-                    <div class="search" style="flex-grow: 1;">
-                        <input id="q" placeholder="Search by name..." oninput="applyFilters()" />
-                        <button class="btn sm ghost" onclick="clearSearch()"><i class="fa-solid fa-xmark"></i></button>
-                    </div>
+                <div class="card panel filter-bar" style="display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:14px; flex-wrap: wrap;">
                     <div class="sort-container" id="sortContainer">
-                        <button class="btn ghost sort-btn" onclick="toggleSortMenu()">
+                        <button class="btn sm ghost sort-btn" onclick="toggleSortMenu()">
+                            <span class="tiny">Sort by:</span>
                             <span id="currentSort">Latest Upload</span>
                             <i class="fa-solid fa-chevron-down"></i>
                         </button>
@@ -372,10 +372,13 @@
                             <a href="#" onclick="setSort('downloads', this)">Downloads</a>
                         </div>
                     </div>
-                    <button class="btn ghost" onclick="resetAll()">Reset</button>
+                    <div class="search" style="flex-grow: 1;">
+                        <input id="q" placeholder="Search by name..." oninput="applyFilters()" />
+                        <button class="btn sm ghost" onclick="clearSearch()"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div class="row"><button class="btn sm ghost" onclick="resetAll()">Reset filters</button></div>
                 </div>
                 
-                <!-- MOBILE FILTER CONTROLS -->
                 <div class="mobile-filter-controls">
                      <div class="search" style="margin-bottom: 1rem;">
                         <input id="mobile-q" placeholder="Search by name..." oninput="applyMobileSearch()" />
@@ -957,7 +960,10 @@
                 const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
                 if (profile) currentUserRole = profile.role;
             }
-            if (currentUserRole === 'admin') { document.getElementById('admin-actions').style.display = 'block'; }
+            if (currentUserRole === 'admin') { 
+                document.getElementById('admin-actions').style.display = 'block'; 
+                document.querySelector('#mobile-filters-panel #admin-actions').style.display = 'block';
+            }
             await loadPacksOnStartup();
         }
 
@@ -967,16 +973,20 @@
                 const desktopSidebar = document.querySelector('.sidebar');
                 mobileFilterPanel.innerHTML = desktopSidebar.innerHTML;
                 
-                buildSwatches(document.getElementById('colorSwatches'), (k, el) => { toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
-                buildSidebarTags(document.getElementById('tagCloud'), (k, el) => { toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
-                buildSelectorBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions, RESOLUTIONS);
-                buildSelectorBoxes(document.getElementById('versionBoxes'), (v, el) => { toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS);
+                // --- SETUP FOR BOTH DESKTOP AND MOBILE ---
+                const filterAreas = [
+                    { container: desktopSidebar, isMobile: false },
+                    { container: mobileFilterPanel, isMobile: true }
+                ];
                 
-                buildSwatches(mobileFilterPanel.querySelector('#colorSwatches'), (k, el) => { toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
-                buildSidebarTags(mobileFilterPanel.querySelector('#tagCloud'), (k, el) => { toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
-                buildSelectorBoxes(mobileFilterPanel.querySelector('#resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions, RESOLUTIONS);
-                buildSelectorBoxes(mobileFilterPanel.querySelector('#versionBoxes'), (v, el) => { toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS);
+                filterAreas.forEach(area => {
+                    buildSwatches(area.container.querySelector('#colorSwatches'), (k, el) => { toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
+                    buildSidebarTags(area.container.querySelector('#tagCloud'), (k, el) => { toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
+                    buildSelectorBoxes(area.container.querySelector('#resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions, RESOLUTIONS);
+                    buildSelectorBoxes(area.container.querySelector('#versionBoxes'), (v, el) => { toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS);
+                });
                 
+                // --- EVENT LISTENERS ---
                 const mobileFilterBtn = document.getElementById('mobile-filter-btn');
                 mobileFilterBtn.addEventListener('click', () => {
                     const panel = document.getElementById('mobile-filters-panel');
