@@ -324,7 +324,6 @@
                     const piece = e.target.dataset.piece;
                     const setName = e.target.closest('.armor-set').dataset.armorSet;
                     
-                    // Style the active button
                     armorList.querySelectorAll('.armor-piece-btn').forEach(b => b.classList.remove('active'));
                     e.target.classList.add('active');
 
@@ -338,13 +337,11 @@
                          armorList.querySelectorAll('.armor-set').forEach(d => {
                             if (d !== e.target) d.removeAttribute('open');
                         });
-                        // Automatically click the first piece when opened
                         e.target.querySelector('.armor-piece-btn')?.click();
                     }
                 });
             });
 
-            // Open the first armor set by default
             const firstSet = armorList.querySelector('.armor-set');
             if(firstSet) firstSet.setAttribute('open', '');
         }
