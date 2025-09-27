@@ -26,7 +26,6 @@
         .spinner { width: 1em; height: 1em; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* Corrected Header & Nav CSS */
         header { position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(1.2) blur(10px); background: rgba(12, 12, 12, 0.75); border-bottom: 1px solid var(--border); }
         .nav { max-width: 1100px; margin: 0 auto; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; }
         .brand { display: flex; align-items: center; gap: .8rem; }
@@ -71,7 +70,6 @@
 
         .placeholder-text { text-align: center; color: var(--muted); padding: 2rem 0; }
         
-        /* Hamburger Menu CSS */
         .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
         .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
         .mobile-nav-backdrop.show { display: block; opacity: 1; }
@@ -183,74 +181,62 @@
 
         let skinViewer;
         let foundArmor = {};
-        const BASE_SKIN_URL = "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png";
 
         function initSkinViewer() {
             try {
                 skinViewer = new skinview3d.SkinViewer({
                     canvas: canvas,
                     width: canvas.clientWidth,
-                    height: canvas.clientHeight,
-                    skin: BASE_SKIN_URL
+                    height: canvas.clientHeight
                 });
                 
                 new ResizeObserver(() => {
-                    if (skinViewer) {
-                        skinViewer.setSize(canvas.clientWidth, canvas.clientHeight);
-                    }
+                    if (skinViewer) skinViewer.setSize(canvas.clientWidth, canvas.clientHeight);
                 }).observe(canvas);
 
                 canvas.addEventListener('mousedown', () => canvas.classList.add('dragging'));
                 canvas.addEventListener('mouseup', () => canvas.classList.remove('dragging'));
+
+                // Start with an invisible player
+                skinViewer.playerObject.skin.visible = false;
+
             } catch (error) {
                 console.error("Failed to initialize Skin Viewer:", error);
                 canvas.parentElement.innerHTML = `<p class="placeholder-text">Error initializing 3D viewer.</p>`;
             }
         }
-
-        async function mergeTextures(layer1Url, layer2Url) {
-            const compositeCanvas = document.createElement('canvas');
-            compositeCanvas.width = 64;
-            compositeCanvas.height = 64;
-            const ctx = compositeCanvas.getContext('2d');
-            ctx.imageSmoothingEnabled = false;
-
-            const loadImage = url => new Promise((resolve, reject) => {
-                if (!url) {
-                    resolve(null);
-                    return;
-                }
-                const img = new Image();
-                img.crossOrigin = 'anonymous';
-                img.onload = () => resolve(img);
-                img.onerror = (err) => reject(new Error(`Failed to load image: ${url}`));
-                img.src = url;
-            });
-
-            try {
-                const [baseSkin, layer1, layer2] = await Promise.all([
-                    loadImage(BASE_SKIN_URL),
-                    loadImage(layer1Url),
-                    loadImage(layer2Url)
-                ]);
-
-                ctx.clearRect(0, 0, compositeCanvas.width, compositeCanvas.height);
-                if (baseSkin) ctx.drawImage(baseSkin, 0, 0);
-                if (layer1) ctx.drawImage(layer1, 0, 0);
-                if (layer2) ctx.drawImage(layer2, 0, 0);
-                
-                return compositeCanvas.toDataURL();
-            } catch (error) {
-                console.error("Error merging textures:", error);
-                return BASE_SKIN_URL;
-            }
-        }
         
-        async function applyArmor(armorName) {
+        function applyArmor(armorName) {
             if (!skinViewer || !foundArmor[armorName]) return;
+            
             const armorSet = foundArmor[armorName];
-            const mergedSkinUrl = await mergeTextures(armorSet.layer1, armorSet.layer2);
-            await skinViewer.loadSkin(mergedSkinUrl);
+            const armorObject = skinViewer.playerObject.armor;
+            const textureLoader = new skinViewer.THREE.TextureLoader();
+
+            const applyTexture = (part, url) => {
+                if (url) {
+                    textureLoader.load(url, (texture) => {
+                        texture.magFilter = skinViewer.THREE.NearestFilter;
+                        texture.minFilter = skinViewer.THREE.NearestFilter;
+                        part.material.map = texture;
+                        part.material.transparent = true; // Enable transparency
+                        part.material.needsUpdate = true;
+                        part.visible = true;
+                    });
+                } else {
+                    part.visible = false;
+                }
+            };
+            
+            // Apply textures to armor parts
+            applyTexture(armorObject.head, armorSet.layer1);
+            applyTexture(armorObject.body, armorSet.layer1);
+            applyTexture(armorObject.leftArm, armorSet.layer1);
+            applyTexture(armorObject.rightArm, armorSet.layer1);
+            applyTexture(armorObject.rightFoot, armorSet.layer1);
+            applyTexture(armorObject.leftFoot, armorSet.layer1);
+            applyTexture(armorObject.leftLeg, armorSet.layer2);
+            applyTexture(armorObject.rightLeg, armorSet.layer2);
         }
 
         function handleFileSelect(file) {
@@ -270,8 +256,8 @@
                             const blob = await fileInZip.async('blob');
                             const url = URL.createObjectURL(blob);
                             
-                            let armorName = path.split('/').pop().split('_')[0];
-                            if (armorName === 'chainmail' || armorName === 'chain') armorName = 'chain';
+                            let armorName = path.split('/').pop().split(/[_12.]/)[0];
+                            if (armorName === 'chainmail') armorName = 'chain';
                             
                             const layer = path.includes('layer_2') || path.includes('_2.png') ? 'layer2' : 'layer1';
                             
@@ -292,7 +278,7 @@
             const armorNames = Object.keys(foundArmor);
             if (armorNames.length === 0) {
                 armorList.innerHTML = `<p class="placeholder-text">No standard armor textures found in this pack.</p>`;
-                skinViewer.loadSkin(BASE_SKIN_URL);
+                Object.values(skinViewer.playerObject.armor).forEach(part => part.visible = false);
                 return;
             }
             
