@@ -228,24 +228,19 @@ async function handleAuthStateChange() {
 
             if (profileData?.username) {
                 profile = profileData;
-                // **NEW**: Apply the theme from the user's profile
                 applyUserTheme(profile.theme || 'red');
                 renderUserDropdown(profile, user);
             } else {
-                // User is signed in but hasn't completed their profile
                 const allowedPaths = ['/complete-profile.html', '/verify.html'];
-                 // **NEW**: Apply default theme on these pages
                 applyUserTheme('red');
                 if (!allowedPaths.includes(window.location.pathname)) {
                     window.location.replace('/complete-profile.html');
-                    return; // Stop execution to allow redirect to happen
+                    return; 
                 }
                  renderLoginButtons();
             }
         } else {
-            // Not logged in
             currentUserId = null;
-            // **NEW**: Apply default theme for guests
             applyUserTheme('red');
             renderLoginButtons();
         }
@@ -253,12 +248,10 @@ async function handleAuthStateChange() {
         console.error("Authentication state error:", error);
         authError = error.message;
         currentUserId = null;
-        // **NEW**: Apply default theme on error
         applyUserTheme('red');
         renderLoginButtons();
     } finally {
         if (!authInitialized) {
-            // This event tells other scripts (like settings.js) that auth is ready
             document.dispatchEvent(new CustomEvent('auth-ready', {
                 detail: { user, profile, error: authError }
             }));
@@ -268,8 +261,6 @@ async function handleAuthStateChange() {
 }
 
 // --- Event Listeners ---
-
-// This ensures handleAuthStateChange runs as early as possible
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', handleAuthStateChange);
 } else {
@@ -279,14 +270,12 @@ if (document.readyState === 'loading') {
 
 supabase.auth.onAuthStateChange((event, session) => {
     const newUserId = session?.user?.id || null;
-
     if (newUserId !== currentUserId) {
         if (event === 'SIGNED_OUT') {
              window.location.href = '/';
-        } else if (event === 'SIGNED_IN') {
-            // A hard reload on sign-in ensures all user data is fresh
-            window.location.reload();
         } else {
+            // For SIGNED_IN or other events, just re-render the UI.
+            // A full reload caused the infinite loop.
             handleAuthStateChange();
         }
     }
