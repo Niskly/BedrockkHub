@@ -14,9 +14,11 @@ let currentUserId = null;
  */
 function setupMobileNav(profile) {
     if (!header) return;
+    const navContainer = header.querySelector('.nav');
+    if (!navContainer) return;
 
-    // Clear any previous mobile nav elements
-    const existingToggle = header.querySelector('.mobile-nav-toggle');
+    // Clear any previous mobile nav elements to prevent duplicates
+    const existingToggle = navContainer.querySelector('.mobile-nav-toggle');
     const existingOverlay = document.querySelector('.mobile-nav-overlay');
     if (existingToggle) existingToggle.remove();
     if (existingOverlay) existingOverlay.remove();
@@ -56,7 +58,7 @@ function setupMobileNav(profile) {
     `;
 
     // Append new elements
-    header.querySelector('.nav').appendChild(hamburgerBtn);
+    navContainer.appendChild(hamburgerBtn); // Append to the main nav container
     document.body.appendChild(mobileMenu);
 
     // Add Event Listeners
@@ -163,7 +165,8 @@ async function handleAuthState() {
                 renderUserDropdown(profile);
             } else {
                 authError = 'Profile setup is not complete.';
-                if (!window.location.pathname.endsWith('/complete-profile.html')) {
+                const allowedPaths = ['/complete-profile.html', '/verify.html'];
+                if (!allowedPaths.includes(window.location.pathname)) {
                     window.location.replace('/complete-profile.html');
                     return;
                 }
@@ -195,13 +198,17 @@ if (document.readyState === 'loading') {
 }
 
 supabase.auth.onAuthStateChange((event, session) => {
+    // Avoid full reloads on SIGNED_IN to prevent loops with OAuth redirects
     if (event === 'SIGNED_OUT') {
         authInitialized = false;
         currentUserId = null;
         renderLoginButtons();
-        window.location.reload();
-    } else if (event === 'SIGNED_IN') {
-        authInitialized = false;
+        if (window.location.pathname !== '/') {
+            window.location.href = '/';
+        } else {
+             window.location.reload();
+        }
+    } else if (event === 'SIGNED_IN' && !authInitialized) {
         handleAuthState();
     }
 });
