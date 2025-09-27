@@ -16,18 +16,17 @@
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
             --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
             --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
-            --brand-1-rgb: 222, 33, 42;
+            --brand-1-rgb: 222, 33, 42; --border-strong: rgba(255, 255, 255, .2);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 14px/1.6 Inter, sans-serif; }
         body::before { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-image: var(--bg-image, url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg')); background-size: cover; filter: blur(8px); opacity: 0.2; z-index: -1; transition: background-image 0.5s ease-in-out; }
         a { color: inherit; text-decoration: none; }
         .tiny { font-size: 11px; color: var(--muted); }
-        .btn { padding: .5rem 1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
-        .btn.primary { background: linear-gradient(90deg, var(--brand-1), var(--brand-2)); box-shadow: var(--shadow-brand); color: white; }
         .spinner { width: 1em; height: 1em; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
+        /* Corrected Header & Nav CSS */
         header { position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(1.2) blur(10px); background: rgba(12, 12, 12, 0.75); border-bottom: 1px solid var(--border); }
         .nav { max-width: 1100px; margin: 0 auto; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; }
         .brand { display: flex; align-items: center; gap: .8rem; }
@@ -35,6 +34,17 @@
         .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-13px); }
         .brand-title { font-weight: 800; letter-spacing: .6px; }
         .nav-actions { display: flex; gap: .6rem; }
+        .btn { padding: .6rem 1rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; }
+        .btn.ghost { border-color: var(--border); background: transparent; color: var(--text); }
+        .btn.primary { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); box-shadow: var(--shadow-brand); color: white; border: none; }
+        .user-dropdown { position: relative; display: inline-block; }
+        .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
+        .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+        .user-menu-btn:hover { border-color: var(--border-strong); }
+        .dropdown-content { display: none; position: absolute; right: 0; top: 110%; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; }
+        .dropdown-content.show { display: block; }
+        .dropdown-content a { color: var(--muted); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 600; }
+        .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
 
         .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
         .viewer-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; align-items: flex-start; }
@@ -112,7 +122,6 @@
                 </div>
             </a>
             <div id="nav-actions" class="nav-actions"></div>
-            <button class="mobile-nav-toggle"><i class="fa-solid fa-bars"></i></button>
         </nav>
     </header>
 
@@ -162,7 +171,7 @@
             'textures/models/armor/diamond_1.png', 'textures/models/armor/diamond_2.png',
             'textures/models/armor/iron_1.png', 'textures/models/armor/iron_2.png',
             'textures/models/armor/gold_1.png', 'textures/models/armor/gold_2.png',
-            'textures/models/armor/chain_1.png', 'textures/models/armor/chain_2.png', // Note: bedrock uses 'chain' not 'chainmail'
+            'textures/models/armor/chain_1.png', 'textures/models/armor/chain_2.png',
             'textures/models/armor/leather_1.png', 'textures/models/armor/leather_2.png',
             'textures/models/armor/turtle_1.png'
         ];
@@ -177,19 +186,26 @@
         const BASE_SKIN_URL = "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png";
 
         function initSkinViewer() {
-            skinViewer = new skinview3d.SkinViewer({
-                canvas: canvas,
-                width: canvas.clientWidth,
-                height: canvas.clientHeight,
-                skin: BASE_SKIN_URL
-            });
-            
-            new ResizeObserver(() => {
-                skinViewer.setSize(canvas.clientWidth, canvas.clientHeight);
-            }).observe(canvas);
+            try {
+                skinViewer = new skinview3d.SkinViewer({
+                    canvas: canvas,
+                    width: canvas.clientWidth,
+                    height: canvas.clientHeight,
+                    skin: BASE_SKIN_URL
+                });
+                
+                new ResizeObserver(() => {
+                    if (skinViewer) {
+                        skinViewer.setSize(canvas.clientWidth, canvas.clientHeight);
+                    }
+                }).observe(canvas);
 
-            canvas.addEventListener('mousedown', () => canvas.classList.add('dragging'));
-            canvas.addEventListener('mouseup', () => canvas.classList.remove('dragging'));
+                canvas.addEventListener('mousedown', () => canvas.classList.add('dragging'));
+                canvas.addEventListener('mouseup', () => canvas.classList.remove('dragging'));
+            } catch (error) {
+                console.error("Failed to initialize Skin Viewer:", error);
+                canvas.parentElement.innerHTML = `<p class="placeholder-text">Error initializing 3D viewer.</p>`;
+            }
         }
 
         async function mergeTextures(layer1Url, layer2Url) {
@@ -197,13 +213,17 @@
             compositeCanvas.width = 64;
             compositeCanvas.height = 64;
             const ctx = compositeCanvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
 
             const loadImage = url => new Promise((resolve, reject) => {
-                if (!url) resolve(null);
+                if (!url) {
+                    resolve(null);
+                    return;
+                }
                 const img = new Image();
                 img.crossOrigin = 'anonymous';
                 img.onload = () => resolve(img);
-                img.onerror = reject;
+                img.onerror = (err) => reject(new Error(`Failed to load image: ${url}`));
                 img.src = url;
             });
 
@@ -214,6 +234,7 @@
                     loadImage(layer2Url)
                 ]);
 
+                ctx.clearRect(0, 0, compositeCanvas.width, compositeCanvas.height);
                 if (baseSkin) ctx.drawImage(baseSkin, 0, 0);
                 if (layer1) ctx.drawImage(layer1, 0, 0);
                 if (layer2) ctx.drawImage(layer2, 0, 0);
@@ -221,7 +242,7 @@
                 return compositeCanvas.toDataURL();
             } catch (error) {
                 console.error("Error merging textures:", error);
-                return BASE_SKIN_URL; // Fallback to base skin
+                return BASE_SKIN_URL;
             }
         }
         
@@ -229,7 +250,7 @@
             if (!skinViewer || !foundArmor[armorName]) return;
             const armorSet = foundArmor[armorName];
             const mergedSkinUrl = await mergeTextures(armorSet.layer1, armorSet.layer2);
-            skinViewer.loadSkin(mergedSkinUrl);
+            await skinViewer.loadSkin(mergedSkinUrl);
         }
 
         function handleFileSelect(file) {
@@ -271,7 +292,7 @@
             const armorNames = Object.keys(foundArmor);
             if (armorNames.length === 0) {
                 armorList.innerHTML = `<p class="placeholder-text">No standard armor textures found in this pack.</p>`;
-                skinViewer.loadSkin(BASE_SKIN_URL); // Reset to Steve
+                skinViewer.loadSkin(BASE_SKIN_URL);
                 return;
             }
             
