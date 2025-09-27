@@ -71,7 +71,7 @@
         .settings-sidebar { 
             position: sticky; top: 100px; 
             background: rgba(18, 18, 18, 0.9); backdrop-filter: saturate(1.2) blur(25px); 
-            border: 1px solid var(--border); border-radius: 20px; padding: 2rem; 
+            border: 1px solid var(--border); border-radius: 20px; padding: 1.5rem; 
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
         .sidebar-header { text-align: center; margin-bottom: 2rem; }
@@ -80,7 +80,7 @@
         
         .settings-tabs { display: flex; flex-direction: column; gap: 8px; }
         .settings-tab { 
-            position: relative; padding: 16px 20px; border-radius: 16px; 
+            position: relative; padding: 14px 18px; border-radius: 12px; 
             background: transparent; border: none; color: var(--muted); 
             font-weight: 600; font-family: inherit; text-align: left; 
             display: flex; align-items: center; gap: 14px; cursor: pointer; 
@@ -111,7 +111,7 @@
             overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
         .card-header { 
-            padding: 2.5rem 2.5rem 2rem; 
+            padding: 2rem 2.5rem 1.5rem; 
             background: linear-gradient(135deg, rgba(var(--brand-1-rgb), 0.05), rgba(var(--brand-1-rgb), 0.02));
         }
         .card-header h2 { 
@@ -122,7 +122,7 @@
         .card-header p { color: var(--muted); font-size: 14px; line-height: 1.5; }
         .card-body { padding: 2.5rem; }
         .card-footer { 
-            padding: 2rem 2.5rem; border-top: 1px solid var(--border); 
+            padding: 1.5rem 2.5rem; border-top: 1px solid var(--border); 
             display: flex; justify-content: flex-end; align-items: center; gap: 1rem; 
             background: rgba(255, 255, 255, 0.02);
         }
@@ -266,11 +266,27 @@
         .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
         .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
 
+        /* ====== ENHANCED MOBILE STYLES ====== */
         @media (max-width: 992px) {
             .settings-grid { grid-template-columns: 1fr; }
             .content-container { max-width: 100%; }
-            .settings-sidebar { position: static; margin-bottom: 2rem; }
-            .settings-tabs { flex-direction: row; overflow-x: auto; padding-bottom: 8px; justify-content: flex-start; -ms-overflow-style: none; scrollbar-width: none; }
+            .settings-sidebar { 
+                position: static; 
+                margin-bottom: 2rem; 
+                padding: 1rem;
+            }
+            .sidebar-header { margin-bottom: 1rem; }
+            .settings-tabs { 
+                flex-direction: row; 
+                overflow-x: auto; 
+                padding-bottom: 8px; 
+                margin: 0 -1rem; /* Allow scrollbar to be off-screen */
+                padding-left: 1rem;
+                padding-right: 1rem;
+                justify-content: flex-start; 
+                -ms-overflow-style: none; 
+                scrollbar-width: none; 
+            }
             .settings-tabs::-webkit-scrollbar { display: none; }
         }
         @media (max-width: 768px) {
@@ -285,7 +301,8 @@
         }
          @media (max-width: 480px) {
             .settings-tab-label { display: none; }
-            .settings-tab i { font-size: 20px; }
+            .settings-tab { padding: 12px; justify-content: center; }
+            .settings-tab i { font-size: 20px; width: auto; }
             .card-header, .card-body, .security-section { padding: 1.2rem; }
             .card-header h2 { font-size: 1.2rem; }
          }
@@ -352,6 +369,7 @@
                     <div class="tiny">Minecraft Bedrock • community</div>
                 </div>
             </a>
+             <button class="mobile-nav-toggle" aria-label="Open navigation menu"><i class="fa-solid fa-bars"></i></button>
             <div id="nav-actions" class="nav-actions"></div>
         </nav>
     </header>
@@ -459,15 +477,32 @@
 
             const swatches = container.querySelectorAll('.theme-swatch');
             swatches.forEach(swatch => {
-                swatch.addEventListener('click', () => {
+                swatch.addEventListener('click', async () => {
                     const themeName = swatch.dataset.theme;
+                    
+                    // Apply theme visually immediately
                     if(window.setMCHubTheme) window.setMCHubTheme(themeName);
                     swatches.forEach(s => s.classList.remove('active'));
                     swatch.classList.add('active');
+
+                    // Save theme to the database
+                    try {
+                        const { error } = await supabase
+                            .from('profiles')
+                            .update({ theme: themeName })
+                            .eq('id', currentUser.id);
+                        if (error) throw error;
+                        // Update the local profile object to stay in sync
+                        currentProfile.theme = themeName; 
+                    } catch (error) {
+                        console.error('Failed to save theme:', error);
+                        showToast('Could not save your theme preference.', 'error');
+                    }
                 });
             });
 
-            const currentTheme = localStorage.getItem('mchub-theme') || 'red';
+            // Set the active swatch based on the profile data
+            const currentTheme = currentProfile.theme || 'red';
             const activeSwatch = container.querySelector(`.theme-swatch[data-theme="${currentTheme}"]`);
             if (activeSwatch) {
                 activeSwatch.classList.add('active');
