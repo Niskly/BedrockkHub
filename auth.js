@@ -10,23 +10,6 @@ let authInitialized = false;
 let currentUserId = null;
 
 /**
- * Applies the selected theme to the page.
- * This function will be called by the auth flow as soon as the user's theme is known.
- * @param {string} themeName - The name of the theme to apply (e.g., 'red', 'purple').
- */
-function applyUserTheme(themeName) {
-    if (window.setMCHubTheme) {
-        window.setMCHubTheme(themeName);
-    } else {
-        // Fallback for pages where theme.js might be slow to load
-        document.addEventListener('theme-script-ready', () => {
-             window.setMCHubTheme(themeName);
-        }, { once: true });
-    }
-}
-
-
-/**
  * Creates and manages the mobile navigation menu sidebar.
  * @param {object|null} profile - The user's profile data.
  * @param {object|null} user - The user's auth data.
@@ -41,17 +24,14 @@ function setupMobileNav(profile, user) {
     document.querySelector('.mobile-nav-sidebar')?.remove();
     document.querySelector('.mobile-nav-backdrop')?.remove();
 
-    // Hamburger button
     const hamburgerBtn = document.createElement('button');
     hamburgerBtn.className = 'mobile-nav-toggle';
     hamburgerBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
     hamburgerBtn.setAttribute('aria-label', 'Open navigation menu');
 
-    // Sidebar
     const sidebar = document.createElement('div');
     sidebar.className = 'mobile-nav-sidebar';
 
-    // Backdrop
     const backdrop = document.createElement('div');
     backdrop.className = 'mobile-nav-backdrop';
 
@@ -60,9 +40,9 @@ function setupMobileNav(profile, user) {
     let footerLinks = '';
 
     if (profile && user) {
-        const avatarSrc = profile.avatar_url
-            ? profile.avatar_url
-            : `https://placehold.co/60x60/1c1c1c/de212a?text=${profile.username.charAt(0).toUpperCase()}`;
+        const avatarSrc = profile.avatar_url ?
+            profile.avatar_url :
+            `https://placehold.co/60x60/1c1c1c/de212a?text=${profile.username.charAt(0).toUpperCase()}`;
 
         userHeader = `
             <div class="mobile-nav-header">
@@ -72,17 +52,13 @@ function setupMobileNav(profile, user) {
                     <span class="mobile-nav-email">${user.email}</span>
                 </div>
             </div>`;
-
         mainLinks = `
             <a href="/"><i class="fa-solid fa-house"></i><span>Home</span></a>
             <a href="/texturepacks.html"><i class="fa-solid fa-palette"></i><span>Texture Packs</span></a>
-            <a href="/profile.html?user=${profile.username}"><i class="fa-solid fa-user"></i><span>My Profile</span></a>
-        `;
-
+            <a href="/profile.html?user=${profile.username}"><i class="fa-solid fa-user"></i><span>My Profile</span></a>`;
         footerLinks = `
             <a href="/settings.html"><i class="fa-solid fa-cog"></i><span>Settings</span></a>
-            <a href="#" id="mobile-logout-btn"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>
-        `;
+            <a href="#" id="mobile-logout-btn"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>`;
     } else {
         userHeader = `
             <div class="mobile-nav-header">
@@ -96,12 +72,10 @@ function setupMobileNav(profile, user) {
             </div>`;
         mainLinks = `
             <a href="/"><i class="fa-solid fa-house"></i><span>Home</span></a>
-            <a href="/texturepacks.html"><i class="fa-solid fa-palette"></i><span>Texture Packs</span></a>
-        `;
+            <a href="/texturepacks.html"><i class="fa-solid fa-palette"></i><span>Texture Packs</span></a>`;
         footerLinks = `
             <a href="/login.html"><i class="fa-solid fa-right-to-bracket"></i><span>Login</span></a>
-            <a href="/signup.html" class="primary-mobile-link"><i class="fa-solid fa-user-plus"></i><span>Sign Up</span></a>
-        `;
+            <a href="/signup.html" class="primary-mobile-link"><i class="fa-solid fa-user-plus"></i><span>Sign Up</span></a>`;
     }
 
     sidebar.innerHTML = `
@@ -111,12 +85,10 @@ function setupMobileNav(profile, user) {
         <nav class="mobile-nav-footer-links">${footerLinks}</nav>
     `;
 
-    // Add elements to the DOM
     navContainer.appendChild(hamburgerBtn);
     document.body.appendChild(sidebar);
     document.body.appendChild(backdrop);
 
-    // Event listeners
     const openMenu = () => {
         sidebar.classList.add('show');
         backdrop.classList.add('show');
@@ -141,16 +113,10 @@ function setupMobileNav(profile, user) {
     }
 }
 
-
-/**
- * Renders desktop user dropdown menu.
- * @param {object} profile - The user's profile data.
- * @param {object} user - The user's auth data.
- */
 function renderUserDropdown(profile, user) {
-    const avatarContent = profile.avatar_url
-        ? `<img src="${profile.avatar_url}" alt="User Avatar" class="nav-avatar-img">`
-        : `<img src="https://placehold.co/28x28/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}" class="nav-avatar-img">`;
+    const avatarContent = profile.avatar_url ?
+        `<img src="${profile.avatar_url}" alt="User Avatar" class="nav-avatar-img">` :
+        `<img src="https://placehold.co/28x28/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}" class="nav-avatar-img">`;
 
     if (navActions) {
         navActions.innerHTML = `
@@ -187,9 +153,6 @@ function renderUserDropdown(profile, user) {
     setupMobileNav(profile, user);
 }
 
-/**
- * Renders login/signup buttons for unauthenticated users.
- */
 function renderLoginButtons() {
     if (navActions) {
         navActions.innerHTML = `
@@ -207,7 +170,7 @@ async function handleAuthStateChange() {
     let user = null;
     let profile = null;
     let authError = null;
-
+    
     authInitialized = false;
 
     try {
@@ -225,30 +188,34 @@ async function handleAuthStateChange() {
                 .single();
 
             if (profileError && profileError.code !== 'PGRST116') throw profileError;
-
+            
             if (profileData?.username) {
                 profile = profileData;
-                applyUserTheme(profile.theme || 'red');
+                const dbTheme = profile.theme || 'red';
+                const cachedTheme = localStorage.getItem('mchub-theme');
+                
+                // Sync theme from DB to cache if they differ
+                if (dbTheme !== cachedTheme) {
+                    window.setMCHubTheme(dbTheme, true); // true caches it
+                }
+                
                 renderUserDropdown(profile, user);
             } else {
                 const allowedPaths = ['/complete-profile.html', '/verify.html'];
-                applyUserTheme('red');
                 if (!allowedPaths.includes(window.location.pathname)) {
                     window.location.replace('/complete-profile.html');
-                    return; 
+                    return;
                 }
                  renderLoginButtons();
             }
         } else {
             currentUserId = null;
-            applyUserTheme('red');
             renderLoginButtons();
         }
     } catch (error) {
         console.error("Authentication state error:", error);
         authError = error.message;
         currentUserId = null;
-        applyUserTheme('red');
         renderLoginButtons();
     } finally {
         if (!authInitialized) {
@@ -267,21 +234,19 @@ if (document.readyState === 'loading') {
     handleAuthStateChange();
 }
 
-
 supabase.auth.onAuthStateChange((event, session) => {
     const newUserId = session?.user?.id || null;
     if (newUserId !== currentUserId) {
         if (event === 'SIGNED_OUT') {
-             window.location.href = '/';
+            // Clear the theme cache on logout so the next user gets the default.
+            try { localStorage.removeItem('mchub-theme'); } catch(e) {}
+            window.location.href = '/login.html';
         } else {
-            // For SIGNED_IN or other events, just re-render the UI.
-            // A full reload caused the infinite loop.
             handleAuthStateChange();
         }
     }
 });
 
-// Close desktop dropdown when clicking outside
 window.addEventListener('click', (event) => {
     if (navActions && !event.target.closest('.user-dropdown')) {
         const content = navActions.querySelector('.dropdown-content.show');
@@ -292,3 +257,4 @@ window.addEventListener('click', (event) => {
         }
     }
 });
+
