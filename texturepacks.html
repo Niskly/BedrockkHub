@@ -156,7 +156,7 @@
         textarea { resize: vertical; height: 120px; }
         .sort-container { position: relative; }
         .sort-btn { padding: .25rem .5rem; gap: .5rem; }
-        .sort-btn #currentSort { color: var(--text); }
+        .sort-btn #currentSort, .sort-btn #mobileCurrentSort { color: var(--text); }
         .sort-btn .fa-chevron-down { font-size: 10px; transition: transform .2s; }
         .sort-container.open .fa-chevron-down { transform: rotate(180deg); }
         .sort-menu { display: none; position: absolute; top: 100%; left: 0; margin-top: 6px; z-index: 10; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.4); min-width: 160px; }
@@ -257,8 +257,7 @@
         .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
         .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
         
-        /* ====== NEW MOBILE FILTER STYLES ====== */
-        .mobile-filter-controls { display: none; } /* Hidden by default */
+        .mobile-filter-controls { display: none; } 
         #mobile-filters-panel {
             background: var(--bg-2);
             border-radius: 16px;
@@ -269,16 +268,14 @@
             padding: 0 18px;
         }
         #mobile-filters-panel.show {
-            max-height: 1000px; /* Large enough to show all content */
+            max-height: 1000px;
             padding: 18px;
         }
 
-        /* ====== MOBILE RESPONSIVENESS ====== */
         @media (max-width: 1024px) { 
             .layout { grid-template-columns: 1fr; } 
-            .sidebar { display: none; } /* Hide original sidebar */
-            .filter-bar { display: none; } /* Hide original filter bar */
-            .mobile-filter-controls { display: block; } /* Show mobile controls */
+            .sidebar, .filter-bar { display: none; } 
+            .mobile-filter-controls { display: block; } 
             
             .mobile-actions {
                 display: grid;
@@ -287,7 +284,16 @@
                 margin-top: 1rem;
             }
             #mobile-filter-btn {
-                grid-column: 1 / -1; /* Span full width */
+                grid-column: 1 / -1; 
+            }
+            .mobile-actions .sort-btn {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .mobile-actions .sort-btn > div {
+                 display: flex;
+                 align-items: center;
+                 gap: 0.5rem;
             }
             
             .packs { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); } 
@@ -351,10 +357,13 @@
             
             <div class="main-content-area">
                 <!-- DESKTOP FILTER BAR -->
-                <div class="card panel filter-bar" style="display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:14px; flex-wrap: wrap;">
+                <div class="card panel filter-bar">
+                    <div class="search" style="flex-grow: 1;">
+                        <input id="q" placeholder="Search by name..." oninput="applyFilters()" />
+                        <button class="btn sm ghost" onclick="clearSearch()"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
                     <div class="sort-container" id="sortContainer">
-                        <button class="btn sm ghost sort-btn" onclick="toggleSortMenu()">
-                            <span class="tiny">Sort by:</span>
+                        <button class="btn ghost sort-btn" onclick="toggleSortMenu()">
                             <span id="currentSort">Latest Upload</span>
                             <i class="fa-solid fa-chevron-down"></i>
                         </button>
@@ -363,11 +372,7 @@
                             <a href="#" onclick="setSort('downloads', this)">Downloads</a>
                         </div>
                     </div>
-                    <div class="search" style="flex-grow: 1;">
-                        <input id="q" placeholder="Search by name..." oninput="applyFilters()" />
-                        <button class="btn sm ghost" onclick="clearSearch()"><i class="fa-solid fa-xmark"></i></button>
-                    </div>
-                    <div class="row"><button class="btn sm ghost" onclick="resetAll()">Reset filters</button></div>
+                    <button class="btn ghost" onclick="resetAll()">Reset</button>
                 </div>
                 
                 <!-- MOBILE FILTER CONTROLS -->
@@ -378,7 +383,7 @@
                     </div>
                     <div class="mobile-actions">
                          <div class="sort-container" id="mobileSortContainer">
-                            <button class="btn ghost sort-btn" onclick="toggleSortMenu(true)" style="width: 100%; justify-content: space-between;">
+                            <button class="btn ghost sort-btn" onclick="toggleSortMenu(true)">
                                 <div><span class="tiny">Sort by:</span> <span id="mobileCurrentSort">Latest Upload</span></div>
                                 <i class="fa-solid fa-chevron-down"></i>
                             </button>
@@ -390,8 +395,7 @@
                         <button class="btn ghost" onclick="resetAll()"><i class="fa-solid fa-undo"></i> Reset</button>
                         <button id="mobile-filter-btn" class="btn primary"><i class="fa-solid fa-sliders"></i> Choose Filters</button>
                     </div>
-                    <div id="mobile-filters-panel">
-                        <!-- Content from sidebar will be dynamically placed here by JS -->
+                    <div id="mobile-filters-panel" class="card">
                     </div>
                 </div>
 
@@ -753,8 +757,8 @@
             window.scrollTo({ top: contentTop - headerHeight - 14, behavior: "smooth" });
         }
 
-        function nextPage() { state.currentPage++; scrollToContentTop(); render(); }
-        function prevPage() { state.currentPage--; scrollToContentTop(); render(); }
+        window.nextPage = () => { state.currentPage++; scrollToContentTop(); render(); }
+        window.prevPage = () => { state.currentPage--; scrollToContentTop(); render(); }
 
         function renderCard(p) {
             const color = COLORS.find(c => c.key === p.color)?.hex || '#6b7280';
@@ -959,24 +963,20 @@
 
         function init() {
             if (document.getElementById('grid')) {
-                // Populate both desktop and mobile filter areas
                 const mobileFilterPanel = document.getElementById('mobile-filters-panel');
                 const desktopSidebar = document.querySelector('.sidebar');
                 mobileFilterPanel.innerHTML = desktopSidebar.innerHTML;
                 
-                // Desktop filter setup
                 buildSwatches(document.getElementById('colorSwatches'), (k, el) => { toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
                 buildSidebarTags(document.getElementById('tagCloud'), (k, el) => { toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
                 buildSelectorBoxes(document.getElementById('resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions, RESOLUTIONS);
                 buildSelectorBoxes(document.getElementById('versionBoxes'), (v, el) => { toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS);
                 
-                // Mobile filter setup
                 buildSwatches(mobileFilterPanel.querySelector('#colorSwatches'), (k, el) => { toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
                 buildSidebarTags(mobileFilterPanel.querySelector('#tagCloud'), (k, el) => { toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
                 buildSelectorBoxes(mobileFilterPanel.querySelector('#resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions, RESOLUTIONS);
                 buildSelectorBoxes(mobileFilterPanel.querySelector('#versionBoxes'), (v, el) => { toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS);
                 
-                // Mobile filter toggle button
                 const mobileFilterBtn = document.getElementById('mobile-filter-btn');
                 mobileFilterBtn.addEventListener('click', () => {
                     const panel = document.getElementById('mobile-filters-panel');
@@ -1005,3 +1005,4 @@
 </body>
 
 </html>
+
