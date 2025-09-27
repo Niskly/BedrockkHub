@@ -209,13 +209,15 @@
 
             let skinViewer = null;
             let foundArmor = {};
+            let currentArmorTextures = {};
 
             function initSkinViewer() {
                 try {
                     skinViewer = new skinview3d.SkinViewer({
                         canvas: canvas,
                         width: canvas.clientWidth,
-                        height: canvas.clientHeight
+                        height: canvas.clientHeight,
+                        skin: "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png"
                     });
                     
                     // Set up auto rotation and camera
@@ -265,6 +267,12 @@
                 armorList.innerHTML = `<p class="placeholder-text"><span class="spinner" style="width:1.5em; height:1.5em; border-width:3px; display:inline-block; margin-bottom:-0.25em; margin-right: 0.5em;"></span>Searching pack...</p>`;
                 foundArmor = {};
                 
+                // Clear existing armor
+                if (skinViewer) {
+                    skinViewer.loadArmor(null, {layer:1});
+                    skinViewer.loadArmor(null, {layer:2});
+                }
+
                 try {
                     const zip = await JSZip.loadAsync(file);
                     const allArmorPaths = [...ARMOR_PATHS_JAVA, ...ARMOR_PATHS_BEDROCK];
@@ -340,15 +348,30 @@
                 }
                 
                 const armorSet = foundArmor[armorName];
-                console.log("Applying armor as skin:", armorName, armorSet);
-
-                // Prioritize layer1, but fallback to layer2 if layer1 doesn't exist.
-                const skinUrl = armorSet.layer1 || armorSet.layer2;
-
-                if (skinUrl) {
-                    skinViewer.loadSkin(skinUrl);
+                console.log("Applying armor:", armorName, armorSet);
+                
+                // Clear previous armor textures
+                if (currentArmorTextures.layer1) {
+                    URL.revokeObjectURL(currentArmorTextures.layer1);
+                }
+                if (currentArmorTextures.layer2) {
+                    URL.revokeObjectURL(currentArmorTextures.layer2);
+                }
+                
+                // Apply new armor textures
+                currentArmorTextures = armorSet;
+                
+                // Load armor layers
+                if (armorSet.layer1) {
+                    skinViewer.loadArmor(armorSet.layer1, {layer: 1});
                 } else {
-                    console.warn("No armor texture found for:", armorName);
+                    skinViewer.loadArmor(null, {layer: 1});
+                }
+                
+                if (armorSet.layer2) {
+                    skinViewer.loadArmor(armorSet.layer2, {layer: 2});
+                } else {
+                    skinViewer.loadArmor(null, {layer: 2});
                 }
             }
 
