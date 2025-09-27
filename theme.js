@@ -1,5 +1,4 @@
-// This script defines the themes and provides a global function to apply them.
-// It no longer reads from localStorage directly, preventing the theme flash.
+// This script now handles the initial theme loading to prevent FOUC (Flash of Unstyled Content).
 (function() {
     const themes = {
         red: {
@@ -34,22 +33,17 @@
         }
     };
 
-    /**
-     * Converts a hex color string to an RGB string "r, g, b".
-     * @param {string} hex - The hex color.
-     * @returns {string|null} - The RGB string or null if invalid.
-     */
     function hexToRgb(hex) {
-        if (!hex) return '222, 33, 42'; // Default to red if something is wrong
+        if (!hex) return '222, 33, 42'; // Default red
         const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '222, 33, 42';
     }
-
+    
     /**
-     * Applies a theme by setting CSS variables on the root element.
+     * Applies the theme and makes the body visible.
      * @param {string} themeName - The name of the theme to apply.
      */
-    const applyTheme = (themeName) => {
+    function applyThemeAndShowBody(themeName) {
         const theme = themes[themeName] || themes.red;
         const root = document.documentElement;
         
@@ -59,22 +53,47 @@
             root.style.setProperty(key, value);
         }
 
-        // Set the RGB version of the brand color for use in rgba()
         const brand1 = theme['--brand-1'];
         root.style.setProperty('--brand-1-rgb', hexToRgb(brand1));
+        
+        // This is the magic! Make the body visible *after* the theme is applied.
+        if (document.body) {
+            document.body.style.opacity = '1';
+        } else {
+            // If body is not ready yet (this script is in <head>), wait for DOMContentLoaded.
+            document.addEventListener('DOMContentLoaded', () => {
+                document.body.style.opacity = '1';
+            });
+        }
+    }
+    
+    // This function will be called from settings.html to set and cache the theme,
+    // and from auth.js to sync the theme from the database.
+    window.setMCHubTheme = (themeName, shouldCache = false) => {
+        if (shouldCache) {
+            try {
+                localStorage.setItem('mchub-theme', themeName);
+            } catch (e) {
+                console.error('Failed to cache theme in localStorage:', e);
+            }
+        }
+        // Always apply the theme visually.
+        applyThemeAndShowBody(themeName);
     };
-
-    /**
-     * This is the globally accessible function that auth.js and settings.js will use.
-     * It only applies the theme visually without saving it.
-     * @param {string} themeName - The name of the theme to set.
-     */
-    window.setMCHubTheme = (themeName) => {
-        applyTheme(themeName);
-    };
-
-    // Dispatch an event to let auth.js know that the theme script is ready.
-    // This handles cases where auth.js might load and run before this script.
+    
+    // --- INITIAL LOAD LOGIC ---
+    // This self-invoking function runs immediately when the script is parsed.
+    try {
+        const cachedTheme = localStorage.getItem('mchub-theme');
+        // Apply the cached theme immediately, or fallback to 'red' if no cache exists.
+        applyThemeAndShowBody(cachedTheme || 'red');
+    } catch (e) {
+        console.error('Failed to apply initial theme from cache:', e);
+        applyThemeAndShowBody('red'); // Fallback to default
+    }
+    
+    // Let auth.js know that the setMCHubTheme function is now available globally.
     document.dispatchEvent(new Event('theme-script-ready'));
 
 })();
+
