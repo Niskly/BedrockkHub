@@ -10,6 +10,23 @@ let authInitialized = false;
 let currentUserId = null;
 
 /**
+ * Applies the selected theme to the page.
+ * This function will be called by the auth flow as soon as the user's theme is known.
+ * @param {string} themeName - The name of the theme to apply (e.g., 'red', 'purple').
+ */
+function applyUserTheme(themeName) {
+    if (window.setMCHubTheme) {
+        window.setMCHubTheme(themeName);
+    } else {
+        // Fallback for pages where theme.js might be slow to load
+        document.addEventListener('theme-script-ready', () => {
+             window.setMCHubTheme(themeName);
+        }, { once: true });
+    }
+}
+
+
+/**
  * Creates and manages the mobile navigation menu sidebar.
  * @param {object|null} profile - The user's profile data.
  * @param {object|null} user - The user's auth data.
@@ -43,10 +60,10 @@ function setupMobileNav(profile, user) {
     let footerLinks = '';
 
     if (profile && user) {
-        const avatarSrc = profile.avatar_url 
-            ? profile.avatar_url 
+        const avatarSrc = profile.avatar_url
+            ? profile.avatar_url
             : `https://placehold.co/60x60/1c1c1c/de212a?text=${profile.username.charAt(0).toUpperCase()}`;
-        
+
         userHeader = `
             <div class="mobile-nav-header">
                 <img src="${avatarSrc}" alt="Avatar" class="mobile-nav-avatar">
@@ -61,7 +78,7 @@ function setupMobileNav(profile, user) {
             <a href="/texturepacks.html"><i class="fa-solid fa-palette"></i><span>Texture Packs</span></a>
             <a href="/profile.html?user=${profile.username}"><i class="fa-solid fa-user"></i><span>My Profile</span></a>
         `;
-        
+
         footerLinks = `
             <a href="/settings.html"><i class="fa-solid fa-cog"></i><span>Settings</span></a>
             <a href="#" id="mobile-logout-btn"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>
@@ -131,7 +148,7 @@ function setupMobileNav(profile, user) {
  * @param {object} user - The user's auth data.
  */
 function renderUserDropdown(profile, user) {
-    const avatarContent = profile.avatar_url 
+    const avatarContent = profile.avatar_url
         ? `<img src="${profile.avatar_url}" alt="User Avatar" class="nav-avatar-img">`
         : `<img src="https://placehold.co/28x28/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}" class="nav-avatar-img">`;
 
@@ -190,7 +207,7 @@ async function handleAuthStateChange() {
     let user = null;
     let profile = null;
     let authError = null;
-    
+
     authInitialized = false;
 
     try {
@@ -208,29 +225,40 @@ async function handleAuthStateChange() {
                 .single();
 
             if (profileError && profileError.code !== 'PGRST116') throw profileError;
-            
+
             if (profileData?.username) {
                 profile = profileData;
+                // **NEW**: Apply the theme from the user's profile
+                applyUserTheme(profile.theme || 'red');
                 renderUserDropdown(profile, user);
             } else {
+                // User is signed in but hasn't completed their profile
                 const allowedPaths = ['/complete-profile.html', '/verify.html'];
+                 // **NEW**: Apply default theme on these pages
+                applyUserTheme('red');
                 if (!allowedPaths.includes(window.location.pathname)) {
                     window.location.replace('/complete-profile.html');
-                    return;
+                    return; // Stop execution to allow redirect to happen
                 }
-                 renderLoginButtons(); // Render basic nav on profile completion pages
+                 renderLoginButtons();
             }
         } else {
+            // Not logged in
             currentUserId = null;
+            // **NEW**: Apply default theme for guests
+            applyUserTheme('red');
             renderLoginButtons();
         }
     } catch (error) {
         console.error("Authentication state error:", error);
         authError = error.message;
         currentUserId = null;
+        // **NEW**: Apply default theme on error
+        applyUserTheme('red');
         renderLoginButtons();
     } finally {
         if (!authInitialized) {
+            // This event tells other scripts (like settings.js) that auth is ready
             document.dispatchEvent(new CustomEvent('auth-ready', {
                 detail: { user, profile, error: authError }
             }));
@@ -240,22 +268,25 @@ async function handleAuthStateChange() {
 }
 
 // --- Event Listeners ---
+
+// This ensures handleAuthStateChange runs as early as possible
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', handleAuthStateChange);
 } else {
     handleAuthStateChange();
 }
 
+
 supabase.auth.onAuthStateChange((event, session) => {
-    // This logic ensures a smooth transition without full page reloads on sign-in/out
-    // while still redirecting when necessary.
     const newUserId = session?.user?.id || null;
+
     if (newUserId !== currentUserId) {
         if (event === 'SIGNED_OUT') {
-             // A hard redirect on sign-out is often the cleanest approach
              window.location.href = '/';
+        } else if (event === 'SIGNED_IN') {
+            // A hard reload on sign-in ensures all user data is fresh
+            window.location.reload();
         } else {
-            // On sign-in or user change, re-run the auth state logic
             handleAuthStateChange();
         }
     }
