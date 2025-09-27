@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pack Details - MCHub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
     /* Prevents the "flash of the wrong theme" by keeping the body hidden until the theme is ready */
     body {
@@ -109,6 +110,40 @@
         .toast.success { background: var(--success); }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
+        /* ====== MOBILE SIDEBAR STYLES ====== */
+        .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
+        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
+        .mobile-nav-backdrop.show { display: block; opacity: 1; }
+        .mobile-nav-sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: 280px; background: var(--bg-1);
+            z-index: 999; transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            display: flex; flex-direction: column;
+            border-right: 1px solid var(--border);
+        }
+        .mobile-nav-sidebar.show { transform: translateX(0); }
+        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
+        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
+        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+        .mobile-nav-user-info { display: flex; flex-direction: column; }
+        .mobile-nav-username { font-weight: 700; color: var(--text); }
+        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
+        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
+        .mobile-nav-main-links { flex-grow: 1; }
+        .mobile-nav-main-links a, .mobile-nav-footer-links a {
+            padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem;
+            font-weight: 600; color: var(--muted); transition: all 0.2s ease;
+        }
+        .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
+        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
+        .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
+
+
+        @media (max-width: 768px) {
+            .nav-actions { display: none; }
+            .mobile-nav-toggle { display: block; }
+        }
         @media (max-width: 600px) {
             .pack-header { flex-direction: column; align-items: center; text-align: center; }
             .pack-info h1 { font-size: 2rem; }
@@ -166,6 +201,10 @@
 
         function renderPage(pack, comments) {
             const uploader = pack.profiles;
+            if (!uploader) {
+                pageContent.innerHTML = `<h1>Error: Could not load uploader details for this pack.</h1>`;
+                return;
+            }
             const uploaderPfp = uploader.avatar_url || `https://placehold.co/40x40/1c1c1c/e8eefc?text=${uploader.username.charAt(0).toUpperCase()}`;
 
             pageContent.innerHTML = `
@@ -278,7 +317,7 @@
                     content,
                     pack_id: packId,
                     user_id: currentUser.id
-                }).select('*, profiles(*)').single();
+                }).select('*, profiles!inner(*)').single();
                 
                 if (error) throw error;
 
@@ -336,7 +375,7 @@
             try {
                 const { data: packData, error: packError } = await supabase
                     .from('packs')
-                    .select('*, profiles(*)')
+                    .select('*, profiles!inner(*)')
                     .eq('id', packId)
                     .single();
 
@@ -344,7 +383,7 @@
 
                 const { data: commentsData, error: commentsError } = await supabase
                     .from('comments')
-                    .select('*, profiles(*)')
+                    .select('*, profiles!inner(*)')
                     .eq('pack_id', packId)
                     .order('created_at', { ascending: false });
 
@@ -367,3 +406,4 @@
     </script>
 </body>
 </html>
+
