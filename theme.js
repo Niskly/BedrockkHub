@@ -1,4 +1,5 @@
-// This script is designed to run immediately to prevent a "flash of unstyled content" (FOUC).
+// This script defines the themes and provides a global function to apply them.
+// It no longer reads from localStorage directly, preventing the theme flash.
 (function() {
     const themes = {
         red: {
@@ -39,8 +40,9 @@
      * @returns {string|null} - The RGB string or null if invalid.
      */
     function hexToRgb(hex) {
+        if (!hex) return '222, 33, 42'; // Default to red if something is wrong
         const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : null;
+        return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '222, 33, 42';
     }
 
     /**
@@ -59,33 +61,20 @@
 
         // Set the RGB version of the brand color for use in rgba()
         const brand1 = theme['--brand-1'];
-        if (brand1) {
-            root.style.setProperty('--brand-1-rgb', hexToRgb(brand1));
-        }
+        root.style.setProperty('--brand-1-rgb', hexToRgb(brand1));
     };
 
     /**
-     * Sets the theme and saves the preference to localStorage.
+     * This is the globally accessible function that auth.js and settings.js will use.
+     * It only applies the theme visually without saving it.
      * @param {string} themeName - The name of the theme to set.
      */
-    const setTheme = (themeName) => {
-        try {
-            localStorage.setItem('mchub-theme', themeName);
-        } catch (e) {
-            console.error('Failed to save theme to localStorage:', e);
-        }
+    window.setMCHubTheme = (themeName) => {
         applyTheme(themeName);
     };
 
-    // Make the setTheme function globally accessible so the settings page can call it.
-    window.setMCHubTheme = setTheme;
+    // Dispatch an event to let auth.js know that the theme script is ready.
+    // This handles cases where auth.js might load and run before this script.
+    document.dispatchEvent(new Event('theme-script-ready'));
 
-    // Immediately apply the saved theme on script load.
-    try {
-        const savedTheme = localStorage.getItem('mchub-theme') || 'red';
-        applyTheme(savedTheme);
-    } catch (e) {
-        console.error('Failed to apply initial theme:', e);
-        applyTheme('red'); // Fallback to default
-    }
 })();
