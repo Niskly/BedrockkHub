@@ -87,7 +87,6 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: 100%; 
             border: 1px solid transparent;
         }
-        /* THEME FIX: Use CSS variable for active tab color */
         .settings-tab.active { 
             color: var(--text); background: rgba(var(--brand-1-rgb), 0.15); 
             border-color: rgba(var(--brand-1-rgb), 0.4); 
@@ -111,7 +110,6 @@
             border: 1px solid var(--border); border-radius: 20px; margin-bottom: 2rem; 
             overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
-        /* THEME FIX: Use CSS variable for header gradient */
         .card-header { 
             padding: 2.5rem 2.5rem 2rem; 
             background: linear-gradient(135deg, rgba(var(--brand-1-rgb), 0.05), rgba(var(--brand-1-rgb), 0.02));
@@ -150,10 +148,10 @@
 
         /* Profile Uploader Section */
         .profile-layout { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
-        .profile-uploader-container { width: 100%; max-width: 450px; position: relative; height: 180px; margin-bottom: 50px; }
-        .banner-uploader-preview { width: 100%; height: 150px; border-radius: 16px; background: var(--bg-2); border: 2px dashed var(--border); object-fit: cover; cursor: pointer; transition: border-color 0.2s; display: block; }
+        .profile-uploader-container { width: 100%; max-width: 450px; position: relative; height: auto; margin-bottom: 50px; aspect-ratio: 3 / 1; }
+        .banner-uploader-preview { width: 100%; height: 100%; border-radius: 16px; background: var(--bg-2); border: 2px dashed var(--border); object-fit: cover; cursor: pointer; transition: border-color 0.2s; display: block; }
         .banner-uploader-preview:hover { border-color: var(--brand-1); }
-        .avatar-uploader-preview { width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--bg-1); background: var(--bg-2); object-fit: cover; cursor: pointer; transition: border-color 0.2s; position: absolute; bottom: 0px; left: 50%; transform: translateX(-50%); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .avatar-uploader-preview { width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--bg-1); background: var(--bg-2); object-fit: cover; cursor: pointer; transition: border-color 0.2s; position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         .avatar-uploader-preview:hover { border-color: var(--brand-1); }
         .profile-bio-section { width: 100%; max-width: 500px; }
 
@@ -198,7 +196,6 @@
         .social-mode-btn.active { background: var(--bg-2); color: var(--text); box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
         #social-modal-footer { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
         
-        /* FIX: Prefixed Input Container */
         .prefixed-input-container {
             display: flex; align-items: center;
             border-radius: 12px; border: 1px solid var(--border);
@@ -209,15 +206,10 @@
              outline: none; border-color: var(--brand-1); 
             box-shadow: 0 0 0 4px rgba(var(--brand-1-rgb), 0.15); 
         }
-        .input-prefix {
-            padding-left: 18px; padding-right: 4px;
-            color: var(--muted);
-            white-space: nowrap;
-        }
+        .input-prefix { padding-left: 18px; padding-right: 4px; color: var(--muted); white-space: nowrap; }
         #social-modal-input.prefixed { padding-left: 0; }
         #social-modal-input { background: transparent; border: none; outline: none; flex-grow: 1; }
 
-        /* NEW: Account Security UI */
         .security-section { padding: 2.5rem; }
         .security-section:not(:last-child) { border-bottom: 1px solid var(--border); }
         .security-section-header { margin-bottom: 1.5rem; }
@@ -225,44 +217,15 @@
         .security-section-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; }
         .security-section-footer .input-hint { margin-top: 0; }
 
-        /* NEW: Theme Selector Styles */
-        .theme-selector {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 1.5rem;
-        }
-        .theme-swatch {
-            cursor: pointer;
-            border: 2px solid transparent;
-            border-radius: 16px;
-            padding: 0.5rem;
-            transition: all 0.2s ease;
-            text-align: center;
-        }
-        .theme-swatch:hover {
-            border-color: var(--border-strong);
-            transform: translateY(-2px);
-        }
-        /* THEME FIX: Use CSS variable for active swatch border */
-        .theme-swatch.active {
-            border-color: var(--brand-1);
-            box-shadow: 0 0 0 3px rgba(var(--brand-1-rgb), 0.5);
-        }
-        .theme-preview {
-            height: 80px;
-            border-radius: 12px;
-            background-size: cover;
-            background-position: center;
-            margin-bottom: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        .theme-selector { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1.5rem; }
+        .theme-swatch { cursor: pointer; border: 2px solid transparent; border-radius: 16px; padding: 0.5rem; transition: all 0.2s ease; text-align: center; }
+        .theme-swatch:hover { border-color: var(--border-strong); transform: translateY(-2px); }
+        .theme-swatch.active { border-color: var(--brand-1); box-shadow: 0 0 0 3px rgba(var(--brand-1-rgb), 0.5); }
+        .theme-preview { height: 80px; border-radius: 12px; background-size: cover; background-position: center; margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: center; }
         .theme-preview-colors { display: flex; gap: 5px; }
         .theme-preview-colors span { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--bg-1); }
         .theme-name { font-weight: 600; font-size: 14px; text-transform: capitalize; }
 
-        /* Overlays & Toasts */
         .loading-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(25px); display: none; align-items: center; justify-content: center; flex-direction: column; gap: 2rem; z-index: 1100; }
         .loading-text { font-size: 1.2rem; font-weight: 700; color: var(--text); }
         .toast-container { position: fixed; top: 100px; right: 24px; z-index: 1200; }
@@ -274,14 +237,35 @@
         .toast.success i { color: var(--success); }
         .toast.error i { color: var(--error); }
         
-        /* HAMBURGER FIX: Mobile Navigation Styles */
+        /* ====== NEW MOBILE SIDEBAR STYLES ====== */
         .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
-        .mobile-nav-overlay { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; }
-        .mobile-nav-overlay.show { display: flex; }
-        .mobile-nav-overlay .btn { font-size: 1.2rem; padding: 0.8rem 1.5rem; min-width: 200px; text-align: center; justify-content: center; }
-        .mobile-nav-close { position: absolute; top: 1.5rem; right: 1.5rem; }
+        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
+        .mobile-nav-backdrop.show { display: block; opacity: 1; }
+        .mobile-nav-sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: 280px; background: var(--bg-1);
+            z-index: 999; transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            display: flex; flex-direction: column;
+            border-right: 1px solid var(--border);
+        }
+        .mobile-nav-sidebar.show { transform: translateX(0); }
+        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
+        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
+        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+        .mobile-nav-user-info { display: flex; flex-direction: column; }
+        .mobile-nav-username { font-weight: 700; color: var(--text); }
+        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
+        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
+        .mobile-nav-main-links { flex-grow: 1; }
+        .mobile-nav-main-links a, .mobile-nav-footer-links a {
+            padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem;
+            font-weight: 600; color: var(--muted); transition: all 0.2s ease;
+        }
+        .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
+        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
+        .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
 
-        /* HAMBURGER FIX & MOBILE COMPATIBILITY: Responsive Design */
         @media (max-width: 992px) {
             .settings-grid { grid-template-columns: 1fr; }
             .content-container { max-width: 100%; }
@@ -291,14 +275,20 @@
         }
         @media (max-width: 768px) {
             .nav-actions { display: none; }
-            .mobile-nav-toggle { display: block; } /* HAMBURGER FIX: Show hamburger on mobile */
+            .mobile-nav-toggle { display: block; }
             .settings-tab { flex-shrink: 0; min-width: auto; }
-            .settings-tab-label { display: none; } /* Hide label on smaller screens */
-            .settings-tab i { font-size: 20px; }
             .card-header, .card-body, .security-section { padding: 1.5rem; }
-            .card-footer { flex-direction: column; gap: 0.5rem; }
+            .card-header h2 { font-size: 1.4rem; }
+            .card-footer { flex-direction: column; gap: 0.5rem; align-items: stretch; }
             .card-footer button { width: 100%; }
+            .security-section-footer { flex-direction: column; align-items: stretch; gap: 1rem; }
         }
+         @media (max-width: 480px) {
+            .settings-tab-label { display: none; }
+            .settings-tab i { font-size: 20px; }
+            .card-header, .card-body, .security-section { padding: 1.2rem; }
+            .card-header h2 { font-size: 1.2rem; }
+         }
     </style>
 </head>
 <body>
@@ -370,6 +360,7 @@
         <div class="loading-container"><div class="spinner"></div><p>Loading Settings...</p></div>
     </main>
     
+    <script type="module" src="/auth.js"></script>
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
@@ -1064,6 +1055,5 @@
         });
         
     </script>
-    <script type="module" src="auth.js"></script>
 </body>
 </html>
