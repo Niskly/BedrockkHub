@@ -518,6 +518,13 @@
             display: flex; align-items: center; gap: 10px; font-weight: 600;
         }
         .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
+        
+        /* HAMBURGER FIX: Mobile Navigation Styles */
+        .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
+        .mobile-nav-overlay { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; }
+        .mobile-nav-overlay.show { display: flex; }
+        .mobile-nav-overlay .btn { font-size: 1.2rem; padding: 0.8rem 1.5rem; min-width: 200px; text-align: center; justify-content: center; }
+        .mobile-nav-close { position: absolute; top: 1.5rem; right: 1.5rem; }
 
         /* ====== MOBILE COMPATIBILITY ====== */
         @media (max-width: 1024px) { 
@@ -528,6 +535,7 @@
 
         @media (max-width: 768px) { 
             .nav-actions { display: none; }
+            .mobile-nav-toggle { display: block; } /* HAMBURGER FIX: Show hamburger on mobile */
             .stats { 
                 grid-template-columns: 1fr; 
                 gap: 1.5rem; 
