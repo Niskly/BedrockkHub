@@ -135,7 +135,7 @@
             background: linear-gradient(90deg, var(--brand-1), var(--brand-2));
             color: white; border: none;
         }
-        .backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, .6); display: none; align-items: center; justify-content: center; z-index: 60; }
+        .backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, .8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 60; }
         .backdrop.on-top { z-index: 70; }
         .modal { width: 100%; max-width: 760px; background: var(--bg-2); border-radius: 12px; overflow-y: auto; max-height: 90vh; }
         .modal .panel { padding: 20px; }
@@ -162,6 +162,7 @@
         #toast-container { position: fixed; top: 80px; right: 20px; z-index: 100; display: flex; flex-direction: column; gap: 10px; }
         .toast { padding: 12px 18px; border-radius: 8px; color: white; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; }
         .toast.error { background: var(--danger); }
+        .toast.success { background: var(--success); }
         .pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 20px; }
         .pagination-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; }
         .pagination-btn:hover { border-color: white; }
@@ -227,6 +228,48 @@
 
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         
+        /* ====== MOBILE NAVIGATION ====== */
+        .mobile-nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .mobile-nav-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+        }
+
+        .mobile-nav-overlay.show {
+            display: flex;
+        }
+
+        .mobile-nav-overlay .btn {
+            font-size: 1.2rem;
+            padding: 0.8rem 1.5rem;
+            min-width: 200px;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .mobile-nav-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+        }
+
         /* ====== MOBILE COMPATIBILITY ====== */
         @media (max-width: 1024px) { 
             .layout { 
@@ -242,6 +285,7 @@
         }
         @media (max-width: 768px) { 
             .nav-actions { display: none; }
+            .mobile-nav-toggle { display: block; }
             .packs { 
                 grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             }
@@ -337,7 +381,7 @@
             <div class="panel">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
                     <strong>Upload Texture Pack</strong>
-                    <button class="btn sm" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+                    <button class="btn sm ghost" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div class="tiny">Select a .mcpack or .zip file, set a name, choose color & tags.</div>
             </div>
@@ -410,7 +454,7 @@
             <div class="panel">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
                     <strong>Edit Texture Pack</strong>
-                    <button class="btn sm" onclick="closeEditModal()"><i class="fa-solid fa-xmark"></i></button>
+                    <button class="btn sm ghost" onclick="closeEditModal()"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div class="tiny">Change name, tags, description or color.</div>
             </div>
@@ -458,7 +502,7 @@
                 <strong>Are you sure you want to delete it?</strong>
                 <p class="tiny" style="margin: 4px 0 12px;">This will permanently delete the texture pack.</p>
                 <div style="display:flex;justify-content:flex-end;gap:10px;">
-                    <button class="btn sm danger" onclick="cancelDelete()">No</button>
+                    <button class="btn sm ghost" onclick="cancelDelete()">No</button>
                     <button class="btn sm success" onclick="confirmDelete()">Yes</button>
                 </div>
             </div>
@@ -489,7 +533,6 @@
 
         /* ====== API & DATA FUNCTIONS ====== */
         async function loadPacksOnStartup() {
-            // UPDATED: Added .not('tags', 'ilike', '%user-upload%') to the query
             let query = supabase.from('packs').select('*').not('tags', 'ilike', '%user-upload%');
 
             if (state.sortBy === 'downloads') {
@@ -516,13 +559,13 @@
             const packDescription = document.getElementById("packDescription").value.trim();
 
             if (!packFile || (!packFile.name.toLowerCase().endsWith(".mcpack") && !packFile.name.toLowerCase().endsWith(".zip"))) {
-                return showToast("Please select a valid .mcpack or .zip file");
+                return showToast("Please select a valid .mcpack or .zip file", "error");
             }
             if (!state.modalColor) {
-                return showToast("You forgot to select a primary color.");
+                return showToast("You forgot to select a primary color.", "error");
             }
             if (!state.modalResolution) {
-                return showToast("You forgot to select a resolution.");
+                return showToast("You forgot to select a resolution.", "error");
             }
 
             let version = "";
@@ -547,7 +590,6 @@
                 const contents = await zip.loadAsync(packFile);
                 let iconPath = null;
                 
-                // Prioritize pack_icon.png, then fallback to pack.png
                 iconPath = Object.keys(contents.files).find(path => path.toLowerCase().endsWith('pack_icon.png')) 
                         || Object.keys(contents.files).find(path => path.toLowerCase().endsWith('pack.png'));
 
@@ -595,15 +637,43 @@
                 showToast("Pack uploaded successfully!", "success");
 
             } catch (error) {
-                showToast("Upload failed: " + error.message);
+                showToast("Upload failed: " + error.message, "error");
             } finally {
                 submitBtn.disabled = false;
                 formFieldset.disabled = false;
                 submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload';
             }
         }
-        async function saveEdit(e){e.preventDefault();if(!currentEditId)return;const{error:t}=await supabase.from("packs").update({name:document.getElementById("editPackName").value.trim(),description:document.getElementById("editPackDescription").value.trim(),color:state.editColor,tags:[...state.editTags].join(","),resolution:state.editResolution}).eq("id",currentEditId);t?showToast("Save failed: "+t.message):(await loadPacksOnStartup(),closeEditModal())}
-        async function confirmDelete(){if(!currentEditId)return;const e=packs.find(e=>e.id===currentEditId);if(!e)return void cancelDelete();try{await supabase.storage.from("packs").remove([e.filename]),e.icon_url&&await supabase.storage.from("packs").remove([`icons/${e.icon_url.split("/").pop()}`]);const{error:t}=await supabase.from("packs").delete().eq("id",currentEditId);if(t)throw t;await loadPacksOnStartup()}catch(e){showToast("Delete failed: "+e.message)}finally{cancelDelete(),closeEditModal()}}
+        
+        async function saveEdit(e) {
+            e.preventDefault();
+            if (!currentEditId) return;
+
+            try {
+                const updates = {
+                    name: document.getElementById("editPackName").value.trim(),
+                    description: document.getElementById("editPackDescription").value.trim(),
+                    color: state.editColor,
+                    tags: [...state.editTags].join(","),
+                    resolution: state.editResolution
+                };
+
+                const { error } = await supabase.from("packs").update(updates).eq("id", currentEditId);
+
+                if (error) {
+                    throw error;
+                }
+
+                showToast("Pack saved successfully!", "success");
+                await loadPacksOnStartup();
+                closeEditModal();
+
+            } catch (error) {
+                showToast("Save failed: " + error.message, "error");
+            }
+        }
+
+        async function confirmDelete(){if(!currentEditId)return;const e=packs.find(e=>e.id===currentEditId);if(!e)return void cancelDelete();try{await supabase.storage.from("packs").remove([e.filename]),e.icon_url&&await supabase.storage.from("packs").remove([`icons/${e.icon_url.split("/").pop()}`]);const{error:t}=await supabase.from("packs").delete().eq("id",currentEditId);if(t)throw t;await loadPacksOnStartup()}catch(e){showToast("Delete failed: "+e.message, "error")}finally{cancelDelete(),closeEditModal()}}
         async function handleDownload(e,t,o,a){e.preventDefault();try{await fetch("/api/increment-download",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:t})});const e=document.getElementById(`downloads-${t}`);if(e){const t=parseInt(e.textContent.replace(/,/g,""),10);e.textContent=(t+1).toLocaleString()}}catch(e){console.error("Failed to update download count:",e)}finally{fetch(o).then(e=>e.blob()).then(e=>{const t=document.createElement("a");t.href=URL.createObjectURL(e),t.download=a,document.body.appendChild(t),t.click(),document.body.removeChild(t)})}}
 
         /* ====== UI RENDERING ====== */
@@ -624,7 +694,7 @@
 
             grid.innerHTML = '';
             if (packsForPage.length === 0) {
-                grid.innerHTML = '<div class="card panel tiny" style="grid-column: span 3;">No packs match your filters.</div>';
+                grid.innerHTML = '<div class="card panel tiny" style="grid-column: 1 / -1;">No packs match your filters.</div>';
             } else {
                 packsForPage.forEach(p => grid.appendChild(renderCard(p)));
             }
@@ -769,3 +839,4 @@
 </body>
 
 </html>
+
