@@ -16,6 +16,7 @@
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
             --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
             --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
+            --brand-1-rgb: 222, 33, 42;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 14px/1.6 Inter, sans-serif; }
@@ -30,10 +31,11 @@
         header { position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(1.2) blur(10px); background: rgba(12, 12, 12, 0.75); border-bottom: 1px solid var(--border); }
         .nav { max-width: 1100px; margin: 0 auto; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; }
         .brand { display: flex; align-items: center; gap: .8rem; }
-        .brand-badge { height: 40px; width: 40px; border-radius: 10px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); }
-        .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-11px); }
-        .brand-title { font-weight: 800; letter-spacing: .6px; font-size: 15px; }
-        
+        .brand-badge { height: 44px; width: 44px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); }
+        .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-13px); }
+        .brand-title { font-weight: 800; letter-spacing: .6px; }
+        .nav-actions { display: flex; gap: .6rem; }
+
         .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
         .viewer-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; align-items: flex-start; }
         
@@ -43,32 +45,57 @@
         .card-header h2 { font-weight: 800; font-size: 1.2rem; margin: 0; }
         .card-body { padding: 1.2rem; }
 
-        .upload-area {
-            border: 2px dashed var(--border); border-radius: 12px; padding: 2rem;
-            text-align: center; cursor: pointer; transition: all 0.2s ease;
-        }
+        .upload-area { border: 2px dashed var(--border); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s ease; }
         .upload-area:hover { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.1); }
         .upload-area i { font-size: 2.5rem; color: var(--brand-1); margin-bottom: 1rem; }
         .upload-area p { color: var(--muted); font-weight: 600; }
         #file-input { display: none; }
 
         .armor-selection-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 400px; overflow-y: auto; }
-        .armor-item {
-            padding: 0.75rem 1rem; background: var(--bg-2); border-radius: 10px;
-            border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease;
-            font-weight: 600; text-transform: capitalize;
-        }
+        .armor-item { padding: 0.75rem 1rem; background: var(--bg-2); border-radius: 10px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; font-weight: 600; text-transform: capitalize; }
         .armor-item:hover { border-color: var(--text); }
         .armor-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: white; }
         
-        #viewer-canvas { border-radius: 16px; width: 100%; aspect-ratio: 3/4; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg'); background-size: cover; background-position: center; }
+        #viewer-canvas { border-radius: 16px; width: 100%; aspect-ratio: 3/4; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg'); background-size: cover; background-position: center; cursor: grab; }
         #viewer-canvas.dragging { cursor: grabbing; }
 
         .placeholder-text { text-align: center; color: var(--muted); padding: 2rem 0; }
+        
+        /* Hamburger Menu CSS */
+        .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
+        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
+        .mobile-nav-backdrop.show { display: block; opacity: 1; }
+        .mobile-nav-sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: 280px; background: var(--bg-1);
+            z-index: 999; transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            display: flex; flex-direction: column;
+            border-right: 1px solid var(--border);
+        }
+        .mobile-nav-sidebar.show { transform: translateX(0); }
+        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
+        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
+        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+        .mobile-nav-user-info { display: flex; flex-direction: column; }
+        .mobile-nav-username { font-weight: 700; color: var(--text); }
+        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
+        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
+        .mobile-nav-main-links { flex-grow: 1; }
+        .mobile-nav-main-links a, .mobile-nav-footer-links a {
+            padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem;
+            font-weight: 600; color: var(--muted); transition: all 0.2s ease;
+        }
+        .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
+        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
+        .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
+
 
         @media (max-width: 768px) {
             .viewer-layout { grid-template-columns: 1fr; }
             .controls-panel { position: static; }
+            .nav-actions { display: none; }
+            .mobile-nav-toggle { display: block; }
         }
     </style>
 </head>
@@ -76,13 +103,16 @@
     <header>
         <nav class="nav">
             <a class="brand" href="/">
-                <div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div>
+                <div class="brand-badge">
+                    <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
+                </div>
                 <div>
                     <div class="brand-title">MCHUB</div>
-                    <div class="tiny">Minecraft Bedrock • community</div>
+                    <div class="tiny">Armor Viewer</div>
                 </div>
             </a>
             <div id="nav-actions" class="nav-actions"></div>
+            <button class="mobile-nav-toggle"><i class="fa-solid fa-bars"></i></button>
         </nav>
     </header>
 
@@ -132,7 +162,7 @@
             'textures/models/armor/diamond_1.png', 'textures/models/armor/diamond_2.png',
             'textures/models/armor/iron_1.png', 'textures/models/armor/iron_2.png',
             'textures/models/armor/gold_1.png', 'textures/models/armor/gold_2.png',
-            'textures/models/armor/chainmail_1.png', 'textures/models/armor/chainmail_2.png',
+            'textures/models/armor/chain_1.png', 'textures/models/armor/chain_2.png', // Note: bedrock uses 'chain' not 'chainmail'
             'textures/models/armor/leather_1.png', 'textures/models/armor/leather_2.png',
             'textures/models/armor/turtle_1.png'
         ];
@@ -144,28 +174,67 @@
 
         let skinViewer;
         let foundArmor = {};
+        const BASE_SKIN_URL = "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png";
 
         function initSkinViewer() {
             skinViewer = new skinview3d.SkinViewer({
                 canvas: canvas,
                 width: canvas.clientWidth,
                 height: canvas.clientHeight,
-                skin: "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png"
+                skin: BASE_SKIN_URL
             });
             
-            // Handle canvas resizing
             new ResizeObserver(() => {
                 skinViewer.setSize(canvas.clientWidth, canvas.clientHeight);
             }).observe(canvas);
 
-            // Add dragging class for cursor style
             canvas.addEventListener('mousedown', () => canvas.classList.add('dragging'));
             canvas.addEventListener('mouseup', () => canvas.classList.remove('dragging'));
         }
 
+        async function mergeTextures(layer1Url, layer2Url) {
+            const compositeCanvas = document.createElement('canvas');
+            compositeCanvas.width = 64;
+            compositeCanvas.height = 64;
+            const ctx = compositeCanvas.getContext('2d');
+
+            const loadImage = url => new Promise((resolve, reject) => {
+                if (!url) resolve(null);
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                img.src = url;
+            });
+
+            try {
+                const [baseSkin, layer1, layer2] = await Promise.all([
+                    loadImage(BASE_SKIN_URL),
+                    loadImage(layer1Url),
+                    loadImage(layer2Url)
+                ]);
+
+                if (baseSkin) ctx.drawImage(baseSkin, 0, 0);
+                if (layer1) ctx.drawImage(layer1, 0, 0);
+                if (layer2) ctx.drawImage(layer2, 0, 0);
+                
+                return compositeCanvas.toDataURL();
+            } catch (error) {
+                console.error("Error merging textures:", error);
+                return BASE_SKIN_URL; // Fallback to base skin
+            }
+        }
+        
+        async function applyArmor(armorName) {
+            if (!skinViewer || !foundArmor[armorName]) return;
+            const armorSet = foundArmor[armorName];
+            const mergedSkinUrl = await mergeTextures(armorSet.layer1, armorSet.layer2);
+            skinViewer.loadSkin(mergedSkinUrl);
+        }
+
         function handleFileSelect(file) {
             if (!file) return;
-            armorList.innerHTML = `<p class="placeholder-text">Searching pack...</p>`;
+            armorList.innerHTML = `<p class="placeholder-text"><span class="spinner"></span> Searching pack...</p>`;
             foundArmor = {};
 
             const reader = new FileReader();
@@ -175,13 +244,13 @@
                     const allArmorPaths = [...ARMOR_PATHS_JAVA, ...ARMOR_PATHS_BEDROCK];
                     
                     for (const path of allArmorPaths) {
-                        const file = zip.file(path);
-                        if (file) {
-                            const blob = await file.async('blob');
+                        const fileInZip = zip.file(path);
+                        if (fileInZip) {
+                            const blob = await fileInZip.async('blob');
                             const url = URL.createObjectURL(blob);
                             
                             let armorName = path.split('/').pop().split('_')[0];
-                            if (armorName === 'chainmail') armorName = 'chain'; // Shorten name
+                            if (armorName === 'chainmail' || armorName === 'chain') armorName = 'chain';
                             
                             const layer = path.includes('layer_2') || path.includes('_2.png') ? 'layer2' : 'layer1';
                             
@@ -202,6 +271,7 @@
             const armorNames = Object.keys(foundArmor);
             if (armorNames.length === 0) {
                 armorList.innerHTML = `<p class="placeholder-text">No standard armor textures found in this pack.</p>`;
+                skinViewer.loadSkin(BASE_SKIN_URL); // Reset to Steve
                 return;
             }
             
@@ -217,64 +287,20 @@
                 });
             });
 
-            // Automatically select and apply the first found armor set
             const firstItem = armorList.querySelector('.armor-item');
-            if (firstItem) {
-                firstItem.click();
-            }
+            if (firstItem) firstItem.click();
         }
 
-        function applyArmor(armorName) {
-            if (!skinViewer || !foundArmor[armorName]) return;
-            
-            const armorSet = foundArmor[armorName];
-            const armorObject = skinViewer.playerObject.skin.armor;
-
-            // This is the key part: we access the underlying three.js objects
-            // and replace their textures.
-            const textureLoader = new skinViewer.THREE.TextureLoader();
-            
-            const applyTexture = (part, url) => {
-                if (url) {
-                    textureLoader.load(url, (texture) => {
-                        texture.magFilter = skinViewer.THREE.NearestFilter;
-                        texture.minFilter = skinViewer.THREE.NearestFilter;
-                        part.material.map = texture;
-                        part.material.needsUpdate = true;
-                        part.visible = true;
-                    });
-                } else {
-                    part.visible = false;
-                }
-            };
-            
-            // Apply layer 1 textures
-            applyTexture(armorObject.head, armorSet.layer1);
-            applyTexture(armorObject.body, armorSet.layer1);
-            applyTexture(armorObject.leftArm, armorSet.layer1);
-            applyTexture(armorObject.rightArm, armorSet.layer1);
-            applyTexture(armorObject.rightFoot, armorSet.layer1);
-            applyTexture(armorObject.leftFoot, armorSet.layer1);
-            
-            // Apply layer 2 textures (only for legs)
-            applyTexture(armorObject.leftLeg, armorSet.layer2);
-            applyTexture(armorObject.rightLeg, armorSet.layer2);
-        }
-
-        // Event Listeners
         uploadArea.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
         uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.borderColor = 'var(--brand-1)'; });
-        uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = 'var(--border)'; });
+        uploadArea.addEventListener('dragleave', () => uploadArea.style.borderColor = 'var(--border)'; });
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadArea.style.borderColor = 'var(--border)';
-            if (e.dataTransfer.files.length > 0) {
-                handleFileSelect(e.dataTransfer.files[0]);
-            }
+            if (e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files[0]);
         });
 
-        // Initialize
         document.addEventListener('DOMContentLoaded', initSkinViewer);
     </script>
 </body>
