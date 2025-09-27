@@ -16,7 +16,6 @@
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
             --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
             --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
-            --brand-1-rgb: 222, 33, 42;
             --border-strong: rgba(255, 255, 255, .2);
             --gradient-brand: linear-gradient(135deg, var(--brand-1), var(--brand-2));
         }
@@ -50,7 +49,7 @@
         .container { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
         .viewer-layout {
             display: grid;
-            grid-template-columns: 320px 1fr;
+            grid-template-columns: 320px 1fr; /* Adjusted for smaller viewer */
             gap: 1.5rem;
             align-items: flex-start;
         }
@@ -83,7 +82,7 @@
         #viewer-canvas.dragging { cursor: grabbing; }
 
         .placeholder-text { text-align: center; color: var(--muted); padding: 2rem 0; }
-        
+
         /* ====== NEW MOBILE SIDEBAR STYLES ====== */
         .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
         .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
@@ -112,7 +111,7 @@
         .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
         .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
         .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
-
+        
         /* ====== MOBILE RESPONSIVENESS ====== */
         @media (max-width: 768px) {
             .nav-actions { display: none; }
@@ -167,253 +166,131 @@
 
     <script type="module" src="/theme.js"></script>
     <script type="module" src="/auth.js"></script>
-    <script>
-        // Wait for skinview3d to be loaded
-        window.addEventListener('load', function() {
-            const ARMOR_PATHS_JAVA = [
-                'assets/minecraft/textures/models/armor/netherite_layer_1.png', 
-                'assets/minecraft/textures/models/armor/netherite_layer_2.png',
-                'assets/minecraft/textures/models/armor/diamond_layer_1.png', 
-                'assets/minecraft/textures/models/armor/diamond_layer_2.png',
-                'assets/minecraft/textures/models/armor/iron_layer_1.png', 
-                'assets/minecraft/textures/models/armor/iron_layer_2.png',
-                'assets/minecraft/textures/models/armor/gold_layer_1.png', 
-                'assets/minecraft/textures/models/armor/gold_layer_2.png',
-                'assets/minecraft/textures/models/armor/chainmail_layer_1.png', 
-                'assets/minecraft/textures/models/armor/chainmail_layer_2.png',
-                'assets/minecraft/textures/models/armor/leather_layer_1.png', 
-                'assets/minecraft/textures/models/armor/leather_layer_2.png',
-                'assets/minecraft/textures/models/armor/turtle_layer_1.png'
-            ];
+    <script type="module">
+        const ARMOR_PATHS_JAVA = [
+            'assets/minecraft/textures/models/armor/netherite_layer_1.png', 'assets/minecraft/textures/models/armor/netherite_layer_2.png',
+            'assets/minecraft/textures/models/armor/diamond_layer_1.png', 'assets/minecraft/textures/models/armor/diamond_layer_2.png',
+            'assets/minecraft/textures/models/armor/iron_layer_1.png', 'assets/minecraft/textures/models/armor/iron_layer_2.png',
+            'assets/minecraft/textures/models/armor/gold_layer_1.png', 'assets/minecraft/textures/models/armor/gold_layer_2.png',
+            'assets/minecraft/textures/models/armor/chainmail_layer_1.png', 'assets/minecraft/textures/models/armor/chainmail_layer_2.png',
+            'assets/minecraft/textures/models/armor/leather_layer_1.png', 'assets/minecraft/textures/models/armor/leather_layer_2.png',
+            'assets/minecraft/textures/models/armor/turtle_layer_1.png'
+        ];
+        const ARMOR_PATHS_BEDROCK = [
+            'textures/models/armor/netherite_1.png', 'textures/models/armor/netherite_2.png',
+            'textures/models/armor/diamond_1.png', 'textures/models/armor/diamond_2.png',
+            'textures/models/armor/iron_1.png', 'textures/models/armor/iron_2.png',
+            'textures/models/armor/gold_1.png', 'textures/models/armor/gold_2.png',
+            'textures/models/armor/chainmail_1.png', 'textures/models/armor/chainmail_2.png',
+            'textures/models/armor/leather_1.png', 'textures/models/armor/leather_2.png',
+            'textures/models/armor/turtle_1.png'
+        ];
+
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+        const armorList = document.getElementById('armor-list');
+        const canvas = document.getElementById('viewer-canvas');
+
+        let skinViewer;
+        let foundArmor = {};
+
+        function initSkinViewer() {
+            skinViewer = new skinview3d.SkinViewer({
+                canvas: canvas,
+                width: canvas.clientWidth,
+                height: canvas.clientHeight,
+                skin: "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png"
+            });
             
-            const ARMOR_PATHS_BEDROCK = [
-                'textures/models/armor/netherite_1.png', 
-                'textures/models/armor/netherite_2.png',
-                'textures/models/armor/diamond_1.png', 
-                'textures/models/armor/diamond_2.png',
-                'textures/models/armor/iron_1.png', 
-                'textures/models/armor/iron_2.png',
-                'textures/models/armor/gold_1.png', 
-                'textures/models/armor/gold_2.png',
-                'textures/models/armor/chainmail_1.png', 
-                'textures/models/armor/chainmail_2.png',
-                'textures/models/armor/leather_1.png', 
-                'textures/models/armor/leather_2.png',
-                'textures/models/armor/turtle_1.png'
-            ];
+            new ResizeObserver(() => {
+                skinViewer.setSize(canvas.clientWidth, canvas.clientHeight);
+            }).observe(canvas);
 
-            const uploadArea = document.getElementById('upload-area');
-            const fileInput = document.getElementById('file-input');
-            const armorList = document.getElementById('armor-list');
-            const canvas = document.getElementById('viewer-canvas');
+            canvas.addEventListener('mousedown', () => canvas.classList.add('dragging'));
+            canvas.addEventListener('mouseup', () => canvas.classList.remove('dragging'));
+        }
 
-            let skinViewer = null;
-            let foundArmor = {};
-            let currentArmorTextures = {};
+        function handleFileSelect(file) {
+            if (!file) return;
+            armorList.innerHTML = `<p class="placeholder-text">Searching pack...</p>`;
+            foundArmor = {};
 
-            function initSkinViewer() {
+            const reader = new FileReader();
+            reader.onload = async (event) => {
                 try {
-                    skinViewer = new skinview3d.SkinViewer({
-                        canvas: canvas,
-                        width: canvas.clientWidth,
-                        height: canvas.clientHeight,
-                        skin: "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png"
-                    });
-                    
-                    // Set up auto rotation and camera
-                    skinViewer.autoRotate = true;
-                    skinViewer.autoRotateSpeed = 0.5;
-                    skinViewer.camera.position.set(0, 0, 40);
-                    skinViewer.animation = new skinview3d.WalkingAnimation();
-                    skinViewer.animation.speed = 0.5;
-                    
-                    // Handle window resizing
-                    new ResizeObserver(() => {
-                        if (skinViewer) {
-                            skinViewer.setSize(canvas.clientWidth, canvas.clientHeight);
-                        }
-                    }).observe(canvas);
-
-                    // Mouse controls
-                    let mouseDown = false;
-                    canvas.addEventListener('mousedown', () => {
-                        mouseDown = true;
-                        canvas.classList.add('dragging');
-                        skinViewer.autoRotate = false;
-                    });
-                    
-                    canvas.addEventListener('mouseup', () => {
-                        mouseDown = false;
-                        canvas.classList.remove('dragging');
-                        skinViewer.autoRotate = true;
-                    });
-                    
-                    canvas.addEventListener('mouseleave', () => {
-                        if (mouseDown) {
-                            mouseDown = false;
-                            canvas.classList.remove('dragging');
-                            skinViewer.autoRotate = true;
-                        }
-                    });
-                    
-                } catch (error) {
-                    console.error("Failed to initialize skin viewer:", error);
-                }
-            }
-
-            async function handleFileSelect(file) {
-                if (!file) return;
-                
-                armorList.innerHTML = `<p class="placeholder-text"><span class="spinner" style="width:1.5em; height:1.5em; border-width:3px; display:inline-block; margin-bottom:-0.25em; margin-right: 0.5em;"></span>Searching pack...</p>`;
-                foundArmor = {};
-                
-                // Clear existing armor
-                if (skinViewer) {
-                    skinViewer.loadArmor(null, 1);
-                    skinViewer.loadArmor(null, 2);
-                }
-
-                try {
-                    const zip = await JSZip.loadAsync(file);
+                    const zip = await JSZip.loadAsync(event.target.result);
                     const allArmorPaths = [...ARMOR_PATHS_JAVA, ...ARMOR_PATHS_BEDROCK];
                     
-                    // Search for armor textures
                     for (const path of allArmorPaths) {
-                        const zipFile = zip.file(path);
-                        if (zipFile) {
-                            const blob = await zipFile.async('blob');
+                        const file = zip.file(path);
+                        if (file) {
+                            const blob = await file.async('blob');
                             const url = URL.createObjectURL(blob);
                             
-                            // Extract armor name
-                            let armorName = path.split('/').pop().replace(/(_1|_2|_layer_1|_layer_2)\.png$/, '');
+                            let armorName = path.split('/').pop().split('_')[0];
                             if (armorName === 'chainmail') armorName = 'chain';
                             
-                            // Determine layer (1 or 2)
-                            const isLayer2 = path.includes('layer_2') || path.includes('_2.png');
-                            const layer = isLayer2 ? 'layer2' : 'layer1';
+                            const layer = path.includes('layer_2') || path.includes('_2.png') ? 'layer2' : 'layer1';
                             
-                            if (!foundArmor[armorName]) {
-                                foundArmor[armorName] = {};
-                            }
+                            if (!foundArmor[armorName]) foundArmor[armorName] = {};
                             foundArmor[armorName][layer] = url;
                         }
                     }
-                    
                     renderArmorList();
-                    
                 } catch (error) {
                     console.error("Error processing pack:", error);
-                    armorList.innerHTML = `<p class="placeholder-text">Could not read the pack file. Make sure it's a valid .zip or .mcpack file.</p>`;
+                    armorList.innerHTML = `<p class="placeholder-text">Could not read the pack file.</p>`;
                 }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+        
+        function renderArmorList() {
+            const armorNames = Object.keys(foundArmor);
+            if (armorNames.length === 0) {
+                armorList.innerHTML = `<p class="placeholder-text">No standard armor textures found in this pack.</p>`;
+                return;
             }
             
-            function renderArmorList() {
-                const armorNames = Object.keys(foundArmor);
-                
-                if (armorNames.length === 0) {
-                    armorList.innerHTML = `<p class="placeholder-text">No standard armor textures found in this pack.</p>`;
-                    return;
-                }
-                
-                // Sort armor names for consistent display
-                armorNames.sort();
-                
-                armorList.innerHTML = armorNames.map(name => 
-                    `<div class="armor-item" data-armor="${name}">${name}</div>`
-                ).join('');
-                
-                // Add click handlers
-                armorList.querySelectorAll('.armor-item').forEach(item => {
-                    item.addEventListener('click', function() {
-                        // Update active state
-                        armorList.querySelectorAll('.armor-item').forEach(el => el.classList.remove('active'));
-                        this.classList.add('active');
-                        
-                        // Apply the armor
-                        applyArmor(this.dataset.armor);
-                    });
+            armorList.innerHTML = armorNames.map(name => 
+                `<div class="armor-item" data-armor="${name}">${name}</div>`
+            ).join('');
+            
+            armorList.querySelectorAll('.armor-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    armorList.querySelectorAll('.armor-item').forEach(el => el.classList.remove('active'));
+                    item.classList.add('active');
+                    applyArmor(item.dataset.armor);
                 });
+            });
 
-                // Auto-select first armor
-                const firstItem = armorList.querySelector('.armor-item');
-                if (firstItem) {
-                    firstItem.click();
-                }
+            const firstItem = armorList.querySelector('.armor-item');
+            if (firstItem) {
+                firstItem.click();
             }
+        }
 
-            function applyArmor(armorName) {
-                if (!skinViewer || !foundArmor[armorName]) {
-                    console.error("Cannot apply armor:", armorName);
-                    return;
-                }
-                
-                const armorSet = foundArmor[armorName];
-                console.log("Applying armor:", armorName, armorSet);
-                
-                // Clear previous armor textures
-                if (currentArmorTextures.layer1) {
-                    URL.revokeObjectURL(currentArmorTextures.layer1);
-                }
-                if (currentArmorTextures.layer2) {
-                    URL.revokeObjectURL(currentArmorTextures.layer2);
-                }
-                
-                // Apply new armor textures
-                currentArmorTextures = armorSet;
-                
-                // Load armor layers
-                if (armorSet.layer1) {
-                    skinViewer.loadArmor(armorSet.layer1, 1);
-                } else {
-                    skinViewer.loadArmor(null, 1);
-                }
-                
-                if (armorSet.layer2) {
-                    skinViewer.loadArmor(armorSet.layer2, 2);
-                } else {
-                    skinViewer.loadArmor(null, 2);
-                }
+        function applyArmor(armorName) {
+            if (!skinViewer || !foundArmor[armorName]) return;
+            
+            const armorSet = foundArmor[armorName];
+            skinViewer.loadArmor(armorSet.layer1, { layer: 1 });
+            skinViewer.loadArmor(armorSet.layer2, { layer: 2 });
+        }
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
+        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.borderColor = 'var(--brand-1)'; });
+        uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = 'var(--border)'; });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'var(--border)';
+            if (e.dataTransfer.files.length > 0) {
+                handleFileSelect(e.dataTransfer.files[0]);
             }
-
-            // File upload handlers
-            uploadArea.addEventListener('click', () => fileInput.click());
-            
-            fileInput.addEventListener('change', (e) => {
-                if (e.target.files && e.target.files[0]) {
-                    handleFileSelect(e.target.files[0]);
-                }
-            });
-            
-            // Drag and drop handlers
-            uploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                uploadArea.style.borderColor = 'var(--brand-1)';
-                uploadArea.style.background = 'rgba(var(--brand-1-rgb), 0.1)';
-            });
-            
-            uploadArea.addEventListener('dragleave', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                uploadArea.style.borderColor = 'var(--border)';
-                uploadArea.style.background = 'transparent';
-            });
-            
-            uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                uploadArea.style.borderColor = 'var(--border)';
-                uploadArea.style.background = 'transparent';
-                
-                const files = e.dataTransfer.files;
-                if (files && files.length > 0) {
-                    handleFileSelect(files[0]);
-                }
-            });
-
-            // Initialize the viewer
-            setTimeout(initSkinViewer, 100);
         });
+
+        document.addEventListener('DOMContentLoaded', initSkinViewer);
     </script>
 </body>
 </html>
