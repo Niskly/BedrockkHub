@@ -32,7 +32,7 @@
         .brand-badge { height: 44px; width: 44px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); }
         .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-13px); }
         .brand-title { font-weight: 800; letter-spacing: .6px; }
-        .nav-actions { display: flex; align-items: center; gap: 0.6rem; }
+        .nav-actions { display: flex; gap: .6rem; }
         .btn { padding: .6rem 1rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; }
         .btn.ghost { border-color: var(--border); background: transparent; color: var(--text); }
         .btn.primary { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); box-shadow: var(--shadow-brand); color: white; border: none; }
@@ -60,10 +60,15 @@
         .upload-area p { color: var(--muted); font-weight: 600; }
         #file-input { display: none; }
 
-        .armor-selection-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 400px; overflow-y: auto; }
-        .armor-item { padding: 0.75rem 1rem; background: var(--bg-2); border-radius: 10px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; font-weight: 600; text-transform: capitalize; }
-        .armor-item:hover { border-color: var(--text); }
-        .armor-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: white; }
+        .armor-set-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 400px; overflow-y: auto; }
+        .armor-set > summary { padding: 0.75rem 1rem; background: var(--bg-2); border-radius: 10px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; font-weight: 600; text-transform: capitalize; list-style: none; }
+        .armor-set > summary::-webkit-details-marker { display: none; }
+        .armor-set > summary:hover { border-color: var(--text); }
+        .armor-set[open] > summary { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: white; }
+        .armor-pieces { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.5rem 0 0 1rem; }
+        .armor-piece-btn { background: var(--bg-1); border: 1px solid var(--border); color: var(--muted); text-align: left; padding: 0.5rem 1rem; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .armor-piece-btn:hover { border-color: var(--border-strong); color: var(--text); }
+        .armor-piece-btn.active { border-color: var(--brand-1); color: var(--text); }
         
         #viewer-canvas { border-radius: 16px; width: 100%; aspect-ratio: 3/4; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg'); background-size: cover; background-position: center; cursor: grab; }
         #viewer-canvas.dragging { cursor: grabbing; }
@@ -73,14 +78,7 @@
         .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
         .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
         .mobile-nav-backdrop.show { display: block; opacity: 1; }
-        .mobile-nav-sidebar {
-            position: fixed; top: 0; left: 0; bottom: 0;
-            width: 280px; background: var(--bg-1);
-            z-index: 999; transform: translateX(-100%);
-            transition: transform 0.3s ease;
-            display: flex; flex-direction: column;
-            border-right: 1px solid var(--border);
-        }
+        .mobile-nav-sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; background: var(--bg-1); z-index: 999; transform: translateX(-100%); transition: transform 0.3s ease; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
         .mobile-nav-sidebar.show { transform: translateX(0); }
         .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
         .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
@@ -90,10 +88,7 @@
         .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
         .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
         .mobile-nav-main-links { flex-grow: 1; }
-        .mobile-nav-main-links a, .mobile-nav-footer-links a {
-            padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem;
-            font-weight: 600; color: var(--muted); transition: all 0.2s ease;
-        }
+        .mobile-nav-main-links a, .mobile-nav-footer-links a { padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem; font-weight: 600; color: var(--muted); transition: all 0.2s ease; }
         .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
         .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
         .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
@@ -140,7 +135,7 @@
                 <div class="card" style="margin-top: 1.5rem;">
                     <div class="card-header"><h2>Found Armor</h2></div>
                     <div class="card-body">
-                        <div id="armor-list" class="armor-selection-list">
+                        <div id="armor-list" class="armor-set-list">
                             <p class="placeholder-text">Upload a pack to see armor sets</p>
                         </div>
                     </div>
@@ -219,12 +214,15 @@
             return fileName.replace(/_layer_[12]\.png|_overlay\.png|_[12]\.png/g, '');
         }
 
-        function applyArmor(armorName) {
+        function applySinglePiece(armorName, piece) {
             if (!skinViewer || !foundArmor[armorName]) return;
             
             const armorSet = foundArmor[armorName];
             const armorObject = skinViewer.playerObject.armor;
             const textureLoader = new skinViewer.THREE.TextureLoader();
+
+            // Hide all pieces first
+            Object.values(armorObject).forEach(part => part.visible = false);
 
             const applyTexture = (part, url) => {
                 if (url) {
@@ -236,21 +234,27 @@
                         part.material.needsUpdate = true;
                         part.visible = true;
                     });
-                } else {
-                    part.visible = false;
                 }
             };
             
-            applyTexture(armorObject.head, armorSet.layer1);
-            applyTexture(armorObject.body, armorSet.layer1);
-            applyTexture(armorObject.leftArm, armorSet.layer1);
-            applyTexture(armorObject.rightArm, armorSet.layer1);
-            
-            // Layer 1 is for boots, Layer 2 is for leggings.
-            // If layer2 exists, it draws over layer 1 on the legs.
-            const legLayer = armorSet.layer2 || armorSet.layer1;
-            applyTexture(armorObject.rightLeg, legLayer);
-            applyTexture(armorObject.leftLeg, legLayer);
+            switch(piece) {
+                case 'helmet':
+                    applyTexture(armorObject.head, armorSet.layer1);
+                    break;
+                case 'chestplate':
+                    applyTexture(armorObject.body, armorSet.layer1);
+                    applyTexture(armorObject.leftArm, armorSet.layer1);
+                    applyTexture(armorObject.rightArm, armorSet.layer1);
+                    break;
+                case 'leggings':
+                    applyTexture(armorObject.leftLeg, armorSet.layer2);
+                    applyTexture(armorObject.rightLeg, armorSet.layer2);
+                    break;
+                case 'boots':
+                    applyTexture(armorObject.leftLeg, armorSet.layer1);
+                    applyTexture(armorObject.rightLeg, armorSet.layer1);
+                    break;
+            }
         }
 
         function handleFileSelect(file) {
@@ -299,20 +303,50 @@
                 return;
             }
             
-            armorList.innerHTML = armorNames.map(name => 
-                `<div class="armor-item" data-armor="${name}">${name}</div>`
-            ).join('');
+            let html = '';
+            armorNames.forEach(name => {
+                html += `<details class="armor-set" data-armor-set="${name}"><summary>${name}</summary><div class="armor-pieces">`;
+                const armorSet = foundArmor[name];
+                if (armorSet.layer1) {
+                    html += `<button class="armor-piece-btn" data-piece="helmet">Helmet</button>`;
+                    html += `<button class="armor-piece-btn" data-piece="chestplate">Chestplate</button>`;
+                    html += `<button class="armor-piece-btn" data-piece="boots">Boots</button>`;
+                }
+                if (armorSet.layer2) {
+                    html += `<button class="armor-piece-btn" data-piece="leggings">Leggings</button>`;
+                }
+                html += `</div></details>`;
+            });
+            armorList.innerHTML = html;
             
-            armorList.querySelectorAll('.armor-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    armorList.querySelectorAll('.armor-item').forEach(el => el.classList.remove('active'));
-                    item.classList.add('active');
-                    applyArmor(item.dataset.armor);
+            armorList.querySelectorAll('.armor-piece-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const piece = e.target.dataset.piece;
+                    const setName = e.target.closest('.armor-set').dataset.armorSet;
+                    
+                    // Style the active button
+                    armorList.querySelectorAll('.armor-piece-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+
+                    applySinglePiece(setName, piece);
                 });
             });
 
-            const firstItem = armorList.querySelector('.armor-item');
-            if (firstItem) firstItem.click();
+            armorList.querySelectorAll('.armor-set').forEach(details => {
+                details.addEventListener('toggle', (e) => {
+                    if(e.target.open) {
+                         armorList.querySelectorAll('.armor-set').forEach(d => {
+                            if (d !== e.target) d.removeAttribute('open');
+                        });
+                        // Automatically click the first piece when opened
+                        e.target.querySelector('.armor-piece-btn')?.click();
+                    }
+                });
+            });
+
+            // Open the first armor set by default
+            const firstSet = armorList.querySelector('.armor-set');
+            if(firstSet) firstSet.setAttribute('open', '');
         }
         
         document.addEventListener('DOMContentLoaded', init);
