@@ -6,6 +6,15 @@
     <title>Settings - MCHub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- This snippet prevents the flash of the default theme -->
+    <style>
+        body {
+            opacity: 0;
+            transition: opacity 0.2s ease-in;
+        }
+    </style>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js" defer></script>
     <script src="/theme.js"></script>
@@ -13,7 +22,7 @@
         :root {
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
             --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
-            --brand-1-rgb: 222, 33, 42; /* Fallback for theme script */
+            --brand-1-rgb: 222, 33, 42;
             --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
             --border-strong: rgba(255, 255, 255, .2);
             --success: #10B981; --warning: #f59e0b; --error: #ef4444;
@@ -31,7 +40,6 @@
         }
         a { color: inherit; text-decoration: none; }
         
-        /* Header Styles */
         header { position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(1.2) blur(10px); background: rgba(12, 12, 12, 0.75); border-bottom: 1px solid var(--border); }
         .nav { max-width: 1100px; margin: 0 auto; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; }
         .brand { display: flex; align-items: center; gap: .8rem; }
@@ -55,23 +63,19 @@
         .dropdown-content a { color: var(--muted); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 600; }
         .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
 
-        /* Layout */
         .container { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
         
-        /* Loading & Animations */
         .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; min-height: 60vh; color: var(--muted); }
         .spinner { width: 48px; height: 48px; border: 5px solid var(--border); border-bottom-color: var(--brand-1); border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* Settings Grid */
         .settings-grid { display: grid; grid-template-columns: 280px 1fr; gap: 2rem; align-items: flex-start; }
         .content-container { max-width: 680px; }
         
-        /* Sidebar */
         .settings-sidebar { 
             position: sticky; top: 100px; 
             background: rgba(18, 18, 18, 0.9); backdrop-filter: saturate(1.2) blur(25px); 
-            border: 1px solid var(--border); border-radius: 20px; padding: 1.5rem; 
+            border: 1px solid var(--border); border-radius: 20px; padding: 2rem; 
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
         .sidebar-header { text-align: center; margin-bottom: 2rem; }
@@ -80,7 +84,7 @@
         
         .settings-tabs { display: flex; flex-direction: column; gap: 8px; }
         .settings-tab { 
-            position: relative; padding: 14px 18px; border-radius: 12px; 
+            position: relative; padding: 16px 20px; border-radius: 16px; 
             background: transparent; border: none; color: var(--muted); 
             font-weight: 600; font-family: inherit; text-align: left; 
             display: flex; align-items: center; gap: 14px; cursor: pointer; 
@@ -99,20 +103,18 @@
         .settings-tab i { width: 22px; font-size: 18px; }
         .settings-tab-label { font-size: 15px; }
         
-        /* Content Areas */
         .content-area { display: none; }
         .content-area.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Cards */
         .card { 
             background: rgba(18, 18, 18, 0.9); backdrop-filter: saturate(1.2) blur(25px); 
             border: 1px solid var(--border); border-radius: 20px; margin-bottom: 2rem; 
             overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
         .card-header { 
-            padding: 2rem 2.5rem 1.5rem; 
-            background: linear-gradient(135deg, rgba(var(--brand-1-rgb), 0.05), rgba(var(--brand-1-rgb), 0.02));
+            padding: 2rem 2.5rem; 
+            border-bottom: 1px solid var(--border);
         }
         .card-header h2 { 
             font-size: 1.6rem; font-weight: 800; margin-bottom: 0.8rem; 
@@ -127,7 +129,6 @@
             background: rgba(255, 255, 255, 0.02);
         }
         
-        /* Forms */
         .form-group { margin-bottom: 1.5rem; }
         .form-label { display: block; margin-bottom: 0.8rem; font-weight: 700; color: var(--text); font-size: 14px; }
         .form-input-wrapper { position: relative; display: flex; align-items: center; }
@@ -146,7 +147,6 @@
         .input-hint { margin-top: 0.8rem; font-size: 13px; color: var(--muted); line-height: 1.4; }
         .password-toggle { position: absolute; top: 50%; transform: translateY(-50%); right: 1rem; color: var(--muted); cursor: pointer; }
 
-        /* Profile Uploader Section */
         .profile-layout { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
         .profile-uploader-container { width: 100%; max-width: 450px; position: relative; height: auto; margin-bottom: 50px; aspect-ratio: 3 / 1; }
         .banner-uploader-preview { width: 100%; height: 100%; border-radius: 16px; background: var(--bg-2); border: 2px dashed var(--border); object-fit: cover; cursor: pointer; transition: border-color 0.2s; display: block; }
@@ -155,7 +155,6 @@
         .avatar-uploader-preview:hover { border-color: var(--brand-1); }
         .profile-bio-section { width: 100%; max-width: 500px; }
 
-        /* Social Connections Grid */
         .socials-grid { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1.5rem; justify-content: center; }
         .social-icon-btn { width: 50px; height: 50px; background: var(--bg-1); border: 1px solid var(--border); border-radius: 10px; color: var(--muted); font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease-in-out; position: relative; }
         .social-icon-btn:hover { transform: translateY(-2px); border-color: var(--border-strong); color: var(--text); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
@@ -169,7 +168,6 @@
         .linked-account-actions button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; transition: color 0.2s ease; }
         .linked-account-actions button:hover { color: var(--error); }
 
-        /* Modals */
         .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 1000; }
         .modal.show { display: flex; animation: modal-bg-fade-in 0.3s ease; }
         @keyframes modal-bg-fade-in { from { opacity: 0; } to { opacity: 1; } }
@@ -210,8 +208,8 @@
         #social-modal-input.prefixed { padding-left: 0; }
         #social-modal-input { background: transparent; border: none; outline: none; flex-grow: 1; }
 
-        .security-section { padding: 2.5rem; }
-        .security-section:not(:last-child) { border-bottom: 1px solid var(--border); }
+        .security-section { padding: 2rem 2.5rem; }
+        .security-section:not(:last-child) { border-top: 1px solid var(--border); }
         .security-section-header { margin-bottom: 1.5rem; }
         .security-section-header h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; }
         .security-section-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; }
@@ -237,7 +235,6 @@
         .toast.success i { color: var(--success); }
         .toast.error i { color: var(--error); }
         
-        /* ====== NEW MOBILE SIDEBAR STYLES ====== */
         .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
         .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
         .mobile-nav-backdrop.show { display: block; opacity: 1; }
@@ -266,23 +263,17 @@
         .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
         .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
 
-        /* ====== ENHANCED MOBILE STYLES ====== */
         @media (max-width: 992px) {
             .settings-grid { grid-template-columns: 1fr; }
             .content-container { max-width: 100%; }
-            .settings-sidebar { 
-                position: static; 
-                margin-bottom: 2rem; 
-                padding: 1rem;
-            }
-            .sidebar-header { margin-bottom: 1rem; }
+            .settings-sidebar { position: static; margin-bottom: 2rem; padding: 1.5rem; }
             .settings-tabs { 
                 flex-direction: row; 
                 overflow-x: auto; 
-                padding-bottom: 8px; 
-                margin: 0 -1rem; /* Allow scrollbar to be off-screen */
-                padding-left: 1rem;
-                padding-right: 1rem;
+                padding-bottom: 1rem;
+                margin: 0 -1.5rem;
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
                 justify-content: flex-start; 
                 -ms-overflow-style: none; 
                 scrollbar-width: none; 
@@ -301,8 +292,8 @@
         }
          @media (max-width: 480px) {
             .settings-tab-label { display: none; }
-            .settings-tab { padding: 12px; justify-content: center; }
-            .settings-tab i { font-size: 20px; width: auto; }
+            .settings-tab { padding: 12px; }
+            .settings-tab i { font-size: 20px; }
             .card-header, .card-body, .security-section { padding: 1.2rem; }
             .card-header h2 { font-size: 1.2rem; }
          }
@@ -369,7 +360,6 @@
                     <div class="tiny">Minecraft Bedrock • community</div>
                 </div>
             </a>
-             <button class="mobile-nav-toggle" aria-label="Open navigation menu"><i class="fa-solid fa-bars"></i></button>
             <div id="nav-actions" class="nav-actions"></div>
         </nav>
     </header>
@@ -480,33 +470,29 @@
                 swatch.addEventListener('click', async () => {
                     const themeName = swatch.dataset.theme;
                     
-                    // Apply theme visually immediately
-                    if(window.setMCHubTheme) window.setMCHubTheme(themeName);
+                    // 1. Update UI and cache immediately
+                    if(window.setMCHubTheme) window.setMCHubTheme(themeName, true); // true caches it
+                    
                     swatches.forEach(s => s.classList.remove('active'));
                     swatch.classList.add('active');
 
-                    // Save theme to the database
+                    // 2. Save to database in the background
                     try {
                         const { error } = await supabase
                             .from('profiles')
                             .update({ theme: themeName })
                             .eq('id', currentUser.id);
                         if (error) throw error;
-                        // Update the local profile object to stay in sync
-                        currentProfile.theme = themeName; 
-                    } catch (error) {
-                        console.error('Failed to save theme:', error);
-                        showToast('Could not save your theme preference.', 'error');
+                    } catch(error) {
+                        console.error("Failed to save theme preference:", error);
+                        showToast("Could not save theme to your account.", "error");
                     }
                 });
             });
-
-            // Set the active swatch based on the profile data
+            
             const currentTheme = currentProfile.theme || 'red';
             const activeSwatch = container.querySelector(`.theme-swatch[data-theme="${currentTheme}"]`);
-            if (activeSwatch) {
-                activeSwatch.classList.add('active');
-            }
+            if (activeSwatch) activeSwatch.classList.add('active');
         }
 
         function buildPageStructure() {
@@ -620,7 +606,6 @@
                         </section>
                     </div>
                 </div>`;
-            buildThemeSelector();
         }
 
         function setupAllEventListeners() {
@@ -835,7 +820,8 @@
             document.getElementById('save-crop-btn').addEventListener('click', () => {
                 if (!cropper) return;
                 const canvasOptions = cropModal.dataset.cropType === 'avatar' 
-                    ? { width: 512, height: 512 } : { width: 1500, height: 500 };
+                    ? { width: 512, height: 512 } 
+                    : { width: 1500, height: 500 };
                 cropper.getCroppedCanvas(canvasOptions).toBlob((blob) => {
                     if (cropCallback) cropCallback(blob);
                     cropModal.style.display = 'none';
@@ -1069,6 +1055,7 @@
                 document.getElementById('bio').value = currentProfile.bio || '';
                 document.getElementById('username').value = currentProfile.username || '';
                 renderSocials(currentProfile);
+                buildThemeSelector(); // Build and set the active theme
                 checkUsernameCooldown();
             } catch (error) {
                 console.error('Failed to load profile data:', error);
@@ -1083,7 +1070,7 @@
                 return;
             }
             currentUser = user;
-            currentProfile = profile;
+            currentProfile = profile; // The profile from auth-ready is a good starting point
             buildPageStructure();
             await loadProfileAndPopulate();
             setupAllEventListeners();
@@ -1092,3 +1079,4 @@
     </script>
 </body>
 </html>
+
