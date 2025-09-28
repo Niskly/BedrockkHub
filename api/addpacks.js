@@ -13,6 +13,7 @@ export default async function handler(req, res) {
 
   try {
     // 1. Authorization and Admin Check
+    // Get the user's token from the request header
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ error: 'Unauthorized: Missing or invalid authorization header.' });
@@ -21,54 +22,49 @@ export default async function handler(req, res) {
     const token = authHeader.split(' ')[1];
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
 
+    // Ensure the user is logged in
     if (userError || !user) {
         return res.status(401).json({ error: 'Unauthorized: You must be logged in to upload.' });
     }
     
+    // Check if the user has the 'admin' role in the profiles table
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
     if (!profile || profile.role !== 'admin') {
          return res.status(403).json({ error: 'Forbidden: You do not have permission to upload.' });
     }
 
-    // 2. Extract data
+    // 2. Extract and Validate Incoming Data
     const { packs: packsData, mode } = req.body; 
 
     if (!packsData || !Array.isArray(packsData) || packsData.length === 0) {
       return res.status(400).json({ error: 'Invalid pack data provided. Expected an array of packs.' });
     }
 
-    // 3. Prepare data for database insertion with cleanup
+    // 3. Prepare Data for Database Insertion
+    // Map over the array of packs sent from the frontend
     const insertionRecords = packsData.map(pack => {
-        const tagsArray = Array.isArray(pack.tags) ? pack.tags : (pack.tags ? pack.tags.split(',') : []);
+        // Ensure tags are a clean array of strings
+        const tagsArray = Array.isArray(pack.tags) ? pack.tags : (pack.tags ? pack.tags.toString().split(',') : []);
         
-        // --- TAGS CLEANUP LOGIC ---
-        // 3a. Filter out default metadata values ('unknown', 'none') and empty strings
+        // Clean up tags: trim whitespace, convert to lowercase, and filter out any empty or placeholder values
         let finalTags = tagsArray
             .map(tag => tag ? tag.trim().toLowerCase() : '')
             .filter(tag => tag && tag !== 'unknown' && tag !== 'none');
         
-        // 3b. Handle the 'needs-tags' flag specifically for bulk mode
-        if (mode === 'bulk') {
-            const hasNeedsTags = finalTags.includes('needs-tags');
-            const otherTagsExist = finalTags.some(tag => tag !== 'needs-tags');
-            
-            // If other tags exist, remove the 'needs-tags' flag to keep the array clean
-            if (otherTagsExist && hasNeedsTags) {
-                finalTags = finalTags.filter(tag => tag !== 'needs-tags');
-            } else if (!otherTagsExist) {
-                 // If no actual tags exist, ensure 'needs-tags' is present for bulk uploads
-                 finalTags.push('needs-tags'); 
-            }
+        // If it was a bulk upload and no real tags were found, ensure 'needs-tags' is present
+        if (mode === 'bulk' && finalTags.length === 0) {
+            finalTags.push('needs-tags');
         }
         
-        const tagsString = finalTags.join(',');
+        // Join the cleaned tags array back into a comma-separated string for the database
+        const tagsString = [...new Set(finalTags)].join(','); // Use Set to remove duplicates
 
-        // Set metadata defaults 
+        // Set default values for metadata if not provided
         const color = pack.color || 'none';
         const resolution = pack.resolution || 'unknown';
         const description = pack.description || null;
 
-        // Final record structure for insertion
+        // Return the final, clean record structure for this pack
         return { 
             name: pack.name, 
             color: color, 
@@ -78,21 +74,22 @@ export default async function handler(req, res) {
             version: pack.version, 
             description: description, 
             icon_url: pack.icon_url,
-            user_id: user.id
+            user_id: user.id // Assign the pack to the currently logged-in admin
         };
     });
 
-    // 4. Insert records into the database
+    // 4. Insert All Records into the Database at Once
     const { data: insertedPacks, error: dbError } = await supabase
       .from('packs')
       .insert(insertionRecords)
-      .select('id, name');
+      .select('id, name'); // Only select the ID and name to send back
 
     if (dbError) { 
         console.error('Supabase DB Insert Error:', dbError);
         throw dbError; 
     }
 
+    // 5. Send a Success Response
     res.status(200).json({ 
         message: `${insertedPacks.length} pack(s) added successfully!`, 
         packs: insertedPacks,
