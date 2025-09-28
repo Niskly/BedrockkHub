@@ -212,13 +212,10 @@
 
             function initSkinViewer() {
                 try {
-                    // Start the viewer with a default Steve skin
                     skinViewer = new skinview3d.SkinViewer({
                         canvas: canvas,
                         width: canvas.clientWidth,
-                        height: canvas.clientHeight,
-                        // Official Steve skin texture for the base layer
-                        skin: 'https://textures.minecraft.net/texture/31b311749ce6d5d590e8f7d983057e6c9a7566085a2106198f7e2686af5be654'
+                        height: canvas.clientHeight
                     });
                     
                     // Set up auto rotation and camera
@@ -260,6 +257,40 @@
                 } catch (error) {
                     console.error("Failed to initialize skin viewer:", error);
                 }
+            }
+
+            // NEW FUNCTION: Combines two armor layer image URLs into a single image blob URL
+            async function combineArmorLayers(url1, url2) {
+                const img1 = new Image();
+                const img2 = new Image();
+
+                // Load images from Blob URLs
+                const loadImg = (img, url) => new Promise(resolve => {
+                    img.onload = resolve;
+                    // Important for security/cross-origin if URLs were remote, safer to include
+                    img.crossOrigin = "Anonymous"; 
+                    img.src = url;
+                });
+
+                await Promise.all([loadImg(img1, url1), loadImg(img2, url2)]);
+
+                const canvas = document.createElement('canvas');
+                // Ensure canvas size accommodates both layers (assuming they are same size)
+                canvas.width = img1.width;
+                canvas.height = img1.height;
+                const ctx = canvas.getContext('2d');
+
+                // Draw Layer 1 (Base Layer)
+                ctx.drawImage(img1, 0, 0);
+                // Draw Layer 2 (Overlay Layer on top of Layer 1)
+                ctx.drawImage(img2, 0, 0);
+
+                // Convert the combined canvas back to a PNG Blob URL
+                return new Promise(resolve => {
+                    canvas.toBlob(blob => {
+                        resolve(URL.createObjectURL(blob));
+                    }, 'image/png');
+                });
             }
 
             async function handleFileSelect(file) {
@@ -319,13 +350,13 @@
                 
                 // Add click handlers
                 armorList.querySelectorAll('.armor-item').forEach(item => {
-                    item.addEventListener('click', function() {
+                    item.addEventListener('click', async function() { // ADDED async
                         // Update active state
                         armorList.querySelectorAll('.armor-item').forEach(el => el.classList.remove('active'));
                         this.classList.add('active');
                         
                         // Apply the armor
-                        applyArmor(this.dataset.armor);
+                        await applyArmor(this.dataset.armor); // ADDED await
                     });
                 });
 
@@ -336,26 +367,32 @@
                 }
             }
 
-            function applyArmor(armorName) {
+            // UPDATED FUNCTION: Correctly combines both layers or uses one
+            async function applyArmor(armorName) {
                 if (!skinViewer || !foundArmor[armorName]) {
                     console.error("Cannot apply armor:", armorName);
                     return;
                 }
                 
                 const armorSet = foundArmor[armorName];
-                
-                // 1. CLEAR existing armor textures (set to null)
-                skinViewer.loadTexture(null, { textureType: 'armor', layer: 'layer1' });
-                skinViewer.loadTexture(null, { textureType: 'armor', layer: 'layer2' });
-                
-                // 2. Load Layer 1 if present
-                if (armorSet.layer1) {
-                    skinViewer.loadTexture(armorSet.layer1, { textureType: 'armor', layer: 'layer1' });
+                let skinUrl = null;
+
+                if (armorSet.layer1 && armorSet.layer2) {
+                    // SOLUTION: Combine Layer 1 and Layer 2 into a single image
+                    skinUrl = await combineArmorLayers(armorSet.layer1, armorSet.layer2);
+                } else if (armorSet.layer1) {
+                    // Fallback to Layer 1 only
+                    skinUrl = armorSet.layer1;
+                } else if (armorSet.layer2) {
+                    // Fallback to Layer 2 only
+                    skinUrl = armorSet.layer2;
                 }
-                
-                // 3. Load Layer 2 if present (This ensures Layer 2 is ALWAYS loaded alongside Layer 1, not as a fallback)
-                if (armorSet.layer2) {
-                    skinViewer.loadTexture(armorSet.layer2, { textureType: 'armor', layer: 'layer2' });
+
+                if (skinUrl) {
+                    // Load the combined/single image as the player skin texture (the necessary workaround)
+                    skinViewer.loadSkin(skinUrl);
+                } else {
+                    console.warn("No armor texture found for:", armorName);
                 }
             }
 
