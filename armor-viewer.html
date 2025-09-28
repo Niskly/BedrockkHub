@@ -212,10 +212,13 @@
 
             function initSkinViewer() {
                 try {
+                    // Start the viewer with a default Steve skin
                     skinViewer = new skinview3d.SkinViewer({
                         canvas: canvas,
                         width: canvas.clientWidth,
-                        height: canvas.clientHeight
+                        height: canvas.clientHeight,
+                        // Official Steve skin texture for the base layer
+                        skin: 'https://textures.minecraft.net/texture/31b311749ce6d5d590e8f7d983057e6c9a7566085a2106198f7e2686af5be654'
                     });
                     
                     // Set up auto rotation and camera
@@ -340,15 +343,19 @@
                 }
                 
                 const armorSet = foundArmor[armorName];
-                console.log("Applying armor as skin:", armorName, armorSet);
-
-                // Prioritize layer1, but fallback to layer2 if layer1 doesn't exist.
-                const skinUrl = armorSet.layer1 || armorSet.layer2;
-
-                if (skinUrl) {
-                    skinViewer.loadSkin(skinUrl);
-                } else {
-                    console.warn("No armor texture found for:", armorName);
+                
+                // 1. CLEAR existing armor textures (set to null)
+                skinViewer.loadTexture(null, { textureType: 'armor', layer: 'layer1' });
+                skinViewer.loadTexture(null, { textureType: 'armor', layer: 'layer2' });
+                
+                // 2. Load Layer 1 if present
+                if (armorSet.layer1) {
+                    skinViewer.loadTexture(armorSet.layer1, { textureType: 'armor', layer: 'layer1' });
+                }
+                
+                // 3. Load Layer 2 if present (This ensures Layer 2 is ALWAYS loaded alongside Layer 1, not as a fallback)
+                if (armorSet.layer2) {
+                    skinViewer.loadTexture(armorSet.layer2, { textureType: 'armor', layer: 'layer2' });
                 }
             }
 
