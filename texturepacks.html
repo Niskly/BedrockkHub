@@ -13,6 +13,7 @@
         transition: opacity 0.2s ease-in;
     }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root {
@@ -666,7 +667,6 @@
         let tempModalTags = new Set();
         let isEditingTags = false;
         let currentUserRole = null;
-        let packFiles = [];
 
         /* ====== API & DATA FUNCTIONS ====== */
         async function loadPacksOnStartup() {
@@ -724,16 +724,16 @@
             const progressBarFill = document.getElementById('progress-bar-fill');
             const progressText = document.getElementById('progress-text');
             
+            const filesToProcess = [...fileInput.files];
+
             if (state.uploadMode === 'single') {
-                packFiles = fileInput.files.length > 0 ? [fileInput.files[0]] : [];
-                if (packFiles.length !== 1) { return showToast("Please select one file for single upload.", "error"); }
-                if (!state.modalColor) { return showToast("You forgot to select a primary color.", "error"); }
-                if (!state.modalResolution) { return showToast("You forgot to select a resolution.", "error"); }
-                if (!document.getElementById("packName").value.trim()) { return showToast("Pack name is required.", "error"); }
-            } else {
-                packFiles = [...fileInput.files];
-                if (packFiles.length === 0) { return showToast("Please select files for bulk upload.", "error"); }
-                if (packFiles.length > 10) { return showToast("Maximum 10 packs allowed for bulk upload.", "error"); }
+                if (filesToProcess.length !== 1) return showToast("Please select one file for single upload.", "error");
+                if (!state.modalColor) return showToast("You forgot to select a primary color.", "error");
+                if (!state.modalResolution) return showToast("You forgot to select a resolution.", "error");
+                if (!document.getElementById("packName").value.trim()) return showToast("Pack name is required.", "error");
+            } else { // Bulk mode
+                if (filesToProcess.length === 0) return showToast("Please select files for bulk upload.", "error");
+                if (filesToProcess.length > 10) return showToast("Maximum 10 packs allowed for bulk upload.", "error");
             }
             
             submitBtn.disabled = true;
@@ -746,56 +746,64 @@
                 const { data: { session }, error: sessionError } = await supabase.auth.getSession();
                 if (sessionError || !session) throw new Error("You must be logged in to upload packs.");
                 
-                const packsToUpload = [];
-                const totalFiles = packFiles.length;
-                
-                for (let i = 0; i < totalFiles; i++) {
-                    const file = packFiles[i];
-                    
-                    // Update progress text and bar for the current file
-                    const progress = ((i + 1) / totalFiles) * 100;
-                    progressText.textContent = `[${i + 1}/${totalFiles}] Processing: ${file.name}`;
-                    
-                    if (!file.name.toLowerCase().match(/\.(mcpack|zip)$/)) {
-                        showToast(`Skipping file ${file.name}: Invalid file type.`, "warning");
-                        progressBarFill.style.width = `${progress}%`;
-                        continue;
-                    }
+                const totalFiles = filesToProcess.length;
+                let processedCount = 0;
 
-                    let packName = file.name.replace(/\.(mcpack|zip)$/i, "");
-                    let iconUrl = null;
-                    const version = file.name.toLowerCase().endsWith(".mcpack") ? "bedrock" : "java";
-                    const sanitizedName = file.name.replace(/[^a-zA-Z0-9-._]/g, "").replace(/\s+/g, "-");
-                    const packStoragePath = `${Date.now()}-${i}-${sanitizedName}`;
-                    
-                    progressText.textContent = `[${i+1}/${totalFiles}] Extracting icon for ${file.name}...`;
-                    iconUrl = await extractAndUploadIcon(file, i, session.user.id);
-                    
-                    if (state.uploadMode === 'single') {
-                        packName = document.getElementById("packName").value.trim();
-                    }
+                const uploadPromises = filesToProcess.map(async (file, i) => {
+                    try {
+                        if (!file.name.toLowerCase().match(/\.(mcpack|zip)$/)) {
+                            console.warn(`Skipping invalid file type: ${file.name}`);
+                            return null;
+                        }
 
-                    progressText.textContent = `[${i+1}/${totalFiles}] Uploading ${file.name}...`;
-                    const { error: uploadError } = await supabase.storage.from("packs").upload(packStoragePath, file);
-                    if (uploadError) {
-                        showToast(`Failed to upload file ${file.name}: ${uploadError.message}`, "error");
+                        processedCount++;
+                        const progress = (processedCount / totalFiles) * 100;
+                        progressText.textContent = `[${processedCount}/${totalFiles}] Processing: ${file.name}`;
+                        
+                        const iconUrl = await extractAndUploadIcon(file, i, session.user.id);
+
+                        const sanitizedName = file.name.replace(/[^a-zA-Z0-9-._]/g, "").replace(/\s+/g, "-");
+                        const packStoragePath = `pack_files/${session.user.id}/${Date.now()}-${i}-${sanitizedName}`;
+                        const { error: uploadError } = await supabase.storage.from("packs").upload(packStoragePath, file);
+                        if (uploadError) throw new Error(`Upload failed for ${file.name}: ${uploadError.message}`);
+                        
+                        let packData;
+                        if (state.uploadMode === 'single') {
+                            packData = {
+                                name: document.getElementById("packName").value.trim(),
+                                color: state.modalColor,
+                                tags: [...state.modalTags],
+                                resolution: state.modalResolution,
+                                description: document.getElementById("packDescription").value.trim(),
+                                version: file.name.toLowerCase().endsWith(".mcpack") ? "bedrock" : "java",
+                                filename: packStoragePath,
+                                icon_url: iconUrl
+                            };
+                        } else {
+                            packData = {
+                                name: file.name.replace(/\.(mcpack|zip)$/i, ""),
+                                color: 'none',
+                                tags: ['needs-tags'],
+                                resolution: 'unknown',
+                                version: file.name.toLowerCase().endsWith(".mcpack") ? "bedrock" : "java",
+                                filename: packStoragePath,
+                                icon_url: iconUrl,
+                                description: null
+                            };
+                        }
+                        
                         progressBarFill.style.width = `${progress}%`;
-                        continue;
+                        return packData;
+
+                    } catch (error) {
+                        console.error(error);
+                        showToast(`Error processing ${file.name}. Skipping.`, 'error');
+                        return null;
                     }
-                    
-                    packsToUpload.push({
-                        name: packName,
-                        color: state.uploadMode === 'single' ? state.modalColor : 'none',
-                        tags: state.uploadMode === 'single' ? [...state.modalTags] : ['needs-tags'],
-                        filename: packStoragePath,
-                        resolution: state.uploadMode === 'single' ? state.modalResolution : 'unknown',
-                        version: version,
-                        description: state.uploadMode === 'single' ? document.getElementById("packDescription").value.trim() : null,
-                        icon_url: iconUrl,
-                    });
-                    
-                    progressBarFill.style.width = `${progress}%`;
-                }
+                });
+
+                const results = await Promise.all(uploadPromises);
+                const packsToUpload = results.filter(p => p !== null);
 
                 if (packsToUpload.length === 0) {
                     throw new Error("No valid packs were uploaded.");
@@ -810,11 +818,10 @@
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.details || errorData.error || "Failed to add pack metadata.");
+                    throw new Error(errorData.details || "Failed to add pack metadata.");
                 }
 
                 const result = await response.json();
-
                 await loadPacksOnStartup();
                 closeModal();
                 showToast(`Successfully uploaded ${result.packs.length} pack${result.packs.length > 1 ? 's' : ''}!`, "success");
@@ -824,12 +831,11 @@
             } finally {
                 submitBtn.disabled = false;
                 formFieldset.disabled = false;
-                submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload';
                 setTimeout(() => {
                     progressContainer.style.display = 'none';
                     progressBarFill.style.width = '0%';
                     progressText.textContent = '';
-                }, 1000);
+                }, 2000);
             }
         }
         
@@ -1033,7 +1039,7 @@
             const fileArea = document.getElementById('pack-file-area');
             const subtitle = document.getElementById('modal-subtitle');
             
-            fileInput.files = null;
+            fileInput.value = ''; // Clear file selection
             document.getElementById("fileHint").textContent = mode === 'single' ? '.mcpack or .zip files only' : 'Select up to 10 .mcpack or .zip files';
             document.getElementById("bulk-file-list").innerHTML = '';
 
