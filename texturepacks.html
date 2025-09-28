@@ -70,13 +70,7 @@
         }
         .brand-title { font-weight: 800; letter-spacing: .6px; }
         .nav-actions { display: flex; gap: .6rem; }
-        /* FIXED: Navbar Button Styles to match settings/profile.html */
-        .btn { 
-            padding: .5rem 1rem; /* Slightly smaller padding */
-            border-radius: 10px; /* Smaller border radius */
-            font-weight: 700; display: inline-flex; align-items: center; gap: .55rem; 
-            cursor: pointer; border: 1px solid transparent; 
-        }
+        .btn { padding: .6rem 1rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; }
         .ghost { border-color: var(--border); background: transparent; color: var(--text); }
         .primary {
             background: linear-gradient(90deg, var(--brand-1), var(--brand-2));
@@ -131,22 +125,6 @@
         .thumb .pack-icon { position: relative; width: 90px; height: 90px; border-radius: 8px; object-fit: cover; z-index: 1; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
         .thumb .glyph { height: 68px; width: 68px; border-radius: 14px; display: grid; place-items: center; color: white; }
         .content { padding: 14px; }
-
-        /* NEW STYLES for Uploader Info */
-        .pack-title-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px;}
-        .pack-title-row h4 { margin: 0; font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%; }
-        .uploader-info { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-        .uploader-info .avatar-sm { 
-            width: 20px; height: 20px; border-radius: 50%; object-fit: cover; 
-            border: 1px solid var(--border); 
-        }
-        .uploader-info .username-tiny { 
-            font-size: 12px; font-weight: 600; color: var(--muted);
-            transition: color 0.2s;
-        }
-        .uploader-info:hover .username-tiny {
-            color: var(--brand-1);
-        }
         .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
         .badge { font-size: 12px; padding: .25rem .55rem; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-2); color: white; font-weight: 700; text-transform: capitalize;}
         .pack-stats-top { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--muted); }
@@ -169,7 +147,7 @@
         .modal-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 20px 20px; }
         .modal-footer .right-actions { display: flex; gap: 10px; }
         .modal-footer.center-actions { justify-content: center; }
-        .file-upload-area { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; border: 2px dashed var(--border); border-radius: 12px; background: var(--bg-0); grid-column: span 2; }
+        .file-upload-area { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; border: 2px dashed var(--border); border-radius: 12px; background: var(--bg-0); text-align: center; cursor: pointer; grid-column: span 2; }
         /* NEW: Bulk mode file area takes up full width in both single and bulk mode layout */
         .file-upload-area.bulk-mode { grid-column: 1 / -1; }
         .file-upload-area:hover { border-color: var(--brand-1); background: rgba(255, 255, 255, .05); }
@@ -471,10 +449,7 @@
                         <button class="btn sm ghost" onclick="clearMobileSearch()"><i class="fa-solid fa-xmark"></i></button>
                     </div>
                     <div class="mobile-actions">
-                         <!-- NEW: Mobile Upload Button is added here, wrapped in a div for layout consistency -->
-                         <button id="mobile-upload-btn" class="btn primary" onclick="openModal()" style="display:none; width: 100%;"><i class="fa-solid fa-cloud-upload-alt"></i> Upload Pack</button>
-                         
-                         <div class="sort-container" id="mobileSortContainer" style="grid-column: 1 / 3;">
+                         <div class="sort-container" id="mobileSortContainer">
                             <button class="btn ghost sort-btn" onclick="toggleSortMenu(true)">
                                 <div><span class="tiny">Sort by:</span> <span id="mobileCurrentSort">Latest Upload</span></div>
                                 <i class="fa-solid fa-chevron-down"></i>
@@ -681,39 +656,21 @@
         let currentUserRole = null;
         let packFiles = []; // NEW STATE: To hold multiple files for bulk upload
 
-        // Tags that should be in the DB but NOT displayed as badges to the user
-        const NON_DISPLAY_TAGS = ['none', 'unknown', 'needs-tags', 'user-upload']; 
-
         /* ====== API & DATA FUNCTIONS ====== */
         async function loadPacksOnStartup() {
-            // FIXED: Re-added the simple select to fix the bug where packs were not appearing.
-            // The query should join profiles for uploader info.
-            let query = supabase.from('packs').select(`
-                *,
-                uploader:user_id (username, avatar_url)
-            `);
+            let query = supabase.from('packs').select('*').not('tags', 'ilike', '%user-upload%');
 
             if (state.sortBy === 'downloads') {
                 query = query.order('download_count', { ascending: false });
             } else {
                 query = query.order('created_at', { ascending: false });
             }
-            
-            // Note: If you want to exclude 'user-upload' packs, the correct way to filter 
-            // after the join would be: .not('tags', 'ilike', '%user-upload%')
-            // For now, removing the broken filter to make packs load again.
-
             const { data, error } = await query;
             if (error) {
                 console.error('Failed to load packs from Supabase', error);
                 packs = [];
             } else {
-                packs = data.map(pack => ({ 
-                    ...pack, 
-                    tags: pack.tags ? pack.tags.split(',') : [],
-                    uploader_username: pack.uploader?.username,
-                    uploader_avatar_url: pack.uploader?.avatar_url
-                }));
+                packs = data.map(pack => ({ ...pack, tags: pack.tags ? pack.tags.split(',') : [] }));
             }
             render();
         }
@@ -749,7 +706,7 @@
             const formFieldset = document.getElementById("uploadFormFieldset");
             const fileInput = document.getElementById("fileInput");
             
-            // 1. Validation and file setup
+            // Validation and file setup remains the same
             if (state.uploadMode === 'single') {
                 packFiles = fileInput.files.length > 0 ? [fileInput.files[0]] : [];
                 if (packFiles.length !== 1) { return showToast("Please select one file for single upload.", "error"); }
@@ -758,9 +715,9 @@
                 if (!document.getElementById("packName").value.trim()) { return showToast("Pack name is required.", "error"); }
 
             } else { // Bulk mode
-                packFiles = [...fileInput.files].slice(0, 10);
+                packFiles = [...fileInput.files];
                 if (packFiles.length === 0) { return showToast("Please select files for bulk upload.", "error"); }
-                if (fileInput.files.length > 10) { showToast("Only the first 10 files will be processed.", "warning"); }
+                if (packFiles.length > 10) { return showToast("Maximum 10 packs allowed for bulk upload.", "error"); }
             }
             
             submitBtn.disabled = true;
@@ -773,10 +730,11 @@
                 
                 const packsToUpload = [];
                 
-                // 2. Process each file: extract icon, upload file, prepare payload
+                // 1. Process each file: extract icon, upload file, prepare payload
                 for (let i = 0; i < packFiles.length; i++) {
                     const file = packFiles[i];
-                    
+                    submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processing file ${i + 1}/${packFiles.length}...`;
+
                     if (!file.name.toLowerCase().match(/\.(mcpack|zip)$/)) {
                         showToast(`Skipping file ${file.name}: Invalid file type.`, "warning");
                         continue;
@@ -809,12 +767,13 @@
                     packsToUpload.push({
                         name: packName,
                         color: state.uploadMode === 'single' ? state.modalColor : 'none',
-                        tags: state.uploadMode === 'single' ? [...state.modalTags] : ['needs-tags'], 
+                        tags: state.uploadMode === 'single' ? [...state.modalTags] : ['needs-tags'], // Tags cleanup happens on the API side
                         filename: packStoragePath,
                         resolution: state.uploadMode === 'single' ? state.modalResolution : 'unknown',
                         version: version,
                         description: state.uploadMode === 'single' ? document.getElementById("packDescription").value.trim() : null,
                         icon_url: iconUrl,
+                        // Removed 'mode' from pack object, sending it once in body below
                     });
                 }
 
@@ -822,7 +781,7 @@
                     throw new Error("No valid packs were uploaded.");
                 }
 
-                // 3. Call API to insert metadata for all successfully uploaded files
+                // 2. Call API to insert metadata for all successfully uploaded files
                 submitBtn.innerHTML = `<i class="fa-solid fa-database"></i> Saving metadata...`;
                 const response = await fetch("/api/addpacks", {
                     method: "POST",
@@ -974,23 +933,6 @@
             const downloadLink = `<a href="#" onclick="handleDownload(event, ${p.id}, '${p.filename}', '${escapeHtml(p.name)}')"><i class="fa-solid fa-download"></i> Download</a>`;
             const editLink = currentUserRole === 'admin' ? `<a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>` : '';
 
-            // Uploader Info HTML (Feature 1)
-            const defaultAvatar = `https://placehold.co/20x20/1c1c1c/de212a?text=${(p.uploader_username || 'U').charAt(0).toUpperCase()}`;
-            const uploaderAvatar = p.uploader_avatar_url || defaultAvatar;
-            const uploaderHtml = p.uploader_username ? `
-                <a href="/profile.html?user=${encodeURIComponent(p.uploader_username)}" class="uploader-info" title="Uploaded by ${escapeHtml(p.uploader_username)}">
-                    <img src="${uploaderAvatar}" alt="Uploader Avatar" class="avatar-sm">
-                    <span class="username-tiny">${escapeHtml(p.uploader_username)}</span>
-                </a>
-            ` : `<span class="username-tiny" style="color:var(--danger);">[Deleted User]</span>`;
-
-            // Tag Filtering (Fix 2: Hiding technical tags)
-            const displayTags = (p.tags || [])
-                .filter(t => !NON_DISPLAY_TAGS.includes(t.toLowerCase()))
-                .map(t => `<span class="badge">${escapeHtml(capitalizeFirst(t))}</span>`)
-                .join('');
-
-
             return `
                 <div class="card pack">
                     <div class="thumb" style="${thumbBackgroundStyle}">
@@ -1003,16 +945,12 @@
                             <div class="stat-item"><i class="fa-solid fa-download"></i><span id="downloads-${p.id}">${(p.download_count || 0).toLocaleString()}</span></div>
                             <div class="stat-item"><i class="fa-solid fa-calendar-day"></i><span>${formatDate(p.created_at)}</span></div>
                         </div>
-                        <!-- NEW TITLE ROW -->
-                        <div class="pack-title-row">
-                            <h4>${escapeHtml(p.name)}</h4>
-                            ${uploaderHtml}
-                        </div>
+                        <h4>${escapeHtml(p.name)}</h4>
                         <div class="meta">
                             ${(p.color && p.color !== 'none') ? `<span class="badge">${escapeHtml(p.color)}</span>` : ''}
-                            ${p.resolution && p.resolution !== 'unknown' ? `<span class="badge">${escapeHtml(p.resolution)}</span>` : ''}
+                            ${p.resolution ? `<span class="badge">${escapeHtml(p.resolution)}</span>` : ''}
                             ${p.version ? `<span class="badge">${escapeHtml(p.version)}</span>` : ''}
-                            ${displayTags}
+                            ${(p.tags||[]).map(t=>`<span class="badge">${escapeHtml(capitalizeFirst(t))}</span>`).join('')}
                         </div>
                     </div>
                 </div>`;
@@ -1248,13 +1186,9 @@
                 const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
                 if (profile) currentUserRole = profile.role;
             }
-            // Mobile Upload Button Visibility
-            const mobileUploadBtn = document.getElementById('mobile-upload-btn');
-            if (currentUserRole === 'admin') {
-                document.getElementById('admin-actions').style.display = 'block';
-                if(mobileUploadBtn) mobileUploadBtn.style.display = 'inline-flex'; 
-            } else {
-                 if(mobileUploadBtn) mobileUploadBtn.remove();
+            if (currentUserRole === 'admin') { 
+                document.getElementById('admin-actions').style.display = 'block'; 
+                document.querySelector('#mobile-filters-panel #admin-actions').style.display = 'block';
             }
             await loadPacksOnStartup();
         }
@@ -1288,7 +1222,7 @@
                 });
 
                 window.addEventListener('click', (e) => {
-                    if (!e.target.closest('.pack-options-btn')) document.querySelectorAll('.pack-options-menu').forEach(menu => menu.style.display = 'none');
+                    if (!e.target.closest('.pack-options-btn')) document.querySelectorAll('.pack-options-menu').forEach(menu => m.style.display = 'none');
                     if (!e.target.closest('#sortContainer')) {
                         document.getElementById('sortMenu').style.display = 'none';
                         document.getElementById('sortContainer').classList.remove('open');
