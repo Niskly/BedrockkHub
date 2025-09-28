@@ -690,28 +690,58 @@
             render();
         }
         
+        /**
+         * **FIXED ICON EXTRACTION**
+         * Smarter logic to find the icon in both Bedrock (.mcpack) and Java (.zip) packs.
+         */
         async function extractAndUploadIcon(file, fileIndex, userId) {
             try {
-                const zip = new JSZip();
-                const contents = await zip.loadAsync(file);
-                const iconPath = Object.keys(contents.files).find(path => path.toLowerCase().endsWith('pack_icon.png')) 
-                               || Object.keys(contents.files).find(path => path.toLowerCase().endsWith('pack.png'));
+                const zip = await JSZip.loadAsync(file);
+                const filesInZip = zip.files;
+
+                // Define a prioritized list of possible icon paths
+                const prioritizedPaths = [
+                    'pack_icon.png', // Standard for Bedrock
+                    'pack.png',      // Standard for Java
+                ];
+
+                let iconPath = null;
+
+                // 1. Check for exact, high-priority paths at the root of the zip.
+                for (const path of prioritizedPaths) {
+                    if (filesInZip[path]) {
+                        iconPath = path;
+                        break; // Found the best match, stop searching.
+                    }
+                }
+
+                // 2. If not found, perform a broader search as a fallback.
+                if (!iconPath) {
+                    iconPath = Object.keys(filesInZip).find(path => 
+                        path.toLowerCase().endsWith('pack_icon.png') || 
+                        path.toLowerCase().endsWith('pack.png')
+                    );
+                }
                 
+                // 3. If an icon was found, extract and upload it.
                 if (iconPath) {
-                    const iconFile = contents.files[iconPath];
+                    const iconFile = filesInZip[iconPath];
                     const iconBlob = await iconFile.async("blob");
                     const iconStoragePath = `pack_icons/${userId}-${Date.now()}-${fileIndex}-icon.png`;
                     const { error: iconError } = await supabase.storage.from("packs").upload(iconStoragePath, iconBlob, { upsert: true });
                     
-                    if (!iconError) {
-                        return supabase.storage.from("packs").getPublicUrl(iconStoragePath).data.publicUrl;
-                    } else {
+                    if (iconError) {
                         console.warn(`Icon upload failed for ${file.name}:`, iconError);
+                        return null;
                     }
+                    
+                    // Return the public URL on success
+                    return supabase.storage.from("packs").getPublicUrl(iconStoragePath).data.publicUrl;
                 }
             } catch(e) {
-                 console.warn(`Could not extract icon for file ${file.name}:`, e);
+                 console.warn(`Could not read or process zip file ${file.name}:`, e);
             }
+            // Return null if no icon was found or an error occurred
             return null;
         }
 
@@ -1267,3 +1297,4 @@
 </body>
 
 </html>
+
