@@ -116,6 +116,76 @@
             grid-template-columns: repeat(3, 1fr);
             gap: 18px;
         }
+        /* START NEW STYLES FOR UPLOADER INFO AND BULK UPLOAD */
+        .pack-name-row { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 4px;
+        }
+        .pack-name-row h4 { 
+            margin: 0; 
+            max-width: 65%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .uploader-info { 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+            flex-shrink: 0;
+            text-decoration: none; 
+            color: var(--muted); 
+            transition: color 0.2s;
+        }
+        .uploader-info:hover { 
+            color: var(--text); 
+        }
+        .uploader-avatar { 
+            width: 18px; 
+            height: 18px; 
+            border-radius: 50%; 
+            object-fit: cover;
+            border: 1px solid var(--border);
+        }
+        .uploader-name { 
+            font-size: 11px; 
+            font-weight: 600; 
+            max-width: 70px; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            white-space: nowrap; 
+        }
+        .upload-mode-switcher { 
+            display: flex; 
+            margin-bottom: 1.5rem; 
+            border-radius: 10px; 
+            background: var(--bg-0); 
+            padding: 4px;
+            grid-column: span 2;
+        }
+        .upload-mode-switcher button {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .upload-mode-switcher button.active {
+            background: var(--bg-2);
+            color: var(--text);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .bulk-hidden {
+            /* This class is controlled by JavaScript to toggle visibility */
+            display: none !important;
+        }
+        /* END NEW STYLES */
         .pack { overflow: hidden; }
         .pack.card { box-shadow: 0 24px 70px rgba(0, 0, 0, .55); transition: box-shadow .2s, transform .2s, border-color .2s; }
         .pack.card:hover { transform: translateY(-4px); box-shadow: 0 28px 75px rgba(0, 0, 0, .65); border-color: rgba(255,255,255,.2); }
@@ -130,7 +200,7 @@
         .pack-stats-top { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--muted); }
         .stat-item { display: flex; align-items: center; gap: 6px; }
         .pack-options-btn { position: absolute; top: 8px; right: 8px; z-index: 2; background: rgba(0, 0, 0, 0.4); color: white; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; width: 30px; height: 30px; display: grid; place-items: center; cursor: pointer; padding: 0; }
-        .pack-options-menu { display: none; position: absolute; top: 42px; right: 8px; z-index: 3; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); }
+        .pack-options-menu { display: none; position: absolute; top: 42px; right: 8px; z-index: 3; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); min-width: 160px; }
         .pack-options-menu a { display: flex; align-items: center; gap: 10px; padding: 8px 14px; font-size: 14px; }
         .pack-options-menu a:hover { background: var(--brand-1); }
         .pack-options-menu a i { width: 16px; text-align: center; }
@@ -413,12 +483,18 @@
         <div class="modal card">
             <div class="panel">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-                    <strong>Upload Texture Pack</strong>
+                    <strong id="modal-title">Upload Texture Pack</strong>
                     <button class="btn sm ghost" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
                 </div>
-                <div class="tiny">Select a .mcpack or .zip file, set a name, choose color & tags.</div>
+                <div class="tiny" id="modal-hint">Select a .mcpack or .zip file, set a name, choose color & tags.</div>
             </div>
             <div class="panel" style="padding-top:0">
+                <!-- NEW MODE SWITCHER -->
+                <div class="upload-mode-switcher">
+                    <button id="single-upload-btn" class="active" onclick="setUploadMode('single')"><i class="fa-solid fa-file-upload"></i> Single Pack Upload</button>
+                    <button id="bulk-upload-btn" onclick="setUploadMode('bulk')"><i class="fa-solid fa-box"></i> Bulk Upload (Fast)</button>
+                </div>
+                <!-- END NEW MODE SWITCHER -->
                 <form id="uploadForm" onsubmit="handleUpload(event)">
                     <fieldset id="uploadFormFieldset">
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px; align-items: start;">
@@ -426,15 +502,17 @@
                                 <label class="tiny label-with-icon"><span>Pack name</span></label>
                                 <input id="packName" required placeholder="e.g. Crystal PvP" type="text">
                             </div>
-                            <div>
+                            <!-- Bulk Hidden Fields -->
+                            <div class="bulk-hidden">
                                 <label class="tiny">Primary color</label>
                                 <div id="modalSwatches" class="swatches"></div>
                             </div>
-                            <div>
+                            <div class="bulk-hidden">
                                <label class="tiny">Description (optional)</label>
                                <textarea id="packDescription" placeholder="A short description of the pack..."></textarea>
                             </div>
-                            <div>
+                            <!-- Bulk Hidden Fields -->
+                            <div class="bulk-hidden">
                                 <div>
                                     <label class="tiny">Resolution</label>
                                     <div id="modalResolutions" class="resolutions"></div>
@@ -448,7 +526,7 @@
                                 </div>
                             </div>
                             
-                            <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
+                            <div class="file-upload-area" onclick="document.getElementById('fileInput').click()" style="grid-column: span 2;">
                                 <i class="fa-solid fa-file-arrow-up"></i>
                                 <div>Drag & drop or <span style="color:var(--brand-1)">browse files</span></div>
                                 <div class="file-hint" id="fileHint">.mcpack or .zip files only</div>
@@ -564,10 +642,13 @@
         let tempModalTags = new Set();
         let isEditingTags = false;
         let currentUserRole = null;
+        let uploadMode = 'single'; // ADDED: 'single' or 'bulk' mode
 
         /* ====== API & DATA FUNCTIONS ====== */
         async function loadPacksOnStartup() {
-            let query = supabase.from('packs').select('*').not('tags', 'ilike', '%user-upload%');
+            // UPDATED: Optimized query to fetch Uploader info using RLS-compliant join
+            // We now select the pack data AND the related profile data (username and avatar_url)
+            let query = supabase.from('packs').select('*, profiles(username, avatar_url)').not('tags', 'ilike', '%user-upload%');
 
             if (state.sortBy === 'downloads') {
                 query = query.order('download_count', { ascending: false });
@@ -584,6 +665,34 @@
             render();
         }
         
+        // ADDED: Function to switch between Single and Bulk upload modes
+        window.setUploadMode = function(mode) {
+            uploadMode = mode;
+            const bulkHiddenElements = document.querySelectorAll('#uploadForm .bulk-hidden');
+            const singleBtn = document.getElementById('single-upload-btn');
+            const bulkBtn = document.getElementById('bulk-upload-btn');
+            const modalTitle = document.getElementById('modal-title');
+            const modalHint = document.getElementById('modal-hint');
+
+            if (mode === 'bulk') {
+                // Hide all non-essential fields
+                bulkHiddenElements.forEach(el => el.style.display = 'none');
+                
+                singleBtn.classList.remove('active');
+                bulkBtn.classList.add('active');
+                modalTitle.textContent = 'Bulk Pack Upload (Fast)';
+                modalHint.textContent = 'Only pack name, icon, and version are detected/required.';
+            } else {
+                // Show all fields
+                bulkHiddenElements.forEach(el => el.style.display = '');
+
+                singleBtn.classList.add('active');
+                bulkBtn.classList.remove('active');
+                modalTitle.textContent = 'Upload Texture Pack';
+                modalHint.textContent = 'Select a .mcpack or .zip file, set a name, choose color & tags.';
+            }
+        }
+        
       window.handleUpload = async function(e) {
             e.preventDefault();
             const submitBtn = document.getElementById("submitBtn");
@@ -595,8 +704,24 @@
             if (!packFile || (!packFile.name.toLowerCase().endsWith(".mcpack") && !packFile.name.toLowerCase().endsWith(".zip"))) {
                 return showToast("Please select a valid .mcpack or .zip file", "error");
             }
-            if (!state.modalColor) { return showToast("You forgot to select a primary color.", "error"); }
-            if (!state.modalResolution) { return showToast("You forgot to select a resolution.", "error"); }
+            
+            // NEW BULK VALIDATION/DEFAULTS
+            if (uploadMode === 'single') {
+                if (!state.modalColor) { return showToast("You forgot to select a primary color.", "error"); }
+                if (!state.modalResolution) { return showToast("You forgot to select a resolution.", "error"); }
+            }
+            
+            // Assign default values if in bulk mode
+            const uploadColor = uploadMode === 'bulk' ? 'gray' : state.modalColor;
+            const uploadResolution = uploadMode === 'bulk' ? 'unknown' : state.modalResolution;
+            const uploadTags = uploadMode === 'bulk' ? 'bulk-upload' : [...state.modalTags].join(",");
+            
+            // Get session early to use user info for default description
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            if (sessionError || !session) throw new Error("You must be logged in to upload packs.");
+            
+            const uploadDescription = uploadMode === 'bulk' ? `Bulk uploaded by ${session.user.email || 'user'}` : packDescription;
+            // END BULK VALIDATION/DEFAULTS
 
             let version = packFile.name.toLowerCase().endsWith(".mcpack") ? "bedrock" : "java";
 
@@ -605,9 +730,6 @@
             submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
 
             try {
-                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-                if (sessionError || !session) throw new Error("You must be logged in to upload packs.");
-
                 let iconUrl = null;
                 const zip = new JSZip();
                 const contents = await zip.loadAsync(packFile);
@@ -633,8 +755,14 @@
                     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session.access_token}` },
                     body: JSON.stringify({
                         name: packName || packFile.name.replace(/\.(mcpack|zip)$/i, ""),
-                        color: state.modalColor, tags: [...state.modalTags], filename: packStoragePath,
-                        resolution: state.modalResolution, version, description: packDescription, icon_url: iconUrl
+                        color: uploadColor, 
+                        tags: uploadTags, 
+                        filename: packStoragePath,
+                        resolution: uploadResolution, 
+                        version, 
+                        description: uploadDescription, 
+                        icon_url: iconUrl,
+                        user_id: session.user.id // Explicitly ensure user_id is sent for safety
                     })
                 });
 
@@ -679,11 +807,23 @@
             const pack = packs.find(p => p.id === currentEditId);
             if (!pack) return cancelDelete();
             try {
-                if (pack.filename) await supabase.storage.from("packs").remove([pack.filename]);
-                if (pack.icon_url) await supabase.storage.from("packs").remove([`icons/${pack.icon_url.split("/").pop()}`]);
-                const { error } = await supabase.from("packs").delete().eq("id", currentEditId);
-                if (error) throw error;
-                await loadPacksOnStartup();
+                // Find session for authorization token
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) throw new Error("User must be logged in to delete packs.");
+
+                const response = await fetch("/api/delete-pack", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session.access_token}` },
+                    body: JSON.stringify({ packId: currentEditId })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.details || "Failed to delete pack.");
+                }
+                
+                await loadPacksOnStartup(); // Reload data after successful deletion
+                showToast("Pack deleted successfully!", "success");
             } catch (error) {
                 showToast("Delete failed: " + error.message, "error");
             } finally {
@@ -695,14 +835,18 @@
         window.handleDownload = async function(event, packId, filename, packName) {
             event.preventDefault();
             try {
-                await fetch("/api/increment-download", {
+                // Increment download count (assuming /api/increment-download is available)
+                fetch("/api/increment-download", {
                     method: "POST", headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ id: packId })
-                });
-                const el = document.getElementById(`downloads-${packId}`);
-                if (el) el.textContent = (parseInt(el.textContent.replace(/,/g, ''), 10) + 1).toLocaleString();
-            } catch (error) { console.error("Failed to update download count:", error); }
-            finally {
+                }).then(res => res.json()).then(data => {
+                    // Update UI count immediately
+                    const el = document.getElementById(`downloads-${packId}`);
+                    if (el) el.textContent = (parseInt(el.textContent.replace(/,/g, ''), 10) + 1).toLocaleString();
+                }).catch(e => console.error("Failed to update download count:", e));
+
+
+                // Trigger download
                 const { data } = supabase.storage.from('packs').getPublicUrl(filename);
                 fetch(data.publicUrl).then(res => res.blob()).then(blob => {
                     const a = document.createElement("a");
@@ -711,15 +855,16 @@
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
+                    URL.revokeObjectURL(a.href);
                 });
-            }
+            } catch (error) { console.error("Download handling error:", error); }
         }
 
         /* ====== UI RENDERING ====== */
         function render() {
             const grid = document.getElementById('grid');
             const filtered = packs.filter(p => 
-                (!state.q || p.name.toLowerCase().includes(state.q)) &&
+                (!state.q || p.name.toLowerCase().includes(state.q) || p.profiles?.username?.toLowerCase().includes(state.q)) &&
                 (state.colors.size === 0 || state.colors.has(p.color)) &&
                 (state.tags.size === 0 || [...state.tags].every(t => (p.tags || []).includes(t))) &&
                 (state.resolutions.size === 0 || state.resolutions.has(p.resolution)) &&
@@ -765,9 +910,16 @@
 
         function renderCard(p) {
             const color = COLORS.find(c => c.key === p.color)?.hex || '#6b7280';
-            const downloadUrl = supabase.storage.from('packs').getPublicUrl(p.filename).data.publicUrl;
+            
+            // ADDED: Uploader info extraction
+            const uploaderUsername = p.profiles?.username || 'Unknown';
+            // Use a placeholder if avatar_url is missing
+            const uploaderAvatar = p.profiles?.avatar_url || `https://placehold.co/18x18/1c1c1c/de212a?text=${(uploaderUsername.charAt(0) || 'U').toUpperCase()}`;
+            const uploaderProfileLink = `/profile.html?user=${encodeURIComponent(uploaderUsername)}`;
+            
+            // UPDATED: Added loading="lazy" to pack icon
             const thumbContent = p.icon_url 
-                ? `<div class="pack-icon-bg" style="background-image: url('${p.icon_url}');"></div><img class="pack-icon" src="${p.icon_url}" alt="${escapeHtml(p.name)} Icon">`
+                ? `<div class="pack-icon-bg" style="background-image: url('${p.icon_url}');"></div><img class="pack-icon" src="${p.icon_url}" alt="${escapeHtml(p.name)} Icon" loading="lazy">`
                 : `<div class="glyph" style="background:${color}"><i class="fa-solid fa-cube"></i></div>`;
             const thumbBackgroundStyle = p.icon_url ? `background: linear-gradient(135deg,#1f2937,#0f172a);` : `background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})`;
             
@@ -786,7 +938,16 @@
                             <div class="stat-item"><i class="fa-solid fa-download"></i><span id="downloads-${p.id}">${(p.download_count || 0).toLocaleString()}</span></div>
                             <div class="stat-item"><i class="fa-solid fa-calendar-day"></i><span>${formatDate(p.created_at)}</span></div>
                         </div>
-                        <h4>${escapeHtml(p.name)}</h4>
+                        
+                        <!-- ADDED: Pack name and Uploader info -->
+                        <div class="pack-name-row">
+                            <h4>${escapeHtml(p.name)}</h4>
+                            <a class="uploader-info" href="${uploaderProfileLink}">
+                                <img class="uploader-avatar" src="${uploaderAvatar}" alt="${uploaderUsername}" loading="lazy">
+                                <span class="uploader-name">${escapeHtml(uploaderUsername)}</span>
+                            </a>
+                        </div>
+                        
                         <div class="meta">
                             ${(p.color && p.color !== 'none') ? `<span class="badge">${escapeHtml(p.color)}</span>` : ''}
                             ${p.resolution ? `<span class="badge">${escapeHtml(p.resolution)}</span>` : ''}
@@ -809,7 +970,7 @@
         }
         function buildSidebarTags(container, onSelect, selected) {
             container.innerHTML = TAGS.map(tag => `<button type="button" class="tag${selected?.has(tag) ? ' active' : ''}" onclick="this.dispatchEvent(new CustomEvent('sidebar-tag-select', {bubbles: true, detail: {key: '${tag}', el: this}}))">${capitalizeFirst(tag)}</button>`).join('');
-            container.addEventListener('sidebar-tag-select', e => { onSelect(e.detail.key, e.detail.el); e.detail.el.classList.toggle('active'); });
+            container.addEventListener('sidebar-tag-select', e => { toggleSet(state.tags, tag); render(); });
         }
         function buildSelectorBoxes(container, onSelect, selected, options) {
             container.innerHTML = options.map(opt => `<button type="button" class="res-box${(selected instanceof Set ? selected.has(opt) : selected === opt) ? ' active' : ''}" onclick="this.dispatchEvent(new CustomEvent('box-select', {bubbles: true, detail: {key: '${opt}', el: this}}))">${opt}</button>`).join('');
@@ -819,11 +980,18 @@
         window.openModal = function() {
             document.getElementById("backdrop").style.display = "flex";
             state.modalColor = null; state.modalResolution = null; state.modalTags.clear();
-            buildSwatches(document.getElementById("modalSwatches"), (key, el) => { state.modalColor = key; highlightOne(el.parentElement, el); }, null);
-            buildSelectorBoxes(document.getElementById("modalResolutions"), (key, el) => { state.modalResolution = key; highlightOne(el.parentElement, el); }, null, RESOLUTIONS);
+            buildSwatches(document.getElementById("modalSwatches"), (k, el) => { state.modalColor = k; highlightOne(el.parentElement, el); }, null);
+            buildSelectorBoxes(document.getElementById("modalResolutions"), (k, el) => { state.modalResolution = k; highlightOne(el.parentElement, el); }, null, RESOLUTIONS);
             updateTagButtonText();
+            // ADDED: Set the default mode when opening modal
+            setUploadMode('single'); 
         }
-        window.closeModal = function() { document.getElementById("backdrop").style.display = "none"; document.getElementById("uploadForm").reset(); }
+        window.closeModal = function() { 
+            document.getElementById("backdrop").style.display = "none"; 
+            document.getElementById("uploadForm").reset(); 
+            // Reset to single mode after close
+            uploadMode = 'single';
+        }
         window.openTagModal = () => openTagEditor(false);
         window.openEditTagModal = () => openTagEditor(true);
         function openTagEditor(isEditMode) {
@@ -962,7 +1130,6 @@
             }
             if (currentUserRole === 'admin') { 
                 document.getElementById('admin-actions').style.display = 'block'; 
-                document.querySelector('#mobile-filters-panel #admin-actions').style.display = 'block';
             }
             await loadPacksOnStartup();
         }
@@ -971,7 +1138,10 @@
             if (document.getElementById('grid')) {
                 const mobileFilterPanel = document.getElementById('mobile-filters-panel');
                 const desktopSidebar = document.querySelector('.sidebar');
-                mobileFilterPanel.innerHTML = desktopSidebar.innerHTML;
+                // Ensure mobile filter panel is populated with desktop sidebar content
+                if (mobileFilterPanel && desktopSidebar) {
+                    mobileFilterPanel.innerHTML = desktopSidebar.innerHTML;
+                }
                 
                 // --- SETUP FOR BOTH DESKTOP AND MOBILE ---
                 const filterAreas = [
@@ -980,10 +1150,23 @@
                 ];
                 
                 filterAreas.forEach(area => {
-                    buildSwatches(area.container.querySelector('#colorSwatches'), (k, el) => { toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
-                    buildSidebarTags(area.container.querySelector('#tagCloud'), (k, el) => { toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
-                    buildSelectorBoxes(area.container.querySelector('#resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions, RESOLUTIONS);
-                    buildSelectorBoxes(area.container.querySelector('#versionBoxes'), (v, el) => { toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS);
+                    // Update: Click handler for sidebar tags/colors/res now calls render() to update pack list
+                    const colorSwatches = area.container.querySelector('#colorSwatches');
+                    if(colorSwatches) buildSwatches(colorSwatches, (k, el) => { toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
+                    
+                    const tagCloud = area.container.querySelector('#tagCloud');
+                    if(tagCloud) buildSidebarTags(tagCloud, (k, el) => { toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
+                    
+                    const resolutionBoxes = area.container.querySelector('#resolutionBoxes');
+                    if(resolutionBoxes) buildSelectorBoxes(resolutionBoxes, (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions, RESOLUTIONS);
+                    
+                    const versionBoxes = area.container.querySelector('#versionBoxes');
+                    if(versionBoxes) buildSelectorBoxes(versionBoxes, (v, el) => { toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS);
+
+                    const adminActions = area.container.querySelector('#admin-actions');
+                    if (adminActions && currentUserRole === 'admin') {
+                        adminActions.style.display = 'block';
+                    }
                 });
                 
                 // --- EVENT LISTENERS ---
