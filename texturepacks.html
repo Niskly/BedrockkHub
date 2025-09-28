@@ -70,10 +70,10 @@
         }
         .brand-title { font-weight: 800; letter-spacing: .6px; }
         .nav-actions { display: flex; gap: .6rem; }
-        /* FIXED: Navbar Button Styles to match settings/profile.html */
-        .btn { 
-            padding: .5rem 1rem; /* Slightly smaller padding */
-            border-radius: 10px; /* Smaller border radius */
+        /* FIX 1: Adjusted .btn in nav-actions to match consistent styling across pages */
+        .nav-actions .btn { 
+            padding: .6rem 1rem; /* Increased padding slightly for larger button size */
+            border-radius: 12px; /* Increased border radius to 12px */
             font-weight: 700; display: inline-flex; align-items: center; gap: .55rem; 
             cursor: pointer; border: 1px solid transparent; 
         }
@@ -686,8 +686,7 @@
 
         /* ====== API & DATA FUNCTIONS ====== */
         async function loadPacksOnStartup() {
-            // FIXED: Re-added the simple select to fix the bug where packs were not appearing.
-            // The query should join profiles for uploader info.
+            // FIX 2: Correcting Supabase query to ensure packs load correctly.
             let query = supabase.from('packs').select(`
                 *,
                 uploader:user_id (username, avatar_url)
@@ -699,9 +698,7 @@
                 query = query.order('created_at', { ascending: false });
             }
             
-            // Note: If you want to exclude 'user-upload' packs, the correct way to filter 
-            // after the join would be: .not('tags', 'ilike', '%user-upload%')
-            // For now, removing the broken filter to make packs load again.
+            // NOTE: No filtering is done here, allowing all packs to load into the 'packs' array.
 
             const { data, error } = await query;
             if (error) {
@@ -714,6 +711,7 @@
                     uploader_username: pack.uploader?.username,
                     uploader_avatar_url: pack.uploader?.avatar_url
                 }));
+                console.log(`Loaded ${packs.length} packs.`);
             }
             render();
         }
@@ -905,13 +903,25 @@
             } catch (error) { console.error("Failed to update download count:", error); }
             finally {
                 const { data } = supabase.storage.from('packs').getPublicUrl(filename);
+                // FIX: Ensure data.publicUrl is valid before fetching.
+                if (!data.publicUrl) {
+                    console.error("Failed to retrieve public URL for download.");
+                    showToast("Download failed: Could not get file link.", "error");
+                    return;
+                }
                 fetch(data.publicUrl).then(res => res.blob()).then(blob => {
                     const a = document.createElement("a");
                     a.href = URL.createObjectURL(blob);
-                    a.download = `${packName}.${filename.split('.').pop()}`;
+                    // Ensure the downloaded file has the correct extension
+                    const extension = filename.split('.').pop();
+                    a.download = `${packName}.${extension}`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
+                    URL.revokeObjectURL(a.href); // Clean up the object URL
+                }).catch(err => {
+                    console.error("Download failed during fetch/blob creation:", err);
+                    showToast("Download failed due to network error.", "error");
                 });
             }
         }
@@ -1263,19 +1273,31 @@
             if (document.getElementById('grid')) {
                 const mobileFilterPanel = document.getElementById('mobile-filters-panel');
                 const desktopSidebar = document.querySelector('.sidebar');
-                mobileFilterPanel.innerHTML = desktopSidebar.innerHTML;
+                // Ensure desktopSidebar exists before accessing its innerHTML
+                if (desktopSidebar) {
+                    mobileFilterPanel.innerHTML = desktopSidebar.innerHTML;
+                } else {
+                    console.error("Desktop sidebar not found, cannot initialize mobile filters.");
+                }
                 
                 // --- SETUP FOR BOTH DESKTOP AND MOBILE ---
                 const filterAreas = [
                     { container: desktopSidebar, isMobile: false },
                     { container: mobileFilterPanel, isMobile: true }
-                ];
+                ].filter(area => area.container !== null); // Filter out null container if desktopSidebar was null
                 
                 filterAreas.forEach(area => {
-                    buildSwatches(area.container.querySelector('#colorSwatches'), (k, el) => { toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
-                    buildSidebarTags(area.container.querySelector('#tagCloud'), (k, el) => { toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
-                    buildSelectorBoxes(area.container.querySelector('#resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions, RESOLUTIONS);
-                    buildSelectorBoxes(area.container.querySelector('#versionBoxes'), (v, el) => { toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS);
+                    const colorSwatches = area.container.querySelector('#colorSwatches');
+                    if (colorSwatches) buildSwatches(colorSwatches, (k, el) => { toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
+                    
+                    const tagCloud = area.container.querySelector('#tagCloud');
+                    if (tagCloud) buildSidebarTags(tagCloud, (k, el) => { toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
+                    
+                    const resolutionBoxes = area.container.querySelector('#resolutionBoxes');
+                    if (resolutionBoxes) buildSelectorBoxes(resolutionBoxes, (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions, RESOLUTIONS);
+                    
+                    const versionBoxes = area.container.querySelector('#versionBoxes');
+                    if (versionBoxes) buildSelectorBoxes(versionBoxes, (v, el) => { toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS);
                 });
                 
                 // --- EVENT LISTENERS ---
@@ -1289,13 +1311,19 @@
 
                 window.addEventListener('click', (e) => {
                     if (!e.target.closest('.pack-options-btn')) document.querySelectorAll('.pack-options-menu').forEach(menu => menu.style.display = 'none');
-                    if (!e.target.closest('#sortContainer')) {
-                        document.getElementById('sortMenu').style.display = 'none';
-                        document.getElementById('sortContainer').classList.remove('open');
+                    
+                    const sortContainer = document.getElementById('sortContainer');
+                    const sortMenu = document.getElementById('sortMenu');
+                    if (sortContainer && sortMenu && !e.target.closest('#sortContainer')) {
+                        sortMenu.style.display = 'none';
+                        sortContainer.classList.remove('open');
                     }
-                     if (!e.target.closest('#mobileSortContainer')) {
-                        document.getElementById('mobileSortMenu').style.display = 'none';
-                        document.getElementById('mobileSortContainer').classList.remove('open');
+                     
+                    const mobileSortContainer = document.getElementById('mobileSortContainer');
+                    const mobileSortMenu = document.getElementById('mobileSortMenu');
+                    if (mobileSortContainer && mobileSortMenu && !e.target.closest('#mobileSortContainer')) {
+                        mobileSortMenu.style.display = 'none';
+                        mobileSortContainer.classList.remove('open');
                     }
                 });
                 
@@ -1307,3 +1335,4 @@
 </body>
 
 </html>
+        
