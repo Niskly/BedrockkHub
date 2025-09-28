@@ -690,32 +690,20 @@
             render();
         }
         
-        /**
-         * **FIXED ICON EXTRACTION**
-         * Smarter logic to find the icon in both Bedrock (.mcpack) and Java (.zip) packs.
-         */
         async function extractAndUploadIcon(file, fileIndex, userId) {
             try {
                 const zip = await JSZip.loadAsync(file);
                 const filesInZip = zip.files;
-
-                // Define a prioritized list of possible icon paths
-                const prioritizedPaths = [
-                    'pack_icon.png', // Standard for Bedrock
-                    'pack.png',      // Standard for Java
-                ];
-
+                const prioritizedPaths = ['pack_icon.png', 'pack.png'];
                 let iconPath = null;
 
-                // 1. Check for exact, high-priority paths at the root of the zip.
                 for (const path of prioritizedPaths) {
                     if (filesInZip[path]) {
                         iconPath = path;
-                        break; // Found the best match, stop searching.
+                        break;
                     }
                 }
 
-                // 2. If not found, perform a broader search as a fallback.
                 if (!iconPath) {
                     iconPath = Object.keys(filesInZip).find(path => 
                         path.toLowerCase().endsWith('pack_icon.png') || 
@@ -723,7 +711,6 @@
                     );
                 }
                 
-                // 3. If an icon was found, extract and upload it.
                 if (iconPath) {
                     const iconFile = filesInZip[iconPath];
                     const iconBlob = await iconFile.async("blob");
@@ -735,16 +722,19 @@
                         return null;
                     }
                     
-                    // Return the public URL on success
                     return supabase.storage.from("packs").getPublicUrl(iconStoragePath).data.publicUrl;
                 }
             } catch(e) {
                  console.warn(`Could not read or process zip file ${file.name}:`, e);
             }
-            // Return null if no icon was found or an error occurred
             return null;
         }
 
+        /**
+         * **FIXED UPLOAD HANDLING**
+         * - Uses a sequential `for...of` loop for accurate progress bar updates.
+         * - Removes 'needs-tags' from bulk uploads.
+         */
         window.handleUpload = async function(e) {
             e.preventDefault();
             const submitBtn = document.getElementById("submitBtn");
@@ -761,7 +751,7 @@
                 if (!state.modalColor) return showToast("You forgot to select a primary color.", "error");
                 if (!state.modalResolution) return showToast("You forgot to select a resolution.", "error");
                 if (!document.getElementById("packName").value.trim()) return showToast("Pack name is required.", "error");
-            } else { // Bulk mode
+            } else {
                 if (filesToProcess.length === 0) return showToast("Please select files for bulk upload.", "error");
                 if (filesToProcess.length > 10) return showToast("Maximum 10 packs allowed for bulk upload.", "error");
             }
@@ -776,64 +766,60 @@
                 const { data: { session }, error: sessionError } = await supabase.auth.getSession();
                 if (sessionError || !session) throw new Error("You must be logged in to upload packs.");
                 
+                const packsToUpload = [];
                 const totalFiles = filesToProcess.length;
                 let processedCount = 0;
 
-                const uploadPromises = filesToProcess.map(async (file, i) => {
-                    try {
-                        if (!file.name.toLowerCase().match(/\.(mcpack|zip)$/)) {
-                            console.warn(`Skipping invalid file type: ${file.name}`);
-                            return null;
-                        }
+                // Use a for...of loop to process files sequentially for accurate progress
+                for (const file of filesToProcess) {
+                    processedCount++;
+                    progressText.textContent = `[${processedCount}/${totalFiles}] Processing: ${file.name}`;
 
-                        processedCount++;
-                        const progress = (processedCount / totalFiles) * 100;
-                        progressText.textContent = `[${processedCount}/${totalFiles}] Processing: ${file.name}`;
-                        
-                        const iconUrl = await extractAndUploadIcon(file, i, session.user.id);
-
-                        const sanitizedName = file.name.replace(/[^a-zA-Z0-9-._]/g, "").replace(/\s+/g, "-");
-                        const packStoragePath = `pack_files/${session.user.id}/${Date.now()}-${i}-${sanitizedName}`;
-                        const { error: uploadError } = await supabase.storage.from("packs").upload(packStoragePath, file);
-                        if (uploadError) throw new Error(`Upload failed for ${file.name}: ${uploadError.message}`);
-                        
-                        let packData;
-                        if (state.uploadMode === 'single') {
-                            packData = {
-                                name: document.getElementById("packName").value.trim(),
-                                color: state.modalColor,
-                                tags: [...state.modalTags],
-                                resolution: state.modalResolution,
-                                description: document.getElementById("packDescription").value.trim(),
-                                version: file.name.toLowerCase().endsWith(".mcpack") ? "bedrock" : "java",
-                                filename: packStoragePath,
-                                icon_url: iconUrl
-                            };
-                        } else {
-                            packData = {
-                                name: file.name.replace(/\.(mcpack|zip)$/i, ""),
-                                color: 'none',
-                                tags: ['needs-tags'],
-                                resolution: 'unknown',
-                                version: file.name.toLowerCase().endsWith(".mcpack") ? "bedrock" : "java",
-                                filename: packStoragePath,
-                                icon_url: iconUrl,
-                                description: null
-                            };
-                        }
-                        
-                        progressBarFill.style.width = `${progress}%`;
-                        return packData;
-
-                    } catch (error) {
-                        console.error(error);
-                        showToast(`Error processing ${file.name}. Skipping.`, 'error');
-                        return null;
+                    if (!file.name.toLowerCase().match(/\.(mcpack|zip)$/)) {
+                        showToast(`Skipping invalid file type: ${file.name}`, "warning");
+                        continue; // Skip this file and go to the next one
                     }
-                });
 
-                const results = await Promise.all(uploadPromises);
-                const packsToUpload = results.filter(p => p !== null);
+                    const iconUrl = await extractAndUploadIcon(file, processedCount - 1, session.user.id);
+
+                    const sanitizedName = file.name.replace(/[^a-zA-Z0-9-._]/g, "").replace(/\s+/g, "-");
+                    const packStoragePath = `pack_files/${session.user.id}/${Date.now()}-${processedCount - 1}-${sanitizedName}`;
+                    const { error: uploadError } = await supabase.storage.from("packs").upload(packStoragePath, file);
+                    if (uploadError) {
+                        showToast(`Upload failed for ${file.name}. Skipping.`, 'error');
+                        continue;
+                    }
+                    
+                    let packData;
+                    if (state.uploadMode === 'single') {
+                        packData = {
+                            name: document.getElementById("packName").value.trim(),
+                            color: state.modalColor,
+                            tags: [...state.modalTags],
+                            resolution: state.modalResolution,
+                            description: document.getElementById("packDescription").value.trim(),
+                            version: file.name.toLowerCase().endsWith(".mcpack") ? "bedrock" : "java",
+                            filename: packStoragePath,
+                            icon_url: iconUrl
+                        };
+                    } else {
+                        packData = {
+                            name: file.name.replace(/\.(mcpack|zip)$/i, ""),
+                            color: 'none',
+                            tags: [], // **FIX**: No 'needs-tags' anymore
+                            resolution: 'unknown',
+                            version: file.name.toLowerCase().endsWith(".mcpack") ? "bedrock" : "java",
+                            filename: packStoragePath,
+                            icon_url: iconUrl,
+                            description: null
+                        };
+                    }
+                    packsToUpload.push(packData);
+                    
+                    // **FIX**: Update progress bar after each file is fully processed
+                    const progress = (processedCount / totalFiles) * 100;
+                    progressBarFill.style.width = `${progress}%`;
+                }
 
                 if (packsToUpload.length === 0) {
                     throw new Error("No valid packs were uploaded.");
@@ -1007,7 +993,7 @@
                         <h4>${escapeHtml(p.name)}</h4>
                         <div class="meta">
                             ${(p.color && p.color !== 'none') ? `<span class="badge">${escapeHtml(p.color)}</span>` : ''}
-                            ${p.resolution ? `<span class="badge">${escapeHtml(p.resolution)}</span>` : ''}
+                            ${(p.resolution && p.resolution !== 'unknown') ? `<span class="badge">${escapeHtml(p.resolution)}</span>` : ''}
                             ${p.version ? `<span class="badge">${escapeHtml(p.version)}</span>` : ''}
                             ${(p.tags||[]).map(t=>`<span class="badge">${escapeHtml(capitalizeFirst(t))}</span>`).join('')}
                         </div>
