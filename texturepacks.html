@@ -70,7 +70,8 @@
         }
         .brand-title { font-weight: 800; letter-spacing: .6px; }
         .nav-actions { display: flex; gap: .6rem; }
-        .btn { padding: .6rem 1rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; }
+        /* UPDATED: Nav action buttons size to match settings/profile. Reduced padding/size. */
+        .btn { padding: .5rem 0.9rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: .5rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
         .ghost { border-color: var(--border); background: transparent; color: var(--text); }
         .primary {
             background: linear-gradient(90deg, var(--brand-1), var(--brand-2));
@@ -116,7 +117,7 @@
             grid-template-columns: repeat(3, 1fr);
             gap: 18px;
         }
-        /* START NEW STYLES FOR UPLOADER INFO AND BULK UPLOAD */
+        /* START UPLOADER INFO AND BULK UPLOAD STYLES */
         .pack-name-row { 
             display: flex; 
             justify-content: space-between; 
@@ -182,10 +183,9 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         .bulk-hidden {
-            /* This class is controlled by JavaScript to toggle visibility */
-            display: none !important;
+            /* This class is now toggled by JS. Default is visible, hidden only in bulk mode. */
         }
-        /* END NEW STYLES */
+        /* END UPLOADER INFO AND BULK UPLOAD STYLES */
         .pack { overflow: hidden; }
         .pack.card { box-shadow: 0 24px 70px rgba(0, 0, 0, .55); transition: box-shadow .2s, transform .2s, border-color .2s; }
         .pack.card:hover { transform: translateY(-4px); box-shadow: 0 28px 75px rgba(0, 0, 0, .65); border-color: rgba(255,255,255,.2); }
@@ -213,6 +213,23 @@
         .backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, .8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 60; }
         .backdrop.on-top { z-index: 70; }
         .modal { width: 100%; max-width: 760px; background: var(--bg-2); border-radius: 12px; overflow-y: auto; max-height: 90vh; }
+        /* UPDATED: Modal layout for mobile */
+        @media (max-width: 768px) {
+            .modal { max-width: 95vw; max-height: 95vh; }
+            .modal .panel { padding: 14px; }
+            .modal-footer { padding: 10px 14px 14px; }
+            .modal-footer button { font-size: 14px; }
+            .upload-mode-switcher { margin-bottom: 1rem; }
+            .upload-mode-switcher button { padding: 8px 8px; font-size: 13px; }
+            
+            /* Force upload form grid to stack on mobile */
+            #uploadForm fieldset > div {
+                grid-template-columns: 1fr !important;
+            }
+            .file-upload-area {
+                grid-column: span 1 !important;
+            }
+        }
         .modal .panel { padding: 20px; }
         .modal-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 20px 20px; }
         .modal-footer .right-actions { display: flex; gap: 10px; }
@@ -376,9 +393,6 @@
             .nav-actions { display: none; }
             .mobile-nav-toggle { display: block; }
             .packs { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
-            .modal { max-width: 95vw; max-height: 95vh; }
-            #uploadForm > fieldset > div { grid-template-columns: 1fr; }
-            .file-upload-area { grid-column: span 1; }
         }
         @media (max-width: 480px) {
             .packs { grid-template-columns: 1fr; }
@@ -497,22 +511,22 @@
                 <!-- END NEW MODE SWITCHER -->
                 <form id="uploadForm" onsubmit="handleUpload(event)">
                     <fieldset id="uploadFormFieldset">
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px; align-items: start;">
+                        <div id="upload-form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px; align-items: start;">
                             <div>
                                 <label class="tiny label-with-icon"><span>Pack name</span></label>
                                 <input id="packName" required placeholder="e.g. Crystal PvP" type="text">
                             </div>
                             <!-- Bulk Hidden Fields -->
-                            <div class="bulk-hidden">
+                            <div id="color-group" class="bulk-hidden">
                                 <label class="tiny">Primary color</label>
                                 <div id="modalSwatches" class="swatches"></div>
                             </div>
-                            <div class="bulk-hidden">
+                            <div id="description-group" class="bulk-hidden">
                                <label class="tiny">Description (optional)</label>
                                <textarea id="packDescription" placeholder="A short description of the pack..."></textarea>
                             </div>
                             <!-- Bulk Hidden Fields -->
-                            <div class="bulk-hidden">
+                            <div id="res-tag-group" class="bulk-hidden">
                                 <div>
                                     <label class="tiny">Resolution</label>
                                     <div id="modalResolutions" class="resolutions"></div>
@@ -642,12 +656,19 @@
         let tempModalTags = new Set();
         let isEditingTags = false;
         let currentUserRole = null;
-        let uploadMode = 'single'; // ADDED: 'single' or 'bulk' mode
+        let uploadMode = 'single'; // 'single' or 'bulk' mode
+        
+        // Define element references for upload mode switching
+        const colorGroup = document.getElementById('color-group');
+        const descriptionGroup = document.getElementById('description-group');
+        const resTagGroup = document.getElementById('res-tag-group');
+        const uploadFormGrid = document.getElementById('upload-form-grid');
+        const fileUploadArea = document.querySelector('#uploadForm .file-upload-area');
+
 
         /* ====== API & DATA FUNCTIONS ====== */
         async function loadPacksOnStartup() {
             // UPDATED: Optimized query to fetch Uploader info using RLS-compliant join
-            // We now select the pack data AND the related profile data (username and avatar_url)
             let query = supabase.from('packs').select('*, profiles(username, avatar_url)').not('tags', 'ilike', '%user-upload%');
 
             if (state.sortBy === 'downloads') {
@@ -665,26 +686,37 @@
             render();
         }
         
-        // ADDED: Function to switch between Single and Bulk upload modes
+        // UPDATED: Function to switch between Single and Bulk upload modes
         window.setUploadMode = function(mode) {
             uploadMode = mode;
-            const bulkHiddenElements = document.querySelectorAll('#uploadForm .bulk-hidden');
             const singleBtn = document.getElementById('single-upload-btn');
             const bulkBtn = document.getElementById('bulk-upload-btn');
             const modalTitle = document.getElementById('modal-title');
             const modalHint = document.getElementById('modal-hint');
 
             if (mode === 'bulk') {
-                // Hide all non-essential fields
-                bulkHiddenElements.forEach(el => el.style.display = 'none');
+                // Hide all non-essential fields (Restored visibility logic)
+                if(colorGroup) colorGroup.style.display = 'none';
+                if(descriptionGroup) descriptionGroup.style.display = 'none';
+                if(resTagGroup) resTagGroup.style.display = 'none';
+
+                // Change grid layout to full width
+                if(uploadFormGrid) uploadFormGrid.style.gridTemplateColumns = '1fr';
+                if(fileUploadArea) fileUploadArea.style.gridColumn = 'span 1';
                 
                 singleBtn.classList.remove('active');
                 bulkBtn.classList.add('active');
                 modalTitle.textContent = 'Bulk Pack Upload (Fast)';
                 modalHint.textContent = 'Only pack name, icon, and version are detected/required.';
             } else {
-                // Show all fields
-                bulkHiddenElements.forEach(el => el.style.display = '');
+                // Restore visibility for Single Upload filters
+                if(colorGroup) colorGroup.style.display = 'block';
+                if(descriptionGroup) descriptionGroup.style.display = 'block';
+                if(resTagGroup) resTagGroup.style.display = 'block';
+
+                // Restore grid layout to 1fr 1fr
+                if(uploadFormGrid) uploadFormGrid.style.gridTemplateColumns = '1fr 1fr';
+                if(fileUploadArea) fileUploadArea.style.gridColumn = 'span 2';
 
                 singleBtn.classList.add('active');
                 bulkBtn.classList.remove('active');
@@ -705,7 +737,11 @@
                 return showToast("Please select a valid .mcpack or .zip file", "error");
             }
             
-            // NEW BULK VALIDATION/DEFAULTS
+            // Get session early to use user info for default description
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            if (sessionError || !session) throw new Error("You must be logged in to upload packs.");
+            
+            // NEW BULK VALIDATION/DEFAULTS (Restored Single Upload Validation)
             if (uploadMode === 'single') {
                 if (!state.modalColor) { return showToast("You forgot to select a primary color.", "error"); }
                 if (!state.modalResolution) { return showToast("You forgot to select a resolution.", "error"); }
@@ -716,11 +752,7 @@
             const uploadResolution = uploadMode === 'bulk' ? 'unknown' : state.modalResolution;
             const uploadTags = uploadMode === 'bulk' ? 'bulk-upload' : [...state.modalTags].join(",");
             
-            // Get session early to use user info for default description
-            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-            if (sessionError || !session) throw new Error("You must be logged in to upload packs.");
-            
-            const uploadDescription = uploadMode === 'bulk' ? `Bulk uploaded by ${session.user.email || 'user'}` : packDescription;
+            const uploadDescription = uploadMode === 'bulk' ? `Bulk uploaded by uploader` : packDescription;
             // END BULK VALIDATION/DEFAULTS
 
             let version = packFile.name.toLowerCase().endsWith(".mcpack") ? "bedrock" : "java";
@@ -761,8 +793,7 @@
                         resolution: uploadResolution, 
                         version, 
                         description: uploadDescription, 
-                        icon_url: iconUrl,
-                        user_id: session.user.id // Explicitly ensure user_id is sent for safety
+                        icon_url: iconUrl
                     })
                 });
 
@@ -911,13 +942,12 @@
         function renderCard(p) {
             const color = COLORS.find(c => c.key === p.color)?.hex || '#6b7280';
             
-            // ADDED: Uploader info extraction
+            // Uploader info extraction
             const uploaderUsername = p.profiles?.username || 'Unknown';
-            // Use a placeholder if avatar_url is missing
             const uploaderAvatar = p.profiles?.avatar_url || `https://placehold.co/18x18/1c1c1c/de212a?text=${(uploaderUsername.charAt(0) || 'U').toUpperCase()}`;
             const uploaderProfileLink = `/profile.html?user=${encodeURIComponent(uploaderUsername)}`;
             
-            // UPDATED: Added loading="lazy" to pack icon
+            // Added loading="lazy" to pack icon
             const thumbContent = p.icon_url 
                 ? `<div class="pack-icon-bg" style="background-image: url('${p.icon_url}');"></div><img class="pack-icon" src="${p.icon_url}" alt="${escapeHtml(p.name)} Icon" loading="lazy">`
                 : `<div class="glyph" style="background:${color}"><i class="fa-solid fa-cube"></i></div>`;
@@ -939,7 +969,7 @@
                             <div class="stat-item"><i class="fa-solid fa-calendar-day"></i><span>${formatDate(p.created_at)}</span></div>
                         </div>
                         
-                        <!-- ADDED: Pack name and Uploader info -->
+                        <!-- Pack name and Uploader info -->
                         <div class="pack-name-row">
                             <h4>${escapeHtml(p.name)}</h4>
                             <a class="uploader-info" href="${uploaderProfileLink}">
@@ -983,7 +1013,7 @@
             buildSwatches(document.getElementById("modalSwatches"), (k, el) => { state.modalColor = k; highlightOne(el.parentElement, el); }, null);
             buildSelectorBoxes(document.getElementById("modalResolutions"), (k, el) => { state.modalResolution = k; highlightOne(el.parentElement, el); }, null, RESOLUTIONS);
             updateTagButtonText();
-            // ADDED: Set the default mode when opening modal
+            // Set the default mode when opening modal
             setUploadMode('single'); 
         }
         window.closeModal = function() { 
