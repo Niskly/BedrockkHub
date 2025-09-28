@@ -70,7 +70,7 @@
         }
         .brand-title { font-weight: 800; letter-spacing: .6px; }
         .nav-actions { display: flex; gap: .6rem; }
-        /* UPDATED: Nav action buttons size to match settings/profile. Reduced padding/size. */
+        /* FIX: Standardize Nav action button size */
         .btn { padding: .5rem 0.9rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: .5rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
         .ghost { border-color: var(--border); background: transparent; color: var(--text); }
         .primary {
@@ -182,8 +182,9 @@
             color: var(--text);
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
+        /* Hides elements only in bulk mode, restores in single mode */
         .bulk-hidden {
-            /* This class is now toggled by JS. Default is visible, hidden only in bulk mode. */
+             display: none !important;
         }
         /* END UPLOADER INFO AND BULK UPLOAD STYLES */
         .pack { overflow: hidden; }
@@ -215,6 +216,9 @@
         .modal { width: 100%; max-width: 760px; background: var(--bg-2); border-radius: 12px; overflow-y: auto; max-height: 90vh; }
         /* UPDATED: Modal layout for mobile */
         @media (max-width: 768px) {
+            .nav-actions { display: none; }
+            .mobile-nav-toggle { display: block; }
+            .packs { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
             .modal { max-width: 95vw; max-height: 95vh; }
             .modal .panel { padding: 14px; }
             .modal-footer { padding: 10px 14px 14px; }
@@ -223,176 +227,12 @@
             .upload-mode-switcher button { padding: 8px 8px; font-size: 13px; }
             
             /* Force upload form grid to stack on mobile */
-            #uploadForm fieldset > div {
+            #upload-form-grid {
                 grid-template-columns: 1fr !important;
             }
-            .file-upload-area {
+            #upload-form-grid > div {
                 grid-column: span 1 !important;
             }
-        }
-        .modal .panel { padding: 20px; }
-        .modal-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 20px 20px; }
-        .modal-footer .right-actions { display: flex; gap: 10px; }
-        .modal-footer.center-actions { justify-content: center; }
-        .file-upload-area { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; border: 2px dashed var(--border); border-radius: 12px; background: var(--bg-0); text-align: center; cursor: pointer; grid-column: span 2; }
-        .file-upload-area:hover { border-color: var(--brand-1); background: rgba(255, 255, 255, .05); }
-        .file-upload-area i { font-size: 32px; margin-bottom: 12px; color: var(--brand-1); }
-        .file-hint { margin-top: 6px; color: var(--muted); }
-        .label-with-icon { display: flex; align-items: center; gap: 6px; }
-        input[type="text"], textarea { width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-2);color:var(--text); font-family: inherit; font-size: inherit; }
-        textarea { resize: vertical; height: 120px; }
-        .sort-container { position: relative; }
-        .sort-btn { padding: .25rem .5rem; gap: .5rem; }
-        .sort-btn #currentSort, .sort-btn #mobileCurrentSort { color: var(--text); }
-        .sort-btn .fa-chevron-down { font-size: 10px; transition: transform .2s; }
-        .sort-container.open .fa-chevron-down { transform: rotate(180deg); }
-        .sort-menu { display: none; position: absolute; top: 100%; left: 0; margin-top: 6px; z-index: 10; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.4); min-width: 160px; }
-        .sort-menu a { display: block; padding: 8px 14px; font-size: 14px; }
-        .sort-menu a:hover { background: var(--brand-1); }
-        .sort-menu a.active { font-weight: 800; color: var(--text); }
-        .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-13px); }
-        #toast-container { position: fixed; top: 80px; right: 20px; z-index: 100; display: flex; flex-direction: column; gap: 10px; }
-        .toast { padding: 12px 18px; border-radius: 8px; color: white; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; }
-        .toast.error { background: var(--danger); }
-        .toast.success { background: var(--success); }
-        .pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 20px; }
-        .pagination-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; }
-        .pagination-btn:hover { border-color: white; }
-        fieldset { border: none; padding: 0; margin: 0; }
-        #uploadFormFieldset:disabled { opacity: 0.5; pointer-events: none; }
-        
-        #tagSearchInput { padding: .5rem .8rem; }
-        
-        #tagSelectModal .modal-body {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            padding: 20px;
-            padding-top: 10px;
-        }
-        #tagSelectModal .tag-checkbox {
-            font-size: 11px;
-            padding: .2rem .4rem;
-            border-radius: 999px;
-            border: 1px solid var(--border);
-            background: var(--bg-0);
-            color: white;
-            font-weight: 700;
-            text-transform: capitalize;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-        }
-        #tagSelectModal .tag-checkbox:hover {
-            border-color: var(--brand-1);
-        }
-        #tagSelectModal .tag-checkbox.selected {
-            background-color: var(--brand-1);
-            border-color: var(--brand-2);
-            color: white;
-        }
-        #admin-actions { display: none; }
-        
-        .user-dropdown { position: relative; display: inline-block; }
-        .user-menu-btn {
-            background: var(--bg-2); border: 1px solid var(--border); color: var(--text);
-            padding: 8px 12px; border-radius: 12px; display: flex; align-items: center;
-            gap: 10px; cursor: pointer; font-weight: 600;
-        }
-        .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
-        .user-menu-btn .fa-chevron-down { font-size: 0.8em; transition: transform 0.2s; }
-        .user-menu-btn:hover { border-color: var(--border-strong); }
-        .dropdown-content {
-            display: none; position: absolute; right: 0; top: 110%;
-            background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px;
-            min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10;
-            overflow: hidden;
-        }
-        .dropdown-content.show { display: block; }
-        .dropdown-content a {
-            color: var(--muted); padding: 12px 16px; text-decoration: none;
-            display: flex; align-items: center; gap: 10px; font-weight: 600;
-        }
-        .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
-
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        
-        .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
-        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
-        .mobile-nav-backdrop.show { display: block; opacity: 1; }
-        .mobile-nav-sidebar {
-            position: fixed; top: 0; left: 0; bottom: 0;
-            width: 280px; background: var(--bg-1);
-            z-index: 999; transform: translateX(-100%);
-            transition: transform 0.3s ease;
-            display: flex; flex-direction: column;
-            border-right: 1px solid var(--border);
-        }
-        .mobile-nav-sidebar.show { transform: translateX(0); }
-        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
-        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
-        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
-        .mobile-nav-user-info { display: flex; flex-direction: column; }
-        .mobile-nav-username { font-weight: 700; color: var(--text); }
-        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
-        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
-        .mobile-nav-main-links { flex-grow: 1; }
-        .mobile-nav-main-links a, .mobile-nav-footer-links a {
-            padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem;
-            font-weight: 600; color: var(--muted); transition: all 0.2s ease;
-        }
-        .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
-        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
-        .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
-        
-        .mobile-filter-controls { display: none; } 
-        #mobile-filters-panel {
-            background: var(--bg-2);
-            border-radius: 16px;
-            margin-top: 1rem;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out;
-            padding: 0 18px;
-        }
-        #mobile-filters-panel.show {
-            max-height: 1000px;
-            padding: 18px;
-        }
-
-        @media (max-width: 1024px) { 
-            .layout { grid-template-columns: 1fr; } 
-            .sidebar, .filter-bar { display: none !important; } 
-            .mobile-filter-controls { display: block; } 
-            
-            .mobile-actions {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 0.5rem;
-                margin-top: 1rem;
-            }
-            #mobile-filter-btn {
-                grid-column: 1 / -1; 
-            }
-            .mobile-actions .sort-container {
-                width: 100%;
-            }
-            .mobile-actions .sort-btn {
-                width: 100%;
-                justify-content: space-between;
-                height: 100%;
-            }
-            .mobile-actions .sort-btn > div {
-                 display: flex;
-                 align-items: center;
-                 gap: 0.5rem;
-            }
-            
-            .packs { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); } 
-        }
-        @media (max-width: 768px) { 
-            .nav-actions { display: none; }
-            .mobile-nav-toggle { display: block; }
-            .packs { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
         }
         @media (max-width: 480px) {
             .packs { grid-template-columns: 1fr; }
@@ -469,6 +309,9 @@
                         <button class="btn sm ghost" onclick="clearMobileSearch()"><i class="fa-solid fa-xmark"></i></button>
                     </div>
                     <div class="mobile-actions">
+                         <!-- P3 FIX: Upload button in mobile-actions -->
+                         <button id="mobile-upload-btn" class="btn primary" onclick="openModal()" style="display:none;"><i class="fa-solid fa-cloud-upload-alt"></i> Upload</button>
+                         <!-- /P3 FIX -->
                          <div class="sort-container" id="mobileSortContainer">
                             <button class="btn ghost sort-btn" onclick="toggleSortMenu(true)">
                                 <div><span class="tiny">Sort by:</span> <span id="mobileCurrentSort">Latest Upload</span></div>
@@ -512,21 +355,25 @@
                 <form id="uploadForm" onsubmit="handleUpload(event)">
                     <fieldset id="uploadFormFieldset">
                         <div id="upload-form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px; align-items: start;">
-                            <div>
+                            <!-- Pack Name input is hidden in bulk mode -->
+                            <div id="pack-name-group" class="bulk-hidden-field">
                                 <label class="tiny label-with-icon"><span>Pack name</span></label>
                                 <input id="packName" required placeholder="e.g. Crystal PvP" type="text">
                             </div>
-                            <!-- Bulk Hidden Fields -->
-                            <div id="color-group" class="bulk-hidden">
+                            
+                            <!-- Color Swatches -->
+                            <div id="color-group" class="bulk-hidden-field">
                                 <label class="tiny">Primary color</label>
                                 <div id="modalSwatches" class="swatches"></div>
                             </div>
-                            <div id="description-group" class="bulk-hidden">
+
+                            <div id="description-group" class="bulk-hidden-field" style="grid-column: span 1;">
                                <label class="tiny">Description (optional)</label>
                                <textarea id="packDescription" placeholder="A short description of the pack..."></textarea>
                             </div>
-                            <!-- Bulk Hidden Fields -->
-                            <div id="res-tag-group" class="bulk-hidden">
+                            
+                            <!-- Resolution/Tags -->
+                            <div id="res-tag-group" class="bulk-hidden-field" style="grid-column: span 1;">
                                 <div>
                                     <label class="tiny">Resolution</label>
                                     <div id="modalResolutions" class="resolutions"></div>
@@ -544,7 +391,8 @@
                                 <i class="fa-solid fa-file-arrow-up"></i>
                                 <div>Drag & drop or <span style="color:var(--brand-1)">browse files</span></div>
                                 <div class="file-hint" id="fileHint">.mcpack or .zip files only</div>
-                                <input id="fileInput" type="file" accept=".mcpack,.zip" style="display:none" onchange="hintFile()" />
+                                <!-- FIX: Added 'multiple' attribute for bulk upload -->
+                                <input id="fileInput" type="file" accept=".mcpack,.zip" style="display:none" onchange="hintFile()" multiple /> 
                             </div>
                         </div>
                     </fieldset>
@@ -662,9 +510,11 @@
         const colorGroup = document.getElementById('color-group');
         const descriptionGroup = document.getElementById('description-group');
         const resTagGroup = document.getElementById('res-tag-group');
-        const uploadFormGrid = document.getElementById('upload-form-grid');
-        const fileUploadArea = document.querySelector('#uploadForm .file-upload-area');
-
+        const packNameGroup = document.getElementById('pack-name-group');
+        const packNameInput = document.getElementById('packName');
+        const singleUploadBtn = document.getElementById('single-upload-btn');
+        const bulkUploadBtn = document.getElementById('bulk-upload-btn');
+        const fileInput = document.getElementById('fileInput');
 
         /* ====== API & DATA FUNCTIONS ====== */
         async function loadPacksOnStartup() {
@@ -686,132 +536,161 @@
             render();
         }
         
-        // UPDATED: Function to switch between Single and Bulk upload modes
+        // FIX: Function to switch between Single and Bulk upload modes (Restored visibility)
         window.setUploadMode = function(mode) {
             uploadMode = mode;
-            const singleBtn = document.getElementById('single-upload-btn');
-            const bulkBtn = document.getElementById('bulk-upload-btn');
             const modalTitle = document.getElementById('modal-title');
             const modalHint = document.getElementById('modal-hint');
 
             if (mode === 'bulk') {
-                // Hide all non-essential fields (Restored visibility logic)
-                if(colorGroup) colorGroup.style.display = 'none';
-                if(descriptionGroup) descriptionGroup.style.display = 'none';
-                if(resTagGroup) resTagGroup.style.display = 'none';
-
-                // Change grid layout to full width
-                if(uploadFormGrid) uploadFormGrid.style.gridTemplateColumns = '1fr';
-                if(fileUploadArea) fileUploadArea.style.gridColumn = 'span 1';
+                // Hide all non-essential fields (Bulk Upload)
+                if(colorGroup) colorGroup.classList.add('bulk-hidden');
+                if(descriptionGroup) descriptionGroup.classList.add('bulk-hidden');
+                if(resTagGroup) resTagGroup.classList.add('bulk-hidden');
+                if(packNameGroup) packNameGroup.classList.add('bulk-hidden');
                 
-                singleBtn.classList.remove('active');
-                bulkBtn.classList.add('active');
+                if(packNameInput) packNameInput.required = false;
+
+                singleUploadBtn.classList.remove('active');
+                bulkUploadBtn.classList.add('active');
                 modalTitle.textContent = 'Bulk Pack Upload (Fast)';
-                modalHint.textContent = 'Only pack name, icon, and version are detected/required.';
+                modalHint.textContent = 'Select up to 10 files. Name, icon, and version are detected.';
             } else {
-                // Restore visibility for Single Upload filters
-                if(colorGroup) colorGroup.style.display = 'block';
-                if(descriptionGroup) descriptionGroup.style.display = 'block';
-                if(resTagGroup) resTagGroup.style.display = 'block';
+                // Restore visibility for Single Upload filters (Single Upload)
+                if(colorGroup) colorGroup.classList.remove('bulk-hidden');
+                if(descriptionGroup) descriptionGroup.classList.remove('bulk-hidden');
+                if(resTagGroup) resTagGroup.classList.remove('bulk-hidden');
+                if(packNameGroup) packNameGroup.classList.remove('bulk-hidden');
+                
+                if(packNameInput) packNameInput.required = true;
 
-                // Restore grid layout to 1fr 1fr
-                if(uploadFormGrid) uploadFormGrid.style.gridTemplateColumns = '1fr 1fr';
-                if(fileUploadArea) fileUploadArea.style.gridColumn = 'span 2';
-
-                singleBtn.classList.add('active');
-                bulkBtn.classList.remove('active');
+                singleUploadBtn.classList.add('active');
+                bulkUploadBtn.classList.remove('active');
                 modalTitle.textContent = 'Upload Texture Pack';
                 modalHint.textContent = 'Select a .mcpack or .zip file, set a name, choose color & tags.';
             }
         }
-        
-      window.handleUpload = async function(e) {
-            e.preventDefault();
-            const submitBtn = document.getElementById("submitBtn");
-            const formFieldset = document.getElementById("uploadFormFieldset");
-            const packFile = document.getElementById("fileInput").files[0];
-            const packName = document.getElementById("packName").value.trim();
-            const packDescription = document.getElementById("packDescription").value.trim();
 
-            if (!packFile || (!packFile.name.toLowerCase().endsWith(".mcpack") && !packFile.name.toLowerCase().endsWith(".zip"))) {
-                return showToast("Please select a valid .mcpack or .zip file", "error");
-            }
+        // FIX: Core function to handle the actual upload logic for a single file (used in the loop)
+        async function uploadSingleFile(packFile, session) {
+            const packName = packFile.name.replace(/\.(mcpack|zip)$/i, "").trim();
             
-            // Get session early to use user info for default description
-            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-            if (sessionError || !session) throw new Error("You must be logged in to upload packs.");
-            
-            // NEW BULK VALIDATION/DEFAULTS (Restored Single Upload Validation)
-            if (uploadMode === 'single') {
-                if (!state.modalColor) { return showToast("You forgot to select a primary color.", "error"); }
-                if (!state.modalResolution) { return showToast("You forgot to select a resolution.", "error"); }
-            }
-            
-            // Assign default values if in bulk mode
+            // Assign values based on the current mode
             const uploadColor = uploadMode === 'bulk' ? 'gray' : state.modalColor;
             const uploadResolution = uploadMode === 'bulk' ? 'unknown' : state.modalResolution;
             const uploadTags = uploadMode === 'bulk' ? 'bulk-upload' : [...state.modalTags].join(",");
-            
-            const uploadDescription = uploadMode === 'bulk' ? `Bulk uploaded by uploader` : packDescription;
-            // END BULK VALIDATION/DEFAULTS
+            const uploadDescription = uploadMode === 'bulk' ? `Bulk uploaded by ${session.user.email || 'user'}` : document.getElementById("packDescription").value.trim();
 
             let version = packFile.name.toLowerCase().endsWith(".mcpack") ? "bedrock" : "java";
+            let iconUrl = null;
 
-            submitBtn.disabled = true;
-            formFieldset.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
-
+            // 1. Extract Icon from Zip
             try {
-                let iconUrl = null;
                 const zip = new JSZip();
                 const contents = await zip.loadAsync(packFile);
                 const iconPath = Object.keys(contents.files).find(path => /pack_icon\.png$/i.test(path) || /pack\.png$/i.test(path));
 
                 if (iconPath) {
-                    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...';
                     const iconFile = contents.files[iconPath];
                     const iconBlob = await iconFile.async("blob");
-                    const iconStoragePath = `icons/${Date.now()}-icon.png`;
-                    const { error: iconError } = await supabase.storage.from("packs").upload(iconStoragePath, iconBlob);
-                    if (iconError) throw iconError;
+                    const iconStoragePath = `icons/${Date.now()}-${packName}-icon.png`;
+                    await supabase.storage.from("packs").upload(iconStoragePath, iconBlob);
                     iconUrl = supabase.storage.from("packs").getPublicUrl(iconStoragePath).data.publicUrl;
                 }
+            } catch (e) {
+                console.warn(`Could not extract icon for ${packName}:`, e);
+            }
 
-                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Pack...';
-                const sanitizedName = packFile.name.replace(/[^a-zA-Z0-9-._]/g, "").replace(/\s+/g, "-");
-                const packStoragePath = `${Date.now()}-${sanitizedName}`;
-                await supabase.storage.from("packs").upload(packStoragePath, packFile);
+            // 2. Upload Pack File
+            const sanitizedName = packFile.name.replace(/[^a-zA-Z0-9-._]/g, "").replace(/\s+/g, "-");
+            const packStoragePath = `${Date.now()}-${sanitizedName}`;
+            await supabase.storage.from("packs").upload(packStoragePath, packFile);
 
-                const response = await fetch("/api/addpacks", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session.access_token}` },
-                    body: JSON.stringify({
-                        name: packName || packFile.name.replace(/\.(mcpack|zip)$/i, ""),
-                        color: uploadColor, 
-                        tags: uploadTags, 
-                        filename: packStoragePath,
-                        resolution: uploadResolution, 
-                        version, 
-                        description: uploadDescription, 
-                        icon_url: iconUrl
-                    })
-                });
+            // 3. Add Metadata
+            const response = await fetch("/api/addpacks", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session.access_token}` },
+                body: JSON.stringify({
+                    name: packName,
+                    color: uploadColor, 
+                    tags: uploadTags, 
+                    filename: packStoragePath,
+                    resolution: uploadResolution, 
+                    version, 
+                    description: uploadDescription, 
+                    icon_url: iconUrl
+                })
+            });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.details || errorData.error || "Failed to add pack metadata.");
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.details || errorData.error || `Failed to add metadata for ${packName}.`);
+            }
+            return packName;
+        }
+
+        // FIX: Refactored handleUpload to manage file list and looping
+        window.handleUpload = async function(e) {
+            e.preventDefault();
+            const files = fileInput.files;
+            const submitBtn = document.getElementById("submitBtn");
+            const formFieldset = document.getElementById("uploadFormFieldset");
+            const originalBtnContent = submitBtn.innerHTML;
+
+            if (files.length === 0) {
+                return showToast("Please select at least one file.", "error");
+            }
+            if (uploadMode === 'single' && files.length > 1) {
+                return showToast("Please use Bulk Upload mode for multiple files.", "error");
+            }
+            if (files.length > 10) {
+                return showToast("Please select a maximum of 10 files for bulk upload.", "error");
+            }
+            
+            // Single Upload Validation (Restored)
+            if (uploadMode === 'single') {
+                if (!state.modalColor) { return showToast("You forgot to select a primary color.", "error"); }
+                if (!state.modalResolution) { return showToast("You forgot to select a resolution.", "error"); }
+            }
+
+            submitBtn.disabled = true;
+            formFieldset.disabled = true;
+
+            try {
+                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                if (sessionError || !session) throw new Error("You must be logged in to upload packs.");
+                
+                const filesArray = Array.from(files);
+                const successfulUploads = [];
+                
+                for (let i = 0; i < filesArray.length; i++) {
+                    const file = filesArray[i];
+                    submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Uploading ${i + 1}/${filesArray.length}...`;
+                    
+                    try {
+                        const name = await uploadSingleFile(file, session);
+                        successfulUploads.push(name);
+                    } catch (error) {
+                        console.error(`Upload failed for ${file.name}:`, error);
+                        // Show toast for failed file but continue with others
+                        showToast(`Failed to upload ${file.name}.`, "error");
+                    }
                 }
-
-                await loadPacksOnStartup();
+                
+                if (successfulUploads.length > 0) {
+                    showToast(`Successfully uploaded ${successfulUploads.length} pack(s)!`, "success");
+                    await loadPacksOnStartup(); // Refresh the list
+                }
+                
                 closeModal();
-                showToast("Pack uploaded successfully!", "success");
 
             } catch (error) {
-                showToast("Upload failed: " + error.message, "error");
+                showToast(error.message || "An unknown error occurred.", "error");
             } finally {
                 submitBtn.disabled = false;
                 formFieldset.disabled = false;
-                submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload';
+                submitBtn.innerHTML = originalBtnContent;
+                fileInput.value = null; // Clear the input
             }
         }
         
@@ -1000,7 +879,7 @@
         }
         function buildSidebarTags(container, onSelect, selected) {
             container.innerHTML = TAGS.map(tag => `<button type="button" class="tag${selected?.has(tag) ? ' active' : ''}" onclick="this.dispatchEvent(new CustomEvent('sidebar-tag-select', {bubbles: true, detail: {key: '${tag}', el: this}}))">${capitalizeFirst(tag)}</button>`).join('');
-            container.addEventListener('sidebar-tag-select', e => { toggleSet(state.tags, tag); render(); });
+            container.addEventListener('sidebar-tag-select', e => { toggleSet(state.tags, e.detail.key); render(); });
         }
         function buildSelectorBoxes(container, onSelect, selected, options) {
             container.innerHTML = options.map(opt => `<button type="button" class="res-box${(selected instanceof Set ? selected.has(opt) : selected === opt) ? ' active' : ''}" onclick="this.dispatchEvent(new CustomEvent('box-select', {bubbles: true, detail: {key: '${opt}', el: this}}))">${opt}</button>`).join('');
@@ -1022,6 +901,22 @@
             // Reset to single mode after close
             uploadMode = 'single';
         }
+        
+        // P1 Fix: Updated hintFile to handle multiple files in bulk mode and restore features
+        window.hintFile = () => {
+            const files = fileInput.files;
+            if (files.length === 1) {
+                document.getElementById("fileHint").textContent = files[0].name;
+                packNameInput.value = files[0].name.replace(/\.(mcpack|zip)$/i, "");
+                setUploadMode('single'); // Revert to single mode if only one file selected
+            } else if (files.length > 1) {
+                document.getElementById("fileHint").textContent = `${files.length} files selected.`;
+                setUploadMode('bulk'); // Automatically switch to bulk mode
+            } else {
+                 document.getElementById("fileHint").textContent = '.mcpack or .zip files only';
+            }
+        };
+
         window.openTagModal = () => openTagEditor(false);
         window.openEditTagModal = () => openTagEditor(true);
         function openTagEditor(isEditMode) {
@@ -1081,13 +976,7 @@
         window.clearResolutions = () => { state.resolutions.clear(); buildSelectorBoxes(document.getElementById("resolutionBoxes"), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions, RESOLUTIONS); render(); };
         window.clearVersions = () => { state.versions.clear(); buildSelectorBoxes(document.getElementById("versionBoxes"), (v, el) => { toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS); render(); };
         window.resetAll = () => { state.q = ''; state.currentPage = 1; clearSearchInput(); clearColors(); clearTags(); clearResolutions(); clearVersions(); };
-        window.hintFile = () => {
-            const file = document.getElementById("fileInput").files[0];
-            if (file) {
-                document.getElementById("fileHint").textContent = file.name;
-                document.getElementById("packName").value = file.name.replace(/\.(mcpack|zip)$/i, "");
-            }
-        };
+        
         window.toggleOptionsMenu = (e, id) => {
             e.stopPropagation();
             const menu = document.getElementById(`options-menu-${id}`);
@@ -1154,12 +1043,16 @@
         /* ====== INITIALIZATION ====== */
         async function checkUserAndInitialize() {
             const { data: { user } } = await supabase.auth.getUser();
+            const mobileUploadBtn = document.getElementById('mobile-upload-btn'); // P3 FIX
+
             if (user) {
                 const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
                 if (profile) currentUserRole = profile.role;
             }
             if (currentUserRole === 'admin') { 
                 document.getElementById('admin-actions').style.display = 'block'; 
+                // P3 FIX: Show mobile upload button for admins
+                if (mobileUploadBtn) mobileUploadBtn.style.display = 'block'; 
             }
             await loadPacksOnStartup();
         }
