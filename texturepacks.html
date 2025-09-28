@@ -273,31 +273,55 @@
             max-height: 1000px;
             padding: 18px;
         }
-        /* NEW STYLES for Modal Mode Switcher */
+        /* NEW STYLES for Modal Mode Switcher (UI/UX Improvement) */
         .modal-mode-switcher {
             display: flex;
             justify-content: center;
             margin-bottom: 1.5rem;
             background: var(--bg-0);
             border-radius: 12px;
-            padding: 5px;
+            padding: 3px; /* Reduced padding */
             border: 1px solid var(--border);
+            position: relative; /* For the active indicator */
         }
         .mode-btn {
-            padding: 10px 20px;
+            padding: 8px 16px; /* Reduced padding */
             border: none;
             background: transparent;
             color: var(--muted);
             font-weight: 700;
             cursor: pointer;
-            border-radius: 8px;
+            border-radius: 10px;
             transition: all 0.2s ease;
+            position: relative;
+            z-index: 2;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         .mode-btn.active {
-            background: var(--bg-2);
             color: var(--text);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            /* Background is handled by the active indicator */
         }
+        /* Active indicator for the mode switch */
+        .mode-switcher-indicator {
+            position: absolute;
+            height: calc(100% - 6px);
+            top: 3px;
+            left: 3px;
+            width: calc(50% - 3px);
+            background: var(--bg-2);
+            border-radius: 10px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            z-index: 1;
+        }
+        .modal-mode-switcher[data-active="bulk"] .mode-switcher-indicator {
+            transform: translateX(100%);
+        }
+
         #single-mode-fields {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -461,9 +485,10 @@
             <div class="panel" style="padding-top:0">
                 
                 <!-- NEW: Mode Switcher -->
-                <div class="modal-mode-switcher" id="upload-mode-switcher">
-                    <button type="button" class="mode-btn active" data-mode="single" onclick="setUploadMode('single')">Single Upload</button>
-                    <button type="button" class="mode-btn" data-mode="bulk" onclick="setUploadMode('bulk')">Bulk Upload (Max 10)</button>
+                <div class="modal-mode-switcher" id="upload-mode-switcher" data-active="single">
+                    <div class="mode-switcher-indicator"></div>
+                    <button type="button" class="mode-btn active" data-mode="single" onclick="setUploadMode('single')"><i class="fa-solid fa-cube"></i> Single Upload</button>
+                    <button type="button" class="mode-btn" data-mode="bulk" onclick="setUploadMode('bulk')"><i class="fa-solid fa-boxes-stacked"></i> Bulk Upload (Max 10)</button>
                 </div>
 
                 <form id="uploadForm" onsubmit="handleUpload(event)">
@@ -501,7 +526,7 @@
                         <!-- Bulk Mode Fields (no filters/description needed) -->
                         <div id="bulk-mode-fields">
                              <p class="tiny" style="color: var(--danger); font-weight: 700;">Note: Packs uploaded in bulk mode will use default values for Color, Resolution, and Tags. Please edit them individually later.</p>
-                             <div id="bulk-file-list" style="margin-top: 1rem;">
+                             <div id="bulk-file-list" style="margin-top: 1rem; padding: 10px; background: var(--bg-1); border-radius: 10px; border: 1px solid var(--border);">
                                  <!-- File names will appear here -->
                              </div>
                         </div>
@@ -650,13 +675,38 @@
             render();
         }
         
+        // Helper function to extract and upload icon
+        async function extractAndUploadIcon(file, fileIndex) {
+            try {
+                const zip = new JSZip();
+                const contents = await zip.loadAsync(file);
+                const iconPath = Object.keys(contents.files).find(path => /pack_icon\.png$/i.test(path) || /pack\.png$/i.test(path));
+                
+                if (iconPath) {
+                    const iconFile = contents.files[iconPath];
+                    const iconBlob = await iconFile.async("blob");
+                    const iconStoragePath = `icons/${Date.now()}-${fileIndex}-icon.png`;
+                    const { error: iconError } = await supabase.storage.from("packs").upload(iconStoragePath, iconBlob, { upsert: true });
+                    
+                    if (!iconError) {
+                        return supabase.storage.from("packs").getPublicUrl(iconStoragePath).data.publicUrl;
+                    } else {
+                        console.warn(`Icon upload failed for ${file.name}:`, iconError);
+                    }
+                }
+            } catch(e) {
+                 console.warn(`Could not extract icon for file ${file.name}:`, e);
+            }
+            return null;
+        }
+
         window.handleUpload = async function(e) {
             e.preventDefault();
             const submitBtn = document.getElementById("submitBtn");
             const formFieldset = document.getElementById("uploadFormFieldset");
             const fileInput = document.getElementById("fileInput");
-
-            // Validate files based on mode
+            
+            // Validation and file setup remains the same
             if (state.uploadMode === 'single') {
                 packFiles = fileInput.files.length > 0 ? [fileInput.files[0]] : [];
                 if (packFiles.length !== 1) { return showToast("Please select one file for single upload.", "error"); }
@@ -680,7 +730,7 @@
                 
                 const packsToUpload = [];
                 
-                // 1. Process each file to get metadata and prepare payload
+                // 1. Process each file: extract icon, upload file, prepare payload
                 for (let i = 0; i < packFiles.length; i++) {
                     const file = packFiles[i];
                     submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processing file ${i + 1}/${packFiles.length}...`;
@@ -696,28 +746,16 @@
                     const sanitizedName = file.name.replace(/[^a-zA-Z0-9-._]/g, "").replace(/\s+/g, "-");
                     const packStoragePath = `${Date.now()}-${i}-${sanitizedName}`;
                     
-                    // A. Extract Icon (only for single mode, or if admin explicitly wants it for bulk)
+                    // A. Extract Icon (applies to both modes now)
+                    submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Extracting icon for ${file.name}...`;
+                    iconUrl = await extractAndUploadIcon(file, i);
+                    
+                    // B. Set pack name for single mode
                     if (state.uploadMode === 'single') {
                         packName = document.getElementById("packName").value.trim(); // Use user input name
-                        try {
-                            const zip = new JSZip();
-                            const contents = await zip.loadAsync(file);
-                            const iconPath = Object.keys(contents.files).find(path => /pack_icon\.png$/i.test(path) || /pack\.png$/i.test(path));
-                            if (iconPath) {
-                                const iconFile = contents.files[iconPath];
-                                const iconBlob = await iconFile.async("blob");
-                                const iconStoragePath = `icons/${Date.now()}-${i}-icon.png`;
-                                const { error: iconError } = await supabase.storage.from("packs").upload(iconStoragePath, iconBlob, { upsert: true });
-                                if (!iconError) {
-                                    iconUrl = supabase.storage.from("packs").getPublicUrl(iconStoragePath).data.publicUrl;
-                                }
-                            }
-                        } catch(e) {
-                             console.warn("Could not extract icon for file:", file.name, e);
-                        }
                     }
 
-                    // B. Upload Pack File to Storage
+                    // C. Upload Pack File to Storage
                     submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Uploading ${file.name}...`;
                     const { error: uploadError } = await supabase.storage.from("packs").upload(packStoragePath, file);
                     if (uploadError) {
@@ -725,16 +763,17 @@
                         continue;
                     }
                     
+                    // D. Prepare payload
                     packsToUpload.push({
                         name: packName,
                         color: state.uploadMode === 'single' ? state.modalColor : 'none',
-                        tags: state.uploadMode === 'single' ? [...state.modalTags] : ['needs-tags'],
+                        tags: state.uploadMode === 'single' ? [...state.modalTags] : ['needs-tags'], // Tags cleanup happens on the API side
                         filename: packStoragePath,
                         resolution: state.uploadMode === 'single' ? state.modalResolution : 'unknown',
                         version: version,
                         description: state.uploadMode === 'single' ? document.getElementById("packDescription").value.trim() : null,
                         icon_url: iconUrl,
-                        mode: state.uploadMode // Let API know if it's bulk or single
+                        // Removed 'mode' from pack object, sending it once in body below
                     });
                 }
 
@@ -961,6 +1000,8 @@
         
         window.setUploadMode = function(mode) {
             state.uploadMode = mode;
+            document.getElementById('upload-mode-switcher').setAttribute('data-active', mode); // Update indicator
+            
             document.querySelectorAll('#upload-mode-switcher .mode-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelector(`#upload-mode-switcher button[data-mode="${mode}"]`).classList.add('active');
             
@@ -1064,7 +1105,7 @@
             } else { // Bulk Mode
                 const bulkList = document.getElementById("bulk-file-list");
                 if (files.length > 0) {
-                    bulkList.innerHTML = `<ul class="tiny" style="list-style:disc; margin-left: 1.5rem;">${files.slice(0, 10).map(f => `<li>${f.name}</li>`).join('')}</ul>`;
+                    bulkList.innerHTML = `<ul class="tiny" style="list-style:disc; margin-left: 1.5rem; color: var(--text);">${files.slice(0, 10).map(f => `<li>${f.name}</li>`).join('')}</ul>`;
                     if (files.length > 10) {
                         showToast(`Warning: Only the first 10 files will be uploaded.`, "warning");
                     }
@@ -1181,7 +1222,7 @@
                 });
 
                 window.addEventListener('click', (e) => {
-                    if (!e.target.closest('.pack-options-btn')) document.querySelectorAll('.pack-options-menu').forEach(menu => menu.style.display = 'none');
+                    if (!e.target.closest('.pack-options-btn')) document.querySelectorAll('.pack-options-menu').forEach(menu => m.style.display = 'none');
                     if (!e.target.closest('#sortContainer')) {
                         document.getElementById('sortMenu').style.display = 'none';
                         document.getElementById('sortContainer').classList.remove('open');
