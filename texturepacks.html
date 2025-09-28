@@ -692,11 +692,11 @@
 
         /* ====== API & DATA FUNCTIONS ====== */
         async function loadPacksOnStartup() {
-            // The query should join profiles for uploader info, using a left join
-            // to ensure packs are shown even if the uploader profile is missing.
+            // CORRECTED QUERY: Aliasing the 'profiles' table as 'uploader'.
+            // This is more explicit and robust than relying on column name inference.
             let query = supabase.from('packs').select(`
                 *,
-                uploader:user_id!left(username, avatar_url)
+                uploader:profiles(username, avatar_url)
             `);
 
             if (state.sortBy === 'downloads') {
@@ -704,7 +704,7 @@
             } else {
                 query = query.order('created_at', { ascending: false });
             }
-
+            
             const { data, error } = await query;
             if (error) {
                 console.error('Failed to load packs from Supabase', error);
@@ -1309,3 +1309,4 @@
 </body>
 
 </html>
+
