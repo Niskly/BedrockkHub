@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. Authorization and Admin Check (omitted for brevity, assumed functional)
+    // 1. Authorization and Admin Check
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ error: 'Unauthorized: Missing or invalid authorization header.' });
@@ -42,26 +42,28 @@ export default async function handler(req, res) {
         const tagsArray = Array.isArray(pack.tags) ? pack.tags : (pack.tags ? pack.tags.split(',') : []);
         
         // --- TAGS CLEANUP LOGIC ---
-        // 3a. Filter out default metadata values that were accidentally included as tags
+        // 3a. Filter out default metadata values ('unknown', 'none') and empty strings
         let finalTags = tagsArray
-            .filter(tag => tag && tag.toLowerCase() !== 'unknown' && tag.toLowerCase() !== 'none');
+            .map(tag => tag ? tag.trim().toLowerCase() : '')
+            .filter(tag => tag && tag !== 'unknown' && tag !== 'none');
         
         // 3b. Handle the 'needs-tags' flag specifically for bulk mode
         if (mode === 'bulk') {
             const hasNeedsTags = finalTags.includes('needs-tags');
+            const otherTagsExist = finalTags.some(tag => tag !== 'needs-tags');
             
-            // Filter out 'needs-tags' if other actual tags exist (i.e., user provided them during bulk)
-            if (finalTags.length > 1 && hasNeedsTags) {
+            // If other tags exist, remove the 'needs-tags' flag to keep the array clean
+            if (otherTagsExist && hasNeedsTags) {
                 finalTags = finalTags.filter(tag => tag !== 'needs-tags');
-            } else if (finalTags.length === 0) {
-                 // If the array is empty after cleanup, ensure 'needs-tags' is present
+            } else if (!otherTagsExist) {
+                 // If no actual tags exist, ensure 'needs-tags' is present for bulk uploads
                  finalTags.push('needs-tags'); 
             }
         }
         
         const tagsString = finalTags.join(',');
 
-        // Set metadata defaults (these fields are correct in the DB schema)
+        // Set metadata defaults 
         const color = pack.color || 'none';
         const resolution = pack.resolution || 'unknown';
         const description = pack.description || null;
