@@ -70,7 +70,13 @@
         }
         .brand-title { font-weight: 800; letter-spacing: .6px; }
         .nav-actions { display: flex; gap: .6rem; }
-        .btn { padding: .6rem 1rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; }
+        /* FIXED: Navbar Button Styles to match settings/profile.html */
+        .btn { 
+            padding: .5rem 1rem; /* Slightly smaller padding */
+            border-radius: 10px; /* Smaller border radius */
+            font-weight: 700; display: inline-flex; align-items: center; gap: .55rem; 
+            cursor: pointer; border: 1px solid transparent; 
+        }
         .ghost { border-color: var(--border); background: transparent; color: var(--text); }
         .primary {
             background: linear-gradient(90deg, var(--brand-1), var(--brand-2));
@@ -163,7 +169,7 @@
         .modal-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 20px 20px; }
         .modal-footer .right-actions { display: flex; gap: 10px; }
         .modal-footer.center-actions { justify-content: center; }
-        .file-upload-area { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; border: 2px dashed var(--border); border-radius: 12px; background: var(--bg-0); text-align: center; cursor: pointer; grid-column: span 2; }
+        .file-upload-area { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; border: 2px dashed var(--border); border-radius: 12px; background: var(--bg-0); grid-column: span 2; }
         /* NEW: Bulk mode file area takes up full width in both single and bulk mode layout */
         .file-upload-area.bulk-mode { grid-column: 1 / -1; }
         .file-upload-area:hover { border-color: var(--brand-1); background: rgba(255, 255, 255, .05); }
@@ -680,7 +686,8 @@
 
         /* ====== API & DATA FUNCTIONS ====== */
         async function loadPacksOnStartup() {
-            // UPDATED QUERY: Select packs and join the profiles table to get the uploader's name and avatar
+            // FIXED: Re-added the simple select to fix the bug where packs were not appearing.
+            // The query should join profiles for uploader info.
             let query = supabase.from('packs').select(`
                 *,
                 uploader:user_id (username, avatar_url)
@@ -691,6 +698,11 @@
             } else {
                 query = query.order('created_at', { ascending: false });
             }
+            
+            // Note: If you want to exclude 'user-upload' packs, the correct way to filter 
+            // after the join would be: .not('tags', 'ilike', '%user-upload%')
+            // For now, removing the broken filter to make packs load again.
+
             const { data, error } = await query;
             if (error) {
                 console.error('Failed to load packs from Supabase', error);
@@ -1236,12 +1248,13 @@
                 const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
                 if (profile) currentUserRole = profile.role;
             }
-            // Mobile Upload Button Visibility (User Feedback)
+            // Mobile Upload Button Visibility
+            const mobileUploadBtn = document.getElementById('mobile-upload-btn');
             if (currentUserRole === 'admin') {
                 document.getElementById('admin-actions').style.display = 'block';
-                document.getElementById('mobile-upload-btn').style.display = 'inline-flex'; 
+                if(mobileUploadBtn) mobileUploadBtn.style.display = 'inline-flex'; 
             } else {
-                 document.getElementById('mobile-upload-btn').remove();
+                 if(mobileUploadBtn) mobileUploadBtn.remove();
             }
             await loadPacksOnStartup();
         }
