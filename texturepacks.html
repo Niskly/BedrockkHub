@@ -70,21 +70,13 @@
         }
         .brand-title { font-weight: 800; letter-spacing: .6px; }
         .nav-actions { display: flex; gap: .6rem; }
-        
-        /* FIX 1: Adjusting the base .btn style to ensure uniform sizing (12px radius, larger padding) */
+        /* FIXED: Navbar Button Styles to match settings/profile.html */
         .btn { 
-            padding: .6rem 1rem; 
-            border-radius: 12px; 
+            padding: .5rem 1rem; /* Slightly smaller padding */
+            border-radius: 10px; /* Smaller border radius */
             font-weight: 700; display: inline-flex; align-items: center; gap: .55rem; 
             cursor: pointer; border: 1px solid transparent; 
-            transition: all 0.2s ease;
         }
-        /* Keeping .btn.sm separate for smaller elements like clear buttons */
-        .btn.sm { 
-            padding: .25rem .5rem; 
-            border-radius: 8px; 
-        }
-
         .ghost { border-color: var(--border); background: transparent; color: var(--text); }
         .primary {
             background: linear-gradient(90deg, var(--brand-1), var(--brand-2));
@@ -694,7 +686,8 @@
 
         /* ====== API & DATA FUNCTIONS ====== */
         async function loadPacksOnStartup() {
-            // FIX 2: Correcting Supabase query to ensure packs load correctly.
+            // FIXED: Re-added the simple select to fix the bug where packs were not appearing.
+            // The query should join profiles for uploader info.
             let query = supabase.from('packs').select(`
                 *,
                 uploader:user_id (username, avatar_url)
@@ -706,6 +699,10 @@
                 query = query.order('created_at', { ascending: false });
             }
             
+            // Note: If you want to exclude 'user-upload' packs, the correct way to filter 
+            // after the join would be: .not('tags', 'ilike', '%user-upload%')
+            // For now, removing the broken filter to make packs load again.
+
             const { data, error } = await query;
             if (error) {
                 console.error('Failed to load packs from Supabase', error);
@@ -908,25 +905,13 @@
             } catch (error) { console.error("Failed to update download count:", error); }
             finally {
                 const { data } = supabase.storage.from('packs').getPublicUrl(filename);
-                // Ensure data.publicUrl is valid before fetching.
-                if (!data.publicUrl) {
-                    console.error("Failed to retrieve public URL for download.");
-                    showToast("Download failed: Could not get file link.", "error");
-                    return;
-                }
                 fetch(data.publicUrl).then(res => res.blob()).then(blob => {
                     const a = document.createElement("a");
                     a.href = URL.createObjectURL(blob);
-                    // Ensure the downloaded file has the correct extension
-                    const extension = filename.split('.').pop();
-                    a.download = `${packName}.${extension}`;
+                    a.download = `${packName}.${filename.split('.').pop()}`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
-                    URL.revokeObjectURL(a.href); // Clean up the object URL
-                }).catch(err => {
-                    console.error("Download failed during fetch/blob creation:", err);
-                    showToast("Download failed due to network error.", "error");
                 });
             }
         }
@@ -937,7 +922,7 @@
             const filtered = packs.filter(p => 
                 (!state.q || p.name.toLowerCase().includes(state.q)) &&
                 (state.colors.size === 0 || state.colors.has(p.color)) &&
-                (state.tags.size === 0 || [...state.tags].every(t => (p.tags || []).some(tag => state.tags.has(tag)))) && // FIX 3: Correctly checking if pack contains ALL selected tags
+                (state.tags.size === 0 || [...state.tags].every(t => (p.tags || []).includes(t))) &&
                 (state.resolutions.size === 0 || state.resolutions.has(p.resolution)) &&
                 (state.versions.size === 0 || state.versions.has(p.version))
             );
@@ -999,7 +984,7 @@
                 </a>
             ` : `<span class="username-tiny" style="color:var(--danger);">[Deleted User]</span>`;
 
-            // Tag Filtering (Hiding technical tags)
+            // Tag Filtering (Fix 2: Hiding technical tags)
             const displayTags = (p.tags || [])
                 .filter(t => !NON_DISPLAY_TAGS.includes(t.toLowerCase()))
                 .map(t => `<span class="badge">${escapeHtml(capitalizeFirst(t))}</span>`)
@@ -1275,63 +1260,47 @@
         }
 
         function init() {
-            const mobileFilterPanel = document.getElementById('mobile-filters-panel');
-            const desktopSidebar = document.querySelector('.sidebar');
-
-            // FIX 4: Only clone the innerHTML if the desktop sidebar exists.
-            if (desktopSidebar) {
-                // Cloning ensures event listeners are properly initialized on both mobile/desktop elements
+            if (document.getElementById('grid')) {
+                const mobileFilterPanel = document.getElementById('mobile-filters-panel');
+                const desktopSidebar = document.querySelector('.sidebar');
                 mobileFilterPanel.innerHTML = desktopSidebar.innerHTML;
-            }
-            
-            // --- SETUP FOR BOTH DESKTOP AND MOBILE ---
-            const filterAreas = [
-                { container: desktopSidebar, isMobile: false },
-                { container: mobileFilterPanel, isMobile: true }
-            ].filter(area => area.container !== null);
-            
-            filterAreas.forEach(area => {
-                const colorSwatches = area.container.querySelector('#colorSwatches');
-                if (colorSwatches) buildSwatches(colorSwatches, (k, el) => { toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
                 
-                const tagCloud = area.container.querySelector('#tagCloud');
-                if (tagCloud) buildSidebarTags(tagCloud, (k, el) => { toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
+                // --- SETUP FOR BOTH DESKTOP AND MOBILE ---
+                const filterAreas = [
+                    { container: desktopSidebar, isMobile: false },
+                    { container: mobileFilterPanel, isMobile: true }
+                ];
                 
-                const resolutionBoxes = area.container.querySelector('#resolutionBoxes');
-                if (resolutionBoxes) buildSelectorBoxes(resolutionBoxes, (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions, RESOLUTIONS);
+                filterAreas.forEach(area => {
+                    buildSwatches(area.container.querySelector('#colorSwatches'), (k, el) => { toggleSet(state.colors, k); el.classList.toggle('active'); render(); }, state.colors);
+                    buildSidebarTags(area.container.querySelector('#tagCloud'), (k, el) => { toggleSet(state.tags, k); el.classList.toggle('active'); render(); }, state.tags);
+                    buildSelectorBoxes(area.container.querySelector('#resolutionBoxes'), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions, RESOLUTIONS);
+                    buildSelectorBoxes(area.container.querySelector('#versionBoxes'), (v, el) => { toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS);
+                });
                 
-                const versionBoxes = area.container.querySelector('#versionBoxes');
-                if (versionBoxes) buildSelectorBoxes(versionBoxes, (v, el) => { toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS);
-            });
-            
-            // --- EVENT LISTENERS ---
-            const mobileFilterBtn = document.getElementById('mobile-filter-btn');
-            mobileFilterBtn.addEventListener('click', () => {
-                const panel = document.getElementById('mobile-filters-panel');
-                panel.classList.toggle('show');
-                const isShown = panel.classList.contains('show');
-                mobileFilterBtn.innerHTML = isShown ? '<i class="fa-solid fa-xmark"></i> Close Filters' : '<i class="fa-solid fa-sliders"></i> Choose Filters';
-            });
+                // --- EVENT LISTENERS ---
+                const mobileFilterBtn = document.getElementById('mobile-filter-btn');
+                mobileFilterBtn.addEventListener('click', () => {
+                    const panel = document.getElementById('mobile-filters-panel');
+                    panel.classList.toggle('show');
+                    const isShown = panel.classList.contains('show');
+                    mobileFilterBtn.innerHTML = isShown ? '<i class="fa-solid fa-xmark"></i> Close Filters' : '<i class="fa-solid fa-sliders"></i> Choose Filters';
+                });
 
-            window.addEventListener('click', (e) => {
-                if (!e.target.closest('.pack-options-btn')) document.querySelectorAll('.pack-options-menu').forEach(menu => menu.style.display = 'none');
+                window.addEventListener('click', (e) => {
+                    if (!e.target.closest('.pack-options-btn')) document.querySelectorAll('.pack-options-menu').forEach(menu => menu.style.display = 'none');
+                    if (!e.target.closest('#sortContainer')) {
+                        document.getElementById('sortMenu').style.display = 'none';
+                        document.getElementById('sortContainer').classList.remove('open');
+                    }
+                     if (!e.target.closest('#mobileSortContainer')) {
+                        document.getElementById('mobileSortMenu').style.display = 'none';
+                        document.getElementById('mobileSortContainer').classList.remove('open');
+                    }
+                });
                 
-                const sortContainer = document.getElementById('sortContainer');
-                const sortMenu = document.getElementById('sortMenu');
-                if (sortContainer && sortMenu && !e.target.closest('#sortContainer')) {
-                    sortMenu.style.display = 'none';
-                    sortContainer.classList.remove('open');
-                }
-                 
-                const mobileSortContainer = document.getElementById('mobileSortContainer');
-                const mobileSortMenu = document.getElementById('mobileSortMenu');
-                if (mobileSortContainer && mobileSortMenu && !e.target.closest('#mobileSortContainer')) {
-                    mobileSortMenu.style.display = 'none';
-                    mobileSortContainer.classList.remove('open');
-                }
-            });
-            
-            checkUserAndInitialize();
+                checkUserAndInitialize();
+            }
         }
         init();
     </script>
