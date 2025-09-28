@@ -148,6 +148,8 @@
         .modal-footer .right-actions { display: flex; gap: 10px; }
         .modal-footer.center-actions { justify-content: center; }
         .file-upload-area { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; border: 2px dashed var(--border); border-radius: 12px; background: var(--bg-0); text-align: center; cursor: pointer; grid-column: span 2; }
+        /* NEW: Bulk mode file area takes up full width in both single and bulk mode layout */
+        .file-upload-area.bulk-mode { grid-column: 1 / -1; }
         .file-upload-area:hover { border-color: var(--brand-1); background: rgba(255, 255, 255, .05); }
         .file-upload-area i { font-size: 32px; margin-bottom: 12px; color: var(--brand-1); }
         .file-hint { margin-top: 6px; color: var(--muted); }
@@ -271,6 +273,43 @@
             max-height: 1000px;
             padding: 18px;
         }
+        /* NEW STYLES for Modal Mode Switcher */
+        .modal-mode-switcher {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            background: var(--bg-0);
+            border-radius: 12px;
+            padding: 5px;
+            border: 1px solid var(--border);
+        }
+        .mode-btn {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        .mode-btn.active {
+            background: var(--bg-2);
+            color: var(--text);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        #single-mode-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            align-items: start;
+        }
+        #bulk-mode-fields {
+            display: none;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        /* End NEW STYLES */
 
         @media (max-width: 1024px) { 
             .layout { grid-template-columns: 1fr; } 
@@ -309,6 +348,7 @@
             .modal { max-width: 95vw; max-height: 95vh; }
             #uploadForm > fieldset > div { grid-template-columns: 1fr; }
             .file-upload-area { grid-column: span 1; }
+            #single-mode-fields { grid-template-columns: 1fr; }
         }
         @media (max-width: 480px) {
             .packs { grid-template-columns: 1fr; }
@@ -408,7 +448,7 @@
         </div>
     </section>
 
-    <!-- All Modals (Upload, Edit, Confirm Delete, Tag Select) go here -->
+    <!-- Upload Modal -->
     <div id="backdrop" class="backdrop">
         <div class="modal card">
             <div class="panel">
@@ -416,12 +456,21 @@
                     <strong>Upload Texture Pack</strong>
                     <button class="btn sm ghost" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
                 </div>
-                <div class="tiny">Select a .mcpack or .zip file, set a name, choose color & tags.</div>
+                <div class="tiny" id="modal-subtitle">Select a .mcpack or .zip file, set a name, choose color & tags.</div>
             </div>
             <div class="panel" style="padding-top:0">
+                
+                <!-- NEW: Mode Switcher -->
+                <div class="modal-mode-switcher" id="upload-mode-switcher">
+                    <button type="button" class="mode-btn active" data-mode="single" onclick="setUploadMode('single')">Single Upload</button>
+                    <button type="button" class="mode-btn" data-mode="bulk" onclick="setUploadMode('bulk')">Bulk Upload (Max 10)</button>
+                </div>
+
                 <form id="uploadForm" onsubmit="handleUpload(event)">
                     <fieldset id="uploadFormFieldset">
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px; align-items: start;">
+                        
+                        <!-- Single Mode Fields -->
+                        <div id="single-mode-fields">
                             <div>
                                 <label class="tiny label-with-icon"><span>Pack name</span></label>
                                 <input id="packName" required placeholder="e.g. Crystal PvP" type="text">
@@ -447,13 +496,22 @@
                                     </button>
                                 </div>
                             </div>
-                            
-                            <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
-                                <i class="fa-solid fa-file-arrow-up"></i>
-                                <div>Drag & drop or <span style="color:var(--brand-1)">browse files</span></div>
-                                <div class="file-hint" id="fileHint">.mcpack or .zip files only</div>
-                                <input id="fileInput" type="file" accept=".mcpack,.zip" style="display:none" onchange="hintFile()" />
-                            </div>
+                        </div>
+
+                        <!-- Bulk Mode Fields (no filters/description needed) -->
+                        <div id="bulk-mode-fields">
+                             <p class="tiny" style="color: var(--danger); font-weight: 700;">Note: Packs uploaded in bulk mode will use default values for Color, Resolution, and Tags. Please edit them individually later.</p>
+                             <div id="bulk-file-list" style="margin-top: 1rem;">
+                                 <!-- File names will appear here -->
+                             </div>
+                        </div>
+
+                        <!-- File Upload Area (shared) -->
+                        <div class="file-upload-area" id="pack-file-area" onclick="document.getElementById('fileInput').click()">
+                            <i class="fa-solid fa-file-arrow-up"></i>
+                            <div>Drag & drop or <span style="color:var(--brand-1)">browse files</span></div>
+                            <div class="file-hint" id="fileHint">.mcpack or .zip files only</div>
+                            <input id="fileInput" type="file" accept=".mcpack,.zip" style="display:none" onchange="hintFile()" />
                         </div>
                     </fieldset>
                     <div class="modal-footer center-actions">
@@ -559,11 +617,19 @@
         const VERSIONS = ['bedrock', 'java'];
         const packsPerPage = 9;
         let packs = [];
-        const state = { q: '', colors: new Set(), tags: new Set(), resolutions: new Set(), versions: new Set(), currentPage: 1, modalColor: null, modalTags: new Set(), modalResolution: null, editColor: null, editTags: new Set(), editResolution: null, sortBy: 'latest' };
+        const state = { 
+            q: '', colors: new Set(), tags: new Set(), resolutions: new Set(), versions: new Set(), 
+            currentPage: 1, 
+            modalColor: null, modalTags: new Set(), modalResolution: null, 
+            editColor: null, editTags: new Set(), editResolution: null, 
+            sortBy: 'latest',
+            uploadMode: 'single' // NEW STATE: 'single' or 'bulk'
+        };
         let currentEditId = null;
         let tempModalTags = new Set();
         let isEditingTags = false;
         let currentUserRole = null;
+        let packFiles = []; // NEW STATE: To hold multiple files for bulk upload
 
         /* ====== API & DATA FUNCTIONS ====== */
         async function loadPacksOnStartup() {
@@ -584,58 +650,104 @@
             render();
         }
         
-      window.handleUpload = async function(e) {
+        window.handleUpload = async function(e) {
             e.preventDefault();
             const submitBtn = document.getElementById("submitBtn");
             const formFieldset = document.getElementById("uploadFormFieldset");
-            const packFile = document.getElementById("fileInput").files[0];
-            const packName = document.getElementById("packName").value.trim();
-            const packDescription = document.getElementById("packDescription").value.trim();
+            const fileInput = document.getElementById("fileInput");
 
-            if (!packFile || (!packFile.name.toLowerCase().endsWith(".mcpack") && !packFile.name.toLowerCase().endsWith(".zip"))) {
-                return showToast("Please select a valid .mcpack or .zip file", "error");
+            // Validate files based on mode
+            if (state.uploadMode === 'single') {
+                packFiles = fileInput.files.length > 0 ? [fileInput.files[0]] : [];
+                if (packFiles.length !== 1) { return showToast("Please select one file for single upload.", "error"); }
+                if (!state.modalColor) { return showToast("You forgot to select a primary color.", "error"); }
+                if (!state.modalResolution) { return showToast("You forgot to select a resolution.", "error"); }
+                if (!document.getElementById("packName").value.trim()) { return showToast("Pack name is required.", "error"); }
+
+            } else { // Bulk mode
+                packFiles = [...fileInput.files];
+                if (packFiles.length === 0) { return showToast("Please select files for bulk upload.", "error"); }
+                if (packFiles.length > 10) { return showToast("Maximum 10 packs allowed for bulk upload.", "error"); }
             }
-            if (!state.modalColor) { return showToast("You forgot to select a primary color.", "error"); }
-            if (!state.modalResolution) { return showToast("You forgot to select a resolution.", "error"); }
-
-            let version = packFile.name.toLowerCase().endsWith(".mcpack") ? "bedrock" : "java";
-
+            
             submitBtn.disabled = true;
             formFieldset.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
-
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processing ${packFiles.length} pack${packFiles.length > 1 ? 's' : ''}...`;
+            
             try {
                 const { data: { session }, error: sessionError } = await supabase.auth.getSession();
                 if (sessionError || !session) throw new Error("You must be logged in to upload packs.");
+                
+                const packsToUpload = [];
+                
+                // 1. Process each file to get metadata and prepare payload
+                for (let i = 0; i < packFiles.length; i++) {
+                    const file = packFiles[i];
+                    submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processing file ${i + 1}/${packFiles.length}...`;
 
-                let iconUrl = null;
-                const zip = new JSZip();
-                const contents = await zip.loadAsync(packFile);
-                const iconPath = Object.keys(contents.files).find(path => /pack_icon\.png$/i.test(path) || /pack\.png$/i.test(path));
+                    if (!file.name.toLowerCase().match(/\.(mcpack|zip)$/)) {
+                        showToast(`Skipping file ${file.name}: Invalid file type.`, "warning");
+                        continue;
+                    }
 
-                if (iconPath) {
-                    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Icon...';
-                    const iconFile = contents.files[iconPath];
-                    const iconBlob = await iconFile.async("blob");
-                    const iconStoragePath = `icons/${Date.now()}-icon.png`;
-                    const { error: iconError } = await supabase.storage.from("packs").upload(iconStoragePath, iconBlob);
-                    if (iconError) throw iconError;
-                    iconUrl = supabase.storage.from("packs").getPublicUrl(iconStoragePath).data.publicUrl;
+                    let packName = file.name.replace(/\.(mcpack|zip)$/i, "");
+                    let iconUrl = null;
+                    const version = file.name.toLowerCase().endsWith(".mcpack") ? "bedrock" : "java";
+                    const sanitizedName = file.name.replace(/[^a-zA-Z0-9-._]/g, "").replace(/\s+/g, "-");
+                    const packStoragePath = `${Date.now()}-${i}-${sanitizedName}`;
+                    
+                    // A. Extract Icon (only for single mode, or if admin explicitly wants it for bulk)
+                    if (state.uploadMode === 'single') {
+                        packName = document.getElementById("packName").value.trim(); // Use user input name
+                        try {
+                            const zip = new JSZip();
+                            const contents = await zip.loadAsync(file);
+                            const iconPath = Object.keys(contents.files).find(path => /pack_icon\.png$/i.test(path) || /pack\.png$/i.test(path));
+                            if (iconPath) {
+                                const iconFile = contents.files[iconPath];
+                                const iconBlob = await iconFile.async("blob");
+                                const iconStoragePath = `icons/${Date.now()}-${i}-icon.png`;
+                                const { error: iconError } = await supabase.storage.from("packs").upload(iconStoragePath, iconBlob, { upsert: true });
+                                if (!iconError) {
+                                    iconUrl = supabase.storage.from("packs").getPublicUrl(iconStoragePath).data.publicUrl;
+                                }
+                            }
+                        } catch(e) {
+                             console.warn("Could not extract icon for file:", file.name, e);
+                        }
+                    }
+
+                    // B. Upload Pack File to Storage
+                    submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Uploading ${file.name}...`;
+                    const { error: uploadError } = await supabase.storage.from("packs").upload(packStoragePath, file);
+                    if (uploadError) {
+                        showToast(`Failed to upload file ${file.name}: ${uploadError.message}`, "error");
+                        continue;
+                    }
+                    
+                    packsToUpload.push({
+                        name: packName,
+                        color: state.uploadMode === 'single' ? state.modalColor : 'none',
+                        tags: state.uploadMode === 'single' ? [...state.modalTags] : ['needs-tags'],
+                        filename: packStoragePath,
+                        resolution: state.uploadMode === 'single' ? state.modalResolution : 'unknown',
+                        version: version,
+                        description: state.uploadMode === 'single' ? document.getElementById("packDescription").value.trim() : null,
+                        icon_url: iconUrl,
+                        mode: state.uploadMode // Let API know if it's bulk or single
+                    });
                 }
 
-                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Pack...';
-                const sanitizedName = packFile.name.replace(/[^a-zA-Z0-9-._]/g, "").replace(/\s+/g, "-");
-                const packStoragePath = `${Date.now()}-${sanitizedName}`;
-                await supabase.storage.from("packs").upload(packStoragePath, packFile);
+                if (packsToUpload.length === 0) {
+                    throw new Error("No valid packs were uploaded.");
+                }
 
+                // 2. Call API to insert metadata for all successfully uploaded files
+                submitBtn.innerHTML = `<i class="fa-solid fa-database"></i> Saving metadata...`;
                 const response = await fetch("/api/addpacks", {
                     method: "POST",
                     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session.access_token}` },
-                    body: JSON.stringify({
-                        name: packName || packFile.name.replace(/\.(mcpack|zip)$/i, ""),
-                        color: state.modalColor, tags: [...state.modalTags], filename: packStoragePath,
-                        resolution: state.modalResolution, version, description: packDescription, icon_url: iconUrl
-                    })
+                    body: JSON.stringify({ packs: packsToUpload, mode: state.uploadMode })
                 });
 
                 if (!response.ok) {
@@ -643,9 +755,11 @@
                     throw new Error(errorData.details || errorData.error || "Failed to add pack metadata.");
                 }
 
+                const result = await response.json();
+
                 await loadPacksOnStartup();
                 closeModal();
-                showToast("Pack uploaded successfully!", "success");
+                showToast(`Successfully uploaded ${result.packs.length} pack${result.packs.length > 1 ? 's' : ''}!`, "success");
 
             } catch (error) {
                 showToast("Upload failed: " + error.message, "error");
@@ -679,11 +793,18 @@
             const pack = packs.find(p => p.id === currentEditId);
             if (!pack) return cancelDelete();
             try {
-                if (pack.filename) await supabase.storage.from("packs").remove([pack.filename]);
-                if (pack.icon_url) await supabase.storage.from("packs").remove([`icons/${pack.icon_url.split("/").pop()}`]);
-                const { error } = await supabase.from("packs").delete().eq("id", currentEditId);
-                if (error) throw error;
-                await loadPacksOnStartup();
+                // Deletion logic handled by the API route /api/delete-pack.js, which requires token.
+                const { data: { session } } = await supabase.auth.getSession();
+                const response = await fetch('/api/delete-pack', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+                    body: JSON.stringify({ packId: currentEditId })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.details);
+                
+                showToast('Pack deleted successfully!', 'success');
+                await loadPacksOnStartup(); // Reload data after successful deletion
             } catch (error) {
                 showToast("Delete failed: " + error.message, "error");
             } finally {
@@ -765,7 +886,6 @@
 
         function renderCard(p) {
             const color = COLORS.find(c => c.key === p.color)?.hex || '#6b7280';
-            const downloadUrl = supabase.storage.from('packs').getPublicUrl(p.filename).data.publicUrl;
             const thumbContent = p.icon_url 
                 ? `<div class="pack-icon-bg" style="background-image: url('${p.icon_url}');"></div><img class="pack-icon" src="${p.icon_url}" alt="${escapeHtml(p.name)} Icon">`
                 : `<div class="glyph" style="background:${color}"><i class="fa-solid fa-cube"></i></div>`;
@@ -818,12 +938,59 @@
 
         window.openModal = function() {
             document.getElementById("backdrop").style.display = "flex";
+            // Reset to single mode fields on open
+            setUploadMode('single');
+            document.getElementById("uploadForm").reset();
+            document.getElementById("fileInput").removeAttribute('multiple');
+            document.getElementById("fileHint").textContent = '.mcpack or .zip files only';
+            
+            // Reset state for new upload
             state.modalColor = null; state.modalResolution = null; state.modalTags.clear();
             buildSwatches(document.getElementById("modalSwatches"), (key, el) => { state.modalColor = key; highlightOne(el.parentElement, el); }, null);
             buildSelectorBoxes(document.getElementById("modalResolutions"), (key, el) => { state.modalResolution = key; highlightOne(el.parentElement, el); }, null, RESOLUTIONS);
             updateTagButtonText();
         }
-        window.closeModal = function() { document.getElementById("backdrop").style.display = "none"; document.getElementById("uploadForm").reset(); }
+        window.closeModal = function() { 
+            document.getElementById("backdrop").style.display = "none"; 
+            document.getElementById("uploadForm").reset(); 
+            document.getElementById("fileInput").removeAttribute('multiple');
+            document.getElementById("pack-file-area").classList.remove('bulk-mode');
+            document.getElementById("fileHint").textContent = '.mcpack or .zip files only';
+            document.getElementById("bulk-file-list").innerHTML = '';
+        }
+        
+        window.setUploadMode = function(mode) {
+            state.uploadMode = mode;
+            document.querySelectorAll('#upload-mode-switcher .mode-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`#upload-mode-switcher button[data-mode="${mode}"]`).classList.add('active');
+            
+            const singleFields = document.getElementById('single-mode-fields');
+            const bulkFields = document.getElementById('bulk-mode-fields');
+            const fileInput = document.getElementById('fileInput');
+            const fileArea = document.getElementById('pack-file-area');
+            const subtitle = document.getElementById('modal-subtitle');
+            
+            fileInput.files = null; // Clear selected files
+            document.getElementById("fileHint").textContent = mode === 'single' ? '.mcpack or .zip files only' : 'Select up to 10 .mcpack or .zip files';
+            document.getElementById("bulk-file-list").innerHTML = '';
+
+            if (mode === 'single') {
+                singleFields.style.display = 'grid';
+                bulkFields.style.display = 'none';
+                fileInput.removeAttribute('multiple');
+                fileArea.classList.remove('bulk-mode');
+                document.getElementById('packName').setAttribute('required', 'true');
+                subtitle.textContent = 'Select a .mcpack or .zip file, set a name, choose color & tags.';
+            } else { // bulk
+                singleFields.style.display = 'none';
+                bulkFields.style.display = 'flex';
+                fileInput.setAttribute('multiple', 'multiple');
+                fileArea.classList.add('bulk-mode');
+                document.getElementById('packName').removeAttribute('required'); // Name is auto-generated
+                subtitle.textContent = 'Upload up to 10 packs. Name, icon, and basic details will be auto-detected, ready for later editing.';
+            }
+        }
+
         window.openTagModal = () => openTagEditor(false);
         window.openEditTagModal = () => openTagEditor(true);
         function openTagEditor(isEditMode) {
@@ -883,11 +1050,29 @@
         window.clearResolutions = () => { state.resolutions.clear(); buildSelectorBoxes(document.getElementById("resolutionBoxes"), (res, el) => { toggleSet(state.resolutions, res); el.classList.toggle('active'); render(); }, state.resolutions, RESOLUTIONS); render(); };
         window.clearVersions = () => { state.versions.clear(); buildSelectorBoxes(document.getElementById("versionBoxes"), (v, el) => { toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS); render(); };
         window.resetAll = () => { state.q = ''; state.currentPage = 1; clearSearchInput(); clearColors(); clearTags(); clearResolutions(); clearVersions(); };
+        
         window.hintFile = () => {
-            const file = document.getElementById("fileInput").files[0];
-            if (file) {
-                document.getElementById("fileHint").textContent = file.name;
-                document.getElementById("packName").value = file.name.replace(/\.(mcpack|zip)$/i, "");
+            const fileInput = document.getElementById("fileInput");
+            const files = [...fileInput.files];
+            
+            if (state.uploadMode === 'single') {
+                const file = files[0];
+                if (file) {
+                    document.getElementById("fileHint").textContent = file.name;
+                    document.getElementById("packName").value = file.name.replace(/\.(mcpack|zip)$/i, "");
+                }
+            } else { // Bulk Mode
+                const bulkList = document.getElementById("bulk-file-list");
+                if (files.length > 0) {
+                    bulkList.innerHTML = `<ul class="tiny" style="list-style:disc; margin-left: 1.5rem;">${files.slice(0, 10).map(f => `<li>${f.name}</li>`).join('')}</ul>`;
+                    if (files.length > 10) {
+                        showToast(`Warning: Only the first 10 files will be uploaded.`, "warning");
+                    }
+                    document.getElementById("fileHint").textContent = `${files.length} file${files.length > 1 ? 's' : ''} selected.`;
+                } else {
+                    document.getElementById("fileHint").textContent = 'Select up to 10 .mcpack or .zip files';
+                    bulkList.innerHTML = '';
+                }
             }
         };
         window.toggleOptionsMenu = (e, id) => {
