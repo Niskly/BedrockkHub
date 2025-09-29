@@ -123,28 +123,32 @@
         .search-result-item:not(:last-child) { border-bottom: 1px solid var(--border); }
         .search-result-item:hover { background: var(--bg-2); }
         .search-result-icon, .search-result-avatar { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
-        .search-result-avatar.is-mc-skin { border-radius: 4px; image-rendering: pixelated; border: 1px solid var(--border); }
+        .search-result-avatar.is-mc-skin { border-radius: 4px; image-rendering: pixelated; border: 1px solid var(--border); background: var(--bg-2); }
         .search-result-info { text-align: left; }
         .search-result-name { font-weight: 600; color: var(--text); }
         .search-result-sub { font-size: 0.8rem; color: var(--muted); }
         
-        .latest-packs-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
+        .latest-packs-container { display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1rem; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+        .latest-packs-container::-webkit-scrollbar { height: 6px; }
+        .latest-packs-container::-webkit-scrollbar-track { background: var(--bg-2); border-radius: 3px; }
+        .latest-packs-container::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+        .latest-pack-card { 
+            background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; 
+            width: 300px; flex-shrink: 0; scroll-snap-align: start;
+            display: flex; flex-direction: column;
+            transition: all 0.2s ease; 
         }
-        .latest-pack-card {
-            background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px;
-            padding: 1rem; display: flex; align-items: center; gap: 1rem;
-            transition: all 0.2s ease;
-        }
-        .latest-pack-card:hover { transform: translateY(-2px); border-color: var(--border-strong); background: var(--bg-2); }
-        .pack-icon { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
-        .pack-details { flex-grow: 1; }
-        .pack-name { font-weight: 600; line-height: 1.3; }
-        .pack-meta { display: flex; align-items: center; gap: 1rem; font-size: 0.8rem; color: var(--muted); margin-top: 0.25rem; }
+        .latest-pack-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: 0 10px 30px -10px rgba(0,0,0, .2); }
         
-        .loading { display: flex; align-items: center; justify-content: center; padding: 2rem; color: var(--muted); width: 100%; grid-column: 1 / -1; }
+        .pack-main-info { display: flex; align-items: center; gap: 1rem; padding: 1rem; }
+        .pack-icon { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; flex-shrink: 0; }
+        .pack-details { flex-grow: 1; }
+        .pack-name { font-size: 1.1rem; font-weight: 700; line-height: 1.3; }
+        .pack-meta { display: flex; align-items: center; gap: 1rem; font-size: 0.8rem; color: var(--muted); margin-top: 0.25rem; }
+        .pack-action-footer { padding: 0 1rem 1rem; margin-top: auto; }
+        
+        .loading { display: flex; align-items: center; justify-content: center; padding: 2rem; color: var(--muted); width: 100%; }
         .loading::after { content: ''; width: 20px; height: 20px; border: 2px solid var(--border); border-top: 2px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-left: 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
@@ -164,13 +168,29 @@
         .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
         
         .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
+        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
+        .mobile-nav-backdrop.show { display: block; opacity: 1; }
+        .mobile-nav-sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; background: var(--bg-1); z-index: 999; transform: translateX(-100%); transition: transform 0.3s ease; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
+        .mobile-nav-sidebar.show { transform: translateX(0); }
+        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
+        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
+        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+        .mobile-nav-user-info { display: flex; flex-direction: column; }
+        .mobile-nav-username { font-weight: 700; color: var(--text); }
+        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
+        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
+        .mobile-nav-main-links { flex-grow: 1; }
+        .mobile-nav-main-links a, .mobile-nav-footer-links a { padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem; font-weight: 600; color: var(--muted); transition: all 0.2s ease; }
+        .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
+        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
+        .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
         
         @media (max-width: 768px) { 
             .nav-actions { display: none; }
             .mobile-nav-toggle { display: block; }
             .title { font-size: 2.2rem; }
             .muted { font-size: 1.1rem; }
-            .latest-packs-grid { grid-template-columns: 1fr; }
+            .latest-pack-card { width: 280px; }
         }
     </style>
 </head>
@@ -196,12 +216,12 @@
             <div class="hero">
                 <div class="hero-content">
                     <h1 class="title">
-                        The Center of the
-                        <span class="grad">Minecraft Universe</span>
+                        Discover & Download<br>
+                        <span class="grad">Minecraft Creations</span>
                     </h1>
                     <p class="muted">
-                       Discover packs, connect with creators, and find your next adventure.
-                       All in one place.
+                       The ultimate home for Minecraft packs and creators.
+                       Find your next adventure.
                     </p>
                     
                     <div class="search-hub-container">
@@ -224,14 +244,10 @@
                 </div>
 
                 <aside class="preview" id="latest-uploads" style="margin-top: 4rem;">
-                    <div class="preview-head" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-                        <strong><i class="fa-solid fa-sparkles"></i> Latest Uploads</strong>
-                        <a class="btn ghost" href="/texturepacks.html" style="padding: 0.5rem 1rem;">
-                            <span>View All</span>
-                            <i class="fa-solid fa-arrow-right"></i>
-                        </a>
+                    <div class="preview-head" style="margin-bottom: 1.5rem; text-align: left;">
+                        <strong style="font-size: 1.3rem;"><i class="fa-solid fa-sparkles"></i> Latest Uploads</strong>
                     </div>
-                    <div class="latest-packs-grid" id="latest-packs-grid">
+                    <div class="latest-packs-container" id="latest-packs-grid">
                         <div class="loading">Loading latest packs...</div>
                     </div>
                 </aside>
@@ -275,30 +291,35 @@
         function formatDownloads(count) { const num = count || 0; if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K'; return num.toLocaleString(); }
         
         async function loadLatestPacks() {
-            const grid = document.getElementById('latest-packs-grid');
-            if (!grid) return;
+            const container = document.getElementById('latest-packs-grid');
+            if (!container) return;
             try {
-                const { data, error } = await supabase.from('packs').select('*').not('tags', 'ilike', '%user-upload%').order('created_at', { ascending: false }).limit(4);
+                const { data, error } = await supabase.from('packs').select('*').not('tags', 'ilike', '%user-upload%').order('created_at', { ascending: false }).limit(6);
                 if (error) throw error;
-                grid.innerHTML = data && data.length > 0 ? data.map(pack => {
+                container.innerHTML = data && data.length > 0 ? data.map(pack => {
                     const iconContent = pack.icon_url 
                         ? `<img class="pack-icon" src="${pack.icon_url}" alt="${escapeHtml(pack.name)} Icon">`
                         : `<div class="pack-icon" style="background:var(--bg-2); display:grid; place-items:center;"><i class="fa-solid fa-cube" style="color:var(--muted); font-size:1.8em;"></i></div>`;
 
                     return `
-                        <a href="/texturepacks.html" class="latest-pack-card">
-                            ${iconContent}
-                            <div class="pack-details">
-                                <h4 class="pack-name">${escapeHtml(pack.name)}</h4>
-                                <div class="pack-meta">
-                                    <span><i class="fa-solid fa-download fa-xs"></i> ${formatDownloads(pack.download_count)}</span>
-                                    <span><i class="fa-solid fa-calendar-day fa-xs"></i> ${formatDate(pack.created_at)}</span>
+                        <div class="latest-pack-card">
+                            <div class="pack-main-info">
+                                ${iconContent}
+                                <div class="pack-details">
+                                    <h4 class="pack-name">${escapeHtml(pack.name)}</h4>
+                                    <div class="pack-meta">
+                                        <span><i class="fa-solid fa-download fa-xs"></i> ${formatDownloads(pack.download_count)}</span>
+                                        <span><i class="fa-solid fa-calendar-day fa-xs"></i> ${formatDate(pack.created_at)}</span>
+                                    </div>
                                 </div>
                             </div>
-                        </a>`;
-                }).join('') : '<p class="tiny" style="text-align: center; width: 100%; grid-column: 1 / -1;">No official packs have been uploaded yet.</p>';
+                            <div class="pack-action-footer">
+                                <a href="/texturepacks.html" class="btn primary" style="width: 100%; padding: 0.6rem;">View Packs</a>
+                            </div>
+                        </div>`;
+                }).join('') : '<p class="tiny" style="text-align: center; width: 100%;">No official packs have been uploaded yet.</p>';
             } catch (err) {
-                 grid.innerHTML = '<p class="tiny" style="text-align: center; width: 100%; grid-column: 1 / -1;">Could not load packs. Please try again later.</p>';
+                 container.innerHTML = '<p class="tiny" style="text-align: center; width: 100%;">Could not load packs. Please try again later.</p>';
             }
         }
         
