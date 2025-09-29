@@ -123,52 +123,34 @@
         .search-result-item:not(:last-child) { border-bottom: 1px solid var(--border); }
         .search-result-item:hover { background: var(--bg-2); }
         .search-result-icon, .search-result-avatar { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
-        .search-result-avatar.is-mc-skin { border-radius: 4px; image-rendering: pixelated; }
+        .search-result-avatar.is-mc-skin { border-radius: 4px; image-rendering: pixelated; border: 1px solid var(--border); }
         .search-result-info { text-align: left; }
         .search-result-name { font-weight: 600; color: var(--text); }
         .search-result-sub { font-size: 0.8rem; color: var(--muted); }
         
-        /* ====== NEW HORIZONTAL LAYOUT ====== */
-        .latest-packs-container { display: flex; gap: 18px; overflow-x: auto; padding-bottom: 1.5rem; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
-        .latest-packs-container::-webkit-scrollbar { height: 8px; }
-        .latest-packs-container::-webkit-scrollbar-track { background: var(--bg-2); border-radius: 4px; }
-        .latest-packs-container::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
-
-        .latest-pack-card { 
-            background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; 
-            width: 320px; flex-shrink: 0; scroll-snap-align: start;
-            display: flex; flex-direction: column;
-            transition: all 0.2s ease; 
+        .latest-packs-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
         }
-        .latest-pack-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: 0 10px 30px -10px rgba(0,0,0, .2); }
-        .pack-thumb {
-            height: 160px; border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: center;
-            position: relative; overflow: hidden;
-            border-radius: 15px 15px 0 0;
+        .latest-pack-card {
+            background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px;
+            padding: 1rem; display: flex; align-items: center; gap: 1rem;
+            transition: all 0.2s ease;
         }
-        .pack-icon-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; filter: blur(8px) brightness(0.7); transform: scale(1.1); }
-        .pack-icon { position: relative; width: 90px; height: 90px; border-radius: 16px; object-fit: cover; z-index: 1; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+        .latest-pack-card:hover { transform: translateY(-2px); border-color: var(--border-strong); background: var(--bg-2); }
+        .pack-icon { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+        .pack-details { flex-grow: 1; }
+        .pack-name { font-weight: 600; line-height: 1.3; }
+        .pack-meta { display: flex; align-items: center; gap: 1rem; font-size: 0.8rem; color: var(--muted); margin-top: 0.25rem; }
         
-        .pack-info { padding: 1rem; flex-grow: 1; display: flex; flex-direction: column; }
-        .pack-name { font-size: 1.2rem; font-weight: 700; margin: 0 0 0.5rem; line-height: 1.2; }
-        .pack-stats-details { display: flex; gap: 1.5rem; width: 100%; font-size: 0.9rem; color: var(--muted); }
-        .stat-item { display: flex; align-items: center; gap: 6px; }
-        .pack-download-btn { background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; color: var(--text); transition: all 0.2s ease; margin-top: 1rem; }
-        .pack-download-btn:hover { border-color: var(--primary); box-shadow: 0 0 15px rgba(222, 33, 42, .2); color: white; }
-        .tiny { font-size: 12px; color: var(--muted); }
-        
-        .loading { display: flex; align-items: center; justify-content: center; padding: 2rem; color: var(--muted); width: 100%; }
+        .loading { display: flex; align-items: center; justify-content: center; padding: 2rem; color: var(--muted); width: 100%; grid-column: 1 / -1; }
         .loading::after { content: ''; width: 20px; height: 20px; border: 2px solid var(--border); border-top: 2px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-left: 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .community { margin-top: 4rem; text-align: center; }
         .glowing-title { font-size: 2.5rem; font-weight: 900; margin-bottom: 1rem; }
-        .community-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 2rem; }
-        .community-card { background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; transition: all 0.3s ease; }
-        .community-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: var(--shadow-glow); }
-        .community-icon { width: 60px; height: 60px; background: var(--gradient-brand); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem; }
-
+        
         footer { margin-top: 6rem; padding: 3rem 0; border-top: 1px solid var(--border); background: var(--bg-1); text-align: center; }
         
         .user-dropdown { position: relative; display: inline-block; }
@@ -188,7 +170,7 @@
             .mobile-nav-toggle { display: block; }
             .title { font-size: 2.2rem; }
             .muted { font-size: 1.1rem; }
-            .latest-pack-card { width: 280px; }
+            .latest-packs-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -242,51 +224,34 @@
                 </div>
 
                 <aside class="preview" id="latest-uploads" style="margin-top: 4rem;">
-                    <div class="preview-head" style="margin-bottom: 1.5rem;">
-                        <strong><i class="fa-solid fa-sparkles"></i> Latest Official Uploads</strong>
-                    </div>
-                    <div class="latest-packs-container" id="latest-packs-grid">
-                        <div class="loading">Loading latest packs...</div>
-                    </div>
-                     <div style="margin-top: 2.5rem; text-align: center;">
-                        <a class="btn primary" href="/texturepacks.html" style="padding: 0.8rem 1.5rem; border-radius: 14px;">
-                            <span>Explore All Packs</span>
+                    <div class="preview-head" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                        <strong><i class="fa-solid fa-sparkles"></i> Latest Uploads</strong>
+                        <a class="btn ghost" href="/texturepacks.html" style="padding: 0.5rem 1rem;">
+                            <span>View All</span>
                             <i class="fa-solid fa-arrow-right"></i>
                         </a>
+                    </div>
+                    <div class="latest-packs-grid" id="latest-packs-grid">
+                        <div class="loading">Loading latest packs...</div>
                     </div>
                 </aside>
             </div>
         </section>
 
-        <section class="container community">
+        <section class="container community" style="margin-top: 2rem;">
            <div style="padding: 3rem 0;">
                 <h2 class="glowing-title">
                     <span class="grad">Join the MCHub Community</span>
                 </h2>
                 <p class="muted" style="margin-bottom: 2rem;">Connect with players, discover amazing texturepacks, and be part of the largest Minecraft community.</p>
-                
-                <div class="community-grid">
-                    <div class="community-card">
-                        <div class="community-icon"><i class="fa-brands fa-discord"></i></div>
-                        <h3 style="margin-bottom: 1rem;">Discord Server</h3>
-                        <p class="muted">Chat with other players and get instant support</p>
-                    </div>
-                    <div class="community-card">
-                        <div class="community-icon"><i class="fa-solid fa-upload"></i></div>
-                        <h3 style="margin-bottom: 1rem;">Upload Packs</h3>
-                        <p class="muted">Share your creations with the community</p>
-                    </div>
-                    <div class="community-card">
-                        <div class="community-icon"><i class="fa-solid fa-star"></i></div>
-                        <h3 style="margin-bottom: 1rem;">Rate & Review</h3>
-                        <p class="muted">Help others find the best texture packs</p>
-                    </div>
-                </div>
+                <a href="https://discord.gg/KtafawJZxM" target="_blank" class="btn primary" style="padding: 0.8rem 1.5rem; border-radius: 14px; font-size: 1rem;">
+                    <i class="fa-brands fa-discord"></i> Join our Discord
+                </a>
             </div>
         </section>
     </main>
 
-    <footer>
+    <footer style="margin-top: 2rem;">
         <div class="footer-content" style="padding: 3rem 2rem;">
             <p class="muted">© 2024 MCHub. All rights reserved.</p>
             <p class="tiny">Made with ❤️ for the Minecraft community</p>
@@ -302,7 +267,6 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        const COLORS = [ {key: 'red', hex: '#de212a'}, {key: 'blue', hex: '#3b82f6'}, {key: 'green', hex: '#22c55e'}, {key: 'yellow', hex: '#eab308'}, {key: 'purple', hex: '#a855f7'}, {key: 'pink', hex: '#ec4899'}, {key: 'orange', hex: '#f97316'}, {key: 'teal', hex: '#14b8a6'}, {key: 'gray', hex: '#6b7280'}, {key: 'black', hex: '#1f2937'} ];
         let searchType = 'packs';
         let debounceTimer;
 
@@ -310,29 +274,6 @@
         function formatDate(isoString) { if (!isoString) return ''; const date = new Date(isoString); return `${date.getDate()}/${date.getMonth() + 1}/${String(date.getFullYear()).slice(-2)}`; }
         function formatDownloads(count) { const num = count || 0; if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K'; return num.toLocaleString(); }
         
-        async function handleDownload(event, packId, filename, packName) {
-            event.preventDefault();
-            event.stopPropagation();
-            try {
-                await fetch("/api/increment-download", {
-                    method: "POST", headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id: packId })
-                });
-            } catch (error) { console.error("Failed to update download count:", error); }
-            finally {
-                const { data } = supabase.storage.from('packs').getPublicUrl(filename);
-                fetch(data.publicUrl).then(res => res.blob()).then(blob => {
-                    const a = document.createElement("a");
-                    a.href = URL.createObjectURL(blob);
-                    a.download = `${packName}.${filename.split('.').pop()}`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                });
-            }
-        }
-        window.handleDownload = handleDownload;
-
         async function loadLatestPacks() {
             const grid = document.getElementById('latest-packs-grid');
             if (!grid) return;
@@ -340,28 +281,24 @@
                 const { data, error } = await supabase.from('packs').select('*').not('tags', 'ilike', '%user-upload%').order('created_at', { ascending: false }).limit(4);
                 if (error) throw error;
                 grid.innerHTML = data && data.length > 0 ? data.map(pack => {
-                    const color = COLORS.find(c => c.key === pack.color)?.hex || '#6b7280';
                     const iconContent = pack.icon_url 
-                        ? `<div class="pack-icon-bg" style="background-image: url('${pack.icon_url}');"></div><img class="pack-icon" src="${pack.icon_url}" alt="${escapeHtml(pack.name)} Icon">`
-                        : `<div class="pack-thumb" style="background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})"><div class="glyph" style="background:${color}; display:grid; place-items:center;"><i class="fa-solid fa-cube" style="color:white; font-size:2.5em;"></i></div></div>`;
+                        ? `<img class="pack-icon" src="${pack.icon_url}" alt="${escapeHtml(pack.name)} Icon">`
+                        : `<div class="pack-icon" style="background:var(--bg-2); display:grid; place-items:center;"><i class="fa-solid fa-cube" style="color:var(--muted); font-size:1.8em;"></i></div>`;
 
                     return `
-                        <div class="latest-pack-card">
-                            <div class="pack-thumb">
-                                ${iconContent}
-                            </div>
-                            <div class="pack-info">
+                        <a href="/texturepacks.html" class="latest-pack-card">
+                            ${iconContent}
+                            <div class="pack-details">
                                 <h4 class="pack-name">${escapeHtml(pack.name)}</h4>
-                                <div class="pack-stats-details">
-                                    <div class="stat-item"><i class="fa-solid fa-download"></i><span>${formatDownloads(pack.download_count)}</span></div>
-                                    <div class="stat-item"><i class="fa-solid fa-calendar-day"></i><span>${formatDate(pack.created_at)}</span></div>
+                                <div class="pack-meta">
+                                    <span><i class="fa-solid fa-download fa-xs"></i> ${formatDownloads(pack.download_count)}</span>
+                                    <span><i class="fa-solid fa-calendar-day fa-xs"></i> ${formatDate(pack.created_at)}</span>
                                 </div>
-                                <button class="pack-download-btn" onclick="handleDownload(event, ${pack.id}, '${pack.filename}', '${escapeHtml(pack.name)}')"><i class="fa-solid fa-download"></i> Download</button>
                             </div>
-                        </div>`;
-                }).join('') : '<p class="tiny" style="text-align: center; width: 100%;">No official packs have been uploaded yet.</p>';
+                        </a>`;
+                }).join('') : '<p class="tiny" style="text-align: center; width: 100%; grid-column: 1 / -1;">No official packs have been uploaded yet.</p>';
             } catch (err) {
-                 grid.innerHTML = '<p class="tiny" style="text-align: center; width: 100%;">Could not load packs. Please try again later.</p>';
+                 grid.innerHTML = '<p class="tiny" style="text-align: center; width: 100%; grid-column: 1 / -1;">Could not load packs. Please try again later.</p>';
             }
         }
         
@@ -375,7 +312,7 @@
 
             let results = [];
             if (searchType === 'packs') {
-                const { data } = await supabase.from('packs').select('name, icon_url, filename').ilike('name', `%${query}%`).limit(5);
+                const { data } = await supabase.from('packs').select('name, icon_url').ilike('name', `%${query}%`).limit(5);
                 results = (data || []).map(item => ({
                     type: 'pack', name: item.name, icon: item.icon_url, link: `/texturepacks.html`
                 }));
@@ -385,7 +322,7 @@
                     type: 'user', name: item.username, icon: item.avatar_url, link: `/profile.html?user=${item.username}`
                 }));
             } else if (searchType === 'gamertags') {
-                const { data } = await supabase.from('profiles').select('username, bedrock_gamertag, avatar_url, xuid').ilike('bedrock_gamertag', `%${query}%`).limit(5);
+                const { data } = await supabase.from('profiles').select('username, bedrock_gamertag, xuid').ilike('bedrock_gamertag', `%${query}%`).limit(5);
                  results = (data || []).map(item => ({
                     type: 'gamertag', name: item.bedrock_gamertag, sub: item.username, xuid: item.xuid, link: `/profile.html?user=${item.username}`
                 }));
@@ -405,7 +342,7 @@
                             ? `<img src="${item.icon}" class="search-result-icon">`
                             : `<div class="search-result-icon" style="background:var(--bg-2); display:grid; place-items:center;"><i class="fa-solid fa-cube"></i></div>`;
                     } else if (item.type === 'gamertag' && item.xuid) {
-                        iconHtml = `<img src="/api/bedrock-skin?xuid=${item.xuid}" class="search-result-avatar is-mc-skin">`;
+                        iconHtml = `<img src="/api/bedrock-skin?xuid=${item.xuid}&render_type=head" class="search-result-avatar is-mc-skin">`;
                     } else { // user
                         const initial = (item.name || '?').charAt(0).toUpperCase();
                         iconHtml = `<img src="${item.icon || `https://placehold.co/40x40/1c1c1c/de212a?text=${initial}`}" class="search-result-avatar">`;
@@ -424,7 +361,6 @@
             container.style.display = 'block';
         }
         
-        // Search type dropdown logic
         const dropdown = document.querySelector('.search-type-dropdown');
         const searchTypeBtn = document.getElementById('search-type-btn');
         const searchTypeMenu = document.getElementById('search-type-menu');
@@ -439,7 +375,7 @@
         document.querySelectorAll('.search-type-option').forEach(option => {
             option.addEventListener('click', () => {
                 searchType = option.dataset.type;
-                searchTypeLabel.textContent = option.textContent;
+                searchTypeLabel.textContent = option.textContent.trim();
                 searchInput.placeholder = `Search for ${searchType}...`;
                 dropdown.classList.remove('open');
                 performSearch();
@@ -459,11 +395,6 @@
                 dropdown.classList.remove('open');
             }
         });
-        
-        function shade(color, percent) {
-            let f = parseInt(color.slice(1), 16), t = percent < 0 ? 0 : 255, p = percent < 0 ? percent * -1 : percent, R = f >> 16, G = f >> 8 & 0x00FF, B = f & 0x0000FF;
-            return "#" + (0x1000000 + (Math.round((t - R) * p) + R) * 0x10000 + (Math.round((t - G) * p) + G) * 0x100 + (Math.round((t - B) * p) + B)).toString(16).slice(1);
-        }
 
         document.addEventListener('DOMContentLoaded', loadLatestPacks);
     </script>
