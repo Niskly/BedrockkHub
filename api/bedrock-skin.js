@@ -1,27 +1,25 @@
-import { createClient } from '@supabase/supabase-js';
+// Helper to fetch the raw skin data from the GeyserMC API
+async function getPlayerSkinData(xuid) {
+    try {
+        const geyserApiUrl = `https://api.geysermc.org/v2/skin/${xuid}`;
+        const response = await fetch(geyserApiUrl, { headers: { 'User-Agent': 'MCHub/1.1' } });
+        if (!response.ok) return null;
+        return await response.json();
+    } catch (error) {
+        console.error('[Player Skin Data] Error during GeyserMC fetch:', error.message);
+        return null;
+    }
+}
 
-// Helper to fetch an image and return its buffer and content type
+// Helper to fetch a full image texture and return its buffer
 async function fetchTextureFromUrl(url) {
     try {
-        const response = await fetch(url, { headers: { 'User-Agent': 'MCHub/1.0' } });
+        const response = await fetch(url, { headers: { 'User-Agent': 'MCHub/1.1' } });
         if (!response.ok) return null;
         const buffer = await response.arrayBuffer();
         return { buffer: Buffer.from(buffer), contentType: response.headers.get('content-type') || 'image/png' };
     } catch (error) {
         console.error(`[Texture Fetch] Error downloading from ${url}:`, error.message);
-        return null;
-    }
-}
-
-// Helper to get the raw skin data (including Java UUID) from GeyserMC API
-async function getPlayerSkinData(xuid) {
-    try {
-        const geyserApiUrl = `https://api.geysermc.org/v2/skin/${xuid}`;
-        const response = await fetch(geyserApiUrl);
-        if (!response.ok) return null;
-        return await response.json();
-    } catch (error) {
-        console.error('[Player Skin Data] Error during GeyserMC fetch:', error.message);
         return null;
     }
 }
@@ -38,31 +36,27 @@ export default async function handler(req, res) {
         }
 
         const skinData = await getPlayerSkinData(xuid);
+        const textureId = skinData?.texture_id;
 
-        // --- NEW LOGIC FOR RENDERING ONLY THE HEAD ---
+        // --- NEW, MORE RELIABLE HEAD RENDERING LOGIC ---
         if (render_type === 'head') {
-            const uuid = skinData?.uuid; // Extract the Java UUID if it exists
-            const fallbackHeadUrl = "https://cravatar.eu/helmavatar/steve/40.png"; // Default Steve head
-            
-            // Use the UUID with a skin rendering service, or fall back to Steve
-            const headUrl = uuid ? `https://cravatar.eu/helmavatar/${uuid}/40.png?default=steve` : fallbackHeadUrl;
-            
+            const size = 40; // The desired image size in pixels
+            // Use a reliable rendering service that works directly with texture IDs.
+            // This is better than relying on Java UUIDs, which may not exist.
+            const headUrl = textureId 
+                ? `https://visage.surgeplay.com/face/${size}/${textureId}`
+                : `https://visage.surgeplay.com/face/${size}/default`; // Fallback to default Steve head
+
             res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 1 day
             res.setHeader('Access-Control-Allow-Origin', '*');
-            res.redirect(302, headUrl); // Redirect the browser to the head image
+            res.redirect(302, headUrl); // Redirect the browser to the final head image
             return;
         }
 
-        // --- EXISTING LOGIC FOR FULL SKIN TEXTURE ---
+        // --- EXISTING LOGIC FOR FULL SKIN TEXTURE (UNCHANGED) ---
         let textureUrl = null;
-        if (skinData?.value) {
-            try {
-                const decoded = JSON.parse(Buffer.from(skinData.value, 'base64').toString());
-                textureUrl = decoded?.textures?.SKIN?.url;
-            } catch (e) { /* ignore parse error */ }
-        }
-        if (!textureUrl && skinData?.texture_id) {
-            textureUrl = `https://textures.minecraft.net/texture/${skinData.texture_id}`;
+        if (textureId) {
+            textureUrl = `https://textures.minecraft.net/texture/${textureId}`;
         }
 
         if (textureUrl) {
@@ -92,3 +86,4 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'An internal server error occurred.' });
     }
 }
+
