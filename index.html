@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MCHub - Minecraft Bedrock Texture Packs</title>
-    <meta name="description" content="Discover and download the best Minecraft Bedrock texture packs. Join our community of creators and players sharing amazing content." />
+    <title>MCHub - Minecraft Texture Packs</title>
+    <meta name="description" content="Discover and download the best Minecraft texture packs. Join our community of creators and players sharing amazing content." />
     <meta name="author" content="MCHub" />
-    <meta name="keywords" content="minecraft, bedrock, texture packs, resource packs, minecraft bedrock edition" />
+    <meta name="keywords" content="minecraft, bedrock, texture packs, resource packs, minecraft edition" />
 
-    <meta property="og:title" content="MCHub - Minecraft Bedrock Texture Packs" />
+    <meta property="og:title" content="MCHub - Minecraft Texture Packs" />
     <meta property="og:description" content="Discover and download the best Minecraft Bedrock texture packs. Join our community of creators and players." />
     <meta property="og:type" content="website" />
 
@@ -232,7 +232,7 @@
                             <i class="fa-solid fa-sparkles"></i>
                             Latest Uploads
                         </strong>
-                        <p class="muted">Discover the newest texture packs uploaded by us</p>
+                        <p class="muted">Discover the newest texture packs uploaded by our team</p>
                     </div>
                     <div class="packs-grid" id="latest-packs-grid">
                         <div class="loading">Loading latest packs...</div>
@@ -304,8 +304,6 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        const ADMIN_USER_ID = '7ae6fa34-9960-4b06-81be-ae28e8fb8e71';
-
         const COLORS = [
             {key: 'red', hex: '#de212a'}, {key: 'blue', hex: '#3b82f6'}, 
             {key: 'green', hex: '#22c55e'}, {key: 'yellow', hex: '#eab308'}, 
@@ -330,14 +328,43 @@
             if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
             return num.toLocaleString();
         }
+        
+        async function handleDownload(event, packId, filename, packName) {
+            event.preventDefault();
+            event.stopPropagation();
+            try {
+                await fetch("/api/increment-download", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id: packId })
+                });
+                const el = document.getElementById(`downloads-featured-${packId}`);
+                if (el) el.textContent = formatDownloads(parseInt(el.textContent.replace(/[K,M]/g, '000'), 10) + 1);
+            } catch (error) { console.error("Failed to update download count:", error); }
+            finally {
+                const { data } = supabase.storage.from('packs').getPublicUrl(filename);
+                fetch(data.publicUrl).then(res => res.blob()).then(blob => {
+                    const a = document.createElement("a");
+                    a.href = URL.createObjectURL(blob);
+                    a.download = `${packName}.${filename.split('.').pop()}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                });
+            }
+        }
+        window.handleDownload = handleDownload;
 
         async function loadLatestPacks() {
             const grid = document.getElementById('latest-packs-grid');
             if (!grid) return;
 
             try {
+                // --- THIS IS THE FIX ---
+                // Fetch packs that are NOT user uploads, making it dynamic.
                 const { data, error } = await supabase.from('packs').select('*')
-                    .eq('user_id', ADMIN_USER_ID).order('created_at', { ascending: false }).limit(4);
+                    .not('tags', 'ilike', '%user-upload%')
+                    .order('created_at', { ascending: false })
+                    .limit(4);
 
                 if (error) throw error;
 
@@ -357,17 +384,17 @@
                                 <div><h4 class="pack-name">${escapeHtml(pack.name)}</h4></div>
                             </div>
                             <div class="pack-stats-details">
-                                <div class="stat-item"><i class="fa-solid fa-download"></i><span>${formatDownloads(pack.download_count)}</span></div>
+                                <div class="stat-item"><i class="fa-solid fa-download"></i><span id="downloads-featured-${pack.id}">${formatDownloads(pack.download_count)}</span></div>
                                 <div class="stat-item"><i class="fa-solid fa-calendar-day"></i><span>${formatDate(pack.created_at)}</span></div>
                             </div>
-                            <a href="/texturepacks.html" class="pack-download-btn"><i class="fa-solid fa-download"></i> Download Pack</a>`;
+                            <button class="pack-download-btn" onclick="handleDownload(event, ${pack.id}, '${pack.filename}', '${escapeHtml(pack.name)}')"><i class="fa-solid fa-download"></i> Download Pack</button>`;
                         grid.appendChild(packElement);
                     });
                 } else {
-                    grid.innerHTML = '<div class="card panel tiny" style="grid-column: 1 / -1;">No packs uploaded yet.</div>';
+                    grid.innerHTML = '<div class="card panel tiny" style="grid-column: 1 / -1; text-align: center;">No official packs have been uploaded yet.</div>';
                 }
             } catch (err) {
-                 grid.innerHTML = '<div class="card panel tiny" style="grid-column: 1 / -1;">Could not load packs. Please try again later.</div>';
+                 grid.innerHTML = '<div class="card panel tiny" style="grid-column: 1 / -1; text-align: center;">Could not load packs. Please try again later.</div>';
             }
         }
         
