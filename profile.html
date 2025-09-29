@@ -104,15 +104,22 @@
         .pack-options-menu a:hover, .pack-options-menu button:hover { background: var(--bg-1); color: var(--text); }
         .pack-options-menu .delete-option:hover { background: var(--danger); color: white; }
         .pack-options-menu i { width: 16px; text-align: center; }
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 1.5rem; }
+        .pagination-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; }
+        .pagination-btn:hover { border-color: white; }
 
         .backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, .8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 60; }
-        .modal { width: 100%; max-width: 420px; background: var(--bg-1); border-radius: 12px; border: 1px solid var(--border); }
-        .modal .panel { padding: 20px; }
-        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 12px 20px 20px; }
-        .file-upload-area { margin-top: 1rem; padding: 24px; border: 2px dashed var(--border); border-radius: 12px; text-align: center; cursor: pointer; background: var(--bg-0); }
+        .modal { width: 100%; max-width: 450px; background: var(--bg-1); border-radius: 18px; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
+        .modal .panel { padding: 2rem; }
+        .modal-header { text-align: center; margin-bottom: 1.5rem; }
+        .modal-header strong { font-size: 1.3rem; font-weight: 700; }
+        .modal-header .tiny { margin-top: 0.25rem; }
+        .file-upload-area { margin-top: 1rem; padding: 2rem; border: 2px dashed var(--border); border-radius: 12px; text-align: center; cursor: pointer; background: var(--bg-0); }
         .file-upload-area:hover { border-color: var(--brand-1); background: rgba(222, 33, 42, .05); }
-        .file-hint { color: var(--muted); }
+        .file-upload-area i { font-size: 2rem; color: var(--brand-1); margin-bottom: 0.5rem; }
+        .file-hint { color: var(--muted); font-weight: 600; }
         input[type="text"] { width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-2);color:var(--text); font-family: inherit; font-size: inherit; }
+        .modal-footer { display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
         #toast-container { position: fixed; top: 80px; right: 20px; z-index: 1000; }
         .toast { padding: 12px 18px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; background: var(--bg-1); border: 1px solid var(--border); }
         @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
@@ -193,21 +200,19 @@
     <div id="backdrop" class="backdrop">
         <div class="modal">
             <div class="panel">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-                    <strong>Upload Texture Pack</strong>
-                    <button class="btn sm ghost" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+                <div class="modal-header">
+                    <strong>Upload New Pack</strong>
+                    <p class="tiny">Share your creation with the community</p>
                 </div>
-                <p class="tiny">Select a .mcpack or .zip. Name and icon are detected automatically.</p>
-            </div>
-            <div class="panel" style="padding-top:0">
                 <form id="uploadForm" onsubmit="handleUpload(event)">
                     <div style="display: flex; flex-direction: column; gap: 1rem;">
                         <div>
-                            <label class="tiny">Pack Name (can be changed)</label>
-                            <input id="packName" required placeholder="Auto-detected from filename" type="text">
+                            <label class="tiny" style="text-align: left; padding-left: 0.5rem;">Pack Name (auto-detected)</label>
+                            <input id="packName" required placeholder="My Awesome Pack" type="text">
                         </div>
                         <div class="file-upload-area" id="pack-file-area" onclick="document.getElementById('fileInput').click()">
-                            <div class="file-hint" id="fileHint">📦 Click to select .mcpack or .zip</div>
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <div class="file-hint" id="fileHint">Click to select a .mcpack or .zip</div>
                             <input id="fileInput" type="file" accept=".mcpack,.zip" style="display:none" onchange="hintFile()" />
                         </div>
                     </div>
@@ -248,6 +253,8 @@
         let currentProfileData = null;
         let confirmCallback = null;
         let localPacksCache = [];
+        let currentPage = 1;
+        const packsPerPage = 6;
 
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
@@ -328,9 +335,45 @@
             return card;
         }
 
+        function renderPacksForPage() {
+            const packsGridEl = document.getElementById('packs-grid-placeholder');
+            const paginationControlsEl = document.getElementById('pagination-controls');
+            const isOwnProfile = loggedInUser && loggedInUser.id === currentProfileData.id;
+
+            packsGridEl.innerHTML = '';
+            paginationControlsEl.innerHTML = '';
+
+            const totalPacks = localPacksCache.length;
+            if (totalPacks === 0) {
+                packsGridEl.innerHTML = `<p class="tiny" style="padding-top: 1rem; grid-column: 1 / -1;">This user hasn't uploaded any packs yet.</p>`;
+                return;
+            }
+
+            const startIndex = (currentPage - 1) * packsPerPage;
+            const packsForPage = localPacksCache.slice(startIndex, startIndex + packsPerPage);
+            packsForPage.forEach(pack => packsGridEl.appendChild(renderPackCard(pack, isOwnProfile)));
+
+            const totalPages = Math.ceil(totalPacks / packsPerPage);
+            if (totalPages > 1) {
+                if (currentPage > 1) {
+                    paginationControlsEl.innerHTML += `<button class="pagination-btn" onclick="changePage(${currentPage - 1})"><i class="fa-solid fa-arrow-left"></i></button>`;
+                }
+                paginationControlsEl.innerHTML += `<span class="tiny">Page ${currentPage} of ${totalPages}</span>`;
+                if (currentPage < totalPages) {
+                    paginationControlsEl.innerHTML += `<button class="pagination-btn" onclick="changePage(${currentPage + 1})"><i class="fa-solid fa-arrow-right"></i></button>`;
+                }
+            }
+        }
+
+        window.changePage = (page) => {
+            currentPage = page;
+            renderPacksForPage();
+        }
+
         function renderDashboard(profile, packs, currentUser) {
             currentProfileData = profile;
             localPacksCache = packs;
+            currentPage = 1;
             const pfpHtml = profile.avatar_url ? `<img src="${profile.avatar_url}" alt="${profile.username}'s avatar" class="profile-avatar">` : `<div class="pfp-placeholder"><span>${(profile.username || '?').charAt(0).toUpperCase()}</span></div>`;
             const bedrockHtml = (profile.bedrock_gamertag && profile.xuid) 
                 ? `<div class="minecraft-profile-card">
@@ -388,17 +431,13 @@
                                     ${isOwnProfile ? '<div class="upload-btn" title="Upload new pack"><i class="fa-solid fa-plus"></i></div>' : ''}
                                 </div>
                                 <div class="packs-grid" id="packs-grid-placeholder"></div>
+                                <div class="pagination" id="pagination-controls"></div>
                             </div>
                         </div>
                     </div>
                 </div>`;
             
-            const packsGridEl = document.getElementById('packs-grid-placeholder');
-            if (packs && packs.length > 0) {
-                packs.forEach(pack => packsGridEl.appendChild(renderPackCard(pack, isOwnProfile)));
-            } else {
-                packsGridEl.innerHTML = `<p class="tiny" style="padding-top: 1rem;">This user hasn't uploaded any packs yet.</p>`;
-            }
+            renderPacksForPage();
             if (profile.bedrock_gamertag && profile.xuid) { initBedrockSkinViewer(profile); }
             
             const uploadBtn = document.querySelector('.upload-btn');
@@ -481,12 +520,10 @@
                     });
                 }
                 
-                // --- THIS IS THE FIX ---
-                // Only fetch packs that are specifically marked as 'user-upload'
                 const { data: packs } = await supabase.from('packs')
                   .select('*')
                   .eq('user_id', profile.id)
-                  .ilike('tags', '%user-upload%') // This is the new filter
+                  .ilike('tags', '%user-upload%') 
                   .order('created_at', { ascending: false });
                 
                 renderDashboard(profile, packs || [], currentUser);
@@ -504,7 +541,7 @@
         window.closeModal = () => { 
             document.getElementById('backdrop').style.display = 'none'; 
             document.getElementById('uploadForm').reset(); 
-            document.getElementById('fileHint').textContent = '📦 Click to select .mcpack or .zip';
+            document.getElementById('fileHint').textContent = 'Click to select a .mcpack or .zip';
         };
         window.hintFile = () => { 
             const fileInput = document.getElementById('fileInput');
@@ -559,9 +596,7 @@
                 if (dbError) throw new Error(`Database insert failed: ${dbError.message}`);
                 
                 localPacksCache.unshift(newPack);
-                const packsGridEl = document.getElementById('packs-grid-placeholder');
-                if (packsGridEl.querySelector('.tiny')) packsGridEl.innerHTML = '';
-                packsGridEl.prepend(renderPackCard(newPack, true));
+                renderPacksForPage();
 
                 showToast('Pack uploaded successfully!', 'success');
                 closeModal();
@@ -635,20 +670,8 @@
                 const result = await response.json();
                 if (!response.ok) throw new Error(result.details);
                 
-                const cardToRemove = document.getElementById(`pack-card-${packId}`);
-                if (cardToRemove) {
-                    cardToRemove.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                    cardToRemove.style.opacity = '0';
-                    cardToRemove.style.transform = 'scale(0.9)';
-                    setTimeout(() => {
-                        cardToRemove.remove();
-                        localPacksCache = localPacksCache.filter(p => p.id !== packId);
-                        const packsGrid = document.getElementById('packs-grid-placeholder');
-                        if (packsGrid && localPacksCache.length === 0) {
-                            packsGrid.innerHTML = `<p class="tiny" style="padding-top: 1rem;">This user hasn't uploaded any packs yet.</p>`;
-                        }
-                    }, 300);
-                }
+                localPacksCache = localPacksCache.filter(p => p.id !== packId);
+                renderPacksForPage();
                 
                 showToast('Pack deleted successfully!', 'success');
 
@@ -680,3 +703,4 @@
     </script>
 </body>
 </html>
+
