@@ -481,7 +481,13 @@
                     });
                 }
                 
-                const { data: packs } = await supabase.from('packs').select('*').eq('user_id', profile.id).order('created_at', { ascending: false });
+                // --- THIS IS THE FIX ---
+                // Only fetch packs that are specifically marked as 'user-upload'
+                const { data: packs } = await supabase.from('packs')
+                  .select('*')
+                  .eq('user_id', profile.id)
+                  .ilike('tags', '%user-upload%') // This is the new filter
+                  .order('created_at', { ascending: false });
                 
                 renderDashboard(profile, packs || [], currentUser);
                 
