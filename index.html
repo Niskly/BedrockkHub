@@ -31,6 +31,8 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { height: 100%; scroll-behavior: smooth; }
         body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 15px/1.6 Inter, sans-serif; }
+        body::-webkit-scrollbar { display: none; }
+        body { -ms-overflow-style: none; scrollbar-width: none; }
         body::before {
             content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background-image: var(--bg-image, url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg'));
@@ -65,70 +67,98 @@
         @keyframes glow-pulse { from { filter: brightness(1); } to { filter: brightness(1.2) drop-shadow(0 0 20px var(--primary)); } }
         .muted { color: var(--muted); font-size: 1.2rem; line-height: 1.6; margin-bottom: 32px; max-width: 600px; margin-left: auto; margin-right: auto; }
         
-        /* ====== NEW SEARCH BAR ====== */
         .search-hub-container {
             max-width: 700px; margin: 2.5rem auto 0;
             position: relative;
         }
-        .search-tabs { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: -1px; }
-        .search-tab {
-            padding: 0.5rem 1.25rem;
-            border: 1px solid var(--border);
-            border-bottom: none;
-            border-radius: 8px 8px 0 0;
-            background: var(--bg-2);
-            color: var(--muted);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
+        .search-input-wrapper { 
+            display: flex; position: relative;
+            background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
-        .search-tab.active { background: var(--bg-1); color: var(--text); }
-        .search-input-wrapper { display: flex; position: relative; }
+        .search-input-wrapper:focus-within {
+            border-color: var(--brand-1);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3), 0 0 0 3px rgba(222, 33, 42, .3);
+        }
+        .search-type-dropdown { position: relative; }
+        #search-type-btn {
+            display: flex; align-items: center; gap: 0.5rem;
+            height: 100%; padding: 0 1.2rem;
+            background: var(--bg-2); border: none; color: var(--text); font-weight: 600;
+            border-radius: 15px 0 0 15px; cursor: pointer;
+            border-right: 1px solid var(--border);
+        }
+        #search-type-btn .fa-chevron-down { font-size: 0.7em; transition: transform 0.2s; }
+        .search-type-dropdown.open #search-type-btn .fa-chevron-down { transform: rotate(180deg); }
+        
+        #search-type-menu {
+            display: none; position: absolute;
+            top: 110%; left: 0; z-index: 12;
+            background: var(--bg-1); border: 1px solid var(--border);
+            border-radius: 12px; min-width: 100%;
+            overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        .search-type-dropdown.open #search-type-menu { display: block; }
+        .search-type-option {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.75rem 1rem; cursor: pointer;
+        }
+        .search-type-option:hover { background: var(--bg-2); }
+        .search-type-option i { width: 16px; color: var(--muted); }
+
         #universal-search {
             width: 100%; padding: 1.25rem 1.5rem;
-            font-size: 1.1rem; border-radius: 16px;
-            background: var(--bg-1); border: 1px solid var(--border); color: var(--text);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            font-size: 1.1rem; background: transparent; border: none; color: var(--text);
             outline: none;
         }
-        .search-tabs.active ~ .search-input-wrapper #universal-search { border-top-left-radius: 0; }
         #search-results {
-            display: none; position: absolute; top: 100%;
-            left: 0; right: 0; margin-top: 8px;
+            display: none; position: absolute; top: calc(100% + 8px);
+            left: 0; right: 0;
             background: var(--bg-1); border: 1px solid var(--border);
             border-radius: 16px; max-height: 350px; overflow-y: auto;
             z-index: 10;
         }
-        .search-result-item {
-            display: flex; align-items: center; gap: 1rem;
-            padding: 0.75rem 1rem;
-            transition: background-color 0.2s;
-        }
+        .search-result-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; transition: background-color 0.2s; }
         .search-result-item:not(:last-child) { border-bottom: 1px solid var(--border); }
         .search-result-item:hover { background: var(--bg-2); }
-        .search-result-icon { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
-        .search-result-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .search-result-icon, .search-result-avatar { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+        .search-result-avatar.is-mc-skin { border-radius: 4px; image-rendering: pixelated; }
         .search-result-info { text-align: left; }
         .search-result-name { font-weight: 600; color: var(--text); }
         .search-result-sub { font-size: 0.8rem; color: var(--muted); }
         
-        .packs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
-        /* ====== NEW LATEST PACK CARD LAYOUT ====== */
+        /* ====== NEW HORIZONTAL LAYOUT ====== */
+        .latest-packs-container { display: flex; gap: 18px; overflow-x: auto; padding-bottom: 1.5rem; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+        .latest-packs-container::-webkit-scrollbar { height: 8px; }
+        .latest-packs-container::-webkit-scrollbar-track { background: var(--bg-2); border-radius: 4px; }
+        .latest-packs-container::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+
         .latest-pack-card { 
             background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; 
-            padding: 1rem; display: flex; gap: 1rem; align-items: center;
+            width: 320px; flex-shrink: 0; scroll-snap-align: start;
+            display: flex; flex-direction: column;
             transition: all 0.2s ease; 
         }
         .latest-pack-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: 0 10px 30px -10px rgba(0,0,0, .2); }
-        .pack-icon-wrapper { flex-shrink: 0; }
-        .pack-icon { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
-        .pack-details { display: flex; flex-direction: column; flex-grow: 1; align-self: stretch; }
-        .pack-name { font-size: 1.2rem; font-weight: 700; margin: 0; line-height: 1.2; }
-        .pack-stats-details { display: flex; gap: 1.5rem; width: 100%; font-size: 0.9rem; color: var(--muted); margin-top: auto; }
+        .pack-thumb {
+            height: 160px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+            border-radius: 15px 15px 0 0;
+        }
+        .pack-icon-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; filter: blur(8px) brightness(0.7); transform: scale(1.1); }
+        .pack-icon { position: relative; width: 90px; height: 90px; border-radius: 16px; object-fit: cover; z-index: 1; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+        
+        .pack-info { padding: 1rem; flex-grow: 1; display: flex; flex-direction: column; }
+        .pack-name { font-size: 1.2rem; font-weight: 700; margin: 0 0 0.5rem; line-height: 1.2; }
+        .pack-stats-details { display: flex; gap: 1.5rem; width: 100%; font-size: 0.9rem; color: var(--muted); }
         .stat-item { display: flex; align-items: center; gap: 6px; }
+        .pack-download-btn { background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; color: var(--text); transition: all 0.2s ease; margin-top: 1rem; }
+        .pack-download-btn:hover { border-color: var(--primary); box-shadow: 0 0 15px rgba(222, 33, 42, .2); color: white; }
         .tiny { font-size: 12px; color: var(--muted); }
         
-        .loading { display: flex; align-items: center; justify-content: center; padding: 2rem; color: var(--muted); grid-column: 1 / -1; }
+        .loading { display: flex; align-items: center; justify-content: center; padding: 2rem; color: var(--muted); width: 100%; }
         .loading::after { content: ''; width: 20px; height: 20px; border: 2px solid var(--border); border-top: 2px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-left: 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
@@ -140,11 +170,7 @@
         .community-icon { width: 60px; height: 60px; background: var(--gradient-brand); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem; }
 
         footer { margin-top: 6rem; padding: 3rem 0; border-top: 1px solid var(--border); background: var(--bg-1); text-align: center; }
-        .footer-content { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
-        .footer-links { display: flex; justify-content: center; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap; }
-        .footer-links a { color: var(--muted); font-weight: 600; transition: color 0.3s ease; }
-        .footer-links a:hover { color: var(--primary); }
-
+        
         .user-dropdown { position: relative; display: inline-block; }
         .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
         .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
@@ -156,32 +182,13 @@
         .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
         
         .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
-        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
-        .mobile-nav-backdrop.show { display: block; opacity: 1; }
-        .mobile-nav-sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; background: var(--bg-1); z-index: 999; transform: translateX(-100%); transition: transform 0.3s ease; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
-        .mobile-nav-sidebar.show { transform: translateX(0); }
-        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
-        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
-        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
-        .mobile-nav-user-info { display: flex; flex-direction: column; }
-        .mobile-nav-username { font-weight: 700; color: var(--text); }
-        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
-        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
-        .mobile-nav-main-links { flex-grow: 1; }
-        .mobile-nav-main-links a, .mobile-nav-footer-links a { padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem; font-weight: 600; color: var(--muted); transition: all 0.2s ease; }
-        .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
-        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
-        .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
-
-        @media (max-width: 1024px) { 
-            .title { font-size: 2.8rem; }
-            .packs-grid { grid-template-columns: 1fr; } 
-        }
+        
         @media (max-width: 768px) { 
             .nav-actions { display: none; }
             .mobile-nav-toggle { display: block; }
             .title { font-size: 2.2rem; }
             .muted { font-size: 1.1rem; }
+            .latest-pack-card { width: 280px; }
         }
     </style>
 </head>
@@ -207,42 +214,44 @@
             <div class="hero">
                 <div class="hero-content">
                     <h1 class="title">
-                        Your Hub for<br>
-                        <span class="grad">Minecraft Creations</span>
+                        The Center of the
+                        <span class="grad">Minecraft Universe</span>
                     </h1>
                     <p class="muted">
-                       Discover texture packs, find creators, and connect with the community.
-                       Everything you need in one place.
+                       Discover packs, connect with creators, and find your next adventure.
+                       All in one place.
                     </p>
                     
                     <div class="search-hub-container">
-                        <div class="search-tabs">
-                            <button class="search-tab active" data-type="packs">Packs</button>
-                            <button class="search-tab" data-type="users">Users</button>
-                            <button class="search-tab" data-type="gamertags">Gamertags</button>
-                        </div>
                         <div class="search-input-wrapper">
-                            <input type="text" id="universal-search" placeholder="Search for packs...">
+                            <div class="search-type-dropdown">
+                                <button id="search-type-btn">
+                                    <span id="search-type-label">Packs</span>
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </button>
+                                <div id="search-type-menu">
+                                    <div class="search-type-option" data-type="packs"><i class="fa-solid fa-palette"></i> Packs</div>
+                                    <div class="search-type-option" data-type="users"><i class="fa-solid fa-user"></i> Users</div>
+                                    <div class="search-type-option" data-type="gamertags"><i class="fa-brands fa-xbox"></i> Gamertags</div>
+                                </div>
+                            </div>
+                            <input type="text" id="universal-search" placeholder="Search for packs..." autocomplete="off">
                         </div>
                         <div id="search-results"></div>
                     </div>
                 </div>
 
-                <aside class="preview" id="latest-uploads">
-                    <div class="preview-head">
-                        <strong>
-                            <i class="fa-solid fa-sparkles"></i>
-                            Latest Uploads
-                        </strong>
-                        <p class="muted">Discover the newest texture packs uploaded by our team</p>
+                <aside class="preview" id="latest-uploads" style="margin-top: 4rem;">
+                    <div class="preview-head" style="margin-bottom: 1.5rem;">
+                        <strong><i class="fa-solid fa-sparkles"></i> Latest Official Uploads</strong>
                     </div>
-                    <div class="packs-grid" id="latest-packs-grid">
+                    <div class="latest-packs-container" id="latest-packs-grid">
                         <div class="loading">Loading latest packs...</div>
                     </div>
                      <div style="margin-top: 2.5rem; text-align: center;">
-                        <a class="btn primary btn-hero" href="/texturepacks.html">
-                            <i class="fa-solid fa-arrow-right"></i>
+                        <a class="btn primary" href="/texturepacks.html" style="padding: 0.8rem 1.5rem; border-radius: 14px;">
                             <span>Explore All Packs</span>
+                            <i class="fa-solid fa-arrow-right"></i>
                         </a>
                     </div>
                 </aside>
@@ -278,14 +287,7 @@
     </main>
 
     <footer>
-        <div class="footer-content">
-            <div class="footer-links">
-                <a href="/">Home</a>
-                <a href="/texturepacks.html">Texture Packs</a>
-                <a href="/about">About</a>
-                <a href="/contact">Contact</a>
-                <a href="https://discord.gg/KtafawJZxM" target="_blank">Discord</a>
-            </div>
+        <div class="footer-content" style="padding: 3rem 2rem;">
             <p class="muted">© 2024 MCHub. All rights reserved.</p>
             <p class="tiny">Made with ❤️ for the Minecraft community</p>
         </div>
@@ -308,6 +310,29 @@
         function formatDate(isoString) { if (!isoString) return ''; const date = new Date(isoString); return `${date.getDate()}/${date.getMonth() + 1}/${String(date.getFullYear()).slice(-2)}`; }
         function formatDownloads(count) { const num = count || 0; if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K'; return num.toLocaleString(); }
         
+        async function handleDownload(event, packId, filename, packName) {
+            event.preventDefault();
+            event.stopPropagation();
+            try {
+                await fetch("/api/increment-download", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id: packId })
+                });
+            } catch (error) { console.error("Failed to update download count:", error); }
+            finally {
+                const { data } = supabase.storage.from('packs').getPublicUrl(filename);
+                fetch(data.publicUrl).then(res => res.blob()).then(blob => {
+                    const a = document.createElement("a");
+                    a.href = URL.createObjectURL(blob);
+                    a.download = `${packName}.${filename.split('.').pop()}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                });
+            }
+        }
+        window.handleDownload = handleDownload;
+
         async function loadLatestPacks() {
             const grid = document.getElementById('latest-packs-grid');
             if (!grid) return;
@@ -317,22 +342,26 @@
                 grid.innerHTML = data && data.length > 0 ? data.map(pack => {
                     const color = COLORS.find(c => c.key === pack.color)?.hex || '#6b7280';
                     const iconContent = pack.icon_url 
-                        ? `<img class="pack-icon" src="${pack.icon_url}" alt="${escapeHtml(pack.name)} Icon">`
-                        : `<div class="pack-icon" style="background:${color}; display:grid; place-items:center;"><i class="fa-solid fa-cube" style="color:white; font-size:2.5em;"></i></div>`;
+                        ? `<div class="pack-icon-bg" style="background-image: url('${pack.icon_url}');"></div><img class="pack-icon" src="${pack.icon_url}" alt="${escapeHtml(pack.name)} Icon">`
+                        : `<div class="pack-thumb" style="background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})"><div class="glyph" style="background:${color}; display:grid; place-items:center;"><i class="fa-solid fa-cube" style="color:white; font-size:2.5em;"></i></div></div>`;
+
                     return `
-                        <a href="/texturepacks.html" class="latest-pack-card">
-                            <div class="pack-icon-wrapper">${iconContent}</div>
-                            <div class="pack-details">
+                        <div class="latest-pack-card">
+                            <div class="pack-thumb">
+                                ${iconContent}
+                            </div>
+                            <div class="pack-info">
                                 <h4 class="pack-name">${escapeHtml(pack.name)}</h4>
                                 <div class="pack-stats-details">
                                     <div class="stat-item"><i class="fa-solid fa-download"></i><span>${formatDownloads(pack.download_count)}</span></div>
                                     <div class="stat-item"><i class="fa-solid fa-calendar-day"></i><span>${formatDate(pack.created_at)}</span></div>
                                 </div>
+                                <button class="pack-download-btn" onclick="handleDownload(event, ${pack.id}, '${pack.filename}', '${escapeHtml(pack.name)}')"><i class="fa-solid fa-download"></i> Download</button>
                             </div>
-                        </a>`;
-                }).join('') : '<div class="card panel tiny" style="grid-column: 1 / -1; text-align: center;">No official packs have been uploaded yet.</div>';
+                        </div>`;
+                }).join('') : '<p class="tiny" style="text-align: center; width: 100%;">No official packs have been uploaded yet.</p>';
             } catch (err) {
-                 grid.innerHTML = '<div class="card panel tiny" style="grid-column: 1 / -1; text-align: center;">Could not load packs. Please try again later.</div>';
+                 grid.innerHTML = '<p class="tiny" style="text-align: center; width: 100%;">Could not load packs. Please try again later.</p>';
             }
         }
         
@@ -348,7 +377,7 @@
             if (searchType === 'packs') {
                 const { data } = await supabase.from('packs').select('name, icon_url, filename').ilike('name', `%${query}%`).limit(5);
                 results = (data || []).map(item => ({
-                    type: 'pack', name: item.name, icon: item.icon_url, link: `/texturepacks.html#${item.filename}`
+                    type: 'pack', name: item.name, icon: item.icon_url, link: `/texturepacks.html`
                 }));
             } else if (searchType === 'users') {
                 const { data } = await supabase.from('profiles').select('username, avatar_url').ilike('username', `%${query}%`).limit(5);
@@ -356,9 +385,9 @@
                     type: 'user', name: item.username, icon: item.avatar_url, link: `/profile.html?user=${item.username}`
                 }));
             } else if (searchType === 'gamertags') {
-                const { data } = await supabase.from('profiles').select('username, bedrock_gamertag, avatar_url').ilike('bedrock_gamertag', `%${query}%`).limit(5);
+                const { data } = await supabase.from('profiles').select('username, bedrock_gamertag, avatar_url, xuid').ilike('bedrock_gamertag', `%${query}%`).limit(5);
                  results = (data || []).map(item => ({
-                    type: 'gamertag', name: item.bedrock_gamertag, sub: item.username, icon: item.avatar_url, link: `/profile.html?user=${item.username}`
+                    type: 'gamertag', name: item.bedrock_gamertag, sub: item.username, xuid: item.xuid, link: `/profile.html?user=${item.username}`
                 }));
             }
             renderSearchResults(results);
@@ -375,7 +404,9 @@
                         iconHtml = item.icon 
                             ? `<img src="${item.icon}" class="search-result-icon">`
                             : `<div class="search-result-icon" style="background:var(--bg-2); display:grid; place-items:center;"><i class="fa-solid fa-cube"></i></div>`;
-                    } else { // user or gamertag
+                    } else if (item.type === 'gamertag' && item.xuid) {
+                        iconHtml = `<img src="/api/bedrock-skin?xuid=${item.xuid}" class="search-result-avatar is-mc-skin">`;
+                    } else { // user
                         const initial = (item.name || '?').charAt(0).toUpperCase();
                         iconHtml = `<img src="${item.icon || `https://placehold.co/40x40/1c1c1c/de212a?text=${initial}`}" class="search-result-avatar">`;
                     }
@@ -392,18 +423,29 @@
             }
             container.style.display = 'block';
         }
+        
+        // Search type dropdown logic
+        const dropdown = document.querySelector('.search-type-dropdown');
+        const searchTypeBtn = document.getElementById('search-type-btn');
+        const searchTypeMenu = document.getElementById('search-type-menu');
+        const searchTypeLabel = document.getElementById('search-type-label');
+        const searchInput = document.getElementById('universal-search');
 
-        document.querySelectorAll('.search-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.search-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                searchType = tab.dataset.type;
-                document.getElementById('universal-search').placeholder = `Search for ${searchType}...`;
+        searchTypeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('open');
+        });
+
+        document.querySelectorAll('.search-type-option').forEach(option => {
+            option.addEventListener('click', () => {
+                searchType = option.dataset.type;
+                searchTypeLabel.textContent = option.textContent;
+                searchInput.placeholder = `Search for ${searchType}...`;
+                dropdown.classList.remove('open');
                 performSearch();
             });
         });
-        
-        const searchInput = document.getElementById('universal-search');
+
         searchInput.addEventListener('input', () => {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(performSearch, 300);
@@ -413,9 +455,18 @@
             if (!e.target.closest('.search-hub-container')) {
                 document.getElementById('search-results').style.display = 'none';
             }
+            if (!e.target.closest('.search-type-dropdown')) {
+                dropdown.classList.remove('open');
+            }
         });
+        
+        function shade(color, percent) {
+            let f = parseInt(color.slice(1), 16), t = percent < 0 ? 0 : 255, p = percent < 0 ? percent * -1 : percent, R = f >> 16, G = f >> 8 & 0x00FF, B = f & 0x0000FF;
+            return "#" + (0x1000000 + (Math.round((t - R) * p) + R) * 0x10000 + (Math.round((t - G) * p) + G) * 0x100 + (Math.round((t - B) * p) + B)).toString(16).slice(1);
+        }
 
         document.addEventListener('DOMContentLoaded', loadLatestPacks);
     </script>
 </body>
 </html>
+
