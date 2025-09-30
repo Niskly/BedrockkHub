@@ -829,7 +829,7 @@
 
             if (armorLayers.length > 0) {
                 const overlayUrl = await combineArmorLayersToOverlay(armorLayers);
-                skinViewer.loadCape(overlayUrl);
+                skinViewer.loadCape(overlayUrl, { backEquipment: 'cape' });
             } else {
                 skinViewer.loadCape(null);
             }
