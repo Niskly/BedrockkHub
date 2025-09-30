@@ -273,10 +273,16 @@
             }
 
             try {
+                // FIX: Use parseInt to convert the string ID from the URL into a number for the query
+                const packIdAsNumber = parseInt(packId, 10);
+                if (isNaN(packIdAsNumber)) {
+                    throw new Error("Invalid Pack ID format.");
+                }
+
                 const { data: pack, error } = await supabase
                     .from('packs')
                     .select('*, profiles ( username, avatar_url )')
-                    .eq('id', packId)
+                    .eq('id', packIdAsNumber) 
                     .single();
 
                 if (error || !pack) {
