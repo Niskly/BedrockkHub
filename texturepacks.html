@@ -978,12 +978,12 @@
                 : `<div class="glyph" style="background:${color}"><i class="fa-solid fa-cube"></i></div>`;
             const thumbBackgroundStyle = p.icon_url ? `background: linear-gradient(135deg,#1f2937,#0f172a);` : `background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})`;
             
-            const downloadLink = `<a href="#" onclick="handleDownload(event, '${p.id}', '${p.filename}', '${escapeHtml(p.name)}')"><i class="fa-solid fa-download"></i> Download</a>`;
-            const editLink = currentUserRole === 'admin' ? `<a href="#" onclick="openEditModal('${p.id}'); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>` : '';
+            const downloadLink = `<a href="#" onclick="handleDownload(event, ${p.id}, '${p.filename}', '${escapeHtml(p.name)}')"><i class="fa-solid fa-download"></i> Download</a>`;
+            const editLink = currentUserRole === 'admin' ? `<a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>` : '';
 
             return `
-                <div class="card pack" onclick="navigateToPack(event, '${p.id}')">
-                     <button class="pack-options-btn" onclick="toggleOptionsMenu(event, '${p.id}')"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                <div class="card pack" onclick="navigateToPack(event, ${p.id})">
+                     <button class="pack-options-btn" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                      <div class="pack-options-menu" id="options-menu-${p.id}">${downloadLink}${editLink}</div>
                     <div class="thumb" style="${thumbBackgroundStyle}">
                         ${thumbContent}
@@ -1100,8 +1100,11 @@
             document.getElementById("tag-select-backdrop").style.display = "none";
         };
         window.openEditModal = function(id) {
-            const pack = packs.find(p => p.id === id);
-            if (!pack) return alert("Pack not found");
+            const pack = packs.find(p => p.id == id); // Use loose equality here
+            if (!pack) {
+                showToast("Pack not found for editing.", "error");
+                return;
+            }
             currentEditId = id;
             document.getElementById("editId").value = id;
             document.getElementById("editPackName").value = pack.name || "";
@@ -1296,4 +1299,3 @@
 </body>
 
 </html>
-
