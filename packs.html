@@ -276,8 +276,7 @@
         };
         const GUI_PATHS = { 
             'icons': 'icons.png', 
-            'widgets': 'widgets.png',
-            'panorama_overlay': 'panorama_overlay.png'
+            'widgets': 'widgets.png'
         };
         const GUI_COMPONENTS = { 
             'Crosshair': { type: 'crosshair'},
@@ -570,7 +569,7 @@
             }
             itemGrid.innerHTML = itemKeys.map(key => {
                 const item = foundAssets.items[key];
-                const enchantable = key.includes('sword') || key.includes('apple') || key.includes('bow') || key.includes('totem') || key.includes('crossbow');
+                const enchantable = key.includes('sword') || key === 'golden_apple' || key.includes('bow') || key === 'crossbow_standby';
                 return `
                 <div class="item-icon-card ${enchantable ? 'enchantable' : ''}" data-key="${key}">
                     <img src="${item.url}" alt="${key.replace(/_/g, ' ')}">
@@ -607,23 +606,29 @@
 
         function renderGuiSelectionList() {
              const guiList = document.getElementById('gui-list');
-             const guiTextureKeys = Object.keys(foundAssets.gui);
-             const componentKeys = Object.keys(GUI_COMPONENTS);
-             const allDisplayKeys = [...componentKeys, ...guiTextureKeys];
-             if (allDisplayKeys.length === 0) {
-                 guiList.innerHTML = `<p class="preview-placeholder-text">No GUI textures found in this pack.</p>`;
+             const availableComponents = Object.keys(GUI_COMPONENTS).filter(key => {
+                 const component = GUI_COMPONENTS[key];
+                 if (component.type === 'hud') {
+                     return foundAssets.gui.icons && foundAssets.gui.widgets;
+                 }
+                 if (component.type === 'crosshair') {
+                     return foundAssets.gui.icons;
+                 }
+                 return false;
+             });
+
+             if (availableComponents.length === 0) {
+                 guiList.innerHTML = `<p class="preview-placeholder-text">No GUI textures found for preview.</p>`;
                  return;
              }
-             guiList.innerHTML = allDisplayKeys.map(key => `<div class="gui-selection-item" data-key="${key}">${key.replace(/_/g, ' ')}</div>`).join('');
+
+             guiList.innerHTML = availableComponents.map(key => `<div class="gui-selection-item" data-key="${key}">${key}</div>`).join('');
+             
              guiList.querySelectorAll('.gui-selection-item').forEach(item => {
                  item.addEventListener('click', () => {
                      document.querySelectorAll('.gui-selection-item, .item-icon-card').forEach(el => el.classList.remove('active'));
                      item.classList.add('active');
-                     if (GUI_COMPONENTS[item.dataset.key]) {
-                         displayGuiComponent(item.dataset.key);
-                     } else if (foundAssets.gui[item.dataset.key]) {
-                         displayGuiImage(foundAssets.gui[item.dataset.key].url);
-                     }
+                     displayGuiComponent(item.dataset.key);
                  });
              });
              if (guiList.firstChild) guiList.firstChild.click();
@@ -648,6 +653,8 @@
 
         async function displayGuiComponent(name) {
             const imageViewer = document.getElementById('gui-viewer-canvas');
+            imageViewer.style.transform = 'scale(1)'; // Reset transform to prevent visual glitch
+
             if (GUI_COMPONENTS[name]?.type === 'hud') {
                 imageViewer.style.transform = 'scale(1.5)';
                 const hudCanvas = await createHudPreview();
@@ -659,15 +666,9 @@
                     imageViewer.src = crosshairCanvas.toDataURL();
                 } else {
                     imageViewer.src = ''; // Clear image if icons.png is not found
+                    showToast('Could not generate crosshair preview.', 'error');
                 }
             }
-        }
-
-
-        function displayGuiImage(url) {
-            const imageViewer = document.getElementById('gui-viewer-canvas');
-            imageViewer.src = url;
-            imageViewer.style.transform = 'scale(1)';
         }
         
         const loadImage = (url) => new Promise((res, rej) => { const i = new Image(); i.crossOrigin = "Anonymous"; i.onload = () => res(i); i.onerror = rej; i.src = url; });
@@ -683,8 +684,6 @@
             ctx.imageSmoothingEnabled = false;
 
             const iconsSheet = await loadImage(foundAssets.gui.icons.url);
-
-            // Draw the top-left 16x16 part of the icons sheet for the crosshair
             ctx.drawImage(iconsSheet, 0, 0, 16, 16, 0, 0, 16, 16);
 
             return crosshairCanvas;
@@ -993,3 +992,4 @@
     </script>
 </body>
 </html>
+
