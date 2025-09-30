@@ -114,32 +114,8 @@
         .enchant-btn.active { background: #a855f7; color: white; border-color: #c084fc; }
         #gui-viewer-container { border-radius: 12px; width: 100%; aspect-ratio: 1/1; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); background-size: cover; background-position: center; display: grid; place-items: center; padding: 1rem; }
         #gui-viewer-canvas { max-width: 100%; max-height: 100%; object-fit: contain; image-rendering: pixelated; transform-origin: center; }
-        /* START: GUI Selection Item Styling for circular buttons */
-        .gui-selection-list { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; justify-content: center; }
-        .gui-selection-item { 
-            width: 70px; /* Fixed width */
-            height: 70px; /* Fixed height to make it a square for circle */
-            padding: 0; /* Remove padding as content will be centered */
-            background: var(--bg-2); 
-            border: 1px solid var(--border); 
-            border-radius: 50%; /* Make it circular */
-            cursor: pointer; 
-            transition: all 0.2s ease; 
-            font-weight: 600; 
-            text-transform: capitalize; 
-            display: flex; /* Use flexbox for centering content */
-            flex-direction: column; /* Stack icon and text */
-            align-items: center; 
-            justify-content: center;
-            font-size: 0.7rem; /* Smaller font for text */
-            line-height: 1.2;
-            text-align: center;
-        }
-        .gui-selection-item i { /* Style for icon inside circular button */
-            font-size: 1.5rem; /* Larger icon */
-            margin-bottom: 0.2rem; /* Space between icon and text */
-        }
-        /* END: GUI Selection Item Styling */
+        .gui-selection-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; }
+        .gui-selection-item { padding: 0.6rem 1rem; background: var(--bg-2); border-radius: 10px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; font-weight: 600; text-transform: capitalize; }
         .gui-selection-item:hover { border-color: var(--text); }
         .gui-selection-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: white; }
         .preview-placeholder-text { text-align: center; color: var(--muted); padding: 1rem 0; font-size: 13px; }
@@ -262,7 +238,7 @@
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImexYyI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         const pageContainer = document.getElementById('page-container');
@@ -300,14 +276,13 @@
         };
         const GUI_PATHS = { 
             'icons': 'icons.png', 
-            'widgets': 'widgets.png'
+            'widgets': 'widgets.png',
+            'crosshair': 'crosshair.png',
+            'panorama_overlay': 'panorama_overlay.png'
         };
-        // START: Updated GUI_COMPONENTS with icons and labels for circular buttons
         const GUI_COMPONENTS = { 
-            'Crosshair': { type: 'crosshair', icon: 'fa-solid fa-crosshairs', label: 'Crosshair'},
-            'Full HUD': { type: 'hud', icon: 'fa-solid fa-gauge-high', label: 'HUD' } 
+            'Full HUD': { type: 'hud' } 
         };
-        // END: Updated GUI_COMPONENTS
 
         function showToast(message, type = 'error') {
             const container = document.getElementById('toast-container');
@@ -595,7 +570,7 @@
             }
             itemGrid.innerHTML = itemKeys.map(key => {
                 const item = foundAssets.items[key];
-                const enchantable = key.includes('sword') || key === 'golden_apple' || key.includes('bow') || key === 'crossbow_standby';
+                const enchantable = key.includes('sword') || key.includes('apple') || key.includes('bow') || key.includes('totem') || key.includes('crossbow');
                 return `
                 <div class="item-icon-card ${enchantable ? 'enchantable' : ''}" data-key="${key}">
                     <img src="${item.url}" alt="${key.replace(/_/g, ' ')}">
@@ -630,37 +605,29 @@
             }
         }
 
-        // START: Updated renderGuiSelectionList to show all components and use icons/labels
         function renderGuiSelectionList() {
              const guiList = document.getElementById('gui-list');
-             // Show all GUI_COMPONENTS, remove filtering based on found assets
-             const allComponentsKeys = Object.keys(GUI_COMPONENTS);
-
-             if (allComponentsKeys.length === 0) {
-                 guiList.innerHTML = `<p class="preview-placeholder-text">No GUI components defined.</p>`;
+             const guiTextureKeys = Object.keys(foundAssets.gui);
+             const componentKeys = Object.keys(GUI_COMPONENTS);
+             const allDisplayKeys = [...componentKeys, ...guiTextureKeys];
+             if (allDisplayKeys.length === 0) {
+                 guiList.innerHTML = `<p class="preview-placeholder-text">No GUI textures found in this pack.</p>`;
                  return;
              }
-
-             guiList.innerHTML = allComponentsKeys.map(key => {
-                 const component = GUI_COMPONENTS[key];
-                 return `
-                    <div class="gui-selection-item" data-key="${key}">
-                        <i class="${component.icon}"></i>
-                        <span>${component.label}</span>
-                    </div>`;
-             }).join('');
-             
+             guiList.innerHTML = allDisplayKeys.map(key => `<div class="gui-selection-item" data-key="${key}">${key.replace(/_/g, ' ')}</div>`).join('');
              guiList.querySelectorAll('.gui-selection-item').forEach(item => {
                  item.addEventListener('click', () => {
                      document.querySelectorAll('.gui-selection-item, .item-icon-card').forEach(el => el.classList.remove('active'));
                      item.classList.add('active');
-                     displayGuiComponent(item.dataset.key);
+                     if (GUI_COMPONENTS[item.dataset.key]) {
+                         displayGuiComponent(item.dataset.key);
+                     } else if (foundAssets.gui[item.dataset.key]) {
+                         displayGuiImage(foundAssets.gui[item.dataset.key].url);
+                     }
                  });
              });
-             // Automatically click the first available component if any
              if (guiList.firstChild) guiList.firstChild.click();
         }
-        // END: Updated renderGuiSelectionList
         
         async function displayItemOnCanvas(canvasId, url, enchanted = false) {
             const canvas = document.getElementById(canvasId);
@@ -679,67 +646,22 @@
             ctx.drawImage(img, x, y, drawWidth, drawHeight);
         }
 
-        // START: Updated displayGuiComponent for graceful feedback
         async function displayGuiComponent(name) {
             const imageViewer = document.getElementById('gui-viewer-canvas');
-            imageViewer.style.transform = 'scale(1)'; // Reset transform to prevent visual glitch *before* specific scaling
-
-            const component = GUI_COMPONENTS[name];
-
-            if (!component) {
-                imageViewer.src = ''; // Clear image
-                showToast(`Unknown GUI component: ${name}`, 'error');
-                return;
-            }
-
-            if (component.type === 'hud') {
-                if (foundAssets.gui.icons?.url && foundAssets.gui.widgets?.url) {
-                    const hudCanvas = await createHudPreview();
-                    imageViewer.src = hudCanvas.toDataURL();
-                    imageViewer.style.transform = 'scale(1.5)'; // Apply specific scale after setting src
-                } else {
-                    imageViewer.src = ''; // Clear image
-                    showToast('Missing "icons.png" or "widgets.png" for Full HUD preview.', 'error');
-                }
-            } else if (component.type === 'crosshair') {
-                if (foundAssets.gui.icons?.url) {
-                    const crosshairCanvas = await createCrosshairPreview();
-                    imageViewer.src = crosshairCanvas.toDataURL();
-                    imageViewer.style.transform = 'scale(8)'; // Apply specific scale after setting src
-                } else {
-                    imageViewer.src = ''; // Clear image
-                    showToast('Missing "icons.png" for Crosshair preview.', 'error');
-                }
-            } else {
-                // Fallback for other direct GUI textures if needed (not defined in GUI_COMPONENTS by default)
-                if (foundAssets.gui[name]?.url) {
-                    imageViewer.src = foundAssets.gui[name].url;
-                    imageViewer.style.transform = 'scale(1)';
-                } else {
-                    imageViewer.src = ''; // Clear image
-                    showToast(`Missing asset for ${name} preview.`, 'error');
-                }
+            if (GUI_COMPONENTS[name]?.type === 'hud') {
+                const hudCanvas = await createHudPreview();
+                imageViewer.src = hudCanvas.toDataURL();
+                imageViewer.style.transform = 'scale(1.5)'; 
             }
         }
-        // END: Updated displayGuiComponent
+
+        function displayGuiImage(url) {
+            const imageViewer = document.getElementById('gui-viewer-canvas');
+            imageViewer.src = url;
+            imageViewer.style.transform = 'scale(1)';
+        }
         
         const loadImage = (url) => new Promise((res, rej) => { const i = new Image(); i.crossOrigin = "Anonymous"; i.onload = () => res(i); i.onerror = rej; i.src = url; });
-
-        async function createCrosshairPreview() {
-            if (!foundAssets.gui.icons || !foundAssets.gui.icons.url) {
-                return null;
-            }
-            const crosshairCanvas = document.createElement('canvas');
-            crosshairCanvas.width = 16;
-            crosshairCanvas.height = 16;
-            const ctx = crosshairCanvas.getContext('2d');
-            ctx.imageSmoothingEnabled = false;
-
-            const iconsSheet = await loadImage(foundAssets.gui.icons.url);
-            ctx.drawImage(iconsSheet, 0, 0, 16, 16, 0, 0, 16, 16);
-
-            return crosshairCanvas;
-        }
 
         async function createHudPreview() {
             const hudCanvas = document.createElement('canvas');
@@ -1044,3 +966,4 @@
     </script>
 </body>
 </html>
+
