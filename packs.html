@@ -714,8 +714,8 @@
                 if (foundAssets.gui.icons) {
                     const crosshairCanvas = await createCrosshairPreview(foundAssets.gui.icons.url);
                     imageViewer.src = crosshairCanvas.toDataURL();
-                    // Using scale(5) to make the small 9x9 crosshair visible and clear
-                    imageViewer.style.transform = 'scale(5)'; 
+                    // Reverting to scale(8) as per user's request for best visibility
+                    imageViewer.style.transform = 'scale(8)'; 
                 } else {
                     imageViewer.src = 'https://placehold.co/64x64/2c2c2c/e8eefc?text=X';
                     imageViewer.style.transform = 'scale(1)';
@@ -780,31 +780,32 @@
         }
 
         async function createCrosshairPreview(iconsSheetUrl) {
+            if (!iconsSheetUrl) {
+                return null;
+            }
             const crosshairCanvas = document.createElement('canvas');
-            const targetSize = 64;
-            crosshairCanvas.width = targetSize;
-            crosshairCanvas.height = targetSize;
+            // Set canvas size to 16x16 pixels as requested by user's previous working code
+            crosshairCanvas.width = 16;
+            crosshairCanvas.height = 16;
             const ctx = crosshairCanvas.getContext('2d');
             ctx.imageSmoothingEnabled = false;
 
             try {
                 const iconsSheet = await loadImage(iconsSheetUrl);
-                // The crosshair is the top-left 9x9 pixels of the icons.png sheet (0, 0, 9, 9)
-                const sx = 0, sy = 0, sWidth = 9, sHeight = 9; 
-                
-                // Draw the 9x9 crosshair area scaled up to fit the 64x64 canvas
-                ctx.drawImage(iconsSheet, sx, sy, sWidth, sHeight, 0, 0, targetSize, targetSize);
+                // Draw the top-left 16x16 area onto the 16x16 canvas
+                const sx = 0, sy = 0, sWidth = 16, sHeight = 16; 
+                ctx.drawImage(iconsSheet, sx, sy, sWidth, sHeight, 0, 0, crosshairCanvas.width, crosshairCanvas.height);
                 
                 return crosshairCanvas;
             } catch (error) {
                 console.error("Failed to create crosshair preview:", error);
                 ctx.fillStyle = 'rgba(255,255,255,0.1)';
-                ctx.fillRect(0,0,targetSize,targetSize);
+                ctx.fillRect(0,0,crosshairCanvas.width,crosshairCanvas.height);
                 ctx.strokeStyle = 'var(--muted)';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.moveTo(0,0); ctx.lineTo(targetSize, targetSize);
-                ctx.moveTo(targetSize,0); ctx.lineTo(0, targetSize);
+                ctx.moveTo(0,0); ctx.lineTo(crosshairCanvas.width, crosshairCanvas.height);
+                ctx.moveTo(crosshairCanvas.width,0); ctx.lineTo(0, crosshairCanvas.height);
                 ctx.stroke();
                 return crosshairCanvas;
             }
