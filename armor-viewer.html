@@ -34,8 +34,7 @@
         .brand-badge { height: 44px; width: 44px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); }
         .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-13px); }
         .brand-title { font-weight: 800; letter-spacing: .6px; }
-        .nav-actions { display: flex; gap: .6rem; }
-
+        
         .container { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
         .viewer-layout { display: grid; grid-template-columns: 320px 1fr; gap: 1.5rem; align-items: flex-start; }
         
@@ -63,18 +62,24 @@
         .selection-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: white; }
         
         .viewer-panel { position: sticky; top: 100px; }
-        #viewer-canvas, #image-viewer-container { border-radius: 16px; width: 100%; aspect-ratio: 4/5; background-size: cover; background-position: center; }
-        #viewer-canvas { background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg'); }
+        #viewer-canvas, #image-viewer-container { border-radius: 16px; width: 100%; aspect-ratio: 16/9; background-size: cover; background-position: center; }
+        #viewer-canvas { aspect-ratio: 4/5; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg'); }
         #image-viewer-container { background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); display: grid; place-items: center; padding: 2rem; }
         #image-viewer { max-width: 100%; max-height: 100%; object-fit: contain; image-rendering: pixelated; transform: scale(3); transform-origin: center; }
         #viewer-canvas.dragging { cursor: grabbing; }
+        
+        #gui-viewer { image-rendering: pixelated; transform: scale(3); transform-origin: top left; }
 
         .placeholder-text { text-align: center; color: var(--muted); padding: 2rem 0; }
         .enchant-toggle { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.8rem; }
         
+        .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
+
         @media (max-width: 768px) {
             .viewer-layout { grid-template-columns: 1fr; }
             .controls-panel, .viewer-panel { position: static; }
+            .nav-actions { display: none; }
+            .mobile-nav-toggle { display: block; }
         }
     </style>
 </head>
@@ -88,6 +93,7 @@
                     <div class="tiny">Texture Pack • Viewer</div>
                 </div>
             </a>
+            <button class="mobile-nav-toggle"><i class="fa-solid fa-bars"></i></button>
         </nav>
     </header>
 
@@ -132,21 +138,19 @@
             </div>
         </div>
     </main>
-
+    
     <script type="module" src="/theme.js"></script>
     <script type="module" src="/auth.js"></script>
     <script>
         window.addEventListener('load', function() {
             // --- PATH DEFINITIONS ---
-            const ARMOR_PATHS = [ 'assets/minecraft/textures/models/armor/netherite_layer_1.png', 'assets/minecraft/textures/models/armor/netherite_layer_2.png', 'assets/minecraft/textures/models/armor/diamond_layer_1.png', 'assets/minecraft/textures/models/armor/diamond_layer_2.png', 'assets/minecraft/textures/models/armor/iron_layer_1.png', 'assets/minecraft/textures/models/armor/iron_layer_2.png', 'assets/minecraft/textures/models/armor/gold_layer_1.png', 'assets/minecraft/textures/models/armor/gold_layer_2.png', 'assets/minecraft/textures/models/armor/chainmail_layer_1.png', 'assets/minecraft/textures/models/armor/chainmail_layer_2.png', 'assets/minecraft/textures/models/armor/leather_layer_1.png', 'assets/minecraft/textures/models/armor/leather_layer_2.png', 'assets/minecraft/textures/models/armor/turtle_layer_1.png', 'textures/models/armor/netherite_1.png', 'textures/models/armor/netherite_2.png', 'textures/models/armor/diamond_1.png', 'textures/models/armor/diamond_2.png', 'textures/models/armor/iron_1.png', 'textures/models/armor/iron_2.png', 'textures/models/armor/gold_1.png', 'textures/models/armor/gold_2.png', 'textures/models/armor/chainmail_1.png', 'textures/models/armor/chainmail_2.png', 'textures/models/armor/leather_1.png', 'textures/models/armor/leather_2.png', 'textures/models/armor/turtle_1.png' ];
-            const ITEM_PATHS = { 'ender_pearl': 'item/ender_pearl.png', 'golden_apple': 'item/golden_apple.png', 'enchanted_golden_apple': 'item/apple_golden.png', 'iron_sword': 'item/iron_sword.png', 'golden_sword': 'item/golden_sword.png', 'diamond_sword': 'item/diamond_sword.png' };
-            const GUI_PATHS = { 'icons': 'gui/icons.png', 'widgets': 'gui/widgets.png' };
-            const GUI_SPRITES = {
-                'hotbar': { path_key: 'widgets', x: 0, y: 0, w: 182, h: 22 },
-                'heart_full': { path_key: 'icons', x: 52, y: 0, w: 9, h: 9 },
-                'heart_half': { path_key: 'icons', x: 61, y: 0, w: 9, h: 9 },
-                'heart_poison': { path_key: 'icons', x: 88, y: 0, w: 9, h: 9 },
-                'heart_wither': { path_key: 'icons', x: 106, y: 0, w: 9, h: 9 },
+            const ASSET_PATHS = {
+                armor: ['assets/minecraft/textures/models/armor/netherite_layer_1.png', 'assets/minecraft/textures/models/armor/netherite_layer_2.png', 'assets/minecraft/textures/models/armor/diamond_layer_1.png', 'assets/minecraft/textures/models/armor/diamond_layer_2.png', 'assets/minecraft/textures/models/armor/iron_layer_1.png', 'assets/minecraft/textures/models/armor/iron_layer_2.png', 'assets/minecraft/textures/models/armor/gold_layer_1.png', 'assets/minecraft/textures/models/armor/gold_layer_2.png', 'assets/minecraft/textures/models/armor/chainmail_layer_1.png', 'assets/minecraft/textures/models/armor/chainmail_layer_2.png', 'assets/minecraft/textures/models/armor/leather_layer_1.png', 'assets/minecraft/textures/models/armor/leather_layer_2.png', 'assets/minecraft/textures/models/armor/turtle_layer_1.png', 'textures/models/armor/netherite_1.png', 'textures/models/armor/netherite_2.png', 'textures/models/armor/diamond_1.png', 'textures/models/armor/diamond_2.png', 'textures/models/armor/iron_1.png', 'textures/models/armor/iron_2.png', 'textures/models/armor/gold_1.png', 'textures/models/armor/gold_2.png', 'textures/models/armor/chainmail_1.png', 'textures/models/armor/chainmail_2.png', 'textures/models/armor/leather_1.png', 'textures/models/armor/leather_2.png', 'textures/models/armor/turtle_1.png'],
+                items: { 'ender_pearl': 'item/ender_pearl.png', 'golden_apple': 'item/golden_apple.png', 'enchanted_golden_apple': 'item/apple_golden.png', 'iron_sword': 'item/iron_sword.png', 'golden_sword': 'item/golden_sword.png', 'diamond_sword': 'item/diamond_sword.png' },
+                gui: { 'icons': 'gui/icons.png', 'widgets': 'gui/widgets.png' }
+            };
+            const GUI_COMPONENTS = {
+                'Full HUD': { type: 'hud' }
             };
 
             // --- DOM ELEMENTS ---
@@ -160,7 +164,7 @@
             const imageViewer = document.getElementById('image-viewer');
             
             let skinViewer = null;
-            let foundArmor = {}, foundItems = {}, foundGui = {};
+            let foundAssets = { armor: {}, items: {}, gui: {} };
 
             function initSkinViewer() {
                 try {
@@ -180,22 +184,17 @@
             async function handleFileSelect(file) {
                 if (!file) return;
                 [armorList, itemList, guiList].forEach(list => list.innerHTML = `<p class="placeholder-text"><span class="spinner"></span> Searching...</p>`);
-                foundArmor = {}; foundItems = {}; foundGui = {};
-
+                foundAssets = { armor: {}, items: {}, gui: {} };
                 try {
                     const zip = await JSZip.loadAsync(file);
-                    
-                    // Search for all asset types
                     await Promise.all([
-                        findAssets(zip, ARMOR_PATHS, foundArmor, 'armor'),
-                        findAssets(zip, ITEM_PATHS, foundItems, 'item'),
-                        findAssets(zip, GUI_PATHS, foundGui, 'gui')
+                        findAssets(zip, ASSET_PATHS.armor, foundAssets.armor, 'armor'),
+                        findAssets(zip, ASSET_PATHS.items, foundAssets.items, 'item'),
+                        findAssets(zip, ASSET_PATHS.gui, foundAssets.gui, 'gui')
                     ]);
-                    
                     renderArmorList();
                     renderItemList();
                     renderGuiList();
-
                 } catch (error) {
                     console.error("Error processing pack:", error);
                     [armorList, itemList, guiList].forEach(list => list.innerHTML = `<p class="placeholder-text">Could not read pack file.</p>`);
@@ -203,7 +202,6 @@
             }
             
             async function findAssets(zip, paths, targetObject, type) {
-                const searchPromises = [];
                 const addAsset = async (key, path) => {
                     const fullPaths = [`assets/minecraft/textures/${path}`, `textures/${path}`];
                     for (const p of fullPaths) {
@@ -224,34 +222,29 @@
                         }
                     }
                 };
-
-                if (Array.isArray(paths)) { // Armor paths
-                    paths.forEach(p => searchPromises.push(addAsset(p, p)));
-                } else { // Item and GUI paths (object)
-                    Object.entries(paths).forEach(([key, path]) => searchPromises.push(addAsset(key, path)));
-                }
-                await Promise.all(searchPromises);
+                const promises = Array.isArray(paths) ? paths.map(p => addAsset(p, p)) : Object.entries(paths).map(([key, path]) => addAsset(key, path));
+                await Promise.all(promises);
             }
 
             // --- RENDER FUNCTIONS ---
             function renderArmorList() {
-                const names = Object.keys(foundArmor);
+                const names = Object.keys(foundAssets.armor);
                 if (names.length === 0) return armorList.innerHTML = `<p class="placeholder-text">No standard armor found.</p>`;
                 armorList.innerHTML = names.sort().map(name => `<div class="selection-item" data-asset="${name}">${name}</div>`).join('');
                 armorList.querySelectorAll('.selection-item').forEach(item => item.onclick = () => {
                     armorList.querySelectorAll('.selection-item').forEach(el => el.classList.remove('active'));
                     item.classList.add('active');
-                    applyArmor(foundArmor[item.dataset.asset]);
+                    applyArmor(foundAssets.armor[item.dataset.asset]);
                 });
                 if (armorList.firstChild) armorList.firstChild.click();
             }
 
             function renderItemList() {
-                const names = Object.keys(foundItems);
+                const names = Object.keys(foundAssets.items);
                 if (names.length === 0) return itemList.innerHTML = `<p class="placeholder-text">No standard items found.</p>`;
                 itemList.innerHTML = names.sort().map(name => {
                     const isSword = name.includes('sword');
-                    return `<div class="selection-item" data-asset="${name}" data-url="${foundItems[name]}">
+                    return `<div class="selection-item" data-asset="${name}" data-url="${foundAssets.items[name]}">
                                 ${name.replace(/_/g, ' ')}
                                 ${isSword ? `<label class="enchant-toggle"><input type="checkbox" class="enchant-check"> Enchanted</label>` : ''}
                             </div>`;
@@ -260,59 +253,43 @@
                     if (e.target.type === 'checkbox') return;
                     itemList.querySelectorAll('.selection-item').forEach(el => el.classList.remove('active'));
                     item.classList.add('active');
-                    const url = item.dataset.url;
-                    const enchanted = item.querySelector('.enchant-check')?.checked;
-                    displayImage(url, enchanted);
+                    displayImage(item.dataset.url, item.querySelector('.enchant-check')?.checked);
                 });
                 itemList.querySelectorAll('.enchant-check').forEach(box => box.onchange = () => {
-                    if (box.closest('.selection-item').classList.contains('active')) {
-                        box.closest('.selection-item').click();
-                    }
+                    if (box.closest('.selection-item').classList.contains('active')) box.closest('.selection-item').click();
                 });
-                 if (itemList.firstChild) itemList.firstChild.click();
+                if (itemList.firstChild) itemList.firstChild.click();
             }
 
-             async function renderGuiList() {
-                const names = Object.keys(foundGui);
-                if (names.length === 0) return guiList.innerHTML = `<p class="placeholder-text">No standard GUI textures found.</p>`;
-                guiList.innerHTML = '';
-                for (const key of Object.keys(GUI_SPRITES).sort()) {
-                    const sprite = GUI_SPRITES[key];
-                    const sheetUrl = foundGui[sprite.path_key];
-                    if (sheetUrl) {
-                        const spriteUrl = await extractSprite(sheetUrl, sprite.x, sprite.y, sprite.w, sprite.h);
-                        const item = document.createElement('div');
-                        item.className = 'selection-item';
-                        item.dataset.url = spriteUrl;
-                        item.textContent = key.replace(/_/g, ' ');
-                        item.onclick = () => {
-                            guiList.querySelectorAll('.selection-item').forEach(el => el.classList.remove('active'));
-                            item.classList.add('active');
-                            displayImage(spriteUrl, false);
-                        };
-                        guiList.appendChild(item);
-                    }
-                }
-                 if (guiList.firstChild) guiList.firstChild.click();
+            function renderGuiList() {
+                if (Object.keys(foundAssets.gui).length === 0) return guiList.innerHTML = `<p class="placeholder-text">No standard GUI textures found.</p>`;
+                guiList.innerHTML = Object.keys(GUI_COMPONENTS).map(name => `<div class="selection-item" data-asset="${name}">${name}</div>`).join('');
+                guiList.querySelectorAll('.selection-item').forEach(item => item.onclick = () => {
+                    guiList.querySelectorAll('.selection-item').forEach(el => el.classList.remove('active'));
+                    item.classList.add('active');
+                    displayGuiComponent(item.dataset.asset);
+                });
+                if (guiList.firstChild) guiList.firstChild.click();
             }
 
             // --- DISPLAY/APPLY FUNCTIONS ---
             async function applyArmor(armorSet) {
                 let skinUrl = 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png';
-                if (armorSet.layer1 && armorSet.layer2) {
-                    skinUrl = await combineArmorLayers(armorSet.layer1, armorSet.layer2);
-                } else if (armorSet.layer1 || armorSet.layer2) {
-                    skinUrl = armorSet.layer1 || armorSet.layer2;
-                }
+                if (armorSet.layer1 && armorSet.layer2) skinUrl = await combineArmorLayers(armorSet.layer1, armorSet.layer2);
+                else if (armorSet.layer1 || armorSet.layer2) skinUrl = armorSet.layer1 || armorSet.layer2;
                 skinViewer.loadSkin(skinUrl);
             }
 
             async function displayImage(url, enchanted) {
-                if (enchanted) {
-                    const enchantedUrl = await createEnchantedVersion(url);
-                    imageViewer.src = enchantedUrl;
-                } else {
-                    imageViewer.src = url;
+                const finalUrl = enchanted ? await createEnchantedVersion(url) : url;
+                imageViewer.src = finalUrl;
+            }
+            
+            async function displayGuiComponent(name) {
+                const component = GUI_COMPONENTS[name];
+                if (component.type === 'hud') {
+                    const hudCanvas = await createHudPreview();
+                    imageViewer.src = hudCanvas.toDataURL();
                 }
             }
 
@@ -332,15 +309,33 @@
                 ctx.globalCompositeOperation = 'source-atop';
                 ctx.fillStyle = 'rgba(200, 80, 255, 0.4)';
                 ctx.fillRect(0, 0, c.width, c.height);
-                ctx.globalCompositeOperation = 'source-over';
                 return c.toDataURL();
             }
-             async function extractSprite(sheetUrl, x, y, w, h) {
-                const img = await loadImage(sheetUrl);
-                const c = document.createElement('canvas'); c.width = w; c.height = h;
-                const ctx = c.getContext('2d');
-                ctx.drawImage(img, x, y, w, h, 0, 0, w, h);
-                return c.toDataURL();
+            
+             async function createHudPreview() {
+                const hudCanvas = document.createElement('canvas');
+                hudCanvas.width = 182;
+                hudCanvas.height = 50; 
+                const ctx = hudCanvas.getContext('2d');
+                ctx.imageSmoothingEnabled = false;
+
+                const iconsSheet = foundAssets.gui.icons ? await loadImage(foundAssets.gui.icons) : null;
+                const widgetsSheet = foundAssets.gui.widgets ? await loadImage(foundAssets.gui.widgets) : null;
+                
+                // Draw Hotbar
+                if (widgetsSheet) ctx.drawImage(widgetsSheet, 0, 0, 182, 22, 0, hudCanvas.height - 22, 182, 22);
+                
+                if (iconsSheet) {
+                    // Hearts
+                    for (let i = 0; i < 10; i++) ctx.drawImage(iconsSheet, 16, 0, 9, 9, (hudCanvas.width / 2) - 90 + (i * 8), hudCanvas.height - 32, 9, 9);
+                    for (let i = 0; i < 8; i++) ctx.drawImage(iconsSheet, 52, 0, 9, 9, (hudCanvas.width / 2) - 90 + (i * 8), hudCanvas.height - 32, 9, 9);
+                    ctx.drawImage(iconsSheet, 61, 0, 9, 9, (hudCanvas.width / 2) - 90 + (8 * 8), hudCanvas.height - 32, 9, 9);
+                    
+                    // Armor
+                    for (let i = 0; i < 10; i++) ctx.drawImage(iconsSheet, 16, 9, 9, 9, (hudCanvas.width / 2) + 11 + (i * 8), hudCanvas.height - 32, 9, 9);
+                    for (let i = 0; i < 3; i++) ctx.drawImage(iconsSheet, 34, 9, 9, 9, (hudCanvas.width / 2) + 11 + (i * 8), hudCanvas.height - 32, 9, 9);
+                }
+                 return hudCanvas;
             }
             
             // --- EVENT LISTENERS ---
@@ -354,20 +349,18 @@
                 btn.classList.add('active');
                 const content = document.getElementById(btn.dataset.tab + '-content');
                 content.classList.add('active');
-
-                if (btn.dataset.tab === 'armor') {
-                    canvas3d.style.display = 'block';
-                    imageViewerContainer.style.display = 'none';
-                    if (armorList.querySelector('.active')) armorList.querySelector('.active').click();
-                } else {
-                    canvas3d.style.display = 'none';
-                    imageViewerContainer.style.display = 'grid';
-                    if (btn.dataset.tab === 'items' && itemList.querySelector('.active')) {
-                        itemList.querySelector('.active').click();
-                    } else if (btn.dataset.tab === 'gui' && guiList.querySelector('.active')) {
-                         guiList.querySelector('.active').click();
-                    }
+                const isArmor = btn.dataset.tab === 'armor';
+                canvas3d.style.display = isArmor ? 'block' : 'none';
+                imageViewerContainer.style.display = isArmor ? 'none' : 'grid';
+                if (isArmor && armorList.querySelector('.active')) armorList.querySelector('.active').click();
+                else if (!isArmor) {
+                    const list = btn.dataset.tab === 'items' ? itemList : guiList;
+                    if (list.querySelector('.active')) list.querySelector('.active').click();
                 }
+            });
+            document.querySelector('.mobile-nav-toggle')?.addEventListener('click', () => {
+                // Dummy listener for now, full implementation would require the mobile nav HTML.
+                console.log("Mobile nav toggled");
             });
 
             // --- INITIALIZATION ---
@@ -376,3 +369,4 @@
     </script>
 </body>
 </html>
+
