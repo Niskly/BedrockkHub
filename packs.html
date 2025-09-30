@@ -191,12 +191,12 @@
              'iron_sword': 'iron_sword.png',
              'golden_sword': 'golden_sword.png',
              'ender_pearl': 'ender_pearl.png',
-             'golden_apple': 'apple_golden.png', // This is enchanted one
-             'apple': 'apple.png', // Normal Gapple
+             'golden_apple': 'apple_golden.png',
+             'apple': 'apple.png',
              'bow': 'bow.png',
              'fishing_rod': 'fishing_rod_uncast.png',
         };
-        const GUI_PATHS = { 'icons': 'gui/icons.png', 'widgets': 'gui/widgets.png' };
+        const GUI_PATHS = { 'icons': 'gui/icons.png', 'widgets': 'gui/widgets.png', 'crosshair': 'gui/crosshair.png' };
 
 
         function showToast(message, type = 'error') {
@@ -347,7 +347,6 @@
         
         async function findGenericAsset(zip, filename) {
             const potentialPaths = new Set([
-                // Most common structures first
                 `assets/minecraft/textures/item/${filename}`,
                 `assets/minecraft/textures/items/${filename}`,
                 `textures/items/${filename}`,
@@ -418,7 +417,8 @@
                 const item = foundItemAssets.items[key];
                 const isSword = key.includes('sword');
                 const isGapple = key === 'golden_apple';
-                const enchantable = isSword || isGapple;
+                const isBow = key === 'bow';
+                const enchantable = isSword || isGapple || isBow;
                 
                 return `
                 <div class="item-icon-card ${enchantable ? 'enchantable' : ''}" data-key="${key}">
@@ -430,7 +430,7 @@
             itemGrid.querySelectorAll('.item-icon-card').forEach(card => {
                 card.addEventListener('click', (e) => {
                     if(e.target.closest('.enchant-btn')) return;
-                    itemGrid.querySelectorAll('.item-icon-card').forEach(c => c.classList.remove('active'));
+                    document.querySelectorAll('.item-icon-card, .gui-selection-item').forEach(el => el.classList.remove('active'));
                     card.classList.add('active');
                     const isEnchanted = card.querySelector('.enchant-btn')?.classList.contains('active');
                     displayItemOnCanvas(foundItemAssets.items[card.dataset.key].url, isEnchanted);
@@ -476,7 +476,7 @@
              const finalUrl = enchanted ? await createEnchantedVersion(url) : url;
              const img = await loadImage(finalUrl);
              
-             const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * 0.7; // 70% of canvas size
+             const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * 0.7;
              const drawWidth = img.width * scale;
              const drawHeight = img.height * scale;
              const x = (canvas.width - drawWidth) / 2;
@@ -618,3 +618,4 @@
     </script>
 </body>
 </html>
+
