@@ -714,7 +714,7 @@
                 if (foundAssets.gui.icons) {
                     const crosshairCanvas = await createCrosshairPreview(foundAssets.gui.icons.url);
                     imageViewer.src = crosshairCanvas.toDataURL();
-                    // Using scale(8) as it provides a good visual size for a 64x64 canvas.
+                    // Using scale(5) to make the small 9x9 crosshair visible and clear
                     imageViewer.style.transform = 'scale(5)'; 
                 } else {
                     imageViewer.src = 'https://placehold.co/64x64/2c2c2c/e8eefc?text=X';
@@ -742,98 +742,97 @@
             const widgetsSheet = foundAssets.gui.widgets ? await loadImage(foundAssets.gui.widgets.url) : null;
             
             // --- Determine Scale Factor from Pack Resolution ---
-            // Fallback to 1 if resolution tag is missing or unknown
             const resolution = parseInt(currentPackData?.resolution?.replace('x', '') || '16', 10);
             const scaleFactor = resolution / 16;
             
             // Base 16x dimensions
-            const BASE_WIDGETS_W = 182;
             const BASE_WIDGETS_H = 22;
             const BASE_ICON_SIZE = 9;
             const BASE_ICON_SPACING = 8;
+            const BASE_ICONS_SHEET_RES = 256;
 
+            // Dimensions and positions are scaled by the factor
+            const ACTIONBAR_H = BASE_WIDGETS_H;
+            
             if (widgetsSheet) {
-                const srcW = BASE_WIDGETS_W * scaleFactor;
+                const srcW = 182 * scaleFactor;
                 const srcH = BASE_WIDGETS_H * scaleFactor;
-                const destW = BASE_WIDGETS_W;
+                const destW = 182;
                 const destH = BASE_WIDGETS_H;
                 
-                // Draw the widgets (action bar background). Since widgets.png is square, 
-                // we assume its resolution matches the icons scale factor.
-                // Draw source 0,0, srcW, srcH scaled down to canvas size.
+                // Draw the widgets (action bar background)
                 ctx.drawImage(widgetsSheet, 0, 0, srcW, srcH, 0, hudCanvas.height - destH, destW, destH);
             }
             
             if (iconsSheet) {
-                // Dimensions based on calculated scale factor
-                const ICON_SIZE = BASE_ICON_SIZE * scaleFactor;
-                const ICON_SPACING = BASE_ICON_SPACING * scaleFactor;
-
-                // Canvas Coordinates (fixed display positions, using base 16x units for calculation)
-                const X_CENTER = hudCanvas.width / 2;
-                const X_START_LEFT = X_CENTER - (91 * scaleFactor); // 91 is start pixel offset in 16x
-                const X_START_RIGHT = X_CENTER + (91 * scaleFactor) - ICON_SIZE; 
+                // ICON SHEET SOURCE POSITIONS (Fixed in 16x texture sheet, scaled by factor)
+                // Source X, Y, W, H of the feature in the BASE 16x texture sheet
                 
-                // Fixed Y positions relative to the bottom of the widget texture
-                const ACTIONBAR_H = BASE_WIDGETS_H;
-                const HEALTH_Y = hudCanvas.height - ACTIONBAR_H - (10 * scaleFactor);
-                const ARMOR_Y = HEALTH_Y - (10 * scaleFactor);
+                // Scale factor for reading positions on the source sheet
+                const S_F = iconsSheet.width / BASE_ICONS_SHEET_RES; 
+                
+                // Destination size on the fixed-size canvas (always 9x9, scaled by base 16x icon size)
+                const ICON_SIZE_D = BASE_ICON_SIZE * S_F; // Display size (9x9 pixels at native pack res)
+                
+                // Destination position variables
+                const X_CENTER = hudCanvas.width / 2;
+                const X_START_LEFT = X_CENTER - (91); // 91 is start pixel offset in 16x, kept fixed for canvas coordinates
+                const X_START_RIGHT = X_CENTER + (91) - BASE_ICON_SIZE; 
+                const ICON_SPACING_D = BASE_ICON_SPACING;
+
+                const HEALTH_Y = hudCanvas.height - ACTIONBAR_H - BASE_ICON_SIZE; // Approx 22px from bottom of widget bar
+                const ARMOR_Y = HEALTH_Y - BASE_ICON_SIZE;
                 const HUNGER_Y = HEALTH_Y;
                 
-                // ICON SHEET SOURCE POSITIONS (Fixed in 16x texture sheet, scaled by factor)
-                const SRC_HEART_BORDER = { x: 16 * scaleFactor, y: 0, w: ICON_SIZE, h: ICON_SIZE };
-                const SRC_HEART_FULL = { x: 52 * scaleFactor, y: 0, w: ICON_SIZE, h: ICON_SIZE };
-                const SRC_HEART_HALF = { x: 61 * scaleFactor, y: 0, w: ICON_SIZE, h: ICON_SIZE };
-                
-                const SRC_ARMOR_BORDER = { x: 16 * scaleFactor, y: 9 * scaleFactor, w: ICON_SIZE, h: ICON_SIZE };
-                const SRC_ARMOR_FULL = { x: 34 * scaleFactor, y: 9 * scaleFactor, w: ICON_SIZE, h: ICON_SIZE };
-                
-                const SRC_HUNGER_BORDER = { x: 16 * scaleFactor, y: 27 * scaleFactor, w: ICON_SIZE, h: ICON_SIZE };
-                const SRC_HUNGER_FULL = { x: 52 * scaleFactor, y: 27 * scaleFactor, w: ICON_SIZE, h: ICON_SIZE };
-                
-                const SRC_XP_BG = { x: 0, y: 64 * scaleFactor, w: 182 * scaleFactor, h: 5 * scaleFactor };
-                const SRC_XP_FILL = { x: 0, y: 69 * scaleFactor, w: 120 * scaleFactor, h: 5 * scaleFactor };
-
                 // DRAW HEARTS (LEFT SIDE)
                 for (let i = 0; i < 10; i++) {
-                    const X_POS = X_START_LEFT + (i * BASE_ICON_SPACING); // Use base spacing for positioning
+                    const X_POS = X_START_LEFT + (i * ICON_SPACING_D); 
                     
-                    ctx.drawImage(iconsSheet, SRC_HEART_BORDER.x, SRC_HEART_BORDER.y, SRC_HEART_BORDER.w, SRC_HEART_BORDER.h, X_POS, HEALTH_Y, ICON_SIZE, ICON_SIZE);
-                    if (i < 8) ctx.drawImage(iconsSheet, SRC_HEART_FULL.x, SRC_HEART_FULL.y, SRC_HEART_FULL.w, SRC_HEART_FULL.h, X_POS, HEALTH_Y, ICON_SIZE, ICON_SIZE);
+                    // Heart Border (16, 0)
+                    ctx.drawImage(iconsSheet, 16 * S_F, 0 * S_F, ICON_SIZE_D, ICON_SIZE_D, X_POS, HEALTH_Y, BASE_ICON_SIZE, BASE_ICON_SIZE);
+                    // Filled Heart (52, 0)
+                    if (i < 8) ctx.drawImage(iconsSheet, 52 * S_F, 0 * S_F, ICON_SIZE_D, ICON_SIZE_D, X_POS, HEALTH_Y, BASE_ICON_SIZE, BASE_ICON_SIZE);
                 }
-                ctx.drawImage(iconsSheet, SRC_HEART_HALF.x, SRC_HEART_HALF.y, SRC_HEART_HALF.w, SRC_HEART_HALF.h, X_START_LEFT + (8 * BASE_ICON_SPACING), HEALTH_Y, ICON_SIZE, ICON_SIZE);
+                // Partial Heart (61, 0)
+                ctx.drawImage(iconsSheet, 61 * S_F, 0 * S_F, ICON_SIZE_D, ICON_SIZE_D, X_START_LEFT + (8 * ICON_SPACING_D), HEALTH_Y, BASE_ICON_SIZE, BASE_ICON_SIZE);
                 
                 // DRAW ARMOR
                 for (let i = 0; i < 10; i++) {
-                    const X_POS = X_START_LEFT + (i * BASE_ICON_SPACING);
-                    ctx.drawImage(iconsSheet, SRC_ARMOR_BORDER.x, SRC_ARMOR_BORDER.y, SRC_ARMOR_BORDER.w, SRC_ARMOR_BORDER.h, X_POS, ARMOR_Y, ICON_SIZE, ICON_SIZE);
-                    if (i < 8) ctx.drawImage(iconsSheet, SRC_ARMOR_FULL.x, SRC_ARMOR_FULL.y, SRC_ARMOR_FULL.w, SRC_ARMOR_FULL.h, X_POS, ARMOR_Y, ICON_SIZE, ICON_SIZE);
+                    const X_POS = X_START_LEFT + (i * ICON_SPACING_D);
+                    // Armor Border (16, 9)
+                    ctx.drawImage(iconsSheet, 16 * S_F, 9 * S_F, ICON_SIZE_D, ICON_SIZE_D, X_POS, ARMOR_Y, BASE_ICON_SIZE, BASE_ICON_SIZE);
+                    // Filled Armor (34, 9)
+                    if (i < 8) ctx.drawImage(iconsSheet, 34 * S_F, 9 * S_F, ICON_SIZE_D, ICON_SIZE_D, X_POS, ARMOR_Y, BASE_ICON_SIZE, BASE_ICON_SIZE);
                 }
                 
                 // DRAW HUNGER (RIGHT SIDE)
                 for (let i = 0; i < 10; i++) {
                     // Position is mirrored, starting from the right edge
-                    const X_POS = X_START_RIGHT - (i * BASE_ICON_SPACING); 
+                    const X_POS = X_START_RIGHT - (i * ICON_SPACING_D); 
                     
-                    ctx.drawImage(iconsSheet, SRC_HUNGER_BORDER.x, SRC_HUNGER_BORDER.y, SRC_HUNGER_BORDER.w, SRC_HUNGER_BORDER.h, X_POS, HUNGER_Y, ICON_SIZE, ICON_SIZE);
-                    if(i < 7) ctx.drawImage(iconsSheet, SRC_HUNGER_FULL.x, SRC_HUNGER_FULL.y, SRC_HUNGER_FULL.w, SRC_HUNGER_FULL.h, X_POS, HUNGER_Y, ICON_SIZE, ICON_SIZE);
+                    // Hunger Border (16, 27)
+                    ctx.drawImage(iconsSheet, 16 * S_F, 27 * S_F, ICON_SIZE_D, ICON_SIZE_D, X_POS, HUNGER_Y, BASE_ICON_SIZE, BASE_ICON_SIZE);
+                    // Filled Hunger (52, 27)
+                    if(i < 7) ctx.drawImage(iconsSheet, 52 * S_F, 27 * S_F, ICON_SIZE_D, ICON_SIZE_D, X_POS, HUNGER_Y, BASE_ICON_SIZE, BASE_ICON_SIZE);
                 }
                 
                 // EXPERIENCE BAR
-                const XP_Y = hudCanvas.height - ACTIONBAR_H - (5 * scaleFactor);
-                ctx.drawImage(iconsSheet, SRC_XP_BG.x, SRC_XP_BG.y, SRC_XP_BG.w, SRC_XP_BG.h, 0, XP_Y, hudCanvas.width, 5 * scaleFactor); // Background
-                ctx.drawImage(iconsSheet, SRC_XP_FILL.x, SRC_XP_FILL.y, SRC_XP_FILL.w, SRC_XP_FILL.h, 0, XP_Y, 120, 5 * scaleFactor); // Fill
+                const XP_Y = hudCanvas.height - ACTIONBAR_H;
+                // Background (0, 64)
+                ctx.drawImage(iconsSheet, 0 * S_F, 64 * S_F, 182 * S_F, 5 * S_F, 0, XP_Y - 5, hudCanvas.width, 5);
+                // Fill (0, 69)
+                ctx.drawImage(iconsSheet, 0 * S_F, 69 * S_F, 120 * S_F, 5 * S_F, 0, XP_Y - 5, 120, 5); 
             }
             
             // LEVEL TEXT
-            const FONT_SIZE = 10; // Keep font size fixed for readability on the small canvas
+            const FONT_SIZE = 10; // Fixed font size for readability on the small canvas
             ctx.font = `bold ${FONT_SIZE}px Inter, sans-serif`;
             ctx.fillStyle = '#80FF20';
             ctx.shadowColor = "rgba(0,0,0,0.5)";
             ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1; ctx.shadowBlur = 1;
             const levelText = '17';
             const textWidth = ctx.measureText(levelText).width;
-            ctx.fillText(levelText, (hudCanvas.width / 2) - (textWidth / 2), hudCanvas.height - (BASE_WIDGETS_H) + 9); // Adjusted Y for fixed text position
+            ctx.fillText(levelText, (hudCanvas.width / 2) - (textWidth / 2), hudCanvas.height - ACTIONBAR_H + 9); 
             ctx.shadowColor = "transparent";
             return hudCanvas;
         }
@@ -856,19 +855,17 @@
                 const resolution = parseInt(currentPackData?.resolution?.replace('x', '') || '16', 10);
                 const scaleFactor = resolution / 16; 
                 
+                // We extract the entire top-left UI tile (16x16 base pixels)
+                const CROSSHAIR_BASE_TILE_SIZE = 16; 
+                
                 // Source coordinates are always 0, 0
                 const sx = 0, sy = 0; 
                 
-                // Crosshair is 9x9 pixels in 16x. We need to scale this size based on the pack resolution.
-                const CROSSHAIR_BASE_SIZE = 9;
-                
-                // Source width/height must be the actual pixel size in the high-res texture sheet
-                const sWidth = CROSSHAIR_BASE_SIZE * scaleFactor;
-                const sHeight = CROSSHAIR_BASE_SIZE * scaleFactor; 
+                // Source size is scaled by the pack resolution
+                const sWidth = CROSSHAIR_BASE_TILE_SIZE * scaleFactor;
+                const sHeight = CROSSHAIR_BASE_TILE_SIZE * scaleFactor; 
 
-                // Draw the extracted crosshair area scaled up to fit the 64x64 canvas
-                // We use Math.round on the source dimensions to prevent artifacts from floating point errors, 
-                // though drawing engine often handles it.
+                // Draw the extracted area scaled up to fill the 64x64 canvas
                 ctx.drawImage(iconsSheet, sx, sy, Math.round(sWidth), Math.round(sHeight), 0, 0, targetSize, targetSize);
                 
                 return crosshairCanvas;
