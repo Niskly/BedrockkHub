@@ -114,41 +114,10 @@
         .enchant-btn.active { background: #a855f7; color: white; border-color: #c084fc; }
         #gui-viewer-container { border-radius: 12px; width: 100%; aspect-ratio: 1/1; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); background-size: cover; background-position: center; display: grid; place-items: center; padding: 1rem; }
         #gui-viewer-canvas { max-width: 100%; max-height: 100%; object-fit: contain; image-rendering: pixelated; transform-origin: center; }
-        
-        /* Modified GUI selection list for horizontal layout and icons */
-        .gui-selection-list { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; justify-content: center; }
-        .gui-selection-item {
-            width: 60px; /* Make it square for icons */
-            height: 60px;
-            background: var(--bg-2);
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: grid;
-            place-items: center; /* Center content */
-            padding: 4px;
-            font-weight: 600;
-            font-size: 0.8rem;
-            text-transform: capitalize;
-            text-align: center;
-            line-height: 1.2;
-            color: var(--muted);
-        }
-        .gui-selection-item i {
-            font-size: 1.5rem; /* Larger icon size */
-            color: var(--muted);
-            line-height: 1; /* Align icon vertically */
-        }
-        .gui-selection-item img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            image-rendering: pixelated;
-        }
-        .gui-selection-item:hover { border-color: var(--text); color: var(--text); }
+        .gui-selection-list { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+        .gui-selection-item { padding: 0.6rem 1rem; background: var(--bg-2); border-radius: 10px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; font-weight: 600; text-transform: capitalize; }
+        .gui-selection-item:hover { border-color: var(--text); }
         .gui-selection-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: white; }
-
         .preview-placeholder-text { text-align: center; color: var(--muted); padding: 1rem 0; font-size: 13px; }
         .preview-placeholder-text .spinner-sm { width: 1em; height: 1em; border-width: 2px; display: inline-block; animation: rotation 1s linear infinite; }
 
@@ -305,25 +274,15 @@
              'bow': 'bow.png', 'fishing_rod': 'fishing_rod.png',
              'totem_of_undying': 'totem.png', 'crossbow_standby': 'crossbow_standby.png'
         };
-        const ENCHANTABLE_ITEMS = ['diamond_sword', 'iron_sword', 'golden_sword', 'golden_apple', 'bow', 'crossbow_standby'];
-
         const GUI_PATHS = { 
             'icons': 'icons.png', 
             'widgets': 'widgets.png',
             'panorama_overlay': 'panorama_overlay.png'
         };
         const GUI_COMPONENTS = { 
-            'Full HUD': { type: 'hud' },
-            'Crosshair': { type: 'crosshair' }
+            'Crosshair': { type: 'crosshair'},
+            'Full HUD': { type: 'hud' } 
         };
-
-        const GUI_PREVIEW_ICONS = {
-            'Full HUD': '<i class="fa-solid fa-layer-group"></i>',
-            'Crosshair': '<i class="fa-solid fa-crosshairs"></i>',
-            'icons': '<i class="fa-solid fa-gem"></i>',
-            'widgets': '<i class="fa-solid fa-sliders"></i>'
-        };
-
 
         function showToast(message, type = 'error') {
             const container = document.getElementById('toast-container');
@@ -611,7 +570,7 @@
             }
             itemGrid.innerHTML = itemKeys.map(key => {
                 const item = foundAssets.items[key];
-                const enchantable = ENCHANTABLE_ITEMS.includes(key);
+                const enchantable = key.includes('sword') || key.includes('apple') || key.includes('bow') || key.includes('totem') || key.includes('crossbow');
                 return `
                 <div class="item-icon-card ${enchantable ? 'enchantable' : ''}" data-key="${key}">
                     <img src="${item.url}" alt="${key.replace(/_/g, ' ')}">
@@ -648,43 +607,26 @@
 
         function renderGuiSelectionList() {
              const guiList = document.getElementById('gui-list');
+             const guiTextureKeys = Object.keys(foundAssets.gui);
              const componentKeys = Object.keys(GUI_COMPONENTS);
-             const textureKeys = Object.keys(foundAssets.gui).filter(key => key !== 'panorama_overlay');
-             const allDisplayKeys = [...componentKeys, ...textureKeys];
-             
+             const allDisplayKeys = [...componentKeys, ...guiTextureKeys];
              if (allDisplayKeys.length === 0) {
-                 guiList.innerHTML = `<p class="preview-placeholder-text">No GUI textures found.</p>`;
+                 guiList.innerHTML = `<p class="preview-placeholder-text">No GUI textures found in this pack.</p>`;
                  return;
              }
-
-             guiList.innerHTML = allDisplayKeys.map(key => {
-                 const icon = GUI_PREVIEW_ICONS[key] || `<i class="fa-solid fa-image"></i>`;
-                 const displayName = key.replace(/_/g, ' ');
-                 return `
-                    <div class="gui-selection-item" data-key="${key}" title="${displayName}">
-                        ${icon}
-                    </div>`;
-             }).join('');
-
+             guiList.innerHTML = allDisplayKeys.map(key => `<div class="gui-selection-item" data-key="${key}">${key.replace(/_/g, ' ')}</div>`).join('');
              guiList.querySelectorAll('.gui-selection-item').forEach(item => {
-                 item.addEventListener('click', async () => {
-                     document.querySelectorAll('.gui-selection-item').forEach(el => el.classList.remove('active'));
+                 item.addEventListener('click', () => {
+                     document.querySelectorAll('.gui-selection-item, .item-icon-card').forEach(el => el.classList.remove('active'));
                      item.classList.add('active');
-                     const key = item.dataset.key;
-                     if (GUI_COMPONENTS[key]) {
-                         displayGuiComponent(key);
-                     } else if (foundAssets.gui[key]) {
-                         displayGuiImage(foundAssets.gui[key].url);
+                     if (GUI_COMPONENTS[item.dataset.key]) {
+                         displayGuiComponent(item.dataset.key);
+                     } else if (foundAssets.gui[item.dataset.key]) {
+                         displayGuiImage(foundAssets.gui[item.dataset.key].url);
                      }
                  });
              });
-
-             const crosshairItem = guiList.querySelector('.gui-selection-item[data-key="Crosshair"]');
-             if (crosshairItem) {
-                 crosshairItem.click();
-             } else if (guiList.firstChild) {
-                 guiList.firstChild.click();
-             }
+             if (guiList.firstChild) guiList.firstChild.click();
         }
         
         async function displayItemOnCanvas(canvasId, url, enchanted = false) {
@@ -707,20 +649,20 @@
         async function displayGuiComponent(name) {
             const imageViewer = document.getElementById('gui-viewer-canvas');
             if (GUI_COMPONENTS[name]?.type === 'hud') {
+                imageViewer.style.transform = 'scale(1.5)';
                 const hudCanvas = await createHudPreview();
                 imageViewer.src = hudCanvas.toDataURL();
-                imageViewer.style.transform = 'scale(1.5)'; 
             } else if (GUI_COMPONENTS[name]?.type === 'crosshair') {
-                if (foundAssets.gui.icons) {
-                    const crosshairCanvas = await createCrosshairPreview(foundAssets.gui.icons.url);
+                imageViewer.style.transform = 'scale(8)'; // Zoom in on the small crosshair
+                const crosshairCanvas = await createCrosshairPreview();
+                if (crosshairCanvas) {
                     imageViewer.src = crosshairCanvas.toDataURL();
-                    imageViewer.style.transform = 'scale(2.5)';
                 } else {
-                    imageViewer.src = 'https://placehold.co/64x64/2c2c2c/e8eefc?text=X';
-                    imageViewer.style.transform = 'scale(1)';
+                    imageViewer.src = ''; // Clear image if icons.png is not found
                 }
             }
         }
+
 
         function displayGuiImage(url) {
             const imageViewer = document.getElementById('gui-viewer-canvas');
@@ -729,6 +671,24 @@
         }
         
         const loadImage = (url) => new Promise((res, rej) => { const i = new Image(); i.crossOrigin = "Anonymous"; i.onload = () => res(i); i.onerror = rej; i.src = url; });
+
+        async function createCrosshairPreview() {
+            if (!foundAssets.gui.icons || !foundAssets.gui.icons.url) {
+                return null;
+            }
+            const crosshairCanvas = document.createElement('canvas');
+            crosshairCanvas.width = 16;
+            crosshairCanvas.height = 16;
+            const ctx = crosshairCanvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+
+            const iconsSheet = await loadImage(foundAssets.gui.icons.url);
+
+            // Draw the top-left 16x16 part of the icons sheet for the crosshair
+            ctx.drawImage(iconsSheet, 0, 0, 16, 16, 0, 0, 16, 16);
+
+            return crosshairCanvas;
+        }
 
         async function createHudPreview() {
             const hudCanvas = document.createElement('canvas');
@@ -776,41 +736,6 @@
             ctx.fillText(levelText, (hudCanvas.width / 2) - (textWidth / 2), hudCanvas.height - 31);
             ctx.shadowColor = "transparent";
             return hudCanvas;
-        }
-
-        async function createCrosshairPreview(iconsSheetUrl) {
-            const crosshairCanvas = document.createElement('canvas');
-            const targetSize = 64;
-            crosshairCanvas.width = targetSize;
-            crosshairCanvas.height = targetSize;
-            const ctx = crosshairCanvas.getContext('2d');
-            ctx.imageSmoothingEnabled = false;
-
-            try {
-                const iconsSheet = await loadImage(iconsSheetUrl);
-                // The crosshair is the top-left 9x9 pixels of the icons.png sheet (0, 0, 9, 9)
-                const sx = 0, sy = 0, sWidth = 9, sHeight = 9; 
-                
-                // Draw the 9x9 crosshair area scaled up to fit the 64x64 canvas
-                ctx.drawImage(iconsSheet, sx, sy, sWidth, sHeight, 0, 0, targetSize, targetSize);
-                
-                // Optional: Draw a 1-pixel border to highlight the crosshair bounding box if needed
-                // ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
-                // ctx.strokeRect(0, 0, targetSize, targetSize); 
-
-                return crosshairCanvas;
-            } catch (error) {
-                console.error("Failed to create crosshair preview:", error);
-                ctx.fillStyle = 'rgba(255,255,255,0.1)';
-                ctx.fillRect(0,0,targetSize,targetSize);
-                ctx.strokeStyle = 'var(--muted)';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(0,0); ctx.lineTo(targetSize, targetSize);
-                ctx.moveTo(targetSize,0); ctx.lineTo(0, targetSize);
-                ctx.stroke();
-                return crosshairCanvas;
-            }
         }
 
         async function createEnchantedVersion(url) {
