@@ -180,16 +180,56 @@
             
             let foundAssets = { items: {}, gui: {} };
 
+            // **FIXED**: This function finds the root folder of the pack content inside the zip.
+            async function findBasePath(zip) {
+                // Check for pack.mcmeta (Java) or manifest.json (Bedrock) to find the root directory
+                const packMetaFile = zip.file(/pack\.mcmeta$/)[0];
+                if (packMetaFile) {
+                    const path = packMetaFile.name.replace('pack.mcmeta', '');
+                    if (path) console.log("Java pack detected, base path:", path);
+                    return path;
+                }
+                
+                const manifestFile = zip.file(/manifest\.json$/)[0];
+                 if (manifestFile) {
+                    const path = manifestFile.name.replace('manifest.json', '');
+                    if (path) console.log("Bedrock pack detected, base path:", path);
+                    return path;
+                }
+
+                // If no manifest, try to guess by looking for the 'assets' folder
+                if (zip.file('assets/')) return ''; // Root level
+                
+                let probableBasePath = '';
+                for (const relativePath in zip.files) {
+                    if (zip.files[relativePath].dir && relativePath.endsWith('assets/')) {
+                         probableBasePath = relativePath.replace('assets/', '');
+                         break;
+                    }
+                }
+                if (probableBasePath) {
+                    console.log("Guessed base path:", probableBasePath);
+                    return probableBasePath;
+                }
+
+                return ''; // Assume root if all else fails
+            }
+
+            // **FIXED**: This function handles file selection and processing.
             async function handleFileSelect(file) {
                 if (!file) return;
                 [itemList, guiList].forEach(list => list.innerHTML = `<p class="placeholder-text"><span class="spinner"></span> Searching...</p>`);
                 foundAssets = { items: {}, gui: {} };
+                imageViewer.src = ""; // Clear the viewer on new upload
                 try {
                     const zip = await JSZip.loadAsync(file);
+                    const basePath = await findBasePath(zip);
+                    
                     await Promise.all([
-                        findAssets(zip, ASSET_PATHS.items, foundAssets.items, 'item'),
-                        findAssets(zip, ASSET_PATHS.gui, foundAssets.gui, 'gui')
+                        findAssets(zip, ASSET_PATHS.items, foundAssets.items, 'item', basePath),
+                        findAssets(zip, ASSET_PATHS.gui, foundAssets.gui, 'gui', basePath)
                     ]);
+
                     renderItemList();
                     renderGuiList();
                 } catch (error) {
@@ -198,19 +238,37 @@
                 }
             }
             
-            async function findAssets(zip, paths, targetObject, type) {
+            // **FIXED**: This function now uses flexible and correct paths for both Java and Bedrock packs.
+            async function findAssets(zip, paths, targetObject, type, basePath) {
                 const addAsset = async (key, filename) => {
-                    const javaPath = `assets/minecraft/textures/${type}/${filename}`;
-                    const bedrockPath = `textures/${type}s/${filename}`; 
-                    for (const p of [javaPath, bedrockPath]) {
+                    const pathsToCheck = new Set();
+                    
+                    if (type === 'item') {
+                        // Java Path: assets/minecraft/textures/item/diamond_sword.png
+                        pathsToCheck.add(`${basePath}assets/minecraft/textures/item/${filename}`);
+                        // Bedrock Path: textures/items/diamond_sword.png
+                        pathsToCheck.add(`${basePath}textures/items/${filename}`);
+                    } else if (type === 'gui') {
+                        // The filename is like 'gui/icons.png'.
+                        // Java Path: assets/minecraft/textures/gui/icons.png
+                        pathsToCheck.add(`${basePath}assets/minecraft/textures/${filename}`);
+                        // Bedrock Path 1 (e.g., textures/gui/icons.png)
+                        pathsToCheck.add(`${basePath}textures/${filename}`);
+                        // Bedrock Path 2 (e.g., textures/ui/widgets.png)
+                        pathsToCheck.add(`${basePath}textures/ui/${filename.split('/').pop()}`);
+                    }
+                    
+                    for (const p of pathsToCheck) {
                         const zipFile = zip.file(p);
                         if (zipFile) {
                             const blob = await zipFile.async('blob');
                             const url = URL.createObjectURL(blob);
                             targetObject[key] = url;
-                            return; 
+                            console.log(`Found asset '${key}' at path: ${p}`);
+                            return; // Found it, exit.
                         }
                     }
+                    console.warn(`Asset '${key}' not found in any expected path.`);
                 };
                 const promises = Object.entries(paths).map(([key, filename]) => addAsset(key, filename));
                 await Promise.all(promises);
@@ -318,6 +376,7 @@
                 document.getElementById(btn.dataset.tab + '-content').classList.add('active');
                 const list = btn.dataset.tab === 'items' ? itemList : guiList;
                 if (list.querySelector('.active')) list.querySelector('.active').click();
+                else if (list.firstChild?.classList?.contains('selection-item')) list.firstChild.click();
             });
 
             const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
@@ -329,8 +388,10 @@
             mobileNavToggle.addEventListener('click', openMenu);
             mobileNavClose.addEventListener('click', closeMenu);
             mobileNavBackdrop.addEventListener('click', closeMenu);
+
+            // This ensures the page is visible after the script loads
+            document.body.style.opacity = '1';
         });
     </script>
 </body>
 </html>
-
