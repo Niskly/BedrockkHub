@@ -271,14 +271,14 @@
              'diamond_sword': 'diamond_sword.png', 'iron_sword': 'iron_sword.png',
              'golden_sword': 'golden_sword.png', 'ender_pearl': 'ender_pearl.png',
              'golden_apple': 'apple_golden.png', 'apple': 'apple.png',
-             'bow': 'bow.png', 'fishing_rod': 'fishing_rod_uncast.png',
+             'bow': 'bow.png', 'fishing_rod': 'fishing_rod.png', // Changed from fishing_rod_uncast for better compatibility
              'totem_of_undying': 'totem.png', 'crossbow_standby': 'crossbow_standby.png'
         };
         const GUI_PATHS = { 
             'icons': 'icons.png', 
             'widgets': 'widgets.png',
             'crosshair': 'crosshair.png',
-            'title_panorama_overlay': 'panorama_overlay.png'
+            'panorama_overlay': 'panorama_overlay.png'
         };
         const GUI_COMPONENTS = { 
             'Full HUD': { type: 'hud' } 
@@ -597,7 +597,12 @@
                     }
                 });
             });
-            if (itemGrid.firstChild) itemGrid.firstChild.click();
+            const diamondSwordCard = itemGrid.querySelector('.item-icon-card[data-key="diamond_sword"]');
+            if (diamondSwordCard) {
+                diamondSwordCard.click();
+            } else if (itemGrid.firstChild) {
+                itemGrid.firstChild.click();
+            }
         }
 
         function renderGuiSelectionList() {
@@ -664,8 +669,8 @@
             hudCanvas.height = 50;
             const ctx = hudCanvas.getContext('2d');
             ctx.imageSmoothingEnabled = false;
-            const iconsSheet = foundAssets.gui.icons ? await loadImage(foundAssets.gui.icons) : null;
-            const widgetsSheet = foundAssets.gui.widgets ? await loadImage(foundAssets.gui.widgets) : null;
+            const iconsSheet = foundAssets.gui.icons ? await loadImage(foundAssets.gui.icons.url) : null;
+            const widgetsSheet = foundAssets.gui.widgets ? await loadImage(foundAssets.gui.widgets.url) : null;
             if (widgetsSheet) ctx.drawImage(widgetsSheet, 0, 0, 182, 22, 0, hudCanvas.height - 22, 182, 22);
             if (iconsSheet) {
                 for (let i = 0; i < 10; i++) ctx.drawImage(iconsSheet, 16, 0, 9, 9, (hudCanvas.width / 2) - 91 + (i * 8), hudCanvas.height - 41, 9, 9);
