@@ -713,7 +713,7 @@
                 if (foundAssets.gui.icons) {
                     const crosshairCanvas = await createCrosshairPreview(foundAssets.gui.icons.url);
                     imageViewer.src = crosshairCanvas.toDataURL();
-                    imageViewer.style.transform = 'scale(5)'; // Scale up for visibility
+                    imageViewer.style.transform = 'scale(3)'; // Scale up for visibility
                 } else {
                     imageViewer.src = 'https://placehold.co/64x64/2c2c2c/e8eefc?text=X';
                     imageViewer.style.transform = 'scale(1)';
