@@ -167,8 +167,18 @@
     <script>
         window.addEventListener('load', function() {
             const ASSET_PATHS = {
-                items: { 'ender_pearl': 'ender_pearl.png', 'golden_apple': 'golden_apple.png', 'enchanted_golden_apple': 'apple_golden.png', 'iron_sword': 'iron_sword.png', 'golden_sword': 'golden_sword.png', 'diamond_sword': 'diamond_sword.png' },
-                gui: { 'icons': 'gui/icons.png', 'widgets': 'gui/widgets.png' }
+                items: { 
+                    'ender_pearl': 'ender_pearl.png', 
+                    'golden_apple': 'golden_apple.png', 
+                    'enchanted_golden_apple': 'apple_golden.png', 
+                    'iron_sword': 'iron_sword.png', 
+                    'golden_sword': 'golden_sword.png', 
+                    'diamond_sword': 'diamond_sword.png' 
+                },
+                gui: { 
+                    'icons': 'gui/icons.png', 
+                    'widgets': 'gui/widgets.png' 
+                }
             };
             const GUI_COMPONENTS = { 'Full HUD': { type: 'hud' } };
 
@@ -180,47 +190,37 @@
             
             let foundAssets = { items: {}, gui: {} };
 
-            // **FIXED**: This function finds the root folder of the pack content inside the zip.
             async function findBasePath(zip) {
-                // Check for pack.mcmeta (Java) or manifest.json (Bedrock) to find the root directory
-                const packMetaFile = zip.file(/pack\.mcmeta$/)[0];
-                if (packMetaFile) {
-                    const path = packMetaFile.name.replace('pack.mcmeta', '');
-                    if (path) console.log("Java pack detected, base path:", path);
+                const manifestFiles = zip.file(/manifest\.json$/);
+                if (manifestFiles.length > 0) {
+                    const path = manifestFiles[0].name.replace('manifest.json', '');
+                    console.log("Bedrock pack detected, base path:", path);
                     return path;
                 }
                 
-                const manifestFile = zip.file(/manifest\.json$/)[0];
-                 if (manifestFile) {
-                    const path = manifestFile.name.replace('manifest.json', '');
-                    if (path) console.log("Bedrock pack detected, base path:", path);
+                const packMetaFiles = zip.file(/pack\.mcmeta$/);
+                if (packMetaFiles.length > 0) {
+                    const path = packMetaFiles[0].name.replace('pack.mcmeta', '');
+                    console.log("Java pack detected, base path:", path);
                     return path;
                 }
 
-                // If no manifest, try to guess by looking for the 'assets' folder
-                if (zip.file('assets/')) return ''; // Root level
-                
-                let probableBasePath = '';
-                for (const relativePath in zip.files) {
-                    if (zip.files[relativePath].dir && relativePath.endsWith('assets/')) {
-                         probableBasePath = relativePath.replace('assets/', '');
-                         break;
-                    }
-                }
-                if (probableBasePath) {
-                    console.log("Guessed base path:", probableBasePath);
-                    return probableBasePath;
+                const assetsFolder = zip.folder(/^[^/]*\/assets\/minecraft\//);
+                 if (assetsFolder.length > 0) {
+                    const path = assetsFolder[0].name.replace('assets/minecraft/', '');
+                    console.log("Guessed Java base path:", path);
+                    return path;
                 }
 
-                return ''; // Assume root if all else fails
+                console.log("Could not determine specific base path, assuming root.");
+                return ''; 
             }
 
-            // **FIXED**: This function handles file selection and processing.
             async function handleFileSelect(file) {
                 if (!file) return;
                 [itemList, guiList].forEach(list => list.innerHTML = `<p class="placeholder-text"><span class="spinner"></span> Searching...</p>`);
                 foundAssets = { items: {}, gui: {} };
-                imageViewer.src = ""; // Clear the viewer on new upload
+                imageViewer.src = "";
                 try {
                     const zip = await JSZip.loadAsync(file);
                     const basePath = await findBasePath(zip);
@@ -238,38 +238,48 @@
                 }
             }
             
-            // **FIXED**: This function now uses flexible and correct paths for both Java and Bedrock packs.
             async function findAssets(zip, paths, targetObject, type, basePath) {
-                const addAsset = async (key, filename) => {
+                const addAsset = async (key, partialPath) => {
                     const pathsToCheck = new Set();
-                    
+                    const filename = partialPath.split('/').pop();
+
+                    // 1. Add specific, high-probability paths
                     if (type === 'item') {
-                        // Java Path: assets/minecraft/textures/item/diamond_sword.png
                         pathsToCheck.add(`${basePath}assets/minecraft/textures/item/${filename}`);
-                        // Bedrock Path: textures/items/diamond_sword.png
+                        pathsToCheck.add(`${basePath}assets/minecraft/textures/items/${filename}`);
                         pathsToCheck.add(`${basePath}textures/items/${filename}`);
                     } else if (type === 'gui') {
-                        // The filename is like 'gui/icons.png'.
-                        // Java Path: assets/minecraft/textures/gui/icons.png
-                        pathsToCheck.add(`${basePath}assets/minecraft/textures/${filename}`);
-                        // Bedrock Path 1 (e.g., textures/gui/icons.png)
-                        pathsToCheck.add(`${basePath}textures/${filename}`);
-                        // Bedrock Path 2 (e.g., textures/ui/widgets.png)
-                        pathsToCheck.add(`${basePath}textures/ui/${filename.split('/').pop()}`);
+                        pathsToCheck.add(`${basePath}assets/minecraft/textures/${partialPath}`);
+                        pathsToCheck.add(`${basePath}textures/${partialPath}`);
+                        pathsToCheck.add(`${basePath}textures/ui/${filename}`);
                     }
-                    
+
+                    // 2. Add a generic, root-level check
+                    pathsToCheck.add(partialPath);
+
+                    // 3. Fallback: Search the entire zip for the filename. This is the "smart" part.
+                    const wildcardMatches = zip.file(new RegExp(`(^|/)${filename.replace(/\./g, '\\.')}$`));
+                    for (const file of wildcardMatches) {
+                        pathsToCheck.add(file.name);
+                    }
+
+                    // 4. Iterate and find the first valid file
                     for (const p of pathsToCheck) {
-                        const zipFile = zip.file(p);
-                        if (zipFile) {
+                        const normalizedPath = p.startsWith('/') ? p.substring(1) : p;
+                        if (!normalizedPath) continue;
+
+                        const zipFile = zip.file(normalizedPath);
+                        if (zipFile && !zipFile.dir) {
                             const blob = await zipFile.async('blob');
                             const url = URL.createObjectURL(blob);
                             targetObject[key] = url;
-                            console.log(`Found asset '${key}' at path: ${p}`);
-                            return; // Found it, exit.
+                            console.log(`SUCCESS: Found asset '${key}' at path: ${normalizedPath}`);
+                            return;
                         }
                     }
-                    console.warn(`Asset '${key}' not found in any expected path.`);
+                    console.warn(`FAIL: Asset '${key}' ('${filename}') not found.`);
                 };
+
                 const promises = Object.entries(paths).map(([key, filename]) => addAsset(key, filename));
                 await Promise.all(promises);
             }
@@ -389,9 +399,9 @@
             mobileNavClose.addEventListener('click', closeMenu);
             mobileNavBackdrop.addEventListener('click', closeMenu);
 
-            // This ensures the page is visible after the script loads
             document.body.style.opacity = '1';
         });
     </script>
 </body>
 </html>
+
