@@ -273,30 +273,43 @@
             }
 
             try {
-                // FIX: Use parseInt to convert the string ID from the URL into a number for the query
                 const packIdAsNumber = parseInt(packId, 10);
                 if (isNaN(packIdAsNumber)) {
                     throw new Error("Invalid Pack ID format.");
                 }
 
-                const { data: pack, error } = await supabase
+                // Step 1: Fetch the pack data first
+                const { data: pack, error: packError } = await supabase
                     .from('packs')
-                    .select('*, profiles ( username, avatar_url )')
+                    .select('*')
                     .eq('id', packIdAsNumber) 
                     .single();
 
-                if (error || !pack) {
-                    throw new Error("Pack could not be found or an error occurred.");
+                if (packError || !pack) {
+                    throw new Error("Pack data could not be found.");
                 }
 
-                if (!pack.profiles) {
-                    pack.profiles = {
-                        username: 'Unknown Creator',
-                        avatar_url: null
-                    };
+                let creatorProfile = {
+                    username: 'Unknown Creator',
+                    avatar_url: null
+                };
+                
+                // Step 2: If the pack has a user_id, fetch the profile separately
+                if (pack.user_id) {
+                    const { data: profileData, error: profileError } = await supabase
+                        .from('profiles')
+                        .select('username, avatar_url')
+                        .eq('id', pack.user_id)
+                        .single();
+                    
+                    if (profileData && !profileError) {
+                        creatorProfile = profileData;
+                    }
                 }
-
-                renderPackPage(pack);
+                
+                // Step 3: Combine the data and render the page
+                const finalPackData = { ...pack, profiles: creatorProfile };
+                renderPackPage(finalPackData);
 
             } catch (error) {
                 console.error(error);
