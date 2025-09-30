@@ -86,7 +86,7 @@
 
         .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
         
-        /* === NEW PREVIEWER STYLES === */
+        /* === PREVIEWER STYLES === */
         .preview-tabs { display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
         .preview-tab-btn { padding: 0.8rem 1rem; background: none; border: none; color: var(--muted); font-weight: 700; font-size: 0.9rem; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s ease; }
         .preview-tab-btn.active { color: var(--text); border-bottom-color: var(--brand-1); }
@@ -113,13 +113,30 @@
         .item-icon-card.enchantable .enchant-btn { display: flex; }
         .enchant-btn.active { background: #a855f7; color: white; border-color: #c084fc; }
         
-        .gui-selection-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem; }
+        .gui-selection-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; }
         .gui-selection-item { padding: 0.6rem 1rem; background: var(--bg-2); border-radius: 10px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; font-weight: 600; text-transform: capitalize; }
         .gui-selection-item:hover { border-color: var(--text); }
         .gui-selection-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: white; }
         .preview-placeholder-text { text-align: center; color: var(--muted); padding: 1rem 0; font-size: 13px; }
-        .preview-placeholder-text .spinner-sm { width: 1em; height: 1em; border-width: 2px; }
-        /* === END NEW STYLES === */
+        .preview-placeholder-text .spinner-sm { width: 1em; height: 1em; border-width: 2px; display: inline-block; animation: rotation 1s linear infinite; }
+
+        /* MOBILE NAV */
+        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
+        .mobile-nav-backdrop.show { display: block; opacity: 1; }
+        .mobile-nav-sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; background: var(--bg-1); z-index: 999; transform: translateX(-100%); transition: transform 0.3s ease; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
+        .mobile-nav-sidebar.show { transform: translateX(0); }
+        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
+        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
+        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+        .mobile-nav-user-info { display: flex; flex-direction: column; }
+        .mobile-nav-username { font-weight: 700; color: var(--text); }
+        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
+        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
+        .mobile-nav-main-links { flex-grow: 1; }
+        .mobile-nav-main-links a, .mobile-nav-footer-links a { padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem; font-weight: 600; color: var(--muted); transition: all 0.2s ease; }
+        .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
+        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
+        .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
         
         @media (min-width: 993px) {
             .pack-layout {
@@ -158,7 +175,6 @@
     <div id="toast-container"></div>
     
     <script type="module" src="/theme.js"></script>
-    <script type="module" src="/auth.js"></script>
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
@@ -172,6 +188,7 @@
         
         let armorPreviewLoaded = false;
         let itemsPreviewLoaded = false;
+        let guiPreviewLoaded = false;
         
         let foundArmorAssets = {};
         let foundItemAssets = { items: {}, gui: {} };
@@ -196,7 +213,11 @@
              'bow': 'bow.png',
              'fishing_rod': 'fishing_rod_uncast.png',
         };
-        const GUI_PATHS = { 'icons': 'gui/icons.png', 'widgets': 'gui/widgets.png', 'crosshair': 'gui/crosshair.png' };
+        const GUI_PATHS = { 
+            'icons': 'gui/icons.png', 
+            'widgets': 'gui/widgets.png', 
+            'crosshair': 'gui/crosshair.png'
+        };
 
 
         function showToast(message, type = 'error') {
@@ -297,7 +318,8 @@
                             <div class="card-body">
                                 <div class="preview-tabs">
                                     <button class="preview-tab-btn active" data-tab="armor">Armor</button>
-                                    <button class="preview-tab-btn" data-tab="items">Items/GUI</button>
+                                    <button class="preview-tab-btn" data-tab="items">Items</button>
+                                    <button class="preview-tab-btn" data-tab="gui">GUI</button>
                                 </div>
                                 <div id="armor-panel" class="preview-panel active">
                                     <canvas id="skin-viewer-canvas"></canvas>
@@ -305,11 +327,17 @@
                                 </div>
                                 <div id="items-panel" class="preview-panel">
                                     <div id="item-viewer-container"><canvas id="item-viewer-canvas" width="256" height="256"></canvas></div>
-                                    <div id="item-gui-container">
-                                       <div class="item-grid-container"><div id="item-grid" class="item-grid"></div></div>
-                                       <div id="gui-list" class="gui-selection-list"></div>
+                                    <div id="item-grid-container">
+                                       <div id="item-grid" class="item-grid"></div>
+                                       <div id="items-loader"><p class="preview-placeholder-text">Click tab to load preview</p></div>
                                     </div>
-                                    <div id="items-gui-loader"><p class="preview-placeholder-text">Click tab to load preview</p></div>
+                                </div>
+                                <div id="gui-panel" class="preview-panel">
+                                     <div id="gui-viewer-container"><canvas id="gui-viewer-canvas" width="256" height="256"></canvas></div>
+                                     <div id="gui-list-container">
+                                        <div id="gui-list" class="gui-selection-list"></div>
+                                        <div id="gui-loader"><p class="preview-placeholder-text">Click tab to load preview</p></div>
+                                     </div>
                                 </div>
                             </div>
                         </div>
@@ -333,6 +361,8 @@
                         loadAndProcessPackForArmor(currentPackData);
                     } else if (btn.dataset.tab === 'items' && !itemsPreviewLoaded) {
                         loadAndProcessPackForItems(currentPackData);
+                    } else if (btn.dataset.tab === 'gui' && !guiPreviewLoaded) {
+                        loadAndProcessPackForGui(currentPackData);
                     }
                 });
             });
@@ -347,13 +377,22 @@
         
         async function findGenericAsset(zip, filename) {
             const potentialPaths = new Set([
-                `assets/minecraft/textures/item/${filename}`,
-                `assets/minecraft/textures/items/${filename}`,
-                `textures/items/${filename}`,
-                `assets/minecraft/textures/gui/${filename}`,
-                `textures/gui/${filename}`,
-                `textures/ui/${filename}`
+                `assets/minecraft/textures/item/${filename}`, `assets/minecraft/textures/items/${filename}`,
+                `textures/items/${filename}`, `assets/minecraft/textures/gui/${filename}`,
+                `textures/gui/${filename}`, `textures/ui/${filename}`
             ]);
+            // Some packs have another root folder, try to account for that
+            const rootFolders = zip.folder(/^[^/]+\/$/);
+            if(rootFolders.length === 1) {
+                const root = rootFolders[0].name;
+                potentialPaths.add(`${root}assets/minecraft/textures/item/${filename}`);
+                potentialPaths.add(`${root}assets/minecraft/textures/items/${filename}`);
+                potentialPaths.add(`${root}textures/items/${filename}`);
+                potentialPaths.add(`${root}assets/minecraft/textures/gui/${filename}`);
+                potentialPaths.add(`${root}textures/gui/${filename}`);
+                potentialPaths.add(`${root}textures/ui/${filename}`);
+            }
+
             const wildcardMatches = zip.file(new RegExp(`(^|/)${filename.replace(/\./g, '\\.')}$`));
             wildcardMatches.forEach(file => potentialPaths.add(file.name));
 
@@ -369,43 +408,61 @@
 
         async function loadAndProcessPackForItems(pack) {
             itemsPreviewLoaded = true;
-            const loader = document.getElementById('items-gui-loader');
-            const content = document.getElementById('item-gui-container');
+            const loader = document.getElementById('items-loader');
+            const grid = document.getElementById('item-grid');
+            loader.style.display = 'block';
+            grid.style.display = 'none';
             loader.innerHTML = `<p class="preview-placeholder-text"><span class="spinner-sm"></span> Loading Items...</p>`;
-            content.style.display = 'none';
-
+            
             try {
-                const { data: urlData } = supabase.storage.from('packs').getPublicUrl(pack.filename);
-                if (!urlData) throw new Error('Failed to get pack URL.');
-                
-                const response = await fetch(urlData.publicUrl);
-                if (!response.ok) throw new Error('Failed to download pack.');
-                const fileBlob = await response.blob();
-                
-                const zip = await JSZip.loadAsync(fileBlob);
-
+                const zip = await downloadAndUnzipPack(pack);
                 const itemPromises = Object.entries(ITEM_PATHS).map(async ([key, filename]) => {
                     const url = await findGenericAsset(zip, filename);
                     if (url) foundItemAssets.items[key] = { url };
                 });
+                await Promise.all(itemPromises);
+                loader.style.display = 'none';
+                grid.style.display = 'grid';
+                renderItemGrid();
+            } catch (error) {
+                console.error("Items preview error:", error);
+                loader.innerHTML = `<p class="preview-placeholder-text" style="color:var(--danger)">Could not load items.</p>`;
+            }
+        }
+        
+        async function loadAndProcessPackForGui(pack) {
+            guiPreviewLoaded = true;
+            const loader = document.getElementById('gui-loader');
+            const list = document.getElementById('gui-list');
+            loader.style.display = 'block';
+            list.style.display = 'none';
+            loader.innerHTML = `<p class="preview-placeholder-text"><span class="spinner-sm"></span> Loading GUI...</p>`;
+
+            try {
+                const zip = await downloadAndUnzipPack(pack);
                 const guiPromises = Object.entries(GUI_PATHS).map(async ([key, filename]) => {
                      const url = await findGenericAsset(zip, filename);
                     if (url) foundItemAssets.gui[key] = { url };
                 });
-                
-                await Promise.all([...itemPromises, ...guiPromises]);
-                
+                await Promise.all(guiPromises);
                 loader.style.display = 'none';
-                content.style.display = 'block';
-                renderItemGrid();
+                list.style.display = 'flex';
                 renderGuiSelectionList();
-
             } catch (error) {
-                console.error("Items/GUI preview error:", error);
-                loader.innerHTML = `<p class="preview-placeholder-text" style="color:var(--danger)">Could not load assets.</p>`;
+                 console.error("GUI preview error:", error);
+                loader.innerHTML = `<p class="preview-placeholder-text" style="color:var(--danger)">Could not load GUI assets.</p>`;
             }
         }
         
+        async function downloadAndUnzipPack(pack) {
+            const { data: urlData } = supabase.storage.from('packs').getPublicUrl(pack.filename);
+            if (!urlData) throw new Error('Failed to get pack URL.');
+            const response = await fetch(urlData.publicUrl);
+            if (!response.ok) throw new Error('Failed to download pack.');
+            const fileBlob = await response.blob();
+            return await JSZip.loadAsync(fileBlob);
+        }
+
         function renderItemGrid() {
             const itemGrid = document.getElementById('item-grid');
             const itemKeys = Object.keys(foundItemAssets.items);
@@ -430,10 +487,10 @@
             itemGrid.querySelectorAll('.item-icon-card').forEach(card => {
                 card.addEventListener('click', (e) => {
                     if(e.target.closest('.enchant-btn')) return;
-                    document.querySelectorAll('.item-icon-card, .gui-selection-item').forEach(el => el.classList.remove('active'));
+                    document.querySelectorAll('.item-icon-card').forEach(c => c.classList.remove('active'));
                     card.classList.add('active');
                     const isEnchanted = card.querySelector('.enchant-btn')?.classList.contains('active');
-                    displayItemOnCanvas(foundItemAssets.items[card.dataset.key].url, isEnchanted);
+                    displayAssetOnCanvas('item-viewer-canvas', foundItemAssets.items[card.dataset.key].url, isEnchanted);
                 });
             });
 
@@ -443,7 +500,7 @@
                     btn.classList.toggle('active');
                     const card = btn.closest('.item-icon-card');
                     if (card.classList.contains('active')) {
-                        displayItemOnCanvas(foundItemAssets.items[card.dataset.key].url, btn.classList.contains('active'));
+                        displayAssetOnCanvas('item-viewer-canvas', foundItemAssets.items[card.dataset.key].url, btn.classList.contains('active'));
                     }
                 });
             });
@@ -455,20 +512,23 @@
              const guiList = document.getElementById('gui-list');
              const guiKeys = Object.keys(foundItemAssets.gui);
              if (guiKeys.length === 0) {
-                 guiList.innerHTML = ''; return;
+                 guiList.innerHTML = `<p class="preview-placeholder-text">No GUI textures found.</p>`;
+                 return;
              }
              guiList.innerHTML = guiKeys.map(key => `<div class="gui-selection-item" data-key="${key}">${key}</div>`).join('');
              guiList.querySelectorAll('.gui-selection-item').forEach(item => {
                  item.addEventListener('click', () => {
-                     document.querySelectorAll('.item-icon-card, .gui-selection-item').forEach(el => el.classList.remove('active'));
+                     document.querySelectorAll('.gui-selection-item').forEach(el => el.classList.remove('active'));
                      item.classList.add('active');
-                     displayItemOnCanvas(foundItemAssets.gui[item.dataset.key].url);
+                     displayAssetOnCanvas('gui-viewer-canvas', foundItemAssets.gui[item.dataset.key].url);
                  });
              });
+             if (guiList.firstChild) guiList.firstChild.click();
         }
         
-        async function displayItemOnCanvas(url, enchanted = false) {
-             const canvas = document.getElementById('item-viewer-canvas');
+        async function displayAssetOnCanvas(canvasId, url, enchanted = false) {
+             const canvas = document.getElementById(canvasId);
+             if(!canvas) return;
              const ctx = canvas.getContext('2d');
              ctx.imageSmoothingEnabled = false;
              ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -523,14 +583,7 @@
             const armorContainer = document.getElementById('armor-list-container');
             armorContainer.innerHTML = `<p class="preview-placeholder-text"><span class="spinner-sm"></span> Loading Armor...</p>`;
             try {
-                const { data: urlData } = supabase.storage.from('packs').getPublicUrl(pack.filename);
-                if (!urlData) throw new Error('Failed to get pack URL.');
-                
-                const response = await fetch(urlData.publicUrl);
-                if (!response.ok) throw new Error('Failed to download pack.');
-                const fileBlob = await response.blob();
-                
-                const zip = await JSZip.loadAsync(fileBlob);
+                const zip = await downloadAndUnzipPack(pack);
                 const allArmorPaths = [...ARMOR_PATHS_JAVA, ...ARMOR_PATHS_BEDROCK];
                 
                 foundArmorAssets = {};
@@ -603,15 +656,83 @@
             } catch (error) { showError("Could Not Load Pack", "The pack doesn't exist or there was an error loading it."); }
         }
 
-        document.addEventListener('auth-ready', async (event) => {
-            const { user } = event.detail;
-            if (user) {
-                const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-                if (profile && profile.role === 'admin') {
-                    currentUserRole = 'admin';
-                    if (currentPackData) renderPackPage(currentPackData);
-                }
+        function setupMobileNav(profile, user) {
+            const header = document.querySelector('header');
+            if (!header) return;
+            const navContainer = header.querySelector('.nav');
+            if (!navContainer) return;
+
+            navContainer.querySelector('.mobile-nav-toggle')?.remove();
+            document.querySelector('.mobile-nav-sidebar')?.remove();
+            document.querySelector('.mobile-nav-backdrop')?.remove();
+
+            const hamburgerBtn = document.createElement('button');
+            hamburgerBtn.className = 'mobile-nav-toggle';
+            hamburgerBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
+
+            const sidebar = document.createElement('div');
+            sidebar.className = 'mobile-nav-sidebar';
+            const backdrop = document.createElement('div');
+            backdrop.className = 'mobile-nav-backdrop';
+
+            let userHeader, mainLinks, footerLinks;
+
+            if (profile && user) {
+                const avatarSrc = profile.avatar_url ? profile.avatar_url : `https://placehold.co/60x60/1c1c1c/de212a?text=${profile.username.charAt(0).toUpperCase()}`;
+                userHeader = `<div class="mobile-nav-header"><img src="${avatarSrc}" alt="Avatar" class="mobile-nav-avatar"><div class="mobile-nav-user-info"><span class="mobile-nav-username">${profile.username}</span><span class="mobile-nav-email">${user.email}</span></div></div>`;
+                mainLinks = `<a href="/"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="/texturepacks.html"><i class="fa-solid fa-palette"></i><span>Texture Packs</span></a><a href="/profile.html?user=${profile.username}"><i class="fa-solid fa-user"></i><span>My Profile</span></a>`;
+                footerLinks = `<a href="/settings.html"><i class="fa-solid fa-cog"></i><span>Settings</span></a><a href="#" id="mobile-logout-btn"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>`;
+            } else {
+                userHeader = `<div class="mobile-nav-header"><div class="mobile-nav-avatar" style="background: var(--brand-1); display: grid; place-items:center;"><i class="fa-solid fa-question"></i></div><div class="mobile-nav-user-info"><span class="mobile-nav-username">Guest</span><span class="mobile-nav-email">Not logged in</span></div></div>`;
+                mainLinks = `<a href="/"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="/texturepacks.html"><i class="fa-solid fa-palette"></i><span>Texture Packs</span></a>`;
+                footerLinks = `<a href="/login.html"><i class="fa-solid fa-right-to-bracket"></i><span>Login</span></a><a href="/signup.html" class="primary-mobile-link"><i class="fa-solid fa-user-plus"></i><span>Sign Up</span></a>`;
             }
+
+            sidebar.innerHTML = `<button class="mobile-nav-close"><i class="fa-solid fa-xmark"></i></button>${userHeader}<nav class="mobile-nav-main-links">${mainLinks}</nav><nav class="mobile-nav-footer-links">${footerLinks}</nav>`;
+            
+            navContainer.appendChild(hamburgerBtn);
+            document.body.appendChild(sidebar);
+            document.body.appendChild(backdrop);
+
+            const openMenu = () => { sidebar.classList.add('show'); backdrop.classList.add('show'); };
+            const closeMenu = () => { sidebar.classList.remove('show'); backdrop.classList.remove('show'); };
+
+            hamburgerBtn.addEventListener('click', openMenu);
+            sidebar.querySelector('.mobile-nav-close').addEventListener('click', closeMenu);
+            backdrop.addEventListener('click', closeMenu);
+
+            if (profile) {
+                sidebar.querySelector('#mobile-logout-btn')?.addEventListener('click', async (e) => { e.preventDefault(); await supabase.auth.signOut(); });
+            }
+        }
+        
+        document.addEventListener('auth-ready', async (event) => {
+            const { user, profile } = event.detail;
+            const navActions = document.getElementById('nav-actions');
+
+            if (user && profile) {
+                const avatarContent = profile.avatar_url ? `<img src="${profile.avatar_url}" alt="User Avatar" class="nav-avatar-img">` : `<img src="https://placehold.co/28x28/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}" class="nav-avatar-img">`;
+                navActions.innerHTML = `<a class="btn ghost" href="/">Home</a><a class="btn ghost" href="/texturepacks.html">Texture Packs</a><div class="user-dropdown"><button class="user-menu-btn">${avatarContent}<span>${profile.username}</span><i class="fa-solid fa-chevron-down"></i></button><div class="dropdown-content"><a href="/profile.html?user=${profile.username}"><i class="fa-solid fa-user"></i> My Profile</a><a href="/settings.html"><i class="fa-solid fa-cog"></i> Settings</a><a href="#" id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></div></div>`;
+                navActions.querySelector('#logout-btn').addEventListener('click', async (e) => { e.preventDefault(); await supabase.auth.signOut(); });
+                const btn = navActions.querySelector('.user-menu-btn');
+                const content = navActions.querySelector('.dropdown-content');
+                btn.addEventListener('click', (e) => { e.stopPropagation(); content.classList.toggle('show');});
+            } else {
+                navActions.innerHTML = `<a class="btn ghost" href="/">Home</a><a class="btn ghost" href="/texturepacks.html">Texture Packs</a><a class="btn primary" href="/login.html">Login</a>`;
+            }
+
+            setupMobileNav(profile, user);
+            
+            if (user) {
+                const { data: userProfile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+                if (userProfile) currentUserRole = userProfile.role;
+            }
+            if (currentPackData) renderPackPage(currentPackData); // Re-render to show admin buttons if needed
+        });
+        
+        window.addEventListener('click', (e) => {
+             const dropdown = document.querySelector('.dropdown-content.show');
+             if (dropdown && !e.target.closest('.user-dropdown')) dropdown.classList.remove('show');
         });
 
         loadPack();
