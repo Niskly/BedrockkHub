@@ -736,9 +736,12 @@
                 if(refreshBtn) {
                     refreshBtn.addEventListener('click', () => {
                         if (skinViewer) {
+                            skinViewer.controls.reset();
                             skinViewer.camera.position.set(0, 0, 40);
-                            skinViewer.camera.rotation.set(0, 0, 0);
                             skinViewer.autoRotate = true;
+                            if (skinViewer.autoRotateAnimation.paused) {
+                                skinViewer.autoRotateAnimation.paused = false;
+                            }
                         }
                     });
                 }
@@ -788,9 +791,7 @@
                     noArmorItem.onclick = () => {
                         document.querySelectorAll('.armor-item').forEach(i => i.classList.remove('active'));
                         noArmorItem.classList.add('active');
-                        if (skinViewer) {
-                            skinViewer.loadSkin('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png');
-                        }
+                        applyArmor(null);
                     };
                     list.appendChild(noArmorItem);
 
@@ -798,10 +799,10 @@
                         const item = document.createElement('div');
                         item.className = 'armor-item';
                         item.innerHTML = `<img src="${ARMOR_ICONS[name] || 'https://placehold.co/32x32/1c1c1c/e8eefc?text='+name.charAt(0).toUpperCase()}" alt="${name}" title="${name}">`;
-                        item.onclick = async () => {
+                        item.onclick = () => {
                             document.querySelectorAll('.armor-item').forEach(i => i.classList.remove('active'));
                             item.classList.add('active');
-                            await applyArmor(foundArmorAssets[name]);
+                            applyArmor(foundArmorAssets[name]);
                         };
                         list.appendChild(item);
                     });
@@ -814,34 +815,40 @@
 
         async function applyArmor(armorSet) {
             if (!skinViewer) return;
+            
+            skinViewer.loadSkin('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png');
+
+            if (!armorSet) {
+                skinViewer.loadCape(null);
+                return;
+            }
+
             const armorLayers = [];
             if (armorSet.layer1) armorLayers.push(armorSet.layer1);
             if (armorSet.layer2) armorLayers.push(armorSet.layer2);
 
             if (armorLayers.length > 0) {
-                const combinedSkinUrl = await combineSkinAndArmor(armorLayers);
-                skinViewer.loadSkin(combinedSkinUrl);
+                const overlayUrl = await combineArmorLayersToOverlay(armorLayers);
+                skinViewer.loadCape(overlayUrl);
             } else {
-                skinViewer.loadSkin('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png');
+                skinViewer.loadCape(null);
             }
         }
-
-        async function combineSkinAndArmor(armorLayerUrls) {
-            const steveSkinUrl = 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png';
-            const urlsToLoad = [steveSkinUrl, ...armorLayerUrls];
-            
-            const images = await Promise.all(urlsToLoad.map(loadImage));
-
+        
+        async function combineArmorLayersToOverlay(layerUrls) {
+            const images = await Promise.all(layerUrls.map(loadImage));
             const canvas = document.createElement('canvas');
-            canvas.width = 64;
-            canvas.height = 64;
+            const targetWidth = 64;
+            const targetHeight = 64; 
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
             const ctx = canvas.getContext('2d');
             ctx.imageSmoothingEnabled = false;
 
             images.forEach(img => {
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, img.width, img.height);
             });
-
+            
             return canvas.toDataURL();
         }
         
@@ -991,3 +998,4 @@
     </script>
 </body>
 </html>
+
