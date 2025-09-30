@@ -18,7 +18,7 @@
             --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
             --border-strong: rgba(255, 255, 255, .2); --danger: #ef4444; --success: #22c55e;
             --gradient-brand: linear-gradient(135deg, var(--brand-1), var(--brand-2));
-            --brand-1-rgb: 222, 33, 42; /* Added for dynamic rgba colors */
+            --brand-1-rgb: 222, 33, 42;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 15px/1.6 Inter, sans-serif; }
@@ -27,7 +27,8 @@
         .tiny { font-size: 12px; color: var(--muted); }
         .btn { padding: .7rem 1.2rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
         .btn.primary { background: var(--gradient-brand); box-shadow: var(--shadow-brand); color: white; }
-        .btn.ghost { border-color: var(--border); background: var(--bg-2); color: var(--text); }
+        .btn.ghost { border-color: var(--border); background: transparent; color: var(--text); }
+        .btn.ghost:hover { background: rgba(255, 255, 255, 0.1); }
         .spinner { width: 48px; height: 48px; border: 5px solid var(--border); border-bottom-color: var(--brand-1); border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
@@ -58,7 +59,6 @@
         .pack-header { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; position: relative; }
         .pack-header-icon { width: 80px; height: 80px; border-radius: 16px; object-fit: cover; background-color: var(--bg-2); flex-shrink: 0; border: 1px solid var(--border); }
         .pack-title-area h1 { font-size: 2.2rem; font-weight: 800; line-height: 1.2; margin: 0 0 4px 0; }
-        .pack-creator-info { font-size: 0.9rem; }
         .star-rating { color: var(--muted); font-size: 1rem; margin-top: 8px; }
         .star-rating .fa-star { margin-right: 2px; }
         .edit-pack-btn { position: absolute; top: 0; right: 0; padding: .5rem 1rem; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--border); color: var(--text); font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
@@ -73,16 +73,11 @@
         .tags-container { display: flex; flex-wrap: wrap; gap: 0.5rem; }
         .tag { padding: .4rem .8rem; border-radius: 8px; background: var(--bg-2); border: 1px solid var(--border); font-weight: 600; font-size: 0.8rem; text-transform: capitalize; }
         
-        .sidebar-card { position: sticky; top: 90px; display: flex; flex-direction: column; gap: 1.5rem; }
+        .sidebar-card { position: sticky; top: 90px; }
         .card-body { padding: 1.2rem; }
         .download-card-header { text-align: center; }
         .download-card-header h2 { font-size: 1.2rem; margin: 0; }
-        .pack-stats { list-style: none; padding: 0; margin: 1.5rem 0; }
-        .pack-stats li { display: flex; justify-content: space-between; padding: 0.75rem 0; font-size: 0.9rem; }
-        .pack-stats li:not(:last-child) { border-bottom: 1px solid var(--border); }
-        .pack-stats .label { color: var(--muted); }
-        .pack-stats .value { font-weight: 600; color: var(--text); }
-
+        
         .comments-section { margin-top: 3rem; }
         .comments-placeholder { text-align: center; padding: 2rem; background: var(--bg-1); border-radius: 12px; border: 1px solid var(--border); color: var(--muted); }
         
@@ -116,6 +111,9 @@
         .swatch.active { border-color: var(--brand-1); outline: 3px solid rgba(var(--brand-1-rgb), 0.3); }
         .tag-checkbox { padding: .4rem .8rem; border-radius: 8px; background: var(--bg-2); border: 1px solid var(--border); cursor: pointer; font-weight: 600; font-size: 0.85rem; text-transform: capitalize; }
         .tag-checkbox.selected { background: var(--brand-1); border-color: var(--brand-2); color: white; }
+        .armor-preview-controls { position: relative; }
+        #refresh-armor-btn { display: none; position: absolute; top: 8px; right: 8px; background: rgba(18,18,18,0.7); backdrop-filter: blur(4px); border: 1px solid var(--border); color: var(--muted); font-size: 1rem; cursor: pointer; padding: 0; width: 32px; height: 32px; border-radius: 8px; }
+        #refresh-armor-btn:hover { color: var(--text); border-color: var(--border-strong); }
 
         .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
         .mobile-nav-backdrop.show { display: block; opacity: 1; }
@@ -135,7 +133,10 @@
         .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
 
 
-        @media (max-width: 992px) { .pack-layout { grid-template-columns: 1fr; } .sidebar-card { position: static; order: -1; } }
+        @media (max-width: 992px) { 
+            .pack-layout { grid-template-columns: 1fr; } 
+            .sidebar-card { position: static; } 
+        }
         @media (max-width: 768px) { .nav-actions { display: none; } .mobile-nav-toggle { display: block; } }
     </style>
 </head>
@@ -157,7 +158,6 @@
     
     <div id="toast-container"></div>
 
-    <!-- Edit Pack Modal -->
     <div id="edit-pack-modal" class="modal">
         <div class="modal-dialog">
             <div class="modal-header-section">
@@ -212,6 +212,7 @@
         let skinViewer = null;
         let currentPackData = null;
         let currentUserRole = 'viewer';
+        let armorPreviewLoaded = false;
 
         const ALL_TAGS = ['pvp', 'bedwars', 'skywars', 'anime', 'crystal pvp', 'survival', 'visual'];
         const ALL_COLORS = [{key: 'none', hex: '#4b5563', icon: 'fa-solid fa-ban'}, {key: 'red',hex: '#ef4444'}, {key: 'blue',hex: '#3b82f6'}, {key: 'green',hex: '#22c55e'}, {key: 'yellow',hex: '#eab308'}, {key: 'purple',hex: '#a855f7'}, {key: 'pink',hex: '#ec4899'}, {key: 'orange',hex: '#f97316'}, {key: 'teal',hex: '#14b8a6'}, {key: 'gray',hex: '#6b7280'}, {key: 'black',hex: '#1f2937'}];
@@ -298,9 +299,16 @@
                 ? pack.icon_url 
                 : `https://placehold.co/80x80/1c1c1c/e8eefc?text=ICON`;
             
-            const tagsHtml = (pack.tags || '')
+            let tagsHtml = '';
+            if (pack.resolution && pack.resolution !== 'unknown') {
+                tagsHtml += `<span class="tag">${escapeHtml(pack.resolution)}</span>`;
+            }
+            if (pack.version) {
+                tagsHtml += `<span class="tag">${escapeHtml(pack.version)}</span>`;
+            }
+            tagsHtml += (pack.tags || '')
                 .split(',')
-                .filter(tag => tag.trim() !== '')
+                .filter(tag => tag.trim() !== '' && tag.trim() !== 'user-upload')
                 .map(tag => `<span class="tag">${escapeHtml(tag)}</span>`)
                 .join('');
             
@@ -343,6 +351,22 @@
                             </div>
                         </div>
 
+                        <div id="armor-preview-section" class="card" style="margin-top: 2.5rem;">
+                            <div class="card-body">
+                                <div style="display:flex; justify-content: space-between; align-items: center;">
+                                    <h3 class="section-title" style="margin-top:0; border:0; padding:0; margin-bottom: 0;">3D Armor Preview</h3>
+                                    <button id="refresh-armor-btn"><i class="fa-solid fa-sync"></i></button>
+                                </div>
+                                <canvas id="skin-viewer-canvas"></canvas>
+                                <div id="armor-list-container"></div>
+                                <div class="armor-preview-controls">
+                                    <button class="btn ghost" id="preview-armor-btn" style="width:100%; margin-top: 1rem;">
+                                        <i class="fa-solid fa-cube"></i> Preview Armor
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="comments-section">
                             <h3 class="section-title">Comments</h3>
                             <div class="comments-placeholder">
@@ -358,22 +382,8 @@
                                     <h2>Downloads</h2>
                                     <p class="tiny" id="download-count-val">${(pack.download_count || 0).toLocaleString()} Total</p>
                                 </div>
-                                <ul class="pack-stats">
-                                    <li><span class="label">Resolution</span> <span class="value">${escapeHtml(pack.resolution || 'N/A')}</span></li>
-                                    <li><span class="label">Version</span> <span class="value">${escapeHtml(pack.version || 'N/A')}</span></li>
-                                </ul>
-                                <button class="btn primary" id="download-btn" style="width: 100%;">
+                                <button class="btn primary" id="download-btn" style="width: 100%; margin-top: 1.5rem;">
                                     <i class="fa-solid fa-download"></i> Download Pack
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="card-body">
-                                <h3 class="section-title" style="margin-top:0; border:0; padding:0;">3D Armor Preview</h3>
-                                <canvas id="skin-viewer-canvas"></canvas>
-                                <div id="armor-list-container"></div>
-                                <button class="btn ghost" id="preview-armor-btn" style="width:100%; margin-top: 1rem;">
-                                    <i class="fa-solid fa-cube"></i> Preview Armor
                                 </button>
                             </div>
                         </div>
@@ -384,6 +394,9 @@
             setTimeout(initSkinViewer, 100);
             
             document.getElementById('preview-armor-btn').addEventListener('click', () => {
+                loadAndProcessPackForPreview(pack);
+            });
+             document.getElementById('refresh-armor-btn').addEventListener('click', () => {
                 loadAndProcessPackForPreview(pack);
             });
             document.getElementById('download-btn').addEventListener('click', () => {
@@ -477,14 +490,20 @@
                         list.appendChild(item);
                     });
                     if (list.firstChild) list.firstChild.click();
+                    
+                    document.getElementById('preview-armor-btn').style.display = 'none';
+                    document.getElementById('refresh-armor-btn').style.display = 'block';
+                    armorPreviewLoaded = true;
                 }
 
             } catch (error) {
                 console.error("Armor preview error:", error);
                 showToast("Could not preview armor from this pack. " + error.message, "error");
             } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-cube"></i> Preview Armor';
+                if (!armorPreviewLoaded) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-cube"></i> Preview Armor';
+                }
             }
         }
 
