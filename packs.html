@@ -86,51 +86,40 @@
 
         .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
         
-        .armor-preview-card { position: relative; }
+        /* === NEW PREVIEWER STYLES === */
+        .preview-tabs { display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+        .preview-tab-btn { padding: 0.8rem 1rem; background: none; border: none; color: var(--muted); font-weight: 700; font-size: 0.9rem; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s ease; }
+        .preview-tab-btn.active { color: var(--text); border-bottom-color: var(--brand-1); }
+        .preview-panel { display: none; }
+        .preview-panel.active { display: block; }
+
         #skin-viewer-canvas { width: 100%; aspect-ratio: 4/5; border-radius: 12px; background-image: url(https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg); background-size: cover; background-position: center; cursor: grab; }
         #skin-viewer-canvas.dragging { cursor: grabbing; }
         .armor-selection-list { display: flex; gap: 0.5rem; margin-top: 1rem; justify-content: center; flex-wrap: wrap; }
         .armor-item { width: 48px; height: 48px; background: var(--bg-2); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s ease; display: grid; place-items: center; padding: 4px; }
         .armor-item img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
         .armor-item:hover { border-color: var(--text); }
-        .armor-item.active { border-color: var(--brand-1); background: rgba(222, 33, 42, 0.2); }
-
-        .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 1000; }
-        .modal.show { display: flex; }
-        .modal-dialog { background: var(--bg-1); border: 1px solid var(--border); border-radius: 20px; width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
-        .modal-header-section { padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .modal-header-section h2 { font-size: 1.5rem; font-weight: 700; margin: 0; }
-        .modal-content-section { padding: 1.5rem; }
-        .form-group { margin-bottom: 1rem; }
-        .form-label { display: block; font-size: 0.9rem; color: var(--muted); margin-bottom: 0.5rem; }
-        .form-input, .form-textarea { width: 100%; padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text); font-size: 1rem; }
-        .form-textarea { min-height: 100px; resize: vertical; }
-        .modal-footer-section { padding: 1rem 1.5rem; border-top: 1px solid var(--border); text-align: right; }
-        .swatches, .tags-editor-container, .resolutions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 0.5rem; }
-        .swatch { width: 34px; height: 34px; border-radius: 999px; border: 2px solid var(--border); cursor: pointer; display: grid; place-items: center; }
-        .swatch.active { border-color: var(--brand-1); outline: 3px solid rgba(var(--brand-1-rgb), 0.3); }
-        .tag-checkbox { padding: .4rem .8rem; border-radius: 8px; background: var(--bg-2); border: 1px solid var(--border); cursor: pointer; font-weight: 600; font-size: 0.85rem; text-transform: capitalize; }
-        .tag-checkbox.selected { background: var(--brand-1); border-color: var(--brand-2); color: white; }
-        .armor-preview-controls { position: relative; }
-        #refresh-armor-btn { display: none; position: absolute; top: 8px; right: 8px; background: rgba(18,18,18,0.7); backdrop-filter: blur(4px); border: 1px solid var(--border); color: var(--muted); font-size: 1rem; cursor: pointer; padding: 0; width: 32px; height: 32px; border-radius: 8px; }
-        #refresh-armor-btn:hover { color: var(--text); border-color: var(--border-strong); }
-
-        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
-        .mobile-nav-backdrop.show { display: block; opacity: 1; }
-        .mobile-nav-sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; background: var(--bg-1); z-index: 999; transform: translateX(-100%); transition: transform 0.3s ease; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
-        .mobile-nav-sidebar.show { transform: translateX(0); }
-        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
-        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
-        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
-        .mobile-nav-user-info { display: flex; flex-direction: column; }
-        .mobile-nav-username { font-weight: 700; color: var(--text); }
-        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
-        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
-        .mobile-nav-main-links { flex-grow: 1; }
-        .mobile-nav-main-links a, .mobile-nav-footer-links a { padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem; font-weight: 600; color: var(--muted); transition: all 0.2s ease; }
-        .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
-        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
-        .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
+        .armor-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); }
+        
+        #item-viewer-container { border-radius: 12px; width: 100%; aspect-ratio: 1 / 1; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); background-size: cover; background-position: center; display: grid; place-items: center; padding: 1rem; }
+        #item-viewer-canvas { width: 100%; height: 100%; image-rendering: pixelated; }
+        
+        .item-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 0.5rem; margin-top: 1rem; }
+        .item-icon-card { position: relative; width: 100%; aspect-ratio: 1/1; background: var(--bg-2); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s ease; display: grid; place-items: center; padding: 4px; }
+        .item-icon-card:hover { border-color: var(--text); }
+        .item-icon-card.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); }
+        .item-icon-card img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+        .enchant-btn { position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: #fcc2ff; border-radius: 6px; font-size: 10px; cursor: pointer; display: none; align-items: center; justify-content: center; }
+        .item-icon-card.enchantable .enchant-btn { display: flex; }
+        .enchant-btn.active { background: #a855f7; color: white; border-color: #c084fc; }
+        
+        .gui-selection-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem; }
+        .gui-selection-item { padding: 0.6rem 1rem; background: var(--bg-2); border-radius: 10px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; font-weight: 600; text-transform: capitalize; }
+        .gui-selection-item:hover { border-color: var(--text); }
+        .gui-selection-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: white; }
+        .preview-placeholder-text { text-align: center; color: var(--muted); padding: 1rem 0; font-size: 13px; }
+        .preview-placeholder-text .spinner-sm { width: 1em; height: 1em; border-width: 2px; }
+        /* === END NEW STYLES === */
         
         @media (min-width: 993px) {
             .pack-layout {
@@ -167,48 +156,6 @@
     </main>
     
     <div id="toast-container"></div>
-
-    <div id="edit-pack-modal" class="modal">
-        <div class="modal-dialog">
-            <div class="modal-header-section">
-                <h2>Edit Pack</h2>
-                <button class="btn ghost" onclick="closeEditPackModal()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="modal-content-section">
-                <form id="edit-pack-form">
-                    <input type="hidden" id="edit-pack-id">
-                    <div class="form-group">
-                        <label for="edit-pack-name" class="form-label">Pack Name</label>
-                        <input type="text" id="edit-pack-name" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-pack-description" class="form-label">Description</label>
-                        <textarea id="edit-pack-description" class="form-textarea"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-youtube-url" class="form-label">YouTube Video URL</label>
-                        <input type="url" id="edit-youtube-url" class="form-input" placeholder="e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Primary Color</label>
-                        <div class="swatches" id="edit-pack-colors"></div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Resolution</label>
-                        <div class="resolutions" id="edit-pack-resolutions"></div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Tags</label>
-                        <div class="tags-editor-container" id="edit-pack-tags"></div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer-section">
-                <button type="button" class="btn ghost" onclick="closeEditPackModal()">Cancel</button>
-                <button type="submit" form="edit-pack-form" class="btn primary"><i class="fa-solid fa-save"></i> Save Changes</button>
-            </div>
-        </div>
-    </div>
     
     <script type="module" src="/theme.js"></script>
     <script type="module" src="/auth.js"></script>
@@ -222,11 +169,13 @@
         let skinViewer = null;
         let currentPackData = null;
         let currentUserRole = 'viewer';
+        
         let armorPreviewLoaded = false;
+        let itemsPreviewLoaded = false;
+        
+        let foundArmorAssets = {};
+        let foundItemAssets = { items: {}, gui: {} };
 
-        const ALL_TAGS = ['pvp', 'bedwars', 'skywars', 'anime', 'crystal pvp', 'survival', 'visual'];
-        const ALL_COLORS = [{key: 'none', hex: '#4b5563', icon: 'fa-solid fa-ban'}, {key: 'red',hex: '#ef4444'}, {key: 'blue',hex: '#3b82f6'}, {key: 'green',hex: '#22c55e'}, {key: 'yellow',hex: '#eab308'}, {key: 'purple',hex: '#a855f7'}, {key: 'pink',hex: '#ec4899'}, {key: 'orange',hex: '#f97316'}, {key: 'teal',hex: '#14b8a6'}, {key: 'gray',hex: '#6b7280'}, {key: 'black',hex: '#1f2937'}];
-        const ALL_RESOLUTIONS = ['16x', '32x', '64x', '128x'];
         const ARMOR_ICONS = {
             diamond: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/diamond.png',
             netherite: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/netherite.png',
@@ -236,6 +185,19 @@
             leather: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/leather.png',
             turtle: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/turtle.png'
         };
+
+        const ITEM_PATHS = {
+             'diamond_sword': 'diamond_sword.png',
+             'iron_sword': 'iron_sword.png',
+             'golden_sword': 'golden_sword.png',
+             'ender_pearl': 'ender_pearl.png',
+             'golden_apple': 'apple_golden.png', // This is enchanted one
+             'apple': 'apple.png', // Normal Gapple
+             'bow': 'bow.png',
+             'fishing_rod': 'fishing_rod_uncast.png',
+        };
+        const GUI_PATHS = { 'icons': 'gui/icons.png', 'widgets': 'gui/widgets.png' };
+
 
         function showToast(message, type = 'error') {
             const container = document.getElementById('toast-container');
@@ -300,18 +262,15 @@
                 showToast('Failed to start download.', 'error');
             }
         }
-
+        
         function renderPackPage(pack) {
             currentPackData = pack; 
             document.title = `${pack.name} — MCHub`;
-            
-            const packIcon = pack.icon_url ? pack.icon_url : `https://placehold.co/80x80/1c1c1c/e8eefc?text=ICON`;
-            
+            const packIcon = pack.icon_url || `https://placehold.co/80x80/1c1c1c/e8eefc?text=ICON`;
             let tagsHtml = '';
             if (pack.resolution && pack.resolution !== 'unknown') tagsHtml += `<span class="tag">${escapeHtml(pack.resolution)}</span>`;
             if (pack.version) tagsHtml += `<span class="tag">${escapeHtml(pack.version)}</span>`;
             tagsHtml += (pack.tags || '').split(',').filter(t => t.trim() !== '' && t.trim() !== 'user-upload').map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
-            
             const videoId = getYouTubeVideoId(pack.youtube_url);
             const videoHtml = videoId ? `<div class="youtube-video-container"><iframe src="https://www.youtube.com/embed/${videoId}" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>` : '';
 
@@ -330,51 +289,53 @@
                             <div class="pack-header-actions" id="header-action-container"></div>
                         </div>
                         ${videoHtml}
-                        <div class="description-section">
-                            <h3 class="section-title">Description</h3>
-                            <div class="pack-description">${pack.description ? escapeHtml(pack.description).replace(/\n/g, '<br>') : '<p>This pack has no description.</p>'}</div>
-                        </div>
-                        <div class="tags-section">
-                            <h3 class="section-title">Tags</h3>
-                            <div class="tags-container">${tagsHtml || '<p class="tiny">No tags for this pack.</p>'}</div>
-                        </div>
+                        <div class="description-section"><h3 class="section-title">Description</h3><div class="pack-description">${pack.description ? escapeHtml(pack.description).replace(/\n/g, '<br>') : '<p>This pack has no description.</p>'}</div></div>
+                        <div class="tags-section"><h3 class="section-title">Tags</h3><div class="tags-container">${tagsHtml || '<p class="tiny">No tags for this pack.</p>'}</div></div>
                     </div>
                     <aside class="sidebar-card">
-                        <div class="card armor-preview-card">
+                        <div class="card preview-card">
                             <div class="card-body">
-                                <div class="armor-preview-controls">
-                                    <canvas id="skin-viewer-canvas"></canvas>
-                                    <button id="refresh-armor-btn"><i class="fa-solid fa-sync"></i></button>
+                                <div class="preview-tabs">
+                                    <button class="preview-tab-btn active" data-tab="armor">Armor</button>
+                                    <button class="preview-tab-btn" data-tab="items">Items/GUI</button>
                                 </div>
-                                <div id="armor-list-container"></div>
-                                <button class="btn ghost" id="preview-armor-btn" style="width:100%; margin-top: 1rem;"><i class="fa-solid fa-cube"></i> Preview Armor</button>
+                                <div id="armor-panel" class="preview-panel active">
+                                    <canvas id="skin-viewer-canvas"></canvas>
+                                    <div id="armor-list-container"><p class="preview-placeholder-text">Click tab to load preview</p></div>
+                                </div>
+                                <div id="items-panel" class="preview-panel">
+                                    <div id="item-viewer-container"><canvas id="item-viewer-canvas" width="256" height="256"></canvas></div>
+                                    <div id="item-gui-container">
+                                       <div class="item-grid-container"><div id="item-grid" class="item-grid"></div></div>
+                                       <div id="gui-list" class="gui-selection-list"></div>
+                                    </div>
+                                    <div id="items-gui-loader"><p class="preview-placeholder-text">Click tab to load preview</p></div>
+                                </div>
                             </div>
                         </div>
                     </aside>
-                    <div class="comments-section">
-                        <div class="card">
-                            <div class="card-body">
-                                <h3 class="section-title" style="margin-top:0;">Comments</h3>
-                                <div class="comments-placeholder"><i class="fa-solid fa-comments" style="font-size: 2rem; margin-bottom: 1rem;"></i><p>Comments are coming soon!</p></div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="comments-section"><div class="card"><div class="card-body"><h3 class="section-title" style="margin-top:0;">Comments</h3><div class="comments-placeholder"><i class="fa-solid fa-comments" style="font-size: 2rem; margin-bottom: 1rem;"></i><p>Comments are coming soon!</p></div></div></div></div>
                 </div>`;
+            
+            setupPreviewer();
+            initSkinViewer();
+        }
 
-            const headerActionsContainer = document.getElementById('header-action-container');
-            if (headerActionsContainer) {
-                if (currentUserRole === 'admin') {
-                    headerActionsContainer.innerHTML = `<button class="btn edit-pack-btn" onclick="openEditPackModal()"><i class="fa-solid fa-pencil"></i> Edit</button>`;
-                } else {
-                    headerActionsContainer.innerHTML = `<button class="btn primary download-btn-header" id="download-btn-header"><i class="fa-solid fa-download"></i> Download</button>`;
-                    document.getElementById('download-btn-header').addEventListener('click', () => handleDownload(pack.id, pack.filename, pack.name));
-                }
-            }
-            
-            setTimeout(initSkinViewer, 100);
-            
-            document.getElementById('preview-armor-btn').addEventListener('click', () => loadAndProcessPackForPreview(pack));
-            document.getElementById('refresh-armor-btn').addEventListener('click', () => loadAndProcessPackForPreview(pack));
+        function setupPreviewer() {
+            document.querySelectorAll('.preview-tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.preview-tab-btn, .preview-panel').forEach(el => el.classList.remove('active'));
+                    btn.classList.add('active');
+                    const panel = document.getElementById(btn.dataset.tab + '-panel');
+                    panel.classList.add('active');
+
+                    if (btn.dataset.tab === 'armor' && !armorPreviewLoaded) {
+                        loadAndProcessPackForArmor(currentPackData);
+                    } else if (btn.dataset.tab === 'items' && !itemsPreviewLoaded) {
+                        loadAndProcessPackForItems(currentPackData);
+                    }
+                });
+            });
         }
         
         function showError(title, message) {
@@ -383,6 +344,158 @@
         
         const ARMOR_PATHS_JAVA = [ 'assets/minecraft/textures/models/armor/netherite_layer_1.png', 'assets/minecraft/textures/models/armor/netherite_layer_2.png', 'assets/minecraft/textures/models/armor/diamond_layer_1.png', 'assets/minecraft/textures/models/armor/diamond_layer_2.png', 'assets/minecraft/textures/models/armor/iron_layer_1.png', 'assets/minecraft/textures/models/armor/iron_layer_2.png', 'assets/minecraft/textures/models/armor/gold_layer_1.png', 'assets/minecraft/textures/models/armor/gold_layer_2.png', 'assets/minecraft/textures/models/armor/chainmail_layer_1.png', 'assets/minecraft/textures/models/armor/chainmail_layer_2.png', 'assets/minecraft/textures/models/armor/leather_layer_1.png', 'assets/minecraft/textures/models/armor/leather_layer_2.png', 'assets/minecraft/textures/models/armor/turtle_layer_1.png' ];
         const ARMOR_PATHS_BEDROCK = [ 'textures/models/armor/netherite_1.png', 'textures/models/armor/netherite_2.png', 'textures/models/armor/diamond_1.png', 'textures/models/armor/diamond_2.png', 'textures/models/armor/iron_1.png', 'textures/models/armor/iron_2.png', 'textures/models/armor/gold_1.png', 'textures/models/armor/gold_2.png', 'textures/models/armor/chainmail_1.png', 'textures/models/armor/chainmail_2.png', 'textures/models/armor/leather_1.png', 'textures/models/armor/leather_2.png', 'textures/models/armor/turtle_1.png' ];
+        
+        async function findGenericAsset(zip, filename) {
+            const potentialPaths = new Set([
+                // Most common structures first
+                `assets/minecraft/textures/item/${filename}`,
+                `assets/minecraft/textures/items/${filename}`,
+                `textures/items/${filename}`,
+                `assets/minecraft/textures/gui/${filename}`,
+                `textures/gui/${filename}`,
+                `textures/ui/${filename}`
+            ]);
+            const wildcardMatches = zip.file(new RegExp(`(^|/)${filename.replace(/\./g, '\\.')}$`));
+            wildcardMatches.forEach(file => potentialPaths.add(file.name));
+
+            for (const path of potentialPaths) {
+                const file = zip.file(path);
+                if (file && !file.dir) {
+                    const blob = await file.async('blob');
+                    return URL.createObjectURL(blob);
+                }
+            }
+            return null;
+        }
+
+        async function loadAndProcessPackForItems(pack) {
+            itemsPreviewLoaded = true;
+            const loader = document.getElementById('items-gui-loader');
+            const content = document.getElementById('item-gui-container');
+            loader.innerHTML = `<p class="preview-placeholder-text"><span class="spinner-sm"></span> Loading Items...</p>`;
+            content.style.display = 'none';
+
+            try {
+                const { data: urlData } = supabase.storage.from('packs').getPublicUrl(pack.filename);
+                if (!urlData) throw new Error('Failed to get pack URL.');
+                
+                const response = await fetch(urlData.publicUrl);
+                if (!response.ok) throw new Error('Failed to download pack.');
+                const fileBlob = await response.blob();
+                
+                const zip = await JSZip.loadAsync(fileBlob);
+
+                const itemPromises = Object.entries(ITEM_PATHS).map(async ([key, filename]) => {
+                    const url = await findGenericAsset(zip, filename);
+                    if (url) foundItemAssets.items[key] = { url };
+                });
+                const guiPromises = Object.entries(GUI_PATHS).map(async ([key, filename]) => {
+                     const url = await findGenericAsset(zip, filename);
+                    if (url) foundItemAssets.gui[key] = { url };
+                });
+                
+                await Promise.all([...itemPromises, ...guiPromises]);
+                
+                loader.style.display = 'none';
+                content.style.display = 'block';
+                renderItemGrid();
+                renderGuiSelectionList();
+
+            } catch (error) {
+                console.error("Items/GUI preview error:", error);
+                loader.innerHTML = `<p class="preview-placeholder-text" style="color:var(--danger)">Could not load assets.</p>`;
+            }
+        }
+        
+        function renderItemGrid() {
+            const itemGrid = document.getElementById('item-grid');
+            const itemKeys = Object.keys(foundItemAssets.items);
+            if (itemKeys.length === 0) {
+                itemGrid.innerHTML = `<p class="preview-placeholder-text" style="grid-column: 1 / -1;">No standard items found.</p>`;
+                return;
+            }
+            itemGrid.innerHTML = itemKeys.map(key => {
+                const item = foundItemAssets.items[key];
+                const isSword = key.includes('sword');
+                const isGapple = key === 'golden_apple';
+                const enchantable = isSword || isGapple;
+                
+                return `
+                <div class="item-icon-card ${enchantable ? 'enchantable' : ''}" data-key="${key}">
+                    <img src="${item.url}" alt="${key}">
+                    <button class="enchant-btn"><i class="fa-solid fa-sparkles"></i></button>
+                </div>`;
+            }).join('');
+            
+            itemGrid.querySelectorAll('.item-icon-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    if(e.target.closest('.enchant-btn')) return;
+                    itemGrid.querySelectorAll('.item-icon-card').forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+                    const isEnchanted = card.querySelector('.enchant-btn')?.classList.contains('active');
+                    displayItemOnCanvas(foundItemAssets.items[card.dataset.key].url, isEnchanted);
+                });
+            });
+
+            itemGrid.querySelectorAll('.enchant-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    btn.classList.toggle('active');
+                    const card = btn.closest('.item-icon-card');
+                    if (card.classList.contains('active')) {
+                        displayItemOnCanvas(foundItemAssets.items[card.dataset.key].url, btn.classList.contains('active'));
+                    }
+                });
+            });
+
+            if (itemGrid.firstChild) itemGrid.firstChild.click();
+        }
+
+        function renderGuiSelectionList() {
+             const guiList = document.getElementById('gui-list');
+             const guiKeys = Object.keys(foundItemAssets.gui);
+             if (guiKeys.length === 0) {
+                 guiList.innerHTML = ''; return;
+             }
+             guiList.innerHTML = guiKeys.map(key => `<div class="gui-selection-item" data-key="${key}">${key}</div>`).join('');
+             guiList.querySelectorAll('.gui-selection-item').forEach(item => {
+                 item.addEventListener('click', () => {
+                     document.querySelectorAll('.item-icon-card, .gui-selection-item').forEach(el => el.classList.remove('active'));
+                     item.classList.add('active');
+                     displayItemOnCanvas(foundItemAssets.gui[item.dataset.key].url);
+                 });
+             });
+        }
+        
+        async function displayItemOnCanvas(url, enchanted = false) {
+             const canvas = document.getElementById('item-viewer-canvas');
+             const ctx = canvas.getContext('2d');
+             ctx.imageSmoothingEnabled = false;
+             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+             const finalUrl = enchanted ? await createEnchantedVersion(url) : url;
+             const img = await loadImage(finalUrl);
+             
+             const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * 0.7; // 70% of canvas size
+             const drawWidth = img.width * scale;
+             const drawHeight = img.height * scale;
+             const x = (canvas.width - drawWidth) / 2;
+             const y = (canvas.height - drawHeight) / 2;
+             ctx.drawImage(img, x, y, drawWidth, drawHeight);
+        }
+        
+        const loadImage = (url) => new Promise((res, rej) => { const i = new Image(); i.crossOrigin = "Anonymous"; i.onload = () => res(i); i.onerror = rej; i.src = url; });
+
+        async function createEnchantedVersion(url) {
+            const img = await loadImage(url);
+            const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+            const ctx = c.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            ctx.globalCompositeOperation = 'source-atop';
+            ctx.fillStyle = 'rgba(200, 80, 255, 0.4)';
+            ctx.fillRect(0, 0, c.width, c.height);
+            return c.toDataURL();
+        }
 
         function initSkinViewer() {
             try {
@@ -399,35 +512,28 @@
                         skinViewer.setSize(canvas.clientWidth, canvas.clientHeight);
                     }
                 }).observe(canvas);
-                let mouseDown = false;
-                canvas.addEventListener('mousedown', () => { mouseDown = true; canvas.classList.add('dragging'); skinViewer.autoRotate = false; });
-                canvas.addEventListener('mouseup', () => { mouseDown = false; canvas.classList.remove('dragging'); skinViewer.autoRotate = true; });
-                canvas.addEventListener('mouseleave', () => { if(mouseDown) { mouseDown = false; canvas.classList.remove('dragging'); skinViewer.autoRotate = true; }});
+                canvas.addEventListener('mousedown', () => { canvas.classList.add('dragging'); skinViewer.autoRotate = false; });
+                canvas.addEventListener('mouseup', () => { canvas.classList.remove('dragging'); skinViewer.autoRotate = true; });
+                canvas.addEventListener('mouseleave', () => { canvas.classList.remove('dragging'); skinViewer.autoRotate = true; });
             } catch (e) { console.error("Failed to init 3D viewer", e); }
         }
 
-        async function loadAndProcessPackForPreview(pack) {
-            const btn = document.getElementById('preview-armor-btn');
-            const refreshBtn = document.getElementById('refresh-armor-btn');
-            btn.disabled = true;
-            btn.innerHTML = '<div class="spinner" style="width:1em;height:1em;border-width:2px;"></div> Loading Pack...';
-            refreshBtn.innerHTML = '<div class="spinner" style="width:1em;height:1em;border-width:2px;"></div>';
-
+        async function loadAndProcessPackForArmor(pack) {
+            armorPreviewLoaded = true;
+            const armorContainer = document.getElementById('armor-list-container');
+            armorContainer.innerHTML = `<p class="preview-placeholder-text"><span class="spinner-sm"></span> Loading Armor...</p>`;
             try {
                 const { data: urlData } = supabase.storage.from('packs').getPublicUrl(pack.filename);
-                if (!urlData || !urlData.publicUrl) throw new Error('Failed to get pack file URL for preview.');
+                if (!urlData) throw new Error('Failed to get pack URL.');
                 
                 const response = await fetch(urlData.publicUrl);
-                if (!response.ok) throw new Error('Failed to download pack file for preview.');
+                if (!response.ok) throw new Error('Failed to download pack.');
                 const fileBlob = await response.blob();
-                
-                const armorContainer = document.getElementById('armor-list-container');
-                armorContainer.innerHTML = `<p class="tiny" style="text-align: center;">Unzipping and searching for armor...</p>`;
                 
                 const zip = await JSZip.loadAsync(fileBlob);
                 const allArmorPaths = [...ARMOR_PATHS_JAVA, ...ARMOR_PATHS_BEDROCK];
                 
-                let foundArmor = {};
+                foundArmorAssets = {};
                 for (const path of allArmorPaths) {
                     const file = zip.file(path);
                     if (file) {
@@ -436,50 +542,43 @@
                         let name = path.split('/').pop().replace(/(_1|_2|_layer_1|_layer_2)\.png$/, '');
                         if (name === 'chainmail') name = 'chain';
                         const layer = path.includes('_2') || path.includes('layer_2') ? 'layer2' : 'layer1';
-                        if (!foundArmor[name]) foundArmor[name] = {};
-                        foundArmor[name][layer] = url;
+                        if (!foundArmorAssets[name]) foundArmorAssets[name] = {};
+                        foundArmorAssets[name][layer] = url;
                     }
                 }
 
-                if (Object.keys(foundArmor).length === 0) {
-                    armorContainer.innerHTML = '<p class="tiny" style="text-align: center;">No standard armor textures found.</p>';
-                    btn.style.display = 'block';
-                    refreshBtn.style.display = 'none';
+                if (Object.keys(foundArmorAssets).length === 0) {
+                    armorContainer.innerHTML = '<p class="preview-placeholder-text">No armor textures found.</p>';
                 } else {
                     armorContainer.innerHTML = '<div class="armor-selection-list"></div>';
                     const list = armorContainer.querySelector('.armor-selection-list');
-                    Object.keys(foundArmor).sort().forEach(name => {
+                    Object.keys(foundArmorAssets).sort().forEach(name => {
                         const item = document.createElement('div');
                         item.className = 'armor-item';
-                        const iconUrl = ARMOR_ICONS[name] || `https://placehold.co/32x32/1c1c1c/e8eefc?text=${name.charAt(0).toUpperCase()}`;
-                        item.innerHTML = `<img src="${iconUrl}" alt="${name}" title="${name}">`;
+                        item.innerHTML = `<img src="${ARMOR_ICONS[name] || ''}" alt="${name}" title="${name}">`;
                         item.onclick = async () => {
                             document.querySelectorAll('.armor-item').forEach(i => i.classList.remove('active'));
                             item.classList.add('active');
-                            await applyArmor(foundArmor[name]);
+                            await applyArmor(foundArmorAssets[name]);
                         };
                         list.appendChild(item);
                     });
                     if (list.firstChild) list.firstChild.click();
-                    btn.style.display = 'none';
-                    refreshBtn.style.display = 'block';
                 }
             } catch (error) {
                 console.error("Armor preview error:", error);
-                showToast("Could not preview armor: " + error.message, "error");
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-cube"></i> Preview Armor';
-                refreshBtn.innerHTML = '<i class="fa-solid fa-sync"></i>';
+                armorContainer.innerHTML = `<p class="preview-placeholder-text" style="color:var(--danger)">Could not load armor.</p>`;
             }
         }
 
         async function applyArmor(armorSet) {
             if (!skinViewer) return;
-            let skinUrl = null;
+            let skinUrl = 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png';
             if (armorSet.layer1 && armorSet.layer2) {
                 skinUrl = await combineArmorLayers(armorSet.layer1, armorSet.layer2);
-            } else { skinUrl = armorSet.layer1 || armorSet.layer2; }
+            } else if (armorSet.layer1 || armorSet.layer2) {
+                skinUrl = armorSet.layer1 || armorSet.layer2;
+            }
             if (skinUrl) skinViewer.loadSkin(skinUrl);
         }
 
@@ -492,60 +591,7 @@
             ctx.drawImage(img1, 0, 0); ctx.drawImage(img2, 0, 0);
             return new Promise(res => canvas.toBlob(b => res(URL.createObjectURL(b)), 'image/png'));
         }
-        const loadImage = (url) => new Promise((res, rej) => { const i = new Image(); i.crossOrigin = "Anonymous"; i.onload = () => res(i); i.onerror = rej; i.src = url; });
-
-        window.openEditPackModal = function() {
-            const modal = document.getElementById('edit-pack-modal');
-            if (!currentPackData || !modal) return;
-            document.getElementById('edit-pack-id').value = currentPackData.id;
-            document.getElementById('edit-pack-name').value = currentPackData.name || '';
-            document.getElementById('edit-pack-description').value = currentPackData.description || '';
-            document.getElementById('edit-youtube-url').value = currentPackData.youtube_url || '';
-            
-            const colorsContainer = document.getElementById('edit-pack-colors');
-            colorsContainer.innerHTML = ALL_COLORS.map(c => `<div class="swatch ${currentPackData.color === c.key ? 'active' : ''}" style="background-color: ${c.hex};" data-color="${c.key}">${c.icon ? `<i class="${c.icon}"></i>` : ''}</div>`).join('');
-            colorsContainer.querySelectorAll('.swatch').forEach(sw => sw.onclick = () => {
-                colorsContainer.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
-                sw.classList.add('active');
-            });
-
-            const resolutionsContainer = document.getElementById('edit-pack-resolutions');
-            resolutionsContainer.innerHTML = ALL_RESOLUTIONS.map(r => `<div class="tag-checkbox ${currentPackData.resolution === r ? 'selected' : ''}" data-res="${r}">${r}</div>`).join('');
-            resolutionsContainer.querySelectorAll('.tag-checkbox').forEach(rc => rc.onclick = () => {
-                 resolutionsContainer.querySelectorAll('.tag-checkbox').forEach(r => r.classList.remove('selected'));
-                 rc.classList.add('selected');
-            });
-            
-            const tagsContainer = document.getElementById('edit-pack-tags');
-            const currentTags = new Set(currentPackData.tags ? currentPackData.tags.split(',') : []);
-            tagsContainer.innerHTML = ALL_TAGS.map(t => `<div class="tag-checkbox ${currentTags.has(t) ? 'selected' : ''}" data-tag="${t}">${t}</div>`).join('');
-            tagsContainer.querySelectorAll('.tag-checkbox').forEach(tc => tc.onclick = () => tc.classList.toggle('selected'));
-            modal.classList.add('show');
-        }
-
-        window.closeEditPackModal = function() { document.getElementById('edit-pack-modal').classList.remove('show'); }
         
-        document.getElementById('edit-pack-form')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const packId = document.getElementById('edit-pack-id').value;
-            const updates = {
-                name: document.getElementById('edit-pack-name').value.trim(),
-                description: document.getElementById('edit-pack-description').value.trim(),
-                youtube_url: document.getElementById('edit-youtube-url').value.trim() || null,
-                color: document.querySelector('#edit-pack-colors .swatch.active')?.dataset.color || 'none',
-                resolution: document.querySelector('#edit-pack-resolutions .tag-checkbox.selected')?.dataset.res || null,
-                tags: Array.from(document.querySelectorAll('#edit-pack-tags .tag-checkbox.selected')).map(el => el.dataset.tag).join(',')
-            };
-
-            try {
-                const { error } = await supabase.from('packs').update(updates).eq('id', packId);
-                if (error) throw error;
-                showToast('Pack updated successfully!', 'success');
-                closeEditPackModal();
-                await loadPack();
-            } catch (error) { showToast('Failed to update pack: ' + error.message, 'error'); }
-        });
-
         async function loadPack() {
             const urlParams = new URLSearchParams(window.location.search);
             const packId = urlParams.get('id');
@@ -572,4 +618,3 @@
     </script>
 </body>
 </html>
-
