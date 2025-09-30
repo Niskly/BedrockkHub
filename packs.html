@@ -106,7 +106,7 @@
         .form-input, .form-textarea { width: 100%; padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text); font-size: 1rem; }
         .form-textarea { min-height: 100px; resize: vertical; }
         .modal-footer-section { padding: 1rem 1.5rem; border-top: 1px solid var(--border); text-align: right; }
-        .swatches, .tags-editor-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 0.5rem; }
+        .swatches, .tags-editor-container, .resolutions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 0.5rem; }
         .swatch { width: 34px; height: 34px; border-radius: 999px; border: 2px solid var(--border); cursor: pointer; display: grid; place-items: center; }
         .swatch.active { border-color: var(--brand-1); outline: 3px solid rgba(var(--brand-1-rgb), 0.3); }
         .tag-checkbox { padding: .4rem .8rem; border-radius: 8px; background: var(--bg-2); border: 1px solid var(--border); cursor: pointer; font-weight: 600; font-size: 0.85rem; text-transform: capitalize; }
@@ -191,6 +191,8 @@
         </div>
     </div>
     
+    <script type="module" src="/theme.js"></script>
+    <script type="module" src="/auth.js"></script>
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
@@ -374,7 +376,7 @@
         function initSkinViewer() {
             try {
                 const canvas = document.getElementById('skin-viewer-canvas');
-                if (!canvas || !skinview3d) return;
+                if (!canvas || !window.skinview3d) return;
                 skinViewer = new skinview3d.SkinViewer({
                     canvas: canvas,
                     width: canvas.clientWidth,
