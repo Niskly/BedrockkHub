@@ -736,12 +736,9 @@
                 if(refreshBtn) {
                     refreshBtn.addEventListener('click', () => {
                         if (skinViewer) {
-                            skinViewer.controls.reset();
                             skinViewer.camera.position.set(0, 0, 40);
+                            skinViewer.camera.rotation.set(0, 0, 0);
                             skinViewer.autoRotate = true;
-                            if (skinViewer.autoRotateAnimation.paused) {
-                                skinViewer.autoRotateAnimation.paused = false;
-                            }
                         }
                     });
                 }
@@ -783,29 +780,18 @@
                 } else {
                     armorContainer.innerHTML = '<div class="armor-selection-list"></div>';
                     const list = armorContainer.querySelector('.armor-selection-list');
-                    
-                    const noArmorItem = document.createElement('div');
-                    noArmorItem.className = 'armor-item active';
-                    noArmorItem.title = 'No Armor';
-                    noArmorItem.innerHTML = `<i class="fa-solid fa-ban" style="font-size: 24px; color: var(--muted);"></i>`;
-                    noArmorItem.onclick = () => {
-                        document.querySelectorAll('.armor-item').forEach(i => i.classList.remove('active'));
-                        noArmorItem.classList.add('active');
-                        applyArmor(null);
-                    };
-                    list.appendChild(noArmorItem);
-
                     Object.keys(foundArmorAssets).sort().forEach(name => {
                         const item = document.createElement('div');
                         item.className = 'armor-item';
                         item.innerHTML = `<img src="${ARMOR_ICONS[name] || 'https://placehold.co/32x32/1c1c1c/e8eefc?text='+name.charAt(0).toUpperCase()}" alt="${name}" title="${name}">`;
-                        item.onclick = () => {
+                        item.onclick = async () => {
                             document.querySelectorAll('.armor-item').forEach(i => i.classList.remove('active'));
                             item.classList.add('active');
-                            applyArmor(foundArmorAssets[name]);
+                            await applyArmor(foundArmorAssets[name]);
                         };
                         list.appendChild(item);
                     });
+                    if (list.firstChild) list.firstChild.click();
                 }
             } catch (error) {
                 console.error("Armor preview error:", error);
@@ -815,41 +801,23 @@
 
         async function applyArmor(armorSet) {
             if (!skinViewer) return;
-            
-            skinViewer.loadSkin('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png');
-
-            if (!armorSet) {
-                skinViewer.loadCape(null);
-                return;
+            let skinUrl = 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png';
+            if (armorSet.layer1 && armorSet.layer2) {
+                skinUrl = await combineArmorLayers(armorSet.layer1, armorSet.layer2);
+            } else if (armorSet.layer1 || armorSet.layer2) {
+                skinUrl = armorSet.layer1 || armorSet.layer2;
             }
-
-            const armorLayers = [];
-            if (armorSet.layer1) armorLayers.push(armorSet.layer1);
-            if (armorSet.layer2) armorLayers.push(armorSet.layer2);
-
-            if (armorLayers.length > 0) {
-                const overlayUrl = await combineArmorLayersToOverlay(armorLayers);
-                skinViewer.loadCape(overlayUrl, { backEquipment: 'cape' });
-            } else {
-                skinViewer.loadCape(null);
-            }
+            if (skinUrl) skinViewer.loadSkin(skinUrl);
         }
-        
-        async function combineArmorLayersToOverlay(layerUrls) {
-            const images = await Promise.all(layerUrls.map(loadImage));
-            const canvas = document.createElement('canvas');
-            const targetWidth = 64;
-            const targetHeight = 64; 
-            canvas.width = targetWidth;
-            canvas.height = targetHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.imageSmoothingEnabled = false;
 
-            images.forEach(img => {
-                ctx.drawImage(img, 0, 0, img.width, img.height);
-            });
-            
-            return canvas.toDataURL();
+        async function combineArmorLayers(url1, url2) {
+            const [img1, img2] = await Promise.all([loadImage(url1), loadImage(url2)]);
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(img1.width, img2.width);
+            canvas.height = Math.max(img1.height, img2.height);
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img1, 0, 0); ctx.drawImage(img2, 0, 0);
+            return new Promise(res => canvas.toBlob(b => res(URL.createObjectURL(b)), 'image/png'));
         }
         
         async function loadPack() {
