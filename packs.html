@@ -28,7 +28,7 @@
         .btn { padding: .7rem 1.2rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
         .btn.primary { background: var(--gradient-brand); box-shadow: var(--shadow-brand); color: white; }
         .btn.ghost { border-color: var(--border); background: transparent; color: var(--text); }
-        .btn.ghost:hover { background: rgba(255, 255, 255, 0.1); }
+        .btn.ghost:hover { background: rgba(255, 255, 255, 0.05); }
         .spinner { width: 48px; height: 48px; border: 5px solid var(--border); border-bottom-color: var(--brand-1); border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
@@ -39,6 +39,7 @@
         .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-11px); }
         .brand-title { font-weight: 800; letter-spacing: .6px; font-size: 15px; }
         .nav-actions { display: flex; align-items: center; gap: 0.6rem; }
+        .nav-actions .btn.ghost { background: transparent; }
         
         .user-dropdown { position: relative; display: inline-block; }
         .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
@@ -53,16 +54,16 @@
         .loading-container, .error-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; min-height: 60vh; color: var(--muted); text-align: center;}
         .error-container h2 { color: var(--text); }
 
-        .pack-layout { display: grid; grid-template-columns: 1fr 320px; gap: 2rem; align-items: flex-start; }
+        .pack-layout { display: grid; grid-template-columns: 1fr; gap: 2rem; }
         .card { border-radius: 16px; background: rgba(18, 18, 18, 0.9); backdrop-filter: saturate(1.2) blur(20px); border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         
-        .pack-header { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; position: relative; }
+        .pack-header { display: flex; align-items: flex-start; gap: 1.5rem; margin-bottom: 1.5rem; }
         .pack-header-icon { width: 80px; height: 80px; border-radius: 16px; object-fit: cover; background-color: var(--bg-2); flex-shrink: 0; border: 1px solid var(--border); }
+        .pack-title-area { flex-grow: 1; }
         .pack-title-area h1 { font-size: 2.2rem; font-weight: 800; line-height: 1.2; margin: 0 0 4px 0; }
-        .star-rating { color: var(--muted); font-size: 1rem; margin-top: 8px; }
-        .star-rating .fa-star { margin-right: 2px; }
-        .edit-pack-btn { position: absolute; top: 0; right: 0; padding: .5rem 1rem; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--border); color: var(--text); font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
-        .edit-pack-btn:hover { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.1); }
+        .pack-meta-info { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; font-size: 0.9rem; color: var(--muted); }
+        .pack-header-actions { display: flex; flex-direction: column; gap: 0.5rem; }
+        .edit-pack-btn, .download-btn-header { width: 100%; }
         
         .youtube-video-container { margin-top: 1.5rem; border-radius: 12px; aspect-ratio: 16/9; overflow: hidden; background: var(--bg-2); border: 1px solid var(--border); }
         .youtube-video-container iframe { width: 100%; height: 100%; border: none; }
@@ -73,10 +74,7 @@
         .tags-container { display: flex; flex-wrap: wrap; gap: 0.5rem; }
         .tag { padding: .4rem .8rem; border-radius: 8px; background: var(--bg-2); border: 1px solid var(--border); font-weight: 600; font-size: 0.8rem; text-transform: capitalize; }
         
-        .sidebar-card { position: sticky; top: 90px; }
         .card-body { padding: 1.2rem; }
-        .download-card-header { text-align: center; }
-        .download-card-header h2 { font-size: 1.2rem; margin: 0; }
         
         .comments-section { margin-top: 3rem; }
         .comments-placeholder { text-align: center; padding: 2rem; background: var(--bg-1); border-radius: 12px; border: 1px solid var(--border); color: var(--muted); }
@@ -87,6 +85,7 @@
 
         .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
         
+        .armor-preview-card { position: relative; }
         #skin-viewer-canvas { width: 100%; aspect-ratio: 4/5; border-radius: 12px; background-image: url(https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg); background-size: cover; background-position: center; cursor: grab; }
         #skin-viewer-canvas.dragging { cursor: grabbing; }
         .armor-selection-list { display: flex; gap: 0.5rem; margin-top: 1rem; justify-content: center; flex-wrap: wrap; }
@@ -131,11 +130,10 @@
         .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
         .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
         .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
-
-
-        @media (max-width: 992px) { 
-            .pack-layout { grid-template-columns: 1fr; } 
-            .sidebar-card { position: static; } 
+        
+        @media (min-width: 993px) {
+            .pack-layout { grid-template-columns: 1fr 320px; }
+            .sidebar-card { position: sticky; top: 90px; }
         }
         @media (max-width: 768px) { .nav-actions { display: none; } .mobile-nav-toggle { display: block; } }
     </style>
@@ -266,7 +264,7 @@
                     body: JSON.stringify({ id: packId })
                 }).then(() => {
                     const el = document.getElementById('download-count-val');
-                    if(el) el.textContent = (parseInt(el.textContent.replace(/,/g, ''), 10) + 1).toLocaleString();
+                    if(el) el.textContent = `${(parseInt(el.textContent.replace(/,/g, ''), 10) + 1).toLocaleString()} Downloads`;
                 });
 
                 const { data: urlData, error: urlError } = supabase.storage.from('packs').getPublicUrl(filename);
@@ -300,23 +298,13 @@
                 : `https://placehold.co/80x80/1c1c1c/e8eefc?text=ICON`;
             
             let tagsHtml = '';
-            if (pack.resolution && pack.resolution !== 'unknown') {
-                tagsHtml += `<span class="tag">${escapeHtml(pack.resolution)}</span>`;
-            }
-            if (pack.version) {
-                tagsHtml += `<span class="tag">${escapeHtml(pack.version)}</span>`;
-            }
-            tagsHtml += (pack.tags || '')
-                .split(',')
-                .filter(tag => tag.trim() !== '' && tag.trim() !== 'user-upload')
-                .map(tag => `<span class="tag">${escapeHtml(tag)}</span>`)
-                .join('');
+            if (pack.resolution && pack.resolution !== 'unknown') tagsHtml += `<span class="tag">${escapeHtml(pack.resolution)}</span>`;
+            if (pack.version) tagsHtml += `<span class="tag">${escapeHtml(pack.version)}</span>`;
+            tagsHtml += (pack.tags || '').split(',').filter(t => t.trim() !== '' && t.trim() !== 'user-upload').map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
             
             const videoId = getYouTubeVideoId(pack.youtube_url);
             const videoHtml = videoId 
-                ? `<div class="youtube-video-container">
-                       <iframe src="https://www.youtube.com/embed/${videoId}" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                   </div>` 
+                ? `<div class="youtube-video-container"><iframe src="https://www.youtube.com/embed/${videoId}" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>` 
                 : '';
 
             pageContainer.innerHTML = `
@@ -326,82 +314,52 @@
                             <img src="${packIcon}" alt="${escapeHtml(pack.name)} icon" class="pack-header-icon">
                             <div class="pack-title-area">
                                 <h1>${escapeHtml(pack.name)}</h1>
-                                <div class="tiny" style="font-weight: 600;">Uploaded ${formatDate(pack.created_at)}</div>
-                                <div class="star-rating">
-                                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i>
-                                    <span class="tiny" style="margin-left: 0.5rem;">(No reviews yet)</span>
+                                <div class="pack-meta-info">
+                                    <span class="tiny"><i class="fa-solid fa-calendar-day fa-fw"></i> ${formatDate(pack.created_at)}</span>
+                                    <span class="tiny" id="download-count-val"><i class="fa-solid fa-download fa-fw"></i> ${(pack.download_count || 0).toLocaleString()} Downloads</span>
                                 </div>
                             </div>
-                            ${currentUserRole === 'admin' ? `<button class="edit-pack-btn" onclick="openEditPackModal()"><i class="fa-solid fa-pencil"></i> Edit Pack</button>` : ''}
+                            <div class="pack-header-actions">
+                                ${currentUserRole === 'admin' ? `<button class="btn ghost edit-pack-btn" onclick="openEditPackModal()"><i class="fa-solid fa-pencil"></i> Edit</button>` : ''}
+                                <button class="btn primary download-btn-header" id="download-btn-header"><i class="fa-solid fa-download"></i> Download</button>
+                            </div>
                         </div>
-
                         ${videoHtml}
-
                         <div class="description-section">
                             <h3 class="section-title">Description</h3>
-                            <div class="pack-description">
-                                ${pack.description ? escapeHtml(pack.description) : '<p>This pack has no description.</p>'}
-                            </div>
+                            <div class="pack-description">${pack.description ? escapeHtml(pack.description).replace(/\n/g, '<br>') : '<p>This pack has no description.</p>'}</div>
                         </div>
-
                         <div class="tags-section">
                             <h3 class="section-title">Tags</h3>
-                            <div class="tags-container">
-                                ${tagsHtml || '<p class="tiny">No tags for this pack.</p>'}
-                            </div>
+                            <div class="tags-container">${tagsHtml || '<p class="tiny">No tags for this pack.</p>'}</div>
                         </div>
-
-                        <div id="armor-preview-section" class="card" style="margin-top: 2.5rem;">
+                        <div class="comments-section">
+                            <h3 class="section-title">Comments</h3>
+                            <div class="comments-placeholder"><i class="fa-solid fa-comments" style="font-size: 2rem; margin-bottom: 1rem;"></i><p>Comments are coming soon!</p></div>
+                        </div>
+                    </div>
+                    <aside class="sidebar-card">
+                        <div class="card armor-preview-card">
                             <div class="card-body">
                                 <div style="display:flex; justify-content: space-between; align-items: center;">
                                     <h3 class="section-title" style="margin-top:0; border:0; padding:0; margin-bottom: 0;">3D Armor Preview</h3>
                                     <button id="refresh-armor-btn"><i class="fa-solid fa-sync"></i></button>
                                 </div>
-                                <canvas id="skin-viewer-canvas"></canvas>
-                                <div id="armor-list-container"></div>
                                 <div class="armor-preview-controls">
-                                    <button class="btn ghost" id="preview-armor-btn" style="width:100%; margin-top: 1rem;">
-                                        <i class="fa-solid fa-cube"></i> Preview Armor
-                                    </button>
+                                    <canvas id="skin-viewer-canvas"></canvas>
+                                    <div id="armor-list-container"></div>
+                                    <button class="btn ghost" id="preview-armor-btn" style="width:100%; margin-top: 1rem;"><i class="fa-solid fa-cube"></i> Preview Armor</button>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div class="comments-section">
-                            <h3 class="section-title">Comments</h3>
-                            <div class="comments-placeholder">
-                                <i class="fa-solid fa-comments" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-                                <p>Comments are coming soon!</p>
-                            </div>
-                        </div>
-                    </div>
-                    <aside class="sidebar-card">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="download-card-header">
-                                    <h2>Downloads</h2>
-                                    <p class="tiny" id="download-count-val">${(pack.download_count || 0).toLocaleString()} Total</p>
-                                </div>
-                                <button class="btn primary" id="download-btn" style="width: 100%; margin-top: 1.5rem;">
-                                    <i class="fa-solid fa-download"></i> Download Pack
-                                </button>
                             </div>
                         </div>
                     </aside>
-                </div>
-            `;
+                </div>`;
             
             setTimeout(initSkinViewer, 100);
             
-            document.getElementById('preview-armor-btn').addEventListener('click', () => {
-                loadAndProcessPackForPreview(pack);
-            });
-             document.getElementById('refresh-armor-btn').addEventListener('click', () => {
-                loadAndProcessPackForPreview(pack);
-            });
-            document.getElementById('download-btn').addEventListener('click', () => {
-                handleDownload(pack.id, pack.filename, pack.name);
-            });
+            document.getElementById('preview-armor-btn').addEventListener('click', () => loadAndProcessPackForPreview(pack));
+            document.getElementById('refresh-armor-btn').addEventListener('click', () => loadAndProcessPackForPreview(pack));
+            document.getElementById('download-btn-header').addEventListener('click', () => handleDownload(pack.id, pack.filename, pack.name));
         }
         
         function showError(title, message) {
@@ -416,9 +374,7 @@
                 const canvas = document.getElementById('skin-viewer-canvas');
                 if (!canvas || !window.skinview3d) return;
                 skinViewer = new skinview3d.SkinViewer({
-                    canvas: canvas,
-                    width: canvas.clientWidth,
-                    height: canvas.clientHeight,
+                    canvas: canvas, width: canvas.clientWidth, height: canvas.clientHeight,
                     skin: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png'
                 });
                 skinViewer.autoRotate = true;
@@ -428,19 +384,19 @@
                         skinViewer.setSize(canvas.clientWidth, canvas.clientHeight);
                     }
                 }).observe(canvas);
-                
                 let mouseDown = false;
                 canvas.addEventListener('mousedown', () => { mouseDown = true; canvas.classList.add('dragging'); skinViewer.autoRotate = false; });
                 canvas.addEventListener('mouseup', () => { mouseDown = false; canvas.classList.remove('dragging'); skinViewer.autoRotate = true; });
                 canvas.addEventListener('mouseleave', () => { if(mouseDown) { mouseDown = false; canvas.classList.remove('dragging'); skinViewer.autoRotate = true; }});
-
             } catch (e) { console.error("Failed to init 3D viewer", e); }
         }
 
         async function loadAndProcessPackForPreview(pack) {
             const btn = document.getElementById('preview-armor-btn');
+            const refreshBtn = document.getElementById('refresh-armor-btn');
             btn.disabled = true;
             btn.innerHTML = '<div class="spinner" style="width:1em;height:1em;border-width:2px;"></div> Loading Pack...';
+            refreshBtn.innerHTML = '<div class="spinner" style="width:1em;height:1em;border-width:2px;"></div>';
 
             try {
                 const { data: urlData } = supabase.storage.from('packs').getPublicUrl(pack.filename);
@@ -471,17 +427,17 @@
                 }
 
                 if (Object.keys(foundArmor).length === 0) {
-                    armorContainer.innerHTML = '<p class="tiny" style="text-align: center;">No standard armor textures found in this pack.</p>';
+                    armorContainer.innerHTML = '<p class="tiny" style="text-align: center;">No standard armor textures found.</p>';
+                    btn.style.display = 'block';
+                    refreshBtn.style.display = 'none';
                 } else {
                     armorContainer.innerHTML = '<div class="armor-selection-list"></div>';
                     const list = armorContainer.querySelector('.armor-selection-list');
                     Object.keys(foundArmor).sort().forEach(name => {
                         const item = document.createElement('div');
                         item.className = 'armor-item';
-                        
                         const iconUrl = ARMOR_ICONS[name] || `https://placehold.co/32x32/1c1c1c/e8eefc?text=${name.charAt(0).toUpperCase()}`;
                         item.innerHTML = `<img src="${iconUrl}" alt="${name}" title="${name}">`;
-
                         item.onclick = async () => {
                             document.querySelectorAll('.armor-item').forEach(i => i.classList.remove('active'));
                             item.classList.add('active');
@@ -490,20 +446,16 @@
                         list.appendChild(item);
                     });
                     if (list.firstChild) list.firstChild.click();
-                    
-                    document.getElementById('preview-armor-btn').style.display = 'none';
-                    document.getElementById('refresh-armor-btn').style.display = 'block';
-                    armorPreviewLoaded = true;
+                    btn.style.display = 'none';
+                    refreshBtn.style.display = 'block';
                 }
-
             } catch (error) {
                 console.error("Armor preview error:", error);
-                showToast("Could not preview armor from this pack. " + error.message, "error");
+                showToast("Could not preview armor: " + error.message, "error");
             } finally {
-                if (!armorPreviewLoaded) {
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fa-solid fa-cube"></i> Preview Armor';
-                }
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-cube"></i> Preview Armor';
+                refreshBtn.innerHTML = '<i class="fa-solid fa-sync"></i>';
             }
         }
 
@@ -512,9 +464,7 @@
             let skinUrl = null;
             if (armorSet.layer1 && armorSet.layer2) {
                 skinUrl = await combineArmorLayers(armorSet.layer1, armorSet.layer2);
-            } else {
-                skinUrl = armorSet.layer1 || armorSet.layer2;
-            }
+            } else { skinUrl = armorSet.layer1 || armorSet.layer2; }
             if (skinUrl) skinViewer.loadSkin(skinUrl);
         }
 
@@ -524,8 +474,7 @@
             canvas.width = Math.max(img1.width, img2.width);
             canvas.height = Math.max(img1.height, img2.height);
             const ctx = canvas.getContext('2d');
-            ctx.drawImage(img1, 0, 0);
-            ctx.drawImage(img2, 0, 0);
+            ctx.drawImage(img1, 0, 0); ctx.drawImage(img2, 0, 0);
             return new Promise(res => canvas.toBlob(b => res(URL.createObjectURL(b)), 'image/png'));
         }
         const loadImage = (url) => new Promise((res, rej) => { const i = new Image(); i.crossOrigin = "Anonymous"; i.onload = () => res(i); i.onerror = rej; i.src = url; });
@@ -533,7 +482,6 @@
         window.openEditPackModal = function() {
             const modal = document.getElementById('edit-pack-modal');
             if (!currentPackData || !modal) return;
-
             document.getElementById('edit-pack-id').value = currentPackData.id;
             document.getElementById('edit-pack-name').value = currentPackData.name || '';
             document.getElementById('edit-pack-description').value = currentPackData.description || '';
@@ -557,29 +505,21 @@
             const currentTags = new Set(currentPackData.tags ? currentPackData.tags.split(',') : []);
             tagsContainer.innerHTML = ALL_TAGS.map(t => `<div class="tag-checkbox ${currentTags.has(t) ? 'selected' : ''}" data-tag="${t}">${t}</div>`).join('');
             tagsContainer.querySelectorAll('.tag-checkbox').forEach(tc => tc.onclick = () => tc.classList.toggle('selected'));
-            
             modal.classList.add('show');
         }
 
-        window.closeEditPackModal = function() {
-            const modal = document.getElementById('edit-pack-modal');
-            if (modal) modal.classList.remove('show');
-        }
+        window.closeEditPackModal = function() { document.getElementById('edit-pack-modal').classList.remove('show'); }
         
         document.getElementById('edit-pack-form')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const packId = document.getElementById('edit-pack-id').value;
-            const selectedColor = document.querySelector('#edit-pack-colors .swatch.active')?.dataset.color || 'none';
-            const selectedResolution = document.querySelector('#edit-pack-resolutions .tag-checkbox.selected')?.dataset.res || null;
-            const selectedTags = Array.from(document.querySelectorAll('#edit-pack-tags .tag-checkbox.selected')).map(el => el.dataset.tag);
-            
             const updates = {
                 name: document.getElementById('edit-pack-name').value.trim(),
                 description: document.getElementById('edit-pack-description').value.trim(),
                 youtube_url: document.getElementById('edit-youtube-url').value.trim() || null,
-                color: selectedColor,
-                resolution: selectedResolution,
-                tags: selectedTags.join(',')
+                color: document.querySelector('#edit-pack-colors .swatch.active')?.dataset.color || 'none',
+                resolution: document.querySelector('#edit-pack-resolutions .tag-checkbox.selected')?.dataset.res || null,
+                tags: Array.from(document.querySelectorAll('#edit-pack-tags .tag-checkbox.selected')).map(el => el.dataset.tag).join(',')
             };
 
             try {
@@ -588,41 +528,18 @@
                 showToast('Pack updated successfully!', 'success');
                 closeEditPackModal();
                 await loadPack();
-            } catch (error) {
-                showToast('Failed to update pack: ' + error.message, 'error');
-            }
+            } catch (error) { showToast('Failed to update pack: ' + error.message, 'error'); }
         });
 
         async function loadPack() {
             const urlParams = new URLSearchParams(window.location.search);
             const packId = urlParams.get('id');
-
-            if (!packId) {
-                return showError("No Pack Found", "A pack ID was not provided in the URL.");
-            }
-
+            if (!packId) return showError("No Pack Found", "A pack ID was not provided in the URL.");
             try {
-                const packIdAsNumber = parseInt(packId, 10);
-                if (isNaN(packIdAsNumber)) {
-                    throw new Error("Invalid Pack ID format.");
-                }
-
-                const { data: pack, error: packError } = await supabase
-                    .from('packs')
-                    .select('*')
-                    .eq('id', packIdAsNumber) 
-                    .single();
-
-                if (packError || !pack) {
-                    throw new Error("Pack data could not be found.");
-                }
-
+                const { data: pack, error } = await supabase.from('packs').select('*').eq('id', parseInt(packId, 10)).single();
+                if (error || !pack) throw new Error("Pack data could not be found.");
                 renderPackPage(pack);
-
-            } catch (error) {
-                console.error(error);
-                showError("Could Not Load Pack", "The pack you're looking for doesn't exist or there was an error loading it.");
-            }
+            } catch (error) { showError("Could Not Load Pack", "The pack doesn't exist or there was an error loading it."); }
         }
 
         document.addEventListener('auth-ready', async (event) => {
