@@ -305,6 +305,8 @@
              'bow': 'bow.png', 'fishing_rod': 'fishing_rod.png',
              'totem_of_undying': 'totem.png', 'crossbow_standby': 'crossbow_standby.png'
         };
+        const ENCHANTABLE_ITEMS = ['diamond_sword', 'iron_sword', 'golden_sword', 'golden_apple', 'bow', 'crossbow_standby'];
+
         const GUI_PATHS = { 
             'icons': 'icons.png', 
             'widgets': 'widgets.png',
@@ -312,16 +314,14 @@
         };
         const GUI_COMPONENTS = { 
             'Full HUD': { type: 'hud' },
-            'Crosshair': { type: 'crosshair' }, /* Added Crosshair component */
-            'Icons': { type: 'texture', path: 'icons' }, // Explicitly define for GUI_PREVIEW_ICONS
-            'Widgets': { type: 'texture', path: 'widgets' } // Explicitly define for GUI_PREVIEW_ICONS
+            'Crosshair': { type: 'crosshair' }
         };
 
         const GUI_PREVIEW_ICONS = {
-            'Full HUD': '<i class="fa-solid fa-layer-group"></i>', // Font Awesome icon
-            'Crosshair': '<svg viewBox="0 0 16 16" fill="white" xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M8 0v2h.01V0H8zm0 14v2h.01v-2H8zM0 8h2v.01H0V8zm14 0h2v.01h-2V8zM8 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>', // Simple SVG crosshair
-            'Icons': '<i class="fa-solid fa-gem"></i>', // Generic icon for icons.png
-            'Widgets': '<i class="fa-solid fa-sliders"></i>' // Generic icon for widgets.png
+            'Full HUD': '<i class="fa-solid fa-layer-group"></i>',
+            'Crosshair': '<i class="fa-solid fa-xmark"></i>',
+            'icons': '<i class="fa-solid fa-gem"></i>',
+            'widgets': '<i class="fa-solid fa-sliders"></i>'
         };
 
 
@@ -611,7 +611,7 @@
             }
             itemGrid.innerHTML = itemKeys.map(key => {
                 const item = foundAssets.items[key];
-                const enchantable = key.includes('sword') || key.includes('apple') || key.includes('bow') || key.includes('totem') || key.includes('crossbow');
+                const enchantable = ENCHANTABLE_ITEMS.includes(key);
                 return `
                 <div class="item-icon-card ${enchantable ? 'enchantable' : ''}" data-key="${key}">
                     <img src="${item.url}" alt="${key.replace(/_/g, ' ')}">
@@ -648,36 +648,37 @@
 
         function renderGuiSelectionList() {
              const guiList = document.getElementById('gui-list');
-             const allDisplayKeys = Object.keys(GUI_COMPONENTS).concat(
-                 Object.keys(foundAssets.gui).filter(key => !GUI_COMPONENTS[key] && key !== 'panorama_overlay')
-             );
-
+             const componentKeys = Object.keys(GUI_COMPONENTS);
+             const textureKeys = Object.keys(foundAssets.gui).filter(key => key !== 'panorama_overlay');
+             const allDisplayKeys = [...componentKeys, ...textureKeys];
+             
              if (allDisplayKeys.length === 0) {
-                 guiList.innerHTML = `<p class="preview-placeholder-text">No GUI textures found in this pack.</p>`;
+                 guiList.innerHTML = `<p class="preview-placeholder-text">No GUI textures found.</p>`;
                  return;
              }
+
              guiList.innerHTML = allDisplayKeys.map(key => {
-                 const icon = GUI_PREVIEW_ICONS[key] || `<i class="fa-solid fa-image"></i>`; // Fallback generic icon
+                 const icon = GUI_PREVIEW_ICONS[key] || `<i class="fa-solid fa-image"></i>`;
                  const displayName = key.replace(/_/g, ' ');
                  return `
-                    <div class="gui-selection-item" data-key="${key}">
+                    <div class="gui-selection-item" data-key="${key}" title="${displayName}">
                         ${icon}
-                        <span>${displayName}</span>
                     </div>`;
              }).join('');
 
              guiList.querySelectorAll('.gui-selection-item').forEach(item => {
                  item.addEventListener('click', async () => {
-                     document.querySelectorAll('.gui-selection-item, .item-icon-card').forEach(el => el.classList.remove('active'));
+                     document.querySelectorAll('.gui-selection-item').forEach(el => el.classList.remove('active'));
                      item.classList.add('active');
-                     if (GUI_COMPONENTS[item.dataset.key]) {
-                         displayGuiComponent(item.dataset.key);
-                     } else if (foundAssets.gui[item.dataset.key]) {
-                         displayGuiImage(foundAssets.gui[item.dataset.key].url);
+                     const key = item.dataset.key;
+                     if (GUI_COMPONENTS[key]) {
+                         displayGuiComponent(key);
+                     } else if (foundAssets.gui[key]) {
+                         displayGuiImage(foundAssets.gui[key].url);
                      }
                  });
              });
-             // Automatically select the Crosshair if present, otherwise the first item
+
              const crosshairItem = guiList.querySelector('.gui-selection-item[data-key="Crosshair"]');
              if (crosshairItem) {
                  crosshairItem.click();
@@ -709,17 +710,15 @@
                 const hudCanvas = await createHudPreview();
                 imageViewer.src = hudCanvas.toDataURL();
                 imageViewer.style.transform = 'scale(1.5)'; 
-            } else if (GUI_COMPONENTS[name]?.type === 'crosshair') { /* Handle Crosshair display */
+            } else if (GUI_COMPONENTS[name]?.type === 'crosshair') {
                 if (foundAssets.gui.icons) {
                     const crosshairCanvas = await createCrosshairPreview(foundAssets.gui.icons.url);
                     imageViewer.src = crosshairCanvas.toDataURL();
-                    imageViewer.style.transform = 'scale(3)'; // Scale up for visibility
+                    imageViewer.style.transform = 'scale(2.5)';
                 } else {
                     imageViewer.src = 'https://placehold.co/64x64/2c2c2c/e8eefc?text=X';
                     imageViewer.style.transform = 'scale(1)';
                 }
-            } else if (foundAssets.gui[name.toLowerCase()]) { // For "Icons" or "Widgets" if they are distinct assets
-                displayGuiImage(foundAssets.gui[name.toLowerCase()].url);
             }
         }
 
@@ -779,10 +778,9 @@
             return hudCanvas;
         }
 
-        /* New function to create a preview of the crosshair */
         async function createCrosshairPreview(iconsSheetUrl) {
             const crosshairCanvas = document.createElement('canvas');
-            const targetSize = 64; // Desired output size for better visibility
+            const targetSize = 64;
             crosshairCanvas.width = targetSize;
             crosshairCanvas.height = targetSize;
             const ctx = crosshairCanvas.getContext('2d');
@@ -790,21 +788,11 @@
 
             try {
                 const iconsSheet = await loadImage(iconsSheetUrl);
-                // The crosshair is usually a 9x9 pixel sprite at (0,0) on the icons.png
-                const sx = 0; // Source X
-                const sy = 0; // Source Y
-                const sWidth = 9; // Source Width
-                const sHeight = 9; // Source Height
-                const dx = 0; // Destination X
-                const dy = 0; // Destination Y
-                const dWidth = targetSize; // Destination Width
-                const dHeight = targetSize; // Destination Height
-
-                ctx.drawImage(iconsSheet, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
+                const sx = 0, sy = 0, sWidth = 9, sHeight = 9;
+                ctx.drawImage(iconsSheet, sx, sy, sWidth, sHeight, 0, 0, targetSize, targetSize);
                 return crosshairCanvas;
             } catch (error) {
                 console.error("Failed to create crosshair preview:", error);
-                // Return a placeholder canvas if the image fails to load
                 ctx.fillStyle = 'rgba(255,255,255,0.1)';
                 ctx.fillRect(0,0,targetSize,targetSize);
                 ctx.strokeStyle = 'var(--muted)';
@@ -1072,3 +1060,4 @@
     </script>
 </body>
 </html>
+
