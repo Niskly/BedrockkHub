@@ -113,7 +113,7 @@
         .item-icon-card.enchantable .enchant-btn { display: flex; }
         .enchant-btn.active { background: #a855f7; color: white; border-color: #c084fc; }
         #gui-viewer-container { border-radius: 12px; width: 100%; aspect-ratio: 1/1; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); background-size: cover; background-position: center; display: grid; place-items: center; padding: 1rem; }
-        #gui-viewer-canvas { max-width: 100%; max-height: 100%; object-fit: contain; image-rendering: pixelated; transform: scale(3); transform-origin: center; }
+        #gui-viewer-canvas { max-width: 100%; max-height: 100%; object-fit: contain; image-rendering: pixelated; transform-origin: center; }
         .gui-selection-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; }
         .gui-selection-item { padding: 0.6rem 1rem; background: var(--bg-2); border-radius: 10px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; font-weight: 600; text-transform: capitalize; }
         .gui-selection-item:hover { border-color: var(--text); }
@@ -271,7 +271,7 @@
              'diamond_sword': 'diamond_sword.png', 'iron_sword': 'iron_sword.png',
              'golden_sword': 'golden_sword.png', 'ender_pearl': 'ender_pearl.png',
              'golden_apple': 'apple_golden.png', 'apple': 'apple.png',
-             'bow': 'bow.png', 'fishing_rod': 'fishing_rod.png', // Changed from fishing_rod_uncast for better compatibility
+             'bow': 'bow.png', 'fishing_rod': 'fishing_rod.png',
              'totem_of_undying': 'totem.png', 'crossbow_standby': 'crossbow_standby.png'
         };
         const GUI_PATHS = { 
@@ -666,25 +666,47 @@
         async function createHudPreview() {
             const hudCanvas = document.createElement('canvas');
             hudCanvas.width = 182;
-            hudCanvas.height = 50;
+            hudCanvas.height = 60;
             const ctx = hudCanvas.getContext('2d');
             ctx.imageSmoothingEnabled = false;
+
             const iconsSheet = foundAssets.gui.icons ? await loadImage(foundAssets.gui.icons.url) : null;
             const widgetsSheet = foundAssets.gui.widgets ? await loadImage(foundAssets.gui.widgets.url) : null;
+            
             if (widgetsSheet) ctx.drawImage(widgetsSheet, 0, 0, 182, 22, 0, hudCanvas.height - 22, 182, 22);
+            
             if (iconsSheet) {
-                for (let i = 0; i < 10; i++) ctx.drawImage(iconsSheet, 16, 0, 9, 9, (hudCanvas.width / 2) - 91 + (i * 8), hudCanvas.height - 41, 9, 9);
-                for (let i = 0; i < 8; i++) ctx.drawImage(iconsSheet, 52, 0, 9, 9, (hudCanvas.width / 2) - 91 + (i * 8), hudCanvas.height - 41, 9, 9);
-                for (let i = 0; i < 2; i++) ctx.drawImage(iconsSheet, 160, 0, 9, 9, (hudCanvas.width / 2) - 91 + ((i + 8) * 8), hudCanvas.height - 41, 9, 9);
-                ctx.drawImage(iconsSheet, 0, 64, 182, 5, 0, hudCanvas.height - 27, 182, 5);
+                const healthY = hudCanvas.height - 41;
+                const armorY = healthY - 10;
+                const hungerY = healthY;
+
+                for (let i = 0; i < 10; i++) {
+                    ctx.drawImage(iconsSheet, 16, 0, 9, 9, (hudCanvas.width / 2) - 91 + (i * 8), healthY, 9, 9);
+                    if (i < 8) ctx.drawImage(iconsSheet, 52, 0, 9, 9, (hudCanvas.width / 2) - 91 + (i * 8), healthY, 9, 9);
+                }
+                ctx.drawImage(iconsSheet, 61, 0, 9, 9, (hudCanvas.width / 2) - 91 + (8 * 8), healthY, 9, 9);
+                
+                for (let i = 0; i < 10; i++) {
+                    ctx.drawImage(iconsSheet, 16, 9, 9, 9, (hudCanvas.width / 2) - 91 + (i * 8), armorY, 9, 9);
+                    if (i < 8) ctx.drawImage(iconsSheet, 34, 9, 9, 9, (hudCanvas.width / 2) - 91 + (i * 8), armorY, 9, 9);
+                }
+                
+                for (let i = 0; i < 10; i++) {
+                     ctx.drawImage(iconsSheet, 16, 27, 9, 9, (hudCanvas.width / 2) + 91 - (i * 8) - 9, hungerY, 9, 9);
+                    if(i < 7) ctx.drawImage(iconsSheet, 52, 27, 9, 9, (hudCanvas.width / 2) + 91 - (i * 8) - 9, hungerY, 9, 9);
+                }
+                
+                ctx.drawImage(iconsSheet, 0, 64, 182, 5, 0, hudCanvas.height - 29, 182, 5);
+                ctx.drawImage(iconsSheet, 0, 69, 120, 5, 0, hudCanvas.height - 29, 120, 5);
             }
+            
             ctx.font = "bold 10px Inter, sans-serif";
             ctx.fillStyle = '#80FF20';
             ctx.shadowColor = "rgba(0,0,0,0.5)";
             ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1; ctx.shadowBlur = 1;
             const levelText = '17';
             const textWidth = ctx.measureText(levelText).width;
-            ctx.fillText(levelText, (hudCanvas.width / 2) - (textWidth / 2), hudCanvas.height - 29);
+            ctx.fillText(levelText, (hudCanvas.width / 2) - (textWidth / 2), hudCanvas.height - 31);
             ctx.shadowColor = "transparent";
             return hudCanvas;
         }
