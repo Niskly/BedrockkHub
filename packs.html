@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MCHub — Texture Pack</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+    body { opacity: 0; transition: opacity 0.2s ease-in; }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
+            --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
+            --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
+            --border-strong: rgba(255, 255, 255, .2); --danger: #ef4444; --success: #22c55e;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 15px/1.6 Inter, sans-serif; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-image: var(--bg-image, url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg')); background-size: cover; background-position: center; filter: blur(8px); opacity: 0.2; z-index: -1; transition: background-image 0.5s ease-in-out; }
+        a { color: inherit; text-decoration: none; }
+        .tiny { font-size: 12px; color: var(--muted); }
+        .btn { padding: .7rem 1.2rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
+        .btn.primary { background: linear-gradient(90deg, var(--brand-1), var(--brand-2)); box-shadow: var(--shadow-brand); color: white; }
+        .btn.ghost { border-color: var(--border); background: var(--bg-2); color: var(--text); }
+        .spinner { width: 48px; height: 48px; border: 5px solid var(--border); border-bottom-color: var(--brand-1); border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        header { position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(1.2) blur(10px); background: rgba(12, 12, 12, 0.75); border-bottom: 1px solid var(--border); }
+        .nav { max-width: 1100px; margin: 0 auto; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; }
+        .brand { display: flex; align-items: center; gap: .8rem; }
+        .brand-badge { height: 40px; width: 40px; border-radius: 10px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); }
+        .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-11px); }
+        .brand-title { font-weight: 800; letter-spacing: .6px; font-size: 15px; }
+        .nav-actions { display: flex; align-items: center; gap: 0.6rem; }
+
+        .container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+        .loading-container, .error-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; min-height: 60vh; color: var(--muted); text-align: center;}
+        .error-container h2 { color: var(--text); }
+
+        .pack-layout {
+            display: grid;
+            grid-template-columns: 1fr 280px;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+        
+        .pack-header { margin-bottom: 1.5rem; }
+        .pack-title { font-size: 2.5rem; font-weight: 900; line-height: 1.2; margin: 0 0 1rem 0; }
+        .creator-info { display: flex; align-items: center; gap: 0.8rem; }
+        .creator-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); }
+        .creator-username { font-weight: 600; color: var(--text); }
+        .creator-info:hover .creator-username { text-decoration: underline; }
+
+        .pack-description { line-height: 1.7; color: var(--muted); }
+        .pack-description h3 { font-size: 1.2rem; color: var(--text); margin: 2rem 0 1rem 0; }
+        
+        .sidebar-card { position: sticky; top: 100px; }
+        .card { border-radius: 16px; background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); border: 1px solid var(--border); }
+        .card-body { padding: 1.2rem; }
+        .pack-sidebar-icon { width: 100%; border-radius: 12px; aspect-ratio: 1/1; object-fit: cover; margin-bottom: 1rem; background: var(--bg-2); }
+        .pack-stats { list-style: none; padding: 0; margin: 1rem 0; }
+        .pack-stats li { display: flex; justify-content: space-between; padding: 0.5rem 0; font-size: 0.9rem; }
+        .pack-stats li:not(:last-child) { border-bottom: 1px solid var(--border); }
+        .pack-stats .label { color: var(--muted); }
+        .pack-stats .value { font-weight: 600; color: var(--text); }
+        
+        .comments-section { margin-top: 3rem; }
+        .comments-placeholder { text-align: center; padding: 2rem; background: var(--bg-1); border-radius: 12px; border: 1px solid var(--border); color: var(--muted); }
+        
+        #toast-container { position: fixed; top: 80px; right: 20px; z-index: 1000; }
+        .toast { padding: 12px 18px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; background: var(--bg-1); border: 1px solid var(--border); }
+        @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
+
+        @media (max-width: 768px) {
+            .pack-layout { grid-template-columns: 1fr; }
+            .sidebar-card { position: static; order: -1; margin-bottom: 2rem; }
+            .pack-sidebar-icon { max-width: 200px; margin: 0 auto 1rem; display: block; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav">
+            <a class="brand" href="/">
+                <div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div>
+                <div><div class="brand-title">MCHUB</div><div class="tiny">Minecraft Bedrock • community</div></div>
+            </a>
+            <div id="nav-actions" class="nav-actions"></div>
+        </div>
+    </header>
+
+    <main class="container" id="page-container">
+        <div class="loading-container"><div class="spinner"></div><p>Loading Pack...</p></div>
+    </main>
+    
+    <div id="toast-container"></div>
+    
+    <script type="module" src="/theme.js"></script>
+    <script type="module" src="/auth.js"></script>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        const pageContainer = document.getElementById('page-container');
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast`;
+            toast.style.borderColor = type === 'success' ? 'var(--success)' : 'var(--danger)';
+            toast.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}" style="color: ${type === 'success' ? 'var(--success)' : 'var(--danger)'};"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.transform = 'translateX(120%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function formatDate(isoString) {
+            if (!isoString) return 'N/A';
+            return new Date(isoString).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        function escapeHtml(str) { 
+            return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); 
+        }
+
+        async function handleDownload(packId, filename, packName) {
+            showToast('Starting download...', 'success');
+            try {
+                // Increment download count without waiting for it to finish
+                fetch("/api/increment-download", {
+                    method: "POST", headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({ id: packId })
+                }).then(() => {
+                    const el = document.getElementById('download-count-val');
+                    if(el) el.textContent = (parseInt(el.textContent.replace(/,/g, ''), 10) + 1).toLocaleString();
+                });
+
+                const { data: urlData, error: urlError } = supabase.storage.from('packs').getPublicUrl(filename);
+                if (urlError || !urlData) throw new Error('Could not get download URL.');
+
+                const response = await fetch(urlData.publicUrl);
+                if (!response.ok) throw new Error('Download link failed.');
+                const blob = await response.blob();
+
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                const extension = filename.split('.').pop();
+                link.download = `${packName}.${extension}`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+
+            } catch (error) {
+                console.error("Download Error:", error);
+                showToast('Failed to start download.', 'error');
+            }
+        }
+
+        function renderPackPage(pack) {
+            document.title = `${pack.name} — MCHub`;
+            const creator = pack.profiles;
+            const creatorPfp = creator.avatar_url 
+                ? creator.avatar_url 
+                : `https://placehold.co/36x36/1c1c1c/de212a?text=${creator.username.charAt(0).toUpperCase()}`;
+
+            const packIcon = pack.icon_url 
+                ? pack.icon_url 
+                : `https://placehold.co/280x280/1c1c1c/e8eefc?text=${escapeHtml(pack.name)}`;
+
+            pageContainer.innerHTML = `
+                <div class="pack-layout">
+                    <div class="pack-main-content">
+                        <div class="pack-header">
+                             <a href="/profile.html?user=${creator.username}" class="creator-info">
+                                <img src="${creatorPfp}" alt="${creator.username}'s avatar" class="creator-avatar">
+                                <span class="creator-username">${creator.username}</span>
+                            </a>
+                            <h1 class="pack-title">${escapeHtml(pack.name)}</h1>
+                        </div>
+                        <div class="pack-description">
+                            ${pack.description ? escapeHtml(pack.description) : '<p>This pack has no description.</p>'}
+                            
+                            <!-- You can add an image gallery here in the future -->
+                        </div>
+                        <div class="comments-section">
+                            <h3>Comments</h3>
+                            <div class="comments-placeholder">
+                                <i class="fa-solid fa-comments" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                                <p>Comments are coming soon!</p>
+                            </div>
+                        </div>
+                    </div>
+                    <aside class="sidebar-card">
+                        <div class="card">
+                            <div class="card-body">
+                                <img src="${packIcon}" alt="${escapeHtml(pack.name)} icon" class="pack-sidebar-icon">
+                                <button class="btn primary" id="download-btn" style="width: 100%;">
+                                    <i class="fa-solid fa-download"></i> Download
+                                </button>
+                                <ul class="pack-stats">
+                                    <li><span class="label">Downloads</span> <span class="value" id="download-count-val">${(pack.download_count || 0).toLocaleString()}</span></li>
+                                    <li><span class="label">Uploaded</span> <span class="value">${formatDate(pack.created_at)}</span></li>
+                                    <li><span class="label">Resolution</span> <span class="value">${escapeHtml(pack.resolution || 'N/A')}</span></li>
+                                    <li><span class="label">Version</span> <span class="value">${escapeHtml(pack.version || 'N/A')}</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            `;
+
+            document.getElementById('download-btn').addEventListener('click', () => {
+                handleDownload(pack.id, pack.filename, pack.name);
+            });
+        }
+
+        function showError(title, message) {
+            pageContainer.innerHTML = `<div class="error-container"><h2>${title}</h2><p>${message}</p></div>`;
+        }
+
+        async function loadPack() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const packId = urlParams.get('id');
+
+            if (!packId) {
+                return showError("No Pack Found", "A pack ID was not provided in the URL.");
+            }
+
+            try {
+                const { data: pack, error } = await supabase
+                    .from('packs')
+                    .select('*, profiles ( username, avatar_url )')
+                    .eq('id', packId)
+                    .single();
+
+                if (error || !pack) {
+                    throw new Error("Pack could not be found or an error occurred.");
+                }
+
+                if (!pack.profiles) {
+                    throw new Error("This pack is not associated with a valid creator.");
+                }
+
+                renderPackPage(pack);
+
+            } catch (error) {
+                console.error(error);
+                showError("Could Not Load Pack", "The pack you're looking for doesn't exist or there was an error loading it.");
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadPack);
+    </script>
+</body>
+</html>
