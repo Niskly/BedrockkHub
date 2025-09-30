@@ -780,6 +780,20 @@
                 } else {
                     armorContainer.innerHTML = '<div class="armor-selection-list"></div>';
                     const list = armorContainer.querySelector('.armor-selection-list');
+                    
+                    const noArmorItem = document.createElement('div');
+                    noArmorItem.className = 'armor-item active';
+                    noArmorItem.title = 'No Armor';
+                    noArmorItem.innerHTML = `<i class="fa-solid fa-ban" style="font-size: 24px; color: var(--muted);"></i>`;
+                    noArmorItem.onclick = () => {
+                        document.querySelectorAll('.armor-item').forEach(i => i.classList.remove('active'));
+                        noArmorItem.classList.add('active');
+                        if (skinViewer) {
+                            skinViewer.loadSkin('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png');
+                        }
+                    };
+                    list.appendChild(noArmorItem);
+
                     Object.keys(foundArmorAssets).sort().forEach(name => {
                         const item = document.createElement('div');
                         item.className = 'armor-item';
@@ -791,7 +805,6 @@
                         };
                         list.appendChild(item);
                     });
-                    if (list.firstChild) list.firstChild.click();
                 }
             } catch (error) {
                 console.error("Armor preview error:", error);
@@ -801,23 +814,35 @@
 
         async function applyArmor(armorSet) {
             if (!skinViewer) return;
-            let skinUrl = 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png';
-            if (armorSet.layer1 && armorSet.layer2) {
-                skinUrl = await combineArmorLayers(armorSet.layer1, armorSet.layer2);
-            } else if (armorSet.layer1 || armorSet.layer2) {
-                skinUrl = armorSet.layer1 || armorSet.layer2;
+            const armorLayers = [];
+            if (armorSet.layer1) armorLayers.push(armorSet.layer1);
+            if (armorSet.layer2) armorLayers.push(armorSet.layer2);
+
+            if (armorLayers.length > 0) {
+                const combinedSkinUrl = await combineSkinAndArmor(armorLayers);
+                skinViewer.loadSkin(combinedSkinUrl);
+            } else {
+                skinViewer.loadSkin('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png');
             }
-            if (skinUrl) skinViewer.loadSkin(skinUrl);
         }
 
-        async function combineArmorLayers(url1, url2) {
-            const [img1, img2] = await Promise.all([loadImage(url1), loadImage(url2)]);
+        async function combineSkinAndArmor(armorLayerUrls) {
+            const steveSkinUrl = 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png';
+            const urlsToLoad = [steveSkinUrl, ...armorLayerUrls];
+            
+            const images = await Promise.all(urlsToLoad.map(loadImage));
+
             const canvas = document.createElement('canvas');
-            canvas.width = Math.max(img1.width, img2.width);
-            canvas.height = Math.max(img1.height, img2.height);
+            canvas.width = 64;
+            canvas.height = 64;
             const ctx = canvas.getContext('2d');
-            ctx.drawImage(img1, 0, 0); ctx.drawImage(img2, 0, 0);
-            return new Promise(res => canvas.toBlob(b => res(URL.createObjectURL(b)), 'image/png'));
+            ctx.imageSmoothingEnabled = false;
+
+            images.forEach(img => {
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            });
+
+            return canvas.toDataURL();
         }
         
         async function loadPack() {
@@ -966,4 +991,3 @@
     </script>
 </body>
 </html>
-
