@@ -979,7 +979,7 @@
             const editLink = currentUserRole === 'admin' ? `<a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>` : '';
 
             return `
-                <div class="card pack">
+                <a href="/packs.html?id=${p.id}" class="card pack">
                     <div class="thumb" style="${thumbBackgroundStyle}">
                         ${thumbContent}
                         <button class="pack-options-btn" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
@@ -998,7 +998,7 @@
                             ${(p.tags||[]).map(t=>`<span class="badge">${escapeHtml(capitalizeFirst(t))}</span>`).join('')}
                         </div>
                     </div>
-                </div>`;
+                </a>`;
         }
 
 
@@ -1161,6 +1161,7 @@
             }
         };
         window.toggleOptionsMenu = (e, id) => {
+            e.preventDefault();
             e.stopPropagation();
             const menu = document.getElementById(`options-menu-${id}`);
             const isVisible = menu.style.display === 'block';
@@ -1283,4 +1284,3 @@
 </body>
 
 </html>
-
