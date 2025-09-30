@@ -10,7 +10,6 @@
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/skinview3d@3.0.1/bundles/skinview3d.bundle.js"></script>
     <style>
         :root {
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
@@ -62,14 +61,9 @@
         .selection-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: white; }
         
         .viewer-panel { position: sticky; top: 100px; }
-        #viewer-canvas, #image-viewer-container { border-radius: 16px; width: 100%; aspect-ratio: 16/9; background-size: cover; background-position: center; }
-        #viewer-canvas { aspect-ratio: 4/5; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg'); }
-        #image-viewer-container { background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); display: grid; place-items: center; padding: 2rem; }
+        #image-viewer-container { border-radius: 16px; width: 100%; aspect-ratio: 16/9; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); background-size: cover; background-position: center; display: grid; place-items: center; padding: 2rem; }
         #image-viewer { max-width: 100%; max-height: 100%; object-fit: contain; image-rendering: pixelated; transform: scale(3); transform-origin: center; }
-        #viewer-canvas.dragging { cursor: grabbing; }
         
-        #gui-viewer { image-rendering: pixelated; transform: scale(3); transform-origin: top left; }
-
         .placeholder-text { text-align: center; color: var(--muted); padding: 2rem 0; }
         .enchant-toggle { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.8rem; }
         
@@ -149,14 +143,10 @@
                 <div class="card" style="margin-top: 1.5rem;">
                     <div class="card-body" style="padding: 1rem 1.2rem;">
                         <div class="tab-nav">
-                            <button class="tab-btn active" data-tab="armor">Armor</button>
-                            <button class="tab-btn" data-tab="items">Items</button>
+                            <button class="tab-btn active" data-tab="items">Items</button>
                             <button class="tab-btn" data-tab="gui">GUI</button>
                         </div>
-                        <div id="armor-content" class="tab-content active">
-                            <div id="armor-list" class="selection-list"><p class="placeholder-text">Upload a pack to see assets</p></div>
-                        </div>
-                        <div id="items-content" class="tab-content">
+                        <div id="items-content" class="tab-content active">
                             <div id="item-list" class="selection-list"><p class="placeholder-text">Upload a pack to see assets</p></div>
                         </div>
                         <div id="gui-content" class="tab-content">
@@ -166,8 +156,7 @@
                 </div>
             </div>
             <div class="viewer-panel">
-                <canvas id="viewer-canvas"></canvas>
-                <div id="image-viewer-container" style="display: none;">
+                <div id="image-viewer-container">
                     <img id="image-viewer" src="">
                 </div>
             </div>
@@ -175,13 +164,11 @@
     </main>
     
     <script type="module" src="/theme.js"></script>
-    <script type="module" src="/auth.js"></script>
     <script>
         window.addEventListener('load', function() {
             // --- PATH DEFINITIONS ---
             const ASSET_PATHS = {
-                armor: ['assets/minecraft/textures/models/armor/netherite_layer_1.png', 'assets/minecraft/textures/models/armor/netherite_layer_2.png', 'assets/minecraft/textures/models/armor/diamond_layer_1.png', 'assets/minecraft/textures/models/armor/diamond_layer_2.png', 'assets/minecraft/textures/models/armor/iron_layer_1.png', 'assets/minecraft/textures/models/armor/iron_layer_2.png', 'assets/minecraft/textures/models/armor/gold_layer_1.png', 'assets/minecraft/textures/models/armor/gold_layer_2.png', 'assets/minecraft/textures/models/armor/chainmail_layer_1.png', 'assets/minecraft/textures/models/armor/chainmail_layer_2.png', 'assets/minecraft/textures/models/armor/leather_layer_1.png', 'assets/minecraft/textures/models/armor/leather_layer_2.png', 'assets/minecraft/textures/models/armor/turtle_layer_1.png', 'textures/models/armor/netherite_1.png', 'textures/models/armor/netherite_2.png', 'textures/models/armor/diamond_1.png', 'textures/models/armor/diamond_2.png', 'textures/models/armor/iron_1.png', 'textures/models/armor/iron_2.png', 'textures/models/armor/gold_1.png', 'textures/models/armor/gold_2.png', 'textures/models/armor/chainmail_1.png', 'textures/models/armor/chainmail_2.png', 'textures/models/armor/leather_1.png', 'textures/models/armor/leather_2.png', 'textures/models/armor/turtle_1.png'],
-                items: { 'ender_pearl': 'item/ender_pearl.png', 'golden_apple': 'item/golden_apple.png', 'enchanted_golden_apple': 'item/apple_golden.png', 'iron_sword': 'item/iron_sword.png', 'golden_sword': 'item/golden_sword.png', 'diamond_sword': 'item/diamond_sword.png' },
+                items: { 'ender_pearl': 'ender_pearl.png', 'golden_apple': 'golden_apple.png', 'enchanted_golden_apple': 'apple_golden.png', 'iron_sword': 'iron_sword.png', 'golden_sword': 'golden_sword.png', 'diamond_sword': 'diamond_sword.png' },
                 gui: { 'icons': 'gui/icons.png', 'widgets': 'gui/widgets.png' }
             };
             const GUI_COMPONENTS = { 'Full HUD': { type: 'hud' } };
@@ -189,87 +176,51 @@
             // --- DOM ELEMENTS ---
             const uploadArea = document.getElementById('upload-area');
             const fileInput = document.getElementById('file-input');
-            const armorList = document.getElementById('armor-list');
             const itemList = document.getElementById('item-list');
             const guiList = document.getElementById('gui-list');
-            const canvas3d = document.getElementById('viewer-canvas');
             const imageViewerContainer = document.getElementById('image-viewer-container');
             const imageViewer = document.getElementById('image-viewer');
             
-            let skinViewer = null;
-            let foundAssets = { armor: {}, items: {}, gui: {} };
-
-            function initSkinViewer() {
-                try {
-                    skinViewer = new skinview3d.SkinViewer({
-                        canvas: canvas3d, width: canvas3d.clientWidth, height: canvas3d.clientHeight,
-                        skin: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png'
-                    });
-                    skinViewer.autoRotate = true;
-                    skinViewer.camera.position.set(0, 0, 40);
-                    new ResizeObserver(() => skinViewer.setSize(canvas3d.clientWidth, canvas3d.clientHeight)).observe(canvas3d);
-                    let mouseDown = false;
-                    canvas3d.addEventListener('mousedown', () => { mouseDown = true; canvas3d.classList.add('dragging'); skinViewer.autoRotate = false; });
-                    canvas3d.addEventListener('mouseup', () => { mouseDown = false; canvas3d.classList.remove('dragging'); skinViewer.autoRotate = true; });
-                } catch (e) { console.error("Failed to init 3D viewer", e); }
-            }
+            let foundAssets = { items: {}, gui: {} };
 
             async function handleFileSelect(file) {
                 if (!file) return;
-                [armorList, itemList, guiList].forEach(list => list.innerHTML = `<p class="placeholder-text"><span class="spinner"></span> Searching...</p>`);
-                foundAssets = { armor: {}, items: {}, gui: {} };
+                [itemList, guiList].forEach(list => list.innerHTML = `<p class="placeholder-text"><span class="spinner"></span> Searching...</p>`);
+                foundAssets = { items: {}, gui: {} };
                 try {
                     const zip = await JSZip.loadAsync(file);
                     await Promise.all([
-                        findAssets(zip, ASSET_PATHS.armor, foundAssets.armor, 'armor'),
                         findAssets(zip, ASSET_PATHS.items, foundAssets.items, 'item'),
                         findAssets(zip, ASSET_PATHS.gui, foundAssets.gui, 'gui')
                     ]);
-                    renderArmorList();
                     renderItemList();
                     renderGuiList();
                 } catch (error) {
                     console.error("Error processing pack:", error);
-                    [armorList, itemList, guiList].forEach(list => list.innerHTML = `<p class="placeholder-text">Could not read pack file.</p>`);
+                    [itemList, guiList].forEach(list => list.innerHTML = `<p class="placeholder-text">Could not read pack file.</p>`);
                 }
             }
             
             async function findAssets(zip, paths, targetObject, type) {
-                const addAsset = async (key, path) => {
-                    const fullPaths = [`assets/minecraft/textures/${path}`, `textures/${path}`];
-                    for (const p of fullPaths) {
+                const addAsset = async (key, filename) => {
+                    const javaPath = `assets/minecraft/textures/${type}/${filename}`;
+                    const bedrockPath = `textures/items/${filename}`; // Corrected bedrock path for items
+                    
+                    for (const p of [javaPath, bedrockPath]) {
                         const zipFile = zip.file(p);
                         if (zipFile) {
                             const blob = await zipFile.async('blob');
                             const url = URL.createObjectURL(blob);
-                            if (type === 'armor') {
-                                let armorName = p.split('/').pop().replace(/(_1|_2|_layer_1|_layer_2)\.png$/, '');
-                                if (armorName === 'chainmail') armorName = 'chain';
-                                const layer = p.includes('layer_2') || p.includes('_2.png') ? 'layer2' : 'layer1';
-                                if (!targetObject[armorName]) targetObject[armorName] = {};
-                                targetObject[armorName][layer] = url;
-                            } else { targetObject[key] = url; }
+                            targetObject[key] = url;
                             return; 
                         }
                     }
                 };
-                const promises = Array.isArray(paths) ? paths.map(p => addAsset(p, p)) : Object.entries(paths).map(([key, path]) => addAsset(key, path));
+                const promises = Object.entries(paths).map(([key, filename]) => addAsset(key, filename));
                 await Promise.all(promises);
             }
 
             // --- RENDER FUNCTIONS ---
-            function renderArmorList() {
-                const names = Object.keys(foundAssets.armor);
-                if (names.length === 0) return armorList.innerHTML = `<p class="placeholder-text">No standard armor found.</p>`;
-                armorList.innerHTML = names.sort().map(name => `<div class="selection-item" data-asset="${name}">${name}</div>`).join('');
-                armorList.querySelectorAll('.selection-item').forEach(item => item.onclick = () => {
-                    armorList.querySelectorAll('.selection-item').forEach(el => el.classList.remove('active'));
-                    item.classList.add('active');
-                    applyArmor(foundAssets.armor[item.dataset.asset]);
-                });
-                if (armorList.firstChild) armorList.firstChild.click();
-            }
-
             function renderItemList() {
                 const names = Object.keys(foundAssets.items);
                 if (names.length === 0) return itemList.innerHTML = `<p class="placeholder-text">No standard items found.</p>`;
@@ -304,13 +255,6 @@
             }
 
             // --- DISPLAY/APPLY FUNCTIONS ---
-            async function applyArmor(armorSet) {
-                let skinUrl = 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png';
-                if (armorSet.layer1 && armorSet.layer2) skinUrl = await combineArmorLayers(armorSet.layer1, armorSet.layer2);
-                else if (armorSet.layer1 || armorSet.layer2) skinUrl = armorSet.layer1 || armorSet.layer2;
-                skinViewer.loadSkin(skinUrl);
-            }
-
             async function displayImage(url, enchanted) {
                 const finalUrl = enchanted ? await createEnchantedVersion(url) : url;
                 imageViewer.src = finalUrl;
@@ -325,12 +269,7 @@
 
             // --- UTILITY FUNCTIONS ---
             const loadImage = url => new Promise((res, rej) => { const i = new Image(); i.crossOrigin = "Anonymous"; i.onload = () => res(i); i.onerror = rej; i.src = url; });
-            async function combineArmorLayers(url1, url2) {
-                const [img1, img2] = await Promise.all([loadImage(url1), loadImage(url2)]);
-                const c = document.createElement('canvas'); c.width = img1.width; c.height = img1.height;
-                const ctx = c.getContext('2d'); ctx.drawImage(img1, 0, 0); ctx.drawImage(img2, 0, 0);
-                return new Promise(res => c.toBlob(b => res(URL.createObjectURL(b)), 'image/png'));
-            }
+
             async function createEnchantedVersion(url) {
                 const img = await loadImage(url);
                 const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
@@ -342,7 +281,7 @@
                 return c.toDataURL();
             }
             
-            async function createHudPreview() {
+             async function createHudPreview() {
                 const hudCanvas = document.createElement('canvas');
                 hudCanvas.width = 182; hudCanvas.height = 50;
                 const ctx = hudCanvas.getContext('2d');
@@ -354,26 +293,31 @@
                 if (widgetsSheet) ctx.drawImage(widgetsSheet, 0, 0, 182, 22, 0, hudCanvas.height - 22, 182, 22);
                 
                 if (iconsSheet) {
-                    // Hearts (2 golden)
-                    for (let i = 0; i < 10; i++) ctx.drawImage(iconsSheet, 16, 0, 9, 9, (hudCanvas.width / 2) - 90 + (i * 8), hudCanvas.height - 41, 9, 9);
-                    for (let i = 0; i < 8; i++) ctx.drawImage(iconsSheet, 52, 0, 9, 9, (hudCanvas.width / 2) - 90 + (i * 8), hudCanvas.height - 41, 9, 9);
-                    for (let i = 0; i < 2; i++) ctx.drawImage(iconsSheet, 160, 0, 9, 9, (hudCanvas.width / 2) - 90 + ((i + 8) * 8), hudCanvas.height - 41, 9, 9);
+                    // Health Bar
+                    for (let i = 0; i < 10; i++) ctx.drawImage(iconsSheet, 16, 0, 9, 9, (hudCanvas.width / 2) - 91 + (i * 8), hudCanvas.height - 41, 9, 9);
+                    for (let i = 0; i < 8; i++) ctx.drawImage(iconsSheet, 52, 0, 9, 9, (hudCanvas.width / 2) - 91 + (i * 8), hudCanvas.height - 41, 9, 9);
+                    ctx.drawImage(iconsSheet, 61, 0, 9, 9, (hudCanvas.width / 2) - 91 + (8 * 8), hudCanvas.height - 41, 9, 9);
+                    for (let i = 0; i < 2; i++) ctx.drawImage(iconsSheet, 160, 0, 9, 9, (hudCanvas.width / 2) - 91 + ((i + 8) * 8), hudCanvas.height - 41, 9, 9);
                     
-                    // Armor
-                    for (let i = 0; i < 10; i++) ctx.drawImage(iconsSheet, 16, 9, 9, 9, (hudCanvas.width / 2) + 11 + (i * 8), hudCanvas.height - 41, 9, 9);
-                    for (let i = 0; i < 3; i++) ctx.drawImage(iconsSheet, 34, 9, 9, 9, (hudCanvas.width / 2) + 11 + (i * 8), hudCanvas.height - 41, 9, 9);
+                    // Armor Bar
+                    for (let i = 0; i < 10; i++) ctx.drawImage(iconsSheet, 16, 9, 9, 9, (hudCanvas.width / 2) + 10 + (i * 8), hudCanvas.height - 41, 9, 9);
+                    for (let i = 0; i < 3; i++) ctx.drawImage(iconsSheet, 34, 9, 9, 9, (hudCanvas.width / 2) + 10 + (i * 8), hudCanvas.height - 41, 9, 9);
                     
-                    // XP bar
+                    // XP Bar
                     ctx.drawImage(iconsSheet, 0, 64, 182, 5, 0, hudCanvas.height - 27, 182, 5);
                     ctx.drawImage(iconsSheet, 0, 69, 120, 5, 0, hudCanvas.height - 27, 120, 5); 
                 }
                 
                 // XP Level (simulated)
-                ctx.font = "10px Inter, sans-serif";
+                ctx.font = "bold 10px Inter, sans-serif";
                 ctx.fillStyle = '#80FF20';
+                ctx.shadowColor = "rgba(0,0,0,0.5)";
+                ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1; ctx.shadowBlur = 1;
                 const levelText = '17';
                 const textWidth = ctx.measureText(levelText).width;
                 ctx.fillText(levelText, (hudCanvas.width / 2) - (textWidth / 2), hudCanvas.height - 29);
+                ctx.shadowColor = "transparent";
+
 
                 return hudCanvas;
             }
@@ -389,36 +333,20 @@
                 btn.classList.add('active');
                 const content = document.getElementById(btn.dataset.tab + '-content');
                 content.classList.add('active');
-                const isArmor = btn.dataset.tab === 'armor';
-                canvas3d.style.display = isArmor ? 'block' : 'none';
-                imageViewerContainer.style.display = isArmor ? 'none' : 'grid';
-                if (isArmor && armorList.querySelector('.active')) armorList.querySelector('.active').click();
-                else {
-                    const list = btn.dataset.tab === 'items' ? itemList : guiList;
-                    if (list.querySelector('.active')) list.querySelector('.active').click();
-                }
+                const list = btn.dataset.tab === 'items' ? itemList : guiList;
+                if (list.querySelector('.active')) list.querySelector('.active').click();
             });
             const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
             const mobileNavSidebar = document.querySelector('.mobile-nav-sidebar');
             const mobileNavBackdrop = document.querySelector('.mobile-nav-backdrop');
             const mobileNavClose = document.querySelector('.mobile-nav-close');
             if (mobileNavToggle) {
-                mobileNavToggle.addEventListener('click', () => {
-                    mobileNavSidebar.classList.add('show');
-                    mobileNavBackdrop.classList.add('show');
-                });
-                mobileNavClose.addEventListener('click', () => {
-                    mobileNavSidebar.classList.remove('show');
-                    mobileNavBackdrop.classList.remove('show');
-                });
-                mobileNavBackdrop.addEventListener('click', () => {
-                    mobileNavSidebar.classList.remove('show');
-                    mobileNavBackdrop.classList.remove('show');
-                });
+                const openMenu = () => { mobileNavSidebar.classList.add('show'); mobileNavBackdrop.classList.add('show'); };
+                const closeMenu = () => { mobileNavSidebar.classList.remove('show'); mobileNavBackdrop.classList.remove('show'); };
+                mobileNavToggle.addEventListener('click', openMenu);
+                mobileNavClose.addEventListener('click', closeMenu);
+                mobileNavBackdrop.addEventListener('click', closeMenu);
             }
-
-            // --- INITIALIZATION ---
-            initSkinViewer();
         });
     </script>
 </body>
