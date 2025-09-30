@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Armor Viewer - MCHub</title>
+    <title>Texture Pack Viewer - MCHub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>
         body { opacity: 0; transition: opacity 0.2s ease-in; }
@@ -35,25 +35,9 @@
         .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-13px); }
         .brand-title { font-weight: 800; letter-spacing: .6px; }
         .nav-actions { display: flex; gap: .6rem; }
-        .btn { padding: .6rem 1rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; }
-        .btn.ghost { border-color: var(--border); background: transparent; color: var(--text); }
-        .btn.primary { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); box-shadow: var(--shadow-brand); color: white; border: none; }
-        .user-dropdown { position: relative; display: inline-block; }
-        .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
-        .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
-        .user-menu-btn:hover { border-color: var(--border-strong); }
-        .dropdown-content { display: none; position: absolute; right: 0; top: 110%; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; }
-        .dropdown-content.show { display: block; }
-        .dropdown-content a { color: var(--muted); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 600; }
-        .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
 
         .container { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
-        .viewer-layout {
-            display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: 1.5rem;
-            align-items: flex-start;
-        }
+        .viewer-layout { display: grid; grid-template-columns: 320px 1fr; gap: 1.5rem; align-items: flex-start; }
         
         .controls-panel { position: sticky; top: 100px; }
         .card { border-radius: 16px; background: rgba(18, 18, 18, 0.9); backdrop-filter: saturate(1.2) blur(20px); border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
@@ -61,64 +45,36 @@
         .card-header h2 { font-weight: 800; font-size: 1.2rem; margin: 0; }
         .card-body { padding: 1.2rem; }
 
-        .upload-area {
-            border: 2px dashed var(--border); border-radius: 12px; padding: 2rem;
-            text-align: center; cursor: pointer; transition: all 0.2s ease;
-        }
+        .upload-area { border: 2px dashed var(--border); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s ease; }
         .upload-area:hover { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.1); }
         .upload-area i { font-size: 2.5rem; color: var(--brand-1); margin-bottom: 1rem; }
         .upload-area p { color: var(--muted); font-weight: 600; }
         #file-input { display: none; }
 
-        .armor-selection-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 400px; overflow-y: auto; }
-        .armor-item {
-            padding: 0.75rem 1rem; background: var(--bg-2); border-radius: 10px;
-            border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease;
-            font-weight: 600; text-transform: capitalize;
-        }
-        .armor-item:hover { border-color: var(--text); }
-        .armor-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: white; }
+        .tab-nav { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+        .tab-btn { padding: 0.8rem 1rem; background: none; border: none; color: var(--muted); font-weight: 700; font-size: 0.9rem; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s ease; }
+        .tab-btn.active { color: var(--text); border-bottom-color: var(--brand-1); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
         
-        #viewer-canvas { border-radius: 16px; width: 100%; aspect-ratio: 4/5; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg'); background-size: cover; background-position: center; }
+        .selection-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 400px; overflow-y: auto; }
+        .selection-item { padding: 0.75rem 1rem; background: var(--bg-2); border-radius: 10px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; font-weight: 600; text-transform: capitalize; }
+        .selection-item:hover { border-color: var(--text); }
+        .selection-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: white; }
+        
+        .viewer-panel { position: sticky; top: 100px; }
+        #viewer-canvas, #image-viewer-container { border-radius: 16px; width: 100%; aspect-ratio: 4/5; background-size: cover; background-position: center; }
+        #viewer-canvas { background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg'); }
+        #image-viewer-container { background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); display: grid; place-items: center; padding: 2rem; }
+        #image-viewer { max-width: 100%; max-height: 100%; object-fit: contain; image-rendering: pixelated; transform: scale(3); transform-origin: center; }
         #viewer-canvas.dragging { cursor: grabbing; }
 
         .placeholder-text { text-align: center; color: var(--muted); padding: 2rem 0; }
+        .enchant-toggle { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.8rem; }
         
-        /* ====== NEW MOBILE SIDEBAR STYLES ====== */
-        .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
-        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
-        .mobile-nav-backdrop.show { display: block; opacity: 1; }
-        .mobile-nav-sidebar {
-            position: fixed; top: 0; left: 0; bottom: 0;
-            width: 280px; background: var(--bg-1);
-            z-index: 999; transform: translateX(-100%);
-            transition: transform 0.3s ease;
-            display: flex; flex-direction: column;
-            border-right: 1px solid var(--border);
-        }
-        .mobile-nav-sidebar.show { transform: translateX(0); }
-        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
-        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
-        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
-        .mobile-nav-user-info { display: flex; flex-direction: column; }
-        .mobile-nav-username { font-weight: 700; color: var(--text); }
-        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
-        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
-        .mobile-nav-main-links { flex-grow: 1; }
-        .mobile-nav-main-links a, .mobile-nav-footer-links a {
-            padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem;
-            font-weight: 600; color: var(--muted); transition: all 0.2s ease;
-        }
-        .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
-        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
-        .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
-
-        /* ====== MOBILE RESPONSIVENESS ====== */
         @media (max-width: 768px) {
-            .nav-actions { display: none; }
-            .mobile-nav-toggle { display: block; }
             .viewer-layout { grid-template-columns: 1fr; }
-            .controls-panel { position: static; }
+            .controls-panel, .viewer-panel { position: static; }
         }
     </style>
 </head>
@@ -129,10 +85,9 @@
                 <div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div>
                 <div>
                     <div class="brand-title">MCHUB</div>
-                    <div class="tiny">Minecraft Bedrock • community</div>
+                    <div class="tiny">Texture Pack • Viewer</div>
                 </div>
             </a>
-            <div id="nav-actions" class="nav-actions"></div>
         </nav>
     </header>
 
@@ -151,16 +106,29 @@
                     </div>
                 </div>
                 <div class="card" style="margin-top: 1.5rem;">
-                    <div class="card-header"><h2>Found Armor</h2></div>
-                    <div class="card-body">
-                        <div id="armor-list" class="armor-selection-list">
-                            <p class="placeholder-text">Upload a pack to see armor sets</p>
+                    <div class="card-body" style="padding: 1rem 1.2rem;">
+                        <div class="tab-nav">
+                            <button class="tab-btn active" data-tab="armor">Armor</button>
+                            <button class="tab-btn" data-tab="items">Items</button>
+                            <button class="tab-btn" data-tab="gui">GUI</button>
+                        </div>
+                        <div id="armor-content" class="tab-content active">
+                            <div id="armor-list" class="selection-list"><p class="placeholder-text">Upload a pack to see assets</p></div>
+                        </div>
+                        <div id="items-content" class="tab-content">
+                            <div id="item-list" class="selection-list"><p class="placeholder-text">Upload a pack to see assets</p></div>
+                        </div>
+                        <div id="gui-content" class="tab-content">
+                             <div id="gui-list" class="selection-list"><p class="placeholder-text">Upload a pack to see assets</p></div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="viewer-panel">
-                 <canvas id="viewer-canvas"></canvas>
+                <canvas id="viewer-canvas"></canvas>
+                <div id="image-viewer-container" style="display: none;">
+                    <img id="image-viewer" src="">
+                </div>
             </div>
         </div>
     </main>
@@ -168,272 +136,242 @@
     <script type="module" src="/theme.js"></script>
     <script type="module" src="/auth.js"></script>
     <script>
-        // Wait for skinview3d to be loaded
         window.addEventListener('load', function() {
-            const ARMOR_PATHS_JAVA = [
-                'assets/minecraft/textures/models/armor/netherite_layer_1.png', 
-                'assets/minecraft/textures/models/armor/netherite_layer_2.png',
-                'assets/minecraft/textures/models/armor/diamond_layer_1.png', 
-                'assets/minecraft/textures/models/armor/diamond_layer_2.png',
-                'assets/minecraft/textures/models/armor/iron_layer_1.png', 
-                'assets/minecraft/textures/models/armor/iron_layer_2.png',
-                'assets/minecraft/textures/models/armor/gold_layer_1.png', 
-                'assets/minecraft/textures/models/armor/gold_layer_2.png',
-                'assets/minecraft/textures/models/armor/chainmail_layer_1.png', 
-                'assets/minecraft/textures/models/armor/chainmail_layer_2.png',
-                'assets/minecraft/textures/models/armor/leather_layer_1.png', 
-                'assets/minecraft/textures/models/armor/leather_layer_2.png',
-                'assets/minecraft/textures/models/armor/turtle_layer_1.png'
-            ];
-            
-            const ARMOR_PATHS_BEDROCK = [
-                'textures/models/armor/netherite_1.png', 
-                'textures/models/armor/netherite_2.png',
-                'textures/models/armor/diamond_1.png', 
-                'textures/models/armor/diamond_2.png',
-                'textures/models/armor/iron_1.png', 
-                'textures/models/armor/iron_2.png',
-                'textures/models/armor/gold_1.png', 
-                'textures/models/armor/gold_2.png',
-                'textures/models/armor/chainmail_1.png', 
-                'textures/models/armor/chainmail_2.png',
-                'textures/models/armor/leather_1.png', 
-                'textures/models/armor/leather_2.png',
-                'textures/models/armor/turtle_1.png'
-            ];
+            // --- PATH DEFINITIONS ---
+            const ARMOR_PATHS = [ 'assets/minecraft/textures/models/armor/netherite_layer_1.png', 'assets/minecraft/textures/models/armor/netherite_layer_2.png', 'assets/minecraft/textures/models/armor/diamond_layer_1.png', 'assets/minecraft/textures/models/armor/diamond_layer_2.png', 'assets/minecraft/textures/models/armor/iron_layer_1.png', 'assets/minecraft/textures/models/armor/iron_layer_2.png', 'assets/minecraft/textures/models/armor/gold_layer_1.png', 'assets/minecraft/textures/models/armor/gold_layer_2.png', 'assets/minecraft/textures/models/armor/chainmail_layer_1.png', 'assets/minecraft/textures/models/armor/chainmail_layer_2.png', 'assets/minecraft/textures/models/armor/leather_layer_1.png', 'assets/minecraft/textures/models/armor/leather_layer_2.png', 'assets/minecraft/textures/models/armor/turtle_layer_1.png', 'textures/models/armor/netherite_1.png', 'textures/models/armor/netherite_2.png', 'textures/models/armor/diamond_1.png', 'textures/models/armor/diamond_2.png', 'textures/models/armor/iron_1.png', 'textures/models/armor/iron_2.png', 'textures/models/armor/gold_1.png', 'textures/models/armor/gold_2.png', 'textures/models/armor/chainmail_1.png', 'textures/models/armor/chainmail_2.png', 'textures/models/armor/leather_1.png', 'textures/models/armor/leather_2.png', 'textures/models/armor/turtle_1.png' ];
+            const ITEM_PATHS = { 'ender_pearl': 'item/ender_pearl.png', 'golden_apple': 'item/golden_apple.png', 'enchanted_golden_apple': 'item/apple_golden.png', 'iron_sword': 'item/iron_sword.png', 'golden_sword': 'item/golden_sword.png', 'diamond_sword': 'item/diamond_sword.png' };
+            const GUI_PATHS = { 'icons': 'gui/icons.png', 'widgets': 'gui/widgets.png' };
+            const GUI_SPRITES = {
+                'hotbar': { path_key: 'widgets', x: 0, y: 0, w: 182, h: 22 },
+                'heart_full': { path_key: 'icons', x: 52, y: 0, w: 9, h: 9 },
+                'heart_half': { path_key: 'icons', x: 61, y: 0, w: 9, h: 9 },
+                'heart_poison': { path_key: 'icons', x: 88, y: 0, w: 9, h: 9 },
+                'heart_wither': { path_key: 'icons', x: 106, y: 0, w: 9, h: 9 },
+            };
 
+            // --- DOM ELEMENTS ---
             const uploadArea = document.getElementById('upload-area');
             const fileInput = document.getElementById('file-input');
             const armorList = document.getElementById('armor-list');
-            const canvas = document.getElementById('viewer-canvas');
-
+            const itemList = document.getElementById('item-list');
+            const guiList = document.getElementById('gui-list');
+            const canvas3d = document.getElementById('viewer-canvas');
+            const imageViewerContainer = document.getElementById('image-viewer-container');
+            const imageViewer = document.getElementById('image-viewer');
+            
             let skinViewer = null;
-            let foundArmor = {};
+            let foundArmor = {}, foundItems = {}, foundGui = {};
 
             function initSkinViewer() {
                 try {
                     skinViewer = new skinview3d.SkinViewer({
-                        canvas: canvas,
-                        width: canvas.clientWidth,
-                        height: canvas.clientHeight
+                        canvas: canvas3d, width: canvas3d.clientWidth, height: canvas3d.clientHeight,
+                        skin: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png'
                     });
-                    
-                    // Set up auto rotation and camera
                     skinViewer.autoRotate = true;
-                    skinViewer.autoRotateSpeed = 0.5;
                     skinViewer.camera.position.set(0, 0, 40);
-                    skinViewer.animation = new skinview3d.WalkingAnimation();
-                    skinViewer.animation.speed = 0.5;
-                    
-                    // Handle window resizing
-                    new ResizeObserver(() => {
-                        if (skinViewer) {
-                            skinViewer.setSize(canvas.clientWidth, canvas.clientHeight);
-                        }
-                    }).observe(canvas);
-
-                    // Mouse controls
+                    new ResizeObserver(() => skinViewer.setSize(canvas3d.clientWidth, canvas3d.clientHeight)).observe(canvas3d);
                     let mouseDown = false;
-                    canvas.addEventListener('mousedown', () => {
-                        mouseDown = true;
-                        canvas.classList.add('dragging');
-                        skinViewer.autoRotate = false;
-                    });
-                    
-                    canvas.addEventListener('mouseup', () => {
-                        mouseDown = false;
-                        canvas.classList.remove('dragging');
-                        skinViewer.autoRotate = true;
-                    });
-                    
-                    canvas.addEventListener('mouseleave', () => {
-                        if (mouseDown) {
-                            mouseDown = false;
-                            canvas.classList.remove('dragging');
-                            skinViewer.autoRotate = true;
-                        }
-                    });
-                    
-                } catch (error) {
-                    console.error("Failed to initialize skin viewer:", error);
-                }
-            }
-
-            // NEW FUNCTION: Combines two armor layer image URLs into a single image blob URL
-            async function combineArmorLayers(url1, url2) {
-                const img1 = new Image();
-                const img2 = new Image();
-
-                // Load images from Blob URLs
-                const loadImg = (img, url) => new Promise(resolve => {
-                    img.onload = resolve;
-                    // Important for security/cross-origin if URLs were remote, safer to include
-                    img.crossOrigin = "Anonymous"; 
-                    img.src = url;
-                });
-
-                await Promise.all([loadImg(img1, url1), loadImg(img2, url2)]);
-
-                const canvas = document.createElement('canvas');
-                // Ensure canvas size accommodates both layers (assuming they are same size)
-                canvas.width = img1.width;
-                canvas.height = img1.height;
-                const ctx = canvas.getContext('2d');
-
-                // Draw Layer 1 (Base Layer)
-                ctx.drawImage(img1, 0, 0);
-                // Draw Layer 2 (Overlay Layer on top of Layer 1)
-                ctx.drawImage(img2, 0, 0);
-
-                // Convert the combined canvas back to a PNG Blob URL
-                return new Promise(resolve => {
-                    canvas.toBlob(blob => {
-                        resolve(URL.createObjectURL(blob));
-                    }, 'image/png');
-                });
+                    canvas3d.addEventListener('mousedown', () => { mouseDown = true; canvas3d.classList.add('dragging'); skinViewer.autoRotate = false; });
+                    canvas3d.addEventListener('mouseup', () => { mouseDown = false; canvas3d.classList.remove('dragging'); skinViewer.autoRotate = true; });
+                } catch (e) { console.error("Failed to init 3D viewer", e); }
             }
 
             async function handleFileSelect(file) {
                 if (!file) return;
-                
-                armorList.innerHTML = `<p class="placeholder-text"><span class="spinner" style="width:1.5em; height:1.5em; border-width:3px; display:inline-block; margin-bottom:-0.25em; margin-right: 0.5em;"></span>Searching pack...</p>`;
-                foundArmor = {};
-                
+                [armorList, itemList, guiList].forEach(list => list.innerHTML = `<p class="placeholder-text"><span class="spinner"></span> Searching...</p>`);
+                foundArmor = {}; foundItems = {}; foundGui = {};
+
                 try {
                     const zip = await JSZip.loadAsync(file);
-                    const allArmorPaths = [...ARMOR_PATHS_JAVA, ...ARMOR_PATHS_BEDROCK];
                     
-                    // Search for armor textures
-                    for (const path of allArmorPaths) {
-                        const zipFile = zip.file(path);
+                    // Search for all asset types
+                    await Promise.all([
+                        findAssets(zip, ARMOR_PATHS, foundArmor, 'armor'),
+                        findAssets(zip, ITEM_PATHS, foundItems, 'item'),
+                        findAssets(zip, GUI_PATHS, foundGui, 'gui')
+                    ]);
+                    
+                    renderArmorList();
+                    renderItemList();
+                    renderGuiList();
+
+                } catch (error) {
+                    console.error("Error processing pack:", error);
+                    [armorList, itemList, guiList].forEach(list => list.innerHTML = `<p class="placeholder-text">Could not read pack file.</p>`);
+                }
+            }
+            
+            async function findAssets(zip, paths, targetObject, type) {
+                const searchPromises = [];
+                const addAsset = async (key, path) => {
+                    const fullPaths = [`assets/minecraft/textures/${path}`, `textures/${path}`];
+                    for (const p of fullPaths) {
+                        const zipFile = zip.file(p);
                         if (zipFile) {
                             const blob = await zipFile.async('blob');
                             const url = URL.createObjectURL(blob);
-                            
-                            // Extract armor name
-                            let armorName = path.split('/').pop().replace(/(_1|_2|_layer_1|_layer_2)\.png$/, '');
-                            if (armorName === 'chainmail') armorName = 'chain';
-                            
-                            // Determine layer (1 or 2)
-                            const isLayer2 = path.includes('layer_2') || path.includes('_2.png');
-                            const layer = isLayer2 ? 'layer2' : 'layer1';
-                            
-                            if (!foundArmor[armorName]) {
-                                foundArmor[armorName] = {};
+                            if (type === 'armor') {
+                                let armorName = p.split('/').pop().replace(/(_1|_2|_layer_1|_layer_2)\.png$/, '');
+                                if (armorName === 'chainmail') armorName = 'chain';
+                                const layer = p.includes('layer_2') || p.includes('_2.png') ? 'layer2' : 'layer1';
+                                if (!targetObject[armorName]) targetObject[armorName] = {};
+                                targetObject[armorName][layer] = url;
+                            } else {
+                                targetObject[key] = url;
                             }
-                            foundArmor[armorName][layer] = url;
+                            break; 
                         }
                     }
-                    
-                    renderArmorList();
-                    
-                } catch (error) {
-                    console.error("Error processing pack:", error);
-                    armorList.innerHTML = `<p class="placeholder-text">Could not read the pack file. Make sure it's a valid .zip or .mcpack file.</p>`;
+                };
+
+                if (Array.isArray(paths)) { // Armor paths
+                    paths.forEach(p => searchPromises.push(addAsset(p, p)));
+                } else { // Item and GUI paths (object)
+                    Object.entries(paths).forEach(([key, path]) => searchPromises.push(addAsset(key, path)));
                 }
+                await Promise.all(searchPromises);
             }
-            
+
+            // --- RENDER FUNCTIONS ---
             function renderArmorList() {
-                const armorNames = Object.keys(foundArmor);
-                
-                if (armorNames.length === 0) {
-                    armorList.innerHTML = `<p class="placeholder-text">No standard armor textures found in this pack.</p>`;
-                    return;
-                }
-                
-                // Sort armor names for consistent display
-                armorNames.sort();
-                
-                armorList.innerHTML = armorNames.map(name => 
-                    `<div class="armor-item" data-armor="${name}">${name}</div>`
-                ).join('');
-                
-                // Add click handlers
-                armorList.querySelectorAll('.armor-item').forEach(item => {
-                    item.addEventListener('click', async function() { // ADDED async
-                        // Update active state
-                        armorList.querySelectorAll('.armor-item').forEach(el => el.classList.remove('active'));
-                        this.classList.add('active');
-                        
-                        // Apply the armor
-                        await applyArmor(this.dataset.armor); // ADDED await
-                    });
+                const names = Object.keys(foundArmor);
+                if (names.length === 0) return armorList.innerHTML = `<p class="placeholder-text">No standard armor found.</p>`;
+                armorList.innerHTML = names.sort().map(name => `<div class="selection-item" data-asset="${name}">${name}</div>`).join('');
+                armorList.querySelectorAll('.selection-item').forEach(item => item.onclick = () => {
+                    armorList.querySelectorAll('.selection-item').forEach(el => el.classList.remove('active'));
+                    item.classList.add('active');
+                    applyArmor(foundArmor[item.dataset.asset]);
                 });
-
-                // Auto-select first armor
-                const firstItem = armorList.querySelector('.armor-item');
-                if (firstItem) {
-                    firstItem.click();
-                }
+                if (armorList.firstChild) armorList.firstChild.click();
             }
 
-            // UPDATED FUNCTION: Correctly combines both layers or uses one
-            async function applyArmor(armorName) {
-                if (!skinViewer || !foundArmor[armorName]) {
-                    console.error("Cannot apply armor:", armorName);
-                    return;
-                }
-                
-                const armorSet = foundArmor[armorName];
-                let skinUrl = null;
+            function renderItemList() {
+                const names = Object.keys(foundItems);
+                if (names.length === 0) return itemList.innerHTML = `<p class="placeholder-text">No standard items found.</p>`;
+                itemList.innerHTML = names.sort().map(name => {
+                    const isSword = name.includes('sword');
+                    return `<div class="selection-item" data-asset="${name}" data-url="${foundItems[name]}">
+                                ${name.replace(/_/g, ' ')}
+                                ${isSword ? `<label class="enchant-toggle"><input type="checkbox" class="enchant-check"> Enchanted</label>` : ''}
+                            </div>`;
+                }).join('');
+                itemList.querySelectorAll('.selection-item').forEach(item => item.onclick = (e) => {
+                    if (e.target.type === 'checkbox') return;
+                    itemList.querySelectorAll('.selection-item').forEach(el => el.classList.remove('active'));
+                    item.classList.add('active');
+                    const url = item.dataset.url;
+                    const enchanted = item.querySelector('.enchant-check')?.checked;
+                    displayImage(url, enchanted);
+                });
+                itemList.querySelectorAll('.enchant-check').forEach(box => box.onchange = () => {
+                    if (box.closest('.selection-item').classList.contains('active')) {
+                        box.closest('.selection-item').click();
+                    }
+                });
+                 if (itemList.firstChild) itemList.firstChild.click();
+            }
 
+             async function renderGuiList() {
+                const names = Object.keys(foundGui);
+                if (names.length === 0) return guiList.innerHTML = `<p class="placeholder-text">No standard GUI textures found.</p>`;
+                guiList.innerHTML = '';
+                for (const key of Object.keys(GUI_SPRITES).sort()) {
+                    const sprite = GUI_SPRITES[key];
+                    const sheetUrl = foundGui[sprite.path_key];
+                    if (sheetUrl) {
+                        const spriteUrl = await extractSprite(sheetUrl, sprite.x, sprite.y, sprite.w, sprite.h);
+                        const item = document.createElement('div');
+                        item.className = 'selection-item';
+                        item.dataset.url = spriteUrl;
+                        item.textContent = key.replace(/_/g, ' ');
+                        item.onclick = () => {
+                            guiList.querySelectorAll('.selection-item').forEach(el => el.classList.remove('active'));
+                            item.classList.add('active');
+                            displayImage(spriteUrl, false);
+                        };
+                        guiList.appendChild(item);
+                    }
+                }
+                 if (guiList.firstChild) guiList.firstChild.click();
+            }
+
+            // --- DISPLAY/APPLY FUNCTIONS ---
+            async function applyArmor(armorSet) {
+                let skinUrl = 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png';
                 if (armorSet.layer1 && armorSet.layer2) {
-                    // SOLUTION: Combine Layer 1 and Layer 2 into a single image
                     skinUrl = await combineArmorLayers(armorSet.layer1, armorSet.layer2);
-                } else if (armorSet.layer1) {
-                    // Fallback to Layer 1 only
-                    skinUrl = armorSet.layer1;
-                } else if (armorSet.layer2) {
-                    // Fallback to Layer 2 only
-                    skinUrl = armorSet.layer2;
+                } else if (armorSet.layer1 || armorSet.layer2) {
+                    skinUrl = armorSet.layer1 || armorSet.layer2;
                 }
+                skinViewer.loadSkin(skinUrl);
+            }
 
-                if (skinUrl) {
-                    // Load the combined/single image as the player skin texture (the necessary workaround)
-                    skinViewer.loadSkin(skinUrl);
+            async function displayImage(url, enchanted) {
+                if (enchanted) {
+                    const enchantedUrl = await createEnchantedVersion(url);
+                    imageViewer.src = enchantedUrl;
                 } else {
-                    console.warn("No armor texture found for:", armorName);
+                    imageViewer.src = url;
                 }
             }
 
-            // File upload handlers
-            uploadArea.addEventListener('click', () => fileInput.click());
+            // --- UTILITY FUNCTIONS ---
+            const loadImage = url => new Promise((res, rej) => { const i = new Image(); i.crossOrigin = "Anonymous"; i.onload = () => res(i); i.onerror = rej; i.src = url; });
+            async function combineArmorLayers(url1, url2) {
+                const [img1, img2] = await Promise.all([loadImage(url1), loadImage(url2)]);
+                const c = document.createElement('canvas'); c.width = img1.width; c.height = img1.height;
+                const ctx = c.getContext('2d'); ctx.drawImage(img1, 0, 0); ctx.drawImage(img2, 0, 0);
+                return new Promise(res => c.toBlob(b => res(URL.createObjectURL(b)), 'image/png'));
+            }
+            async function createEnchantedVersion(url) {
+                const img = await loadImage(url);
+                const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+                const ctx = c.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                ctx.globalCompositeOperation = 'source-atop';
+                ctx.fillStyle = 'rgba(200, 80, 255, 0.4)';
+                ctx.fillRect(0, 0, c.width, c.height);
+                ctx.globalCompositeOperation = 'source-over';
+                return c.toDataURL();
+            }
+             async function extractSprite(sheetUrl, x, y, w, h) {
+                const img = await loadImage(sheetUrl);
+                const c = document.createElement('canvas'); c.width = w; c.height = h;
+                const ctx = c.getContext('2d');
+                ctx.drawImage(img, x, y, w, h, 0, 0, w, h);
+                return c.toDataURL();
+            }
             
-            fileInput.addEventListener('change', (e) => {
-                if (e.target.files && e.target.files[0]) {
-                    handleFileSelect(e.target.files[0]);
-                }
-            });
+            // --- EVENT LISTENERS ---
+            uploadArea.onclick = () => fileInput.click();
+            fileInput.onchange = (e) => handleFileSelect(e.target.files[0]);
+            ['dragover', 'drop'].forEach(evt => uploadArea.addEventListener(evt, e => e.preventDefault()));
+            uploadArea.addEventListener('drop', (e) => handleFileSelect(e.dataTransfer.files[0]));
             
-            // Drag and drop handlers
-            uploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                uploadArea.style.borderColor = 'var(--brand-1)';
-                uploadArea.style.background = 'rgba(var(--brand-1-rgb), 0.1)';
-            });
-            
-            uploadArea.addEventListener('dragleave', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                uploadArea.style.borderColor = 'var(--border)';
-                uploadArea.style.background = 'transparent';
-            });
-            
-            uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                uploadArea.style.borderColor = 'var(--border)';
-                uploadArea.style.background = 'transparent';
-                
-                const files = e.dataTransfer.files;
-                if (files && files.length > 0) {
-                    handleFileSelect(files[0]);
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.onclick = () => {
+                document.querySelectorAll('.tab-btn, .tab-content').forEach(el => el.classList.remove('active'));
+                btn.classList.add('active');
+                const content = document.getElementById(btn.dataset.tab + '-content');
+                content.classList.add('active');
+
+                if (btn.dataset.tab === 'armor') {
+                    canvas3d.style.display = 'block';
+                    imageViewerContainer.style.display = 'none';
+                    if (armorList.querySelector('.active')) armorList.querySelector('.active').click();
+                } else {
+                    canvas3d.style.display = 'none';
+                    imageViewerContainer.style.display = 'grid';
+                    if (btn.dataset.tab === 'items' && itemList.querySelector('.active')) {
+                        itemList.querySelector('.active').click();
+                    } else if (btn.dataset.tab === 'gui' && guiList.querySelector('.active')) {
+                         guiList.querySelector('.active').click();
+                    }
                 }
             });
 
-            // Initialize the viewer
-            setTimeout(initSkinViewer, 100);
+            // --- INITIALIZATION ---
+            initSkinViewer();
         });
     </script>
 </body>
