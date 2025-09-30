@@ -97,13 +97,12 @@
 
         .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
         
-        /* Armor Preview Styles */
         #skin-viewer-canvas { width: 100%; aspect-ratio: 4/5; border-radius: 12px; background-image: url(https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg); background-size: cover; background-position: center; cursor: grab; }
+        #skin-viewer-canvas.dragging { cursor: grabbing; }
         .armor-selection-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 200px; overflow-y: auto; margin-top: 1rem; }
         .armor-item { padding: 0.5rem 0.8rem; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s ease; font-weight: 600; font-size: 0.85rem; text-transform: capitalize; }
         .armor-item:hover, .armor-item.active { border-color: var(--brand-1); background: rgba(222, 33, 42, 0.2); color: white; }
 
-        /* Edit Modal Styles */
         .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 1000; }
         .modal.show { display: flex; }
         .modal-dialog { background: var(--bg-1); border: 1px solid var(--border); border-radius: 20px; width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
@@ -128,6 +127,24 @@
         .tag-checkbox { padding: .4rem .8rem; border-radius: 8px; background: var(--bg-2); border: 1px solid var(--border); cursor: pointer; font-weight: 600; font-size: 0.85rem; text-transform: capitalize; }
         .tag-checkbox.selected { background: var(--brand-1); border-color: var(--brand-2); color: white; }
 
+        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
+        .mobile-nav-backdrop.show { display: block; opacity: 1; }
+        .mobile-nav-sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; background: var(--bg-1); z-index: 999; transform: translateX(-100%); transition: transform 0.3s ease; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
+        .mobile-nav-sidebar.show { transform: translateX(0); }
+        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
+        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
+        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+        .mobile-nav-user-info { display: flex; flex-direction: column; }
+        .mobile-nav-username { font-weight: 700; color: var(--text); }
+        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
+        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
+        .mobile-nav-main-links { flex-grow: 1; }
+        .mobile-nav-main-links a, .mobile-nav-footer-links a { padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem; font-weight: 600; color: var(--muted); transition: all 0.2s ease; }
+        .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
+        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
+        .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
+
+
         @media (max-width: 992px) { .pack-layout { grid-template-columns: 1fr; } .sidebar-card { position: static; order: -1; } }
         @media (max-width: 768px) { .nav-actions { display: none; } .mobile-nav-toggle { display: block; } }
     </style>
@@ -140,6 +157,7 @@
                 <div><div class="brand-title">MCHUB</div><div class="tiny">Minecraft Bedrock • community</div></div>
             </a>
             <div id="nav-actions" class="nav-actions"></div>
+            <button class="mobile-nav-toggle"><i class="fa-solid fa-bars"></i></button>
         </div>
     </header>
 
@@ -215,12 +233,10 @@
         let currentPackData = null; // Store current pack data for editing
         let currentUserRole = 'viewer'; // Default to viewer, update from auth.js
 
-        // Constants for tags, colors, resolutions (match texturepacks.html for consistency)
         const ALL_TAGS = ['pvp', 'bedwars', 'skywars', 'anime', 'crystal pvp', 'survival', 'visual'];
         const ALL_COLORS = [{key: 'none', hex: '#4b5563', icon: 'fa-solid fa-ban'}, {key: 'red',hex: '#ef4444'}, {key: 'blue',hex: '#3b82f6'}, {key: 'green',hex: '#22c55e'}, {key: 'yellow',hex: '#eab308'}, {key: 'purple',hex: '#a855f7'}, {key: 'pink',hex: '#ec4899'}, {key: 'orange',hex: '#f97316'}, {key: 'teal',hex: '#14b8a6'}, {key: 'gray',hex: '#6b7280'}, {key: 'black',hex: '#1f2937'}];
         const ALL_RESOLUTIONS = ['16x', '32x', '64x', '128x'];
 
-        // --- Toast Notifications ---
         function showToast(message, type = 'error') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -233,7 +249,6 @@
             }, 4000);
         }
 
-        // --- Utility Functions ---
         function formatDate(isoString) {
             if (!isoString) return 'N/A';
             return new Date(isoString).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -249,7 +264,6 @@
             return (match && match[2].length === 11) ? match[2] : null;
         }
 
-        // --- Download Handler ---
         async function handleDownload(packId, filename, packName) {
             showToast('Starting download...', 'success');
             try {
@@ -283,9 +297,8 @@
             }
         }
 
-        // --- Render Main Page ---
         function renderPackPage(pack) {
-            currentPackData = pack; // Store for editing
+            currentPackData = pack; 
             document.title = `${pack.name} — MCHub`;
             
             const packIcon = pack.icon_url 
@@ -316,7 +329,7 @@
                         
                         <div class="media-gallery">
                             <div id="main-media" class="main-media">
-                               <img src="${packIcon}" alt="${escapeHtml(pack.name)} icon" style="width:100%; height:100%; object-fit:cover;">
+                                <!-- Main media will be dynamically set -->
                             </div>
                             <div class="thumbnail-strip" id="thumbnail-strip">
                                 <!-- Thumbnails will be generated here -->
@@ -376,8 +389,8 @@
             `;
             
             generateMediaThumbnails(pack);
-            initSkinViewer(); // Initialize skin viewer once, it'll load default skin
-            // Armor preview button handler
+            initSkinViewer();
+            
             document.getElementById('preview-armor-btn').addEventListener('click', () => {
                 loadAndProcessPackForPreview(pack);
             });
@@ -390,26 +403,34 @@
             const container = document.getElementById('thumbnail-strip');
             container.innerHTML = '';
             
-            // Add pack icon first
-            let mediaItems = [{ type: 'image', url: pack.icon_url || `https://placehold.co/280x280/1c1c1c/e8eefc?text=ICON` }];
-            
-            // Add YouTube thumbnail if URL exists
-            if (pack.youtube_url) {
-                const videoId = getYouTubeVideoId(pack.youtube_url);
-                if (videoId) {
-                    mediaItems.push({
-                        type: 'youtube',
-                        url: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
-                        videoId: videoId
-                    });
-                }
+            let mediaItems = [];
+            const videoId = pack.youtube_url ? getYouTubeVideoId(pack.youtube_url) : null;
+
+            if (videoId) {
+                mediaItems.push({
+                    type: 'youtube',
+                    url: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+                    videoId: videoId
+                });
+            } else {
+                // If no youtube video, use pack icon as the first item
+                mediaItems.push({ type: 'image', url: pack.icon_url || `https://placehold.co/280x280/1c1c1c/e8eefc?text=ICON` });
             }
             
-            // Add other media gallery images
             if (Array.isArray(pack.media_gallery)) {
                 pack.media_gallery.forEach(url => mediaItems.push({ type: 'image', url }));
             }
             
+            // Set the initial main media view
+            const mainMediaContainer = document.getElementById('main-media');
+            const firstItem = mediaItems[0];
+            if (firstItem.type === 'youtube') {
+                mainMediaContainer.innerHTML = `<iframe src="https://www.youtube.com/embed/${firstItem.videoId}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+            } else {
+                mainMediaContainer.innerHTML = `<img src="${firstItem.url}" alt="Pack preview" style="width:100%; height:100%; object-fit:cover;">`;
+            }
+
+            // Generate thumbnails
             mediaItems.forEach((item, index) => {
                 const thumb = document.createElement('div');
                 thumb.className = 'thumbnail';
@@ -426,7 +447,6 @@
                 thumb.addEventListener('click', () => {
                     document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
                     thumb.classList.add('active');
-                    const mainMediaContainer = document.getElementById('main-media');
                     if (item.type === 'youtube') {
                         mainMediaContainer.innerHTML = `<iframe src="https://www.youtube.com/embed/${item.videoId}?autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
                     } else {
@@ -437,12 +457,13 @@
             });
         }
 
+
         function showError(title, message) {
             pageContainer.innerHTML = `<div class="error-container"><h2>${title}</h2><p>${message}</p></div>`;
         }
         
-        // --- 3D Armor Preview Logic ---
-        const ARMOR_PATHS = [ 'assets/minecraft/textures/models/armor/netherite_layer_1.png', 'assets/minecraft/textures/models/armor/netherite_layer_2.png', 'textures/models/armor/netherite_1.png', 'textures/models/armor/netherite_2.png', 'assets/minecraft/textures/models/armor/diamond_layer_1.png', 'assets/minecraft/textures/models/armor/diamond_layer_2.png', 'textures/models/armor/diamond_1.png', 'textures/models/armor/diamond_2.png', 'assets/minecraft/textures/models/armor/iron_layer_1.png', 'assets/minecraft/textures/models/armor/iron_layer_2.png', 'textures/models/armor/iron_1.png', 'textures/models/armor/iron_2.png' ];
+        const ARMOR_PATHS_JAVA = [ 'assets/minecraft/textures/models/armor/netherite_layer_1.png', 'assets/minecraft/textures/models/armor/netherite_layer_2.png', 'assets/minecraft/textures/models/armor/diamond_layer_1.png', 'assets/minecraft/textures/models/armor/diamond_layer_2.png', 'assets/minecraft/textures/models/armor/iron_layer_1.png', 'assets/minecraft/textures/models/armor/iron_layer_2.png', 'assets/minecraft/textures/models/armor/gold_layer_1.png', 'assets/minecraft/textures/models/armor/gold_layer_2.png', 'assets/minecraft/textures/models/armor/chainmail_layer_1.png', 'assets/minecraft/textures/models/armor/chainmail_layer_2.png', 'assets/minecraft/textures/models/armor/leather_layer_1.png', 'assets/minecraft/textures/models/armor/leather_layer_2.png', 'assets/minecraft/textures/models/armor/turtle_layer_1.png' ];
+        const ARMOR_PATHS_BEDROCK = [ 'textures/models/armor/netherite_1.png', 'textures/models/armor/netherite_2.png', 'textures/models/armor/diamond_1.png', 'textures/models/armor/diamond_2.png', 'textures/models/armor/iron_1.png', 'textures/models/armor/iron_2.png', 'textures/models/armor/gold_1.png', 'textures/models/armor/gold_2.png', 'textures/models/armor/chainmail_1.png', 'textures/models/armor/chainmail_2.png', 'textures/models/armor/leather_1.png', 'textures/models/armor/leather_2.png', 'textures/models/armor/turtle_1.png' ];
 
         function initSkinViewer() {
             try {
@@ -457,25 +478,10 @@
                 skinViewer.camera.position.set(0, 0, 40);
                 new ResizeObserver(() => skinViewer.setSize(canvas.clientWidth, canvas.clientHeight)).observe(canvas);
                 
-                // Mouse controls for rotation
                 let mouseDown = false;
-                canvas.addEventListener('mousedown', () => {
-                    mouseDown = true;
-                    canvas.style.cursor = 'grabbing';
-                    skinViewer.autoRotate = false;
-                });
-                canvas.addEventListener('mouseup', () => {
-                    mouseDown = false;
-                    canvas.style.cursor = 'grab';
-                    skinViewer.autoRotate = true;
-                });
-                canvas.addEventListener('mouseleave', () => {
-                    if (mouseDown) {
-                        mouseDown = false;
-                        canvas.style.cursor = 'grab';
-                        skinViewer.autoRotate = true;
-                    }
-                });
+                canvas.addEventListener('mousedown', () => { mouseDown = true; canvas.classList.add('dragging'); skinViewer.autoRotate = false; });
+                canvas.addEventListener('mouseup', () => { mouseDown = false; canvas.classList.remove('dragging'); skinViewer.autoRotate = true; });
+                canvas.addEventListener('mouseleave', () => { if(mouseDown) { mouseDown = false; canvas.classList.remove('dragging'); skinViewer.autoRotate = true; }});
 
             } catch (e) { console.error("Failed to init 3D viewer", e); }
         }
@@ -497,14 +503,16 @@
                 armorContainer.innerHTML = `<p class="tiny" style="text-align: center;">Unzipping and searching for armor...</p>`;
                 
                 const zip = await JSZip.loadAsync(fileBlob);
+                const allArmorPaths = [...ARMOR_PATHS_JAVA, ...ARMOR_PATHS_BEDROCK];
                 
                 let foundArmor = {};
-                for (const path of ARMOR_PATHS) {
+                for (const path of allArmorPaths) {
                     const file = zip.file(path);
                     if (file) {
                         const blob = await file.async('blob');
                         const url = URL.createObjectURL(blob);
                         let name = path.split('/').pop().replace(/(_1|_2|_layer_1|_layer_2)\.png$/, '');
+                        if (name === 'chainmail') name = 'chain';
                         const layer = path.includes('_2') || path.includes('layer_2') ? 'layer2' : 'layer1';
                         if (!foundArmor[name]) foundArmor[name] = {};
                         foundArmor[name][layer] = url;
@@ -527,7 +535,6 @@
                         };
                         list.appendChild(item);
                     });
-                    // Select the first armor item automatically
                     if (list.firstChild) list.firstChild.click();
                 }
 
@@ -562,19 +569,17 @@
         }
         const loadImage = (url) => new Promise(res => { const i = new Image(); i.onload = () => res(i); i.src = url; });
 
-        // --- Edit Pack Modal Functions ---
-        let currentEditMediaGallery = []; // Holds media gallery items for editing
+        let currentEditMediaGallery = []; 
 
-        function openEditPackModal() {
+        window.openEditPackModal = function() {
             const modal = document.getElementById('edit-pack-modal');
             document.getElementById('edit-pack-id').value = currentPackData.id;
             document.getElementById('edit-pack-name').value = currentPackData.name || '';
             document.getElementById('edit-pack-description').value = currentPackData.description || '';
             document.getElementById('edit-youtube-url').value = currentPackData.youtube_url || '';
             
-            // Populate colors
             const colorsContainer = document.getElementById('edit-pack-colors');
-            colorsContainer.innerHTML = ''; // Clear previous swatches
+            colorsContainer.innerHTML = '';
             ALL_COLORS.forEach(color => {
                 const swatch = document.createElement('button');
                 swatch.type = 'button';
@@ -585,14 +590,12 @@
                 swatch.onclick = () => {
                     document.querySelectorAll('#edit-pack-colors .swatch').forEach(s => s.classList.remove('active'));
                     swatch.classList.add('active');
-                    currentPackData.color = color.key;
                 };
                 colorsContainer.appendChild(swatch);
             });
 
-            // Populate resolutions
             const resolutionsContainer = document.getElementById('edit-pack-resolutions');
-            resolutionsContainer.innerHTML = ''; // Clear previous
+            resolutionsContainer.innerHTML = '';
             ALL_RESOLUTIONS.forEach(resolution => {
                 const resBtn = document.createElement('button');
                 resBtn.type = 'button';
@@ -601,40 +604,29 @@
                 resBtn.onclick = () => {
                     document.querySelectorAll('#edit-pack-resolutions .tag-checkbox').forEach(b => b.classList.remove('selected'));
                     resBtn.classList.add('selected');
-                    currentPackData.resolution = resolution;
                 };
                 resolutionsContainer.appendChild(resBtn);
             });
 
-            // Populate tags
             const tagsContainer = document.getElementById('edit-pack-tags');
-            tagsContainer.innerHTML = ''; // Clear previous tags
+            tagsContainer.innerHTML = '';
             const currentPackTags = new Set((currentPackData.tags || '').split(',').map(tag => tag.trim()).filter(tag => tag !== ''));
             ALL_TAGS.forEach(tag => {
                 const tagCheckbox = document.createElement('button');
                 tagCheckbox.type = 'button';
                 tagCheckbox.className = `tag-checkbox ${currentPackTags.has(tag) ? 'selected' : ''}`;
                 tagCheckbox.textContent = tag;
-                tagCheckbox.onclick = () => {
-                    tagCheckbox.classList.toggle('selected');
-                    if (tagCheckbox.classList.contains('selected')) {
-                        currentPackTags.add(tag);
-                    } else {
-                        currentPackTags.delete(tag);
-                    }
-                    currentPackData.tags = Array.from(currentPackTags).join(',');
-                };
+                tagCheckbox.onclick = () => tagCheckbox.classList.toggle('selected');
                 tagsContainer.appendChild(tagCheckbox);
             });
 
-            // Populate media gallery
             currentEditMediaGallery = Array.isArray(currentPackData.media_gallery) ? [...currentPackData.media_gallery] : [];
             renderEditMediaGallery();
 
             modal.classList.add('show');
         }
 
-        function closeEditPackModal() {
+        window.closeEditPackModal = function() {
             document.getElementById('edit-pack-modal').classList.remove('show');
         }
 
@@ -650,18 +642,11 @@
                 const item = document.createElement('div');
                 item.className = 'media-item';
                 const videoId = getYouTubeVideoId(url);
-                if (videoId) {
-                    item.innerHTML = `
-                        <img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg" alt="YouTube thumbnail">
-                        <i class="fa-solid fa-play play-icon"></i>
-                        <button type="button" class="remove-media-btn" onclick="removeMediaFromGallery(${index})"><i class="fa-solid fa-xmark"></i></button>
-                    `;
-                } else {
-                    item.innerHTML = `
-                        <img src="${url}" alt="Media thumbnail">
-                        <button type="button" class="remove-media-btn" onclick="removeMediaFromGallery(${index})"><i class="fa-solid fa-xmark"></i></button>
-                    `;
-                }
+                item.innerHTML = `
+                    <img src="${videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : url}" alt="Media thumbnail">
+                    ${videoId ? '<i class="fa-solid fa-play play-icon"></i>' : ''}
+                    <button type="button" class="remove-media-btn" onclick="removeMediaFromGallery(${index})"><i class="fa-solid fa-xmark"></i></button>
+                `;
                 grid.appendChild(item);
             });
         }
@@ -686,40 +671,29 @@
         document.getElementById('edit-pack-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const packId = document.getElementById('edit-pack-id').value;
-            const packName = document.getElementById('edit-pack-name').value.trim();
-            const description = document.getElementById('edit-pack-description').value.trim();
-            const youtubeUrl = document.getElementById('edit-youtube-url').value.trim();
             
             const updates = {
-                name: packName,
-                description: description,
-                color: currentPackData.color,
-                tags: currentPackData.tags,
-                resolution: currentPackData.resolution,
-                youtube_url: youtubeUrl || null,
-                media_gallery: currentEditMediaGallery.length > 0 ? currentEditMediaGallery : null // Save as null if empty
+                name: document.getElementById('edit-pack-name').value.trim(),
+                description: document.getElementById('edit-pack-description').value.trim(),
+                youtube_url: document.getElementById('edit-youtube-url').value.trim() || null,
+                color: document.querySelector('#edit-pack-colors .swatch.active')?.title || 'none',
+                resolution: document.querySelector('#edit-pack-resolutions .tag-checkbox.selected')?.textContent || '16x',
+                tags: Array.from(document.querySelectorAll('#edit-pack-tags .tag-checkbox.selected')).map(el => el.textContent).join(','),
+                media_gallery: currentEditMediaGallery.length > 0 ? currentEditMediaGallery : null
             };
 
             try {
-                const { error } = await supabase
-                    .from('packs')
-                    .update(updates)
-                    .eq('id', packId);
-
+                const { error } = await supabase.from('packs').update(updates).eq('id', packId);
                 if (error) throw error;
-
                 showToast('Pack updated successfully!', 'success');
                 closeEditPackModal();
-                // Reload pack data to reflect changes on page
                 loadPack();
-
             } catch (error) {
                 console.error('Error updating pack:', error);
                 showToast('Failed to update pack: ' + error.message, 'error');
             }
         });
 
-        // --- Load Pack Data on Page Load ---
         async function loadPack() {
             const urlParams = new URLSearchParams(window.location.search);
             const packId = urlParams.get('id');
@@ -744,14 +718,8 @@
                     throw new Error("Pack data could not be found.");
                 }
 
-                // Ensure media_gallery is an array if it exists
                 if (pack.media_gallery && typeof pack.media_gallery === 'string') {
-                    try {
-                        pack.media_gallery = JSON.parse(pack.media_gallery);
-                    } catch (e) {
-                        console.error("Failed to parse media_gallery string:", e);
-                        pack.media_gallery = [];
-                    }
+                    try { pack.media_gallery = JSON.parse(pack.media_gallery); } catch (e) { pack.media_gallery = []; }
                 } else if (!Array.isArray(pack.media_gallery)) {
                     pack.media_gallery = [];
                 }
@@ -764,23 +732,17 @@
             }
         }
 
-        // --- Auth State Change for Admin Check ---
         document.addEventListener('auth-ready', async (event) => {
             const { user } = event.detail;
             if (user) {
                 const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
                 if (profile && profile.role === 'admin') {
                     currentUserRole = 'admin';
-                    // Re-render the page to show the edit button if auth loads after pack
-                    if (currentPackData) {
-                        renderPackPage(currentPackData);
-                    }
+                    if (currentPackData) renderPackPage(currentPackData);
                 }
             } else {
                 currentUserRole = 'viewer';
-                 if (currentPackData) {
-                    renderPackPage(currentPackData); // Remove edit button if user logs out
-                }
+                 if (currentPackData) renderPackPage(currentPackData);
             }
         });
 
