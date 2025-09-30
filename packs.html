@@ -101,8 +101,8 @@
         .armor-item:hover { border-color: var(--text); }
         .armor-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); }
         
-        #item-viewer-container, #gui-viewer-container { border-radius: 12px; width: 100%; aspect-ratio: 1 / 1; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); background-size: cover; background-position: center; display: grid; place-items: center; padding: 1rem; }
-        #item-viewer-canvas, #gui-viewer-canvas { width: 100%; height: 100%; image-rendering: pixelated; }
+        #item-viewer-container { border-radius: 12px; width: 100%; aspect-ratio: 1 / 1; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); background-size: cover; background-position: center; display: grid; place-items: center; padding: 1rem; }
+        #item-viewer-canvas { width: 100%; height: 100%; image-rendering: pixelated; }
         
         .item-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 0.5rem; margin-top: 1rem; }
         .item-icon-card { position: relative; width: 100%; aspect-ratio: 1/1; background: var(--bg-2); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s ease; display: grid; place-items: center; padding: 4px; }
@@ -168,9 +168,6 @@
         </div>
     </header>
 
-    <div class="mobile-nav-backdrop"></div>
-    <div class="mobile-nav-sidebar"></div>
-
     <main class="container" id="page-container">
         <div class="loading-container"><div class="spinner"></div><p>Loading Pack...</p></div>
     </main>
@@ -178,11 +175,10 @@
     <div id="toast-container"></div>
     
     <script type="module" src="/theme.js"></script>
-    <script type="module" src="/auth.js"></script>
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         const pageContainer = document.getElementById('page-container');
@@ -661,11 +657,23 @@
         }
 
         function setupMobileNav(profile, user) {
-            const hamburgerBtn = document.querySelector('.mobile-nav-toggle');
-            const sidebar = document.querySelector('.mobile-nav-sidebar');
-            const backdrop = document.querySelector('.mobile-nav-backdrop');
+            const header = document.querySelector('header');
+            if (!header) return;
+            const navContainer = header.querySelector('.nav');
+            if (!navContainer) return;
 
-            if (!hamburgerBtn || !sidebar || !backdrop) return;
+            navContainer.querySelector('.mobile-nav-toggle')?.remove();
+            document.querySelector('.mobile-nav-sidebar')?.remove();
+            document.querySelector('.mobile-nav-backdrop')?.remove();
+
+            const hamburgerBtn = document.createElement('button');
+            hamburgerBtn.className = 'mobile-nav-toggle';
+            hamburgerBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
+
+            const sidebar = document.createElement('div');
+            sidebar.className = 'mobile-nav-sidebar';
+            const backdrop = document.createElement('div');
+            backdrop.className = 'mobile-nav-backdrop';
 
             let userHeader, mainLinks, footerLinks;
 
@@ -682,12 +690,16 @@
 
             sidebar.innerHTML = `<button class="mobile-nav-close"><i class="fa-solid fa-xmark"></i></button>${userHeader}<nav class="mobile-nav-main-links">${mainLinks}</nav><nav class="mobile-nav-footer-links">${footerLinks}</nav>`;
             
+            navContainer.appendChild(hamburgerBtn);
+            document.body.appendChild(sidebar);
+            document.body.appendChild(backdrop);
+
             const openMenu = () => { sidebar.classList.add('show'); backdrop.classList.add('show'); };
             const closeMenu = () => { sidebar.classList.remove('show'); backdrop.classList.remove('show'); };
 
-            hamburgerBtn.onclick = openMenu;
-            sidebar.querySelector('.mobile-nav-close').onclick = closeMenu;
-            backdrop.onclick = closeMenu;
+            hamburgerBtn.addEventListener('click', openMenu);
+            sidebar.querySelector('.mobile-nav-close').addEventListener('click', closeMenu);
+            backdrop.addEventListener('click', closeMenu);
 
             if (profile) {
                 sidebar.querySelector('#mobile-logout-btn')?.addEventListener('click', async (e) => { e.preventDefault(); await supabase.auth.signOut(); });
@@ -696,13 +708,26 @@
         
         document.addEventListener('auth-ready', async (event) => {
             const { user, profile } = event.detail;
+            const navActions = document.getElementById('nav-actions');
+
+            if (user && profile) {
+                const avatarContent = profile.avatar_url ? `<img src="${profile.avatar_url}" alt="User Avatar" class="nav-avatar-img">` : `<img src="https://placehold.co/28x28/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}" class="nav-avatar-img">`;
+                navActions.innerHTML = `<a class="btn ghost" href="/">Home</a><a class="btn ghost" href="/texturepacks.html">Texture Packs</a><div class="user-dropdown"><button class="user-menu-btn">${avatarContent}<span>${profile.username}</span><i class="fa-solid fa-chevron-down"></i></button><div class="dropdown-content"><a href="/profile.html?user=${profile.username}"><i class="fa-solid fa-user"></i> My Profile</a><a href="/settings.html"><i class="fa-solid fa-cog"></i> Settings</a><a href="#" id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></div></div>`;
+                navActions.querySelector('#logout-btn').addEventListener('click', async (e) => { e.preventDefault(); await supabase.auth.signOut(); });
+                const btn = navActions.querySelector('.user-menu-btn');
+                const content = navActions.querySelector('.dropdown-content');
+                btn.addEventListener('click', (e) => { e.stopPropagation(); content.classList.toggle('show');});
+            } else {
+                navActions.innerHTML = `<a class="btn ghost" href="/">Home</a><a class="btn ghost" href="/texturepacks.html">Texture Packs</a><a class="btn primary" href="/login.html">Login</a>`;
+            }
+
             setupMobileNav(profile, user);
             
             if (user) {
                 const { data: userProfile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
                 if (userProfile) currentUserRole = userProfile.role;
             }
-            if (currentPackData) renderPackPage(currentPackData); 
+            if (currentPackData) renderPackPage(currentPackData); // Re-render to show admin buttons if needed
         });
         
         window.addEventListener('click', (e) => {
@@ -714,4 +739,3 @@
     </script>
 </body>
 </html>
-
