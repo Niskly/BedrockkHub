@@ -601,7 +601,10 @@
             }
             itemGrid.innerHTML = itemKeys.map(key => {
                 const item = foundAssets.items[key];
-                const enchantable = ENCHANTABLE_ITEMS.includes(key);
+                
+                // REVERTED LOGIC: Use loose matching for enchantable items (what the user requested back)
+                const enchantable = key.includes('sword') || key.includes('apple') || key.includes('bow') || key.includes('fishing_rod') || key.includes('totem') || key.includes('crossbow');
+
                 return `
                 <div class="item-icon-card ${enchantable ? 'enchantable' : ''}" data-key="${key}">
                     <img src="${item.url}" alt="${key.replace(/_/g, ' ')}">
