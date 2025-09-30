@@ -114,10 +114,41 @@
         .enchant-btn.active { background: #a855f7; color: white; border-color: #c084fc; }
         #gui-viewer-container { border-radius: 12px; width: 100%; aspect-ratio: 1/1; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); background-size: cover; background-position: center; display: grid; place-items: center; padding: 1rem; }
         #gui-viewer-canvas { max-width: 100%; max-height: 100%; object-fit: contain; image-rendering: pixelated; transform-origin: center; }
-        .gui-selection-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; }
-        .gui-selection-item { padding: 0.6rem 1rem; background: var(--bg-2); border-radius: 10px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; font-weight: 600; text-transform: capitalize; }
-        .gui-selection-item:hover { border-color: var(--text); }
+        
+        /* Modified GUI selection list for horizontal layout and icons */
+        .gui-selection-list { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; justify-content: center; }
+        .gui-selection-item {
+            width: 60px; /* Make it square for icons */
+            height: 60px;
+            background: var(--bg-2);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: grid;
+            place-items: center; /* Center content */
+            padding: 4px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: capitalize;
+            text-align: center;
+            line-height: 1.2;
+            color: var(--muted);
+        }
+        .gui-selection-item i {
+            font-size: 1.5rem; /* Larger icon size */
+            color: var(--muted);
+            line-height: 1; /* Align icon vertically */
+        }
+        .gui-selection-item img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            image-rendering: pixelated;
+        }
+        .gui-selection-item:hover { border-color: var(--text); color: var(--text); }
         .gui-selection-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: white; }
+
         .preview-placeholder-text { text-align: center; color: var(--muted); padding: 1rem 0; font-size: 13px; }
         .preview-placeholder-text .spinner-sm { width: 1em; height: 1em; border-width: 2px; display: inline-block; animation: rotation 1s linear infinite; }
 
@@ -277,12 +308,22 @@
         const GUI_PATHS = { 
             'icons': 'icons.png', 
             'widgets': 'widgets.png',
-            'crosshair': 'crosshair.png',
             'panorama_overlay': 'panorama_overlay.png'
         };
         const GUI_COMPONENTS = { 
-            'Full HUD': { type: 'hud' } 
+            'Full HUD': { type: 'hud' },
+            'Crosshair': { type: 'crosshair' }, /* Added Crosshair component */
+            'Icons': { type: 'texture', path: 'icons' }, // Explicitly define for GUI_PREVIEW_ICONS
+            'Widgets': { type: 'texture', path: 'widgets' } // Explicitly define for GUI_PREVIEW_ICONS
         };
+
+        const GUI_PREVIEW_ICONS = {
+            'Full HUD': '<i class="fa-solid fa-layer-group"></i>', // Font Awesome icon
+            'Crosshair': '<svg viewBox="0 0 16 16" fill="white" xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M8 0v2h.01V0H8zm0 14v2h.01v-2H8zM0 8h2v.01H0V8zm14 0h2v.01h-2V8zM8 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>', // Simple SVG crosshair
+            'Icons': '<i class="fa-solid fa-gem"></i>', // Generic icon for icons.png
+            'Widgets': '<i class="fa-solid fa-sliders"></i>' // Generic icon for widgets.png
+        };
+
 
         function showToast(message, type = 'error') {
             const container = document.getElementById('toast-container');
@@ -607,16 +648,26 @@
 
         function renderGuiSelectionList() {
              const guiList = document.getElementById('gui-list');
-             const guiTextureKeys = Object.keys(foundAssets.gui);
-             const componentKeys = Object.keys(GUI_COMPONENTS);
-             const allDisplayKeys = [...componentKeys, ...guiTextureKeys];
+             const allDisplayKeys = Object.keys(GUI_COMPONENTS).concat(
+                 Object.keys(foundAssets.gui).filter(key => !GUI_COMPONENTS[key] && key !== 'panorama_overlay')
+             );
+
              if (allDisplayKeys.length === 0) {
                  guiList.innerHTML = `<p class="preview-placeholder-text">No GUI textures found in this pack.</p>`;
                  return;
              }
-             guiList.innerHTML = allDisplayKeys.map(key => `<div class="gui-selection-item" data-key="${key}">${key.replace(/_/g, ' ')}</div>`).join('');
+             guiList.innerHTML = allDisplayKeys.map(key => {
+                 const icon = GUI_PREVIEW_ICONS[key] || `<i class="fa-solid fa-image"></i>`; // Fallback generic icon
+                 const displayName = key.replace(/_/g, ' ');
+                 return `
+                    <div class="gui-selection-item" data-key="${key}">
+                        ${icon}
+                        <span>${displayName}</span>
+                    </div>`;
+             }).join('');
+
              guiList.querySelectorAll('.gui-selection-item').forEach(item => {
-                 item.addEventListener('click', () => {
+                 item.addEventListener('click', async () => {
                      document.querySelectorAll('.gui-selection-item, .item-icon-card').forEach(el => el.classList.remove('active'));
                      item.classList.add('active');
                      if (GUI_COMPONENTS[item.dataset.key]) {
@@ -626,7 +677,13 @@
                      }
                  });
              });
-             if (guiList.firstChild) guiList.firstChild.click();
+             // Automatically select the Crosshair if present, otherwise the first item
+             const crosshairItem = guiList.querySelector('.gui-selection-item[data-key="Crosshair"]');
+             if (crosshairItem) {
+                 crosshairItem.click();
+             } else if (guiList.firstChild) {
+                 guiList.firstChild.click();
+             }
         }
         
         async function displayItemOnCanvas(canvasId, url, enchanted = false) {
@@ -652,6 +709,17 @@
                 const hudCanvas = await createHudPreview();
                 imageViewer.src = hudCanvas.toDataURL();
                 imageViewer.style.transform = 'scale(1.5)'; 
+            } else if (GUI_COMPONENTS[name]?.type === 'crosshair') { /* Handle Crosshair display */
+                if (foundAssets.gui.icons) {
+                    const crosshairCanvas = await createCrosshairPreview(foundAssets.gui.icons.url);
+                    imageViewer.src = crosshairCanvas.toDataURL();
+                    imageViewer.style.transform = 'scale(5)'; // Scale up for visibility
+                } else {
+                    imageViewer.src = 'https://placehold.co/64x64/2c2c2c/e8eefc?text=X';
+                    imageViewer.style.transform = 'scale(1)';
+                }
+            } else if (foundAssets.gui[name.toLowerCase()]) { // For "Icons" or "Widgets" if they are distinct assets
+                displayGuiImage(foundAssets.gui[name.toLowerCase()].url);
             }
         }
 
@@ -709,6 +777,44 @@
             ctx.fillText(levelText, (hudCanvas.width / 2) - (textWidth / 2), hudCanvas.height - 31);
             ctx.shadowColor = "transparent";
             return hudCanvas;
+        }
+
+        /* New function to create a preview of the crosshair */
+        async function createCrosshairPreview(iconsSheetUrl) {
+            const crosshairCanvas = document.createElement('canvas');
+            const targetSize = 64; // Desired output size for better visibility
+            crosshairCanvas.width = targetSize;
+            crosshairCanvas.height = targetSize;
+            const ctx = crosshairCanvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+
+            try {
+                const iconsSheet = await loadImage(iconsSheetUrl);
+                // The crosshair is usually a 9x9 pixel sprite at (0,0) on the icons.png
+                const sx = 0; // Source X
+                const sy = 0; // Source Y
+                const sWidth = 9; // Source Width
+                const sHeight = 9; // Source Height
+                const dx = 0; // Destination X
+                const dy = 0; // Destination Y
+                const dWidth = targetSize; // Destination Width
+                const dHeight = targetSize; // Destination Height
+
+                ctx.drawImage(iconsSheet, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
+                return crosshairCanvas;
+            } catch (error) {
+                console.error("Failed to create crosshair preview:", error);
+                // Return a placeholder canvas if the image fails to load
+                ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                ctx.fillRect(0,0,targetSize,targetSize);
+                ctx.strokeStyle = 'var(--muted)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0,0); ctx.lineTo(targetSize, targetSize);
+                ctx.moveTo(targetSize,0); ctx.lineTo(0, targetSize);
+                ctx.stroke();
+                return crosshairCanvas;
+            }
         }
 
         async function createEnchantedVersion(url) {
@@ -966,4 +1072,3 @@
     </script>
 </body>
 </html>
-
