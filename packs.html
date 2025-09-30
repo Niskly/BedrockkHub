@@ -112,7 +112,7 @@
         .enchant-btn { position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: #fcc2ff; border-radius: 6px; font-size: 10px; cursor: pointer; display: none; align-items: center; justify-content: center; }
         .item-icon-card.enchantable .enchant-btn { display: flex; }
         .enchant-btn.active { background: #a855f7; color: white; border-color: #c084fc; }
-        #gui-viewer-container { border-radius: 12px; width: 100%; aspect-ratio: 1/1; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); background-size: cover; background-position: center; display: grid; place-items: center; padding: 1rem; }
+        #gui-viewer-container { border-radius: 12px; width: 100%; aspect-ratio: 1 / 1; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); background-size: cover; background-position: center; display: grid; place-items: center; padding: 1rem; }
         #gui-viewer-canvas { max-width: 100%; max-height: 100%; object-fit: contain; image-rendering: pixelated; transform-origin: center; }
         
         /* Modified GUI selection list for horizontal layout and icons */
@@ -704,6 +704,27 @@
             ctx.drawImage(img, x, y, drawWidth, drawHeight);
         }
 
+        /**
+         * Determines the effective scale factor for GUI element coordinates based on pack resolution.
+         * The base resolution is 16x.
+         * Custom scaling logic based on user feedback is implemented here.
+         * @param {string} resolutionString - e.g., '16x', '32x', '64x', '128x', '256x'
+         * @returns {number} The scale factor to multiply base (16x) pixel coordinates by.
+         */
+        function getEffectiveScale(resolutionString) {
+            const res = parseInt(resolutionString?.replace('x', '') || '16', 10);
+            
+            // Custom scaling logic based on user feedback:
+            if (res === 16) return 16 / 16;   // 16x -> 16x (Factor 1)
+            if (res === 32) return 32 / 16;   // 32x -> 32x (Factor 2)
+            if (res === 64) return 32 / 16;   // 64x -> 32x (Factor 2)
+            if (res === 128) return 64 / 16;  // 128x -> 64x (Factor 4)
+            if (res === 256) return 128 / 16; // 256x -> 128x (Factor 8)
+
+            // Fallback: use actual factor
+            return res / 16; 
+        }
+
         async function displayGuiComponent(name) {
             const imageViewer = document.getElementById('gui-viewer-canvas');
             if (GUI_COMPONENTS[name]?.type === 'hud') {
@@ -714,7 +735,7 @@
                 if (foundAssets.gui.icons) {
                     const crosshairCanvas = await createCrosshairPreview(foundAssets.gui.icons.url);
                     imageViewer.src = crosshairCanvas.toDataURL();
-                    // Using scale(5) to make the small 9x9 crosshair visible and clear
+                    // Using scale(5) to make the crosshair visible and clear inside the viewer container
                     imageViewer.style.transform = 'scale(5)'; 
                 } else {
                     imageViewer.src = 'https://placehold.co/64x64/2c2c2c/e8eefc?text=X';
@@ -730,28 +751,6 @@
         }
         
         const loadImage = (url) => new Promise((res, rej) => { const i = new Image(); i.crossOrigin = "Anonymous"; i.onload = () => res(i); i.onerror = rej; i.src = url; });
-
-        /**
-         * Determines the effective scale factor for GUI element coordinates based on pack resolution.
-         * The base resolution is 16x.
-         * @param {string} resolutionString - e.g., '16x', '32x', '64x', '128x'
-         * @returns {number} The scale factor to multiply base (16x) pixel coordinates by.
-         */
-        function getEffectiveScale(resolutionString) {
-            const res = parseInt(resolutionString?.replace('x', '') || '16', 10);
-            
-            // Custom scaling logic based on user feedback:
-            if (res === 16) return 16 / 16;
-            if (res === 32) return 32 / 16;
-            // 64x packs look good with 32x scale (factor 2)
-            if (res === 64) return 32 / 16; 
-            // 128x packs look good with 64x scale (factor 4)
-            if (res === 128) return 64 / 16; 
-
-            // Fallback: use actual factor (e.g., 256x will use 16)
-            return res / 16; 
-        }
-
 
         async function createHudPreview() {
             const hudCanvas = document.createElement('canvas');
@@ -776,7 +775,6 @@
             const ACTIONBAR_H = BASE_WIDGETS_H;
             
             if (widgetsSheet) {
-                // We use the effective scale factor to find the correct source size from the sheet
                 const S_F_W = widgetsSheet.width / BASE_ICONS_SHEET_RES; // True source sheet scale
                 const srcW = 182 * S_F_W;
                 const srcH = BASE_WIDGETS_H * S_F_W;
@@ -794,7 +792,7 @@
                 // Destination size on the fixed-size canvas (using effective scale for display size)
                 const ICON_SIZE_D = BASE_ICON_SIZE * effectiveScaleFactor; 
                 
-                // Destination position variables
+                // Destination position variables (using base 16x units for canvas coordinates)
                 const X_CENTER = hudCanvas.width / 2;
                 const X_START_LEFT = X_CENTER - (91); 
                 const X_START_RIGHT = X_CENTER + (91) - BASE_ICON_SIZE; 
@@ -828,6 +826,7 @@
                 
                 // DRAW HUNGER (RIGHT SIDE)
                 for (let i = 0; i < 10; i++) {
+                    // Position is mirrored, starting from the right edge
                     const X_POS = X_START_RIGHT - (i * ICON_SPACING_D); 
                     
                     // Hunger Border (16, 27)
@@ -867,10 +866,9 @@
             crosshairCanvas.height = targetSize;
             const ctx = crosshairCanvas.getContext('2d');
             ctx.imageSmoothingEnabled = false;
-            
-            // Fill with transparent black to prevent artifacts/show texture pack container bg
-            ctx.fillStyle = 'rgba(0,0,0,0)'; 
-            ctx.fillRect(0, 0, targetSize, targetSize); 
+
+            // Set canvas background to transparent
+            ctx.clearRect(0, 0, targetSize, targetSize); 
 
             try {
                 const iconsSheet = await loadImage(iconsSheetUrl);
@@ -884,16 +882,25 @@
                 const S_F = iconsSheet.width / BASE_ICONS_SHEET_RES; // True source sheet scale
                 
                 // We extract the entire top-left UI tile (16x16 base pixels)
+                // This is where the crosshair (9x9) is contained.
                 const CROSSHAIR_BASE_TILE_SIZE = 16; 
                 
                 // Source size is scaled by the effective scale factor (32x scale for 64x pack, etc.)
                 const sWidth = CROSSHAIR_BASE_TILE_SIZE * effectiveScaleFactor;
                 const sHeight = CROSSHAIR_BASE_TILE_SIZE * effectiveScaleFactor; 
-
+                
+                // Calculate position to center the scaled image (which is a 16x16 tile) on the 64x64 canvas
+                const dx = (targetSize - CROSSHAIR_BASE_TILE_SIZE) / 2;
+                const dy = (targetSize - CROSSHAIR_BASE_TILE_SIZE) / 2;
+                
                 // Draw the extracted area scaled up to fill the 64x64 canvas
-                // Source: (0, 0)
-                // Destination: (0, 0, 64, 64)
-                ctx.drawImage(iconsSheet, 0, 0, Math.round(sWidth), Math.round(sHeight), 0, 0, targetSize, targetSize);
+                ctx.drawImage(
+                    iconsSheet, 
+                    0, 0, 
+                    Math.round(sWidth), Math.round(sHeight), // Source: Grab the correctly scaled tile size
+                    0, 0,
+                    targetSize, targetSize // Destination: Fill the whole 64x64 canvas
+                );
                 
                 return crosshairCanvas;
             } catch (error) {
