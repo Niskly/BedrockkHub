@@ -74,6 +74,26 @@
         .enchant-toggle { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.8rem; }
         
         .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
+        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
+        .mobile-nav-backdrop.show { display: block; opacity: 1; }
+        .mobile-nav-sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: 280px; background: var(--bg-1);
+            z-index: 999; transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            display: flex; flex-direction: column;
+            border-right: 1px solid var(--border);
+        }
+        .mobile-nav-sidebar.show { transform: translateX(0); }
+        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
+        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
+        .mobile-nav-main-links { flex-grow: 1; padding: 1rem; }
+        .mobile-nav-main-links a {
+            padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem;
+            font-weight: 600; color: var(--muted); transition: all 0.2s ease;
+        }
+        .mobile-nav-main-links a:hover { background: var(--bg-2); color: var(--text); }
+        .mobile-nav-main-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
 
         @media (max-width: 768px) {
             .viewer-layout { grid-template-columns: 1fr; }
@@ -96,6 +116,21 @@
             <button class="mobile-nav-toggle"><i class="fa-solid fa-bars"></i></button>
         </nav>
     </header>
+
+    <div class="mobile-nav-backdrop"></div>
+    <div class="mobile-nav-sidebar">
+        <button class="mobile-nav-close"><i class="fa-solid fa-xmark"></i></button>
+        <div class="mobile-nav-header">
+            <a class="brand" href="/">
+                <div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div>
+                <div><div class="brand-title">MCHUB</div><div class="tiny">Texture Pack • Viewer</div></div>
+            </a>
+        </div>
+        <nav class="mobile-nav-main-links">
+            <a href="/"><i class="fa-solid fa-home"></i><span>Home</span></a>
+            <a href="/texturepacks.html"><i class="fa-solid fa-palette"></i><span>Texture Packs</span></a>
+        </nav>
+    </div>
 
     <main class="container">
         <div class="viewer-layout">
@@ -149,9 +184,7 @@
                 items: { 'ender_pearl': 'item/ender_pearl.png', 'golden_apple': 'item/golden_apple.png', 'enchanted_golden_apple': 'item/apple_golden.png', 'iron_sword': 'item/iron_sword.png', 'golden_sword': 'item/golden_sword.png', 'diamond_sword': 'item/diamond_sword.png' },
                 gui: { 'icons': 'gui/icons.png', 'widgets': 'gui/widgets.png' }
             };
-            const GUI_COMPONENTS = {
-                'Full HUD': { type: 'hud' }
-            };
+            const GUI_COMPONENTS = { 'Full HUD': { type: 'hud' } };
 
             // --- DOM ELEMENTS ---
             const uploadArea = document.getElementById('upload-area');
@@ -215,10 +248,8 @@
                                 const layer = p.includes('layer_2') || p.includes('_2.png') ? 'layer2' : 'layer1';
                                 if (!targetObject[armorName]) targetObject[armorName] = {};
                                 targetObject[armorName][layer] = url;
-                            } else {
-                                targetObject[key] = url;
-                            }
-                            break; 
+                            } else { targetObject[key] = url; }
+                            return; 
                         }
                     }
                 };
@@ -250,7 +281,7 @@
                             </div>`;
                 }).join('');
                 itemList.querySelectorAll('.selection-item').forEach(item => item.onclick = (e) => {
-                    if (e.target.type === 'checkbox') return;
+                    if (e.target.type === 'checkbox') { e.stopPropagation(); }
                     itemList.querySelectorAll('.selection-item').forEach(el => el.classList.remove('active'));
                     item.classList.add('active');
                     displayImage(item.dataset.url, item.querySelector('.enchant-check')?.checked);
@@ -262,7 +293,7 @@
             }
 
             function renderGuiList() {
-                if (Object.keys(foundAssets.gui).length === 0) return guiList.innerHTML = `<p class="placeholder-text">No standard GUI textures found.</p>`;
+                if (!foundAssets.gui.icons && !foundAssets.gui.widgets) return guiList.innerHTML = `<p class="placeholder-text">No standard GUI textures found.</p>`;
                 guiList.innerHTML = Object.keys(GUI_COMPONENTS).map(name => `<div class="selection-item" data-asset="${name}">${name}</div>`).join('');
                 guiList.querySelectorAll('.selection-item').forEach(item => item.onclick = () => {
                     guiList.querySelectorAll('.selection-item').forEach(el => el.classList.remove('active'));
@@ -286,8 +317,7 @@
             }
             
             async function displayGuiComponent(name) {
-                const component = GUI_COMPONENTS[name];
-                if (component.type === 'hud') {
+                if (GUI_COMPONENTS[name]?.type === 'hud') {
                     const hudCanvas = await createHudPreview();
                     imageViewer.src = hudCanvas.toDataURL();
                 }
@@ -312,30 +342,40 @@
                 return c.toDataURL();
             }
             
-             async function createHudPreview() {
+            async function createHudPreview() {
                 const hudCanvas = document.createElement('canvas');
-                hudCanvas.width = 182;
-                hudCanvas.height = 50; 
+                hudCanvas.width = 182; hudCanvas.height = 50;
                 const ctx = hudCanvas.getContext('2d');
                 ctx.imageSmoothingEnabled = false;
 
                 const iconsSheet = foundAssets.gui.icons ? await loadImage(foundAssets.gui.icons) : null;
                 const widgetsSheet = foundAssets.gui.widgets ? await loadImage(foundAssets.gui.widgets) : null;
                 
-                // Draw Hotbar
                 if (widgetsSheet) ctx.drawImage(widgetsSheet, 0, 0, 182, 22, 0, hudCanvas.height - 22, 182, 22);
                 
                 if (iconsSheet) {
-                    // Hearts
-                    for (let i = 0; i < 10; i++) ctx.drawImage(iconsSheet, 16, 0, 9, 9, (hudCanvas.width / 2) - 90 + (i * 8), hudCanvas.height - 32, 9, 9);
-                    for (let i = 0; i < 8; i++) ctx.drawImage(iconsSheet, 52, 0, 9, 9, (hudCanvas.width / 2) - 90 + (i * 8), hudCanvas.height - 32, 9, 9);
-                    ctx.drawImage(iconsSheet, 61, 0, 9, 9, (hudCanvas.width / 2) - 90 + (8 * 8), hudCanvas.height - 32, 9, 9);
+                    // Hearts (2 golden)
+                    for (let i = 0; i < 10; i++) ctx.drawImage(iconsSheet, 16, 0, 9, 9, (hudCanvas.width / 2) - 90 + (i * 8), hudCanvas.height - 41, 9, 9);
+                    for (let i = 0; i < 8; i++) ctx.drawImage(iconsSheet, 52, 0, 9, 9, (hudCanvas.width / 2) - 90 + (i * 8), hudCanvas.height - 41, 9, 9);
+                    for (let i = 0; i < 2; i++) ctx.drawImage(iconsSheet, 160, 0, 9, 9, (hudCanvas.width / 2) - 90 + ((i + 8) * 8), hudCanvas.height - 41, 9, 9);
                     
                     // Armor
-                    for (let i = 0; i < 10; i++) ctx.drawImage(iconsSheet, 16, 9, 9, 9, (hudCanvas.width / 2) + 11 + (i * 8), hudCanvas.height - 32, 9, 9);
-                    for (let i = 0; i < 3; i++) ctx.drawImage(iconsSheet, 34, 9, 9, 9, (hudCanvas.width / 2) + 11 + (i * 8), hudCanvas.height - 32, 9, 9);
+                    for (let i = 0; i < 10; i++) ctx.drawImage(iconsSheet, 16, 9, 9, 9, (hudCanvas.width / 2) + 11 + (i * 8), hudCanvas.height - 41, 9, 9);
+                    for (let i = 0; i < 3; i++) ctx.drawImage(iconsSheet, 34, 9, 9, 9, (hudCanvas.width / 2) + 11 + (i * 8), hudCanvas.height - 41, 9, 9);
+                    
+                    // XP bar
+                    ctx.drawImage(iconsSheet, 0, 64, 182, 5, 0, hudCanvas.height - 27, 182, 5);
+                    ctx.drawImage(iconsSheet, 0, 69, 120, 5, 0, hudCanvas.height - 27, 120, 5); 
                 }
-                 return hudCanvas;
+                
+                // XP Level (simulated)
+                ctx.font = "10px Inter, sans-serif";
+                ctx.fillStyle = '#80FF20';
+                const levelText = '17';
+                const textWidth = ctx.measureText(levelText).width;
+                ctx.fillText(levelText, (hudCanvas.width / 2) - (textWidth / 2), hudCanvas.height - 29);
+
+                return hudCanvas;
             }
             
             // --- EVENT LISTENERS ---
@@ -353,15 +393,29 @@
                 canvas3d.style.display = isArmor ? 'block' : 'none';
                 imageViewerContainer.style.display = isArmor ? 'none' : 'grid';
                 if (isArmor && armorList.querySelector('.active')) armorList.querySelector('.active').click();
-                else if (!isArmor) {
+                else {
                     const list = btn.dataset.tab === 'items' ? itemList : guiList;
                     if (list.querySelector('.active')) list.querySelector('.active').click();
                 }
             });
-            document.querySelector('.mobile-nav-toggle')?.addEventListener('click', () => {
-                // Dummy listener for now, full implementation would require the mobile nav HTML.
-                console.log("Mobile nav toggled");
-            });
+            const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
+            const mobileNavSidebar = document.querySelector('.mobile-nav-sidebar');
+            const mobileNavBackdrop = document.querySelector('.mobile-nav-backdrop');
+            const mobileNavClose = document.querySelector('.mobile-nav-close');
+            if (mobileNavToggle) {
+                mobileNavToggle.addEventListener('click', () => {
+                    mobileNavSidebar.classList.add('show');
+                    mobileNavBackdrop.classList.add('show');
+                });
+                mobileNavClose.addEventListener('click', () => {
+                    mobileNavSidebar.classList.remove('show');
+                    mobileNavBackdrop.classList.remove('show');
+                });
+                mobileNavBackdrop.addEventListener('click', () => {
+                    mobileNavSidebar.classList.remove('show');
+                    mobileNavBackdrop.classList.remove('show');
+                });
+            }
 
             // --- INITIALIZATION ---
             initSkinViewer();
