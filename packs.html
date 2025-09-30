@@ -115,7 +115,7 @@
         #gui-viewer-container { border-radius: 12px; width: 100%; aspect-ratio: 1/1; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); background-size: cover; background-position: center; display: grid; place-items: center; padding: 1rem; }
         #gui-viewer-canvas { max-width: 100%; max-height: 100%; object-fit: contain; image-rendering: pixelated; transform-origin: center; }
         .gui-selection-list { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
-        .gui-selection-item { padding: 0.6rem 1rem; background: var(--bg-2); border-radius: 10px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; font-weight: 600; text-transform: capitalize; }
+        .gui-selection-item { padding: 0.6rem 1rem; background: var(--bg-2); border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; font-weight: 600; text-transform: capitalize; }
         .gui-selection-item:hover { border-color: var(--text); }
         .gui-selection-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: white; }
         .preview-placeholder-text { text-align: center; color: var(--muted); padding: 1rem 0; font-size: 13px; }
@@ -606,6 +606,7 @@
 
         function renderGuiSelectionList() {
              const guiList = document.getElementById('gui-list');
+             // Filter GUI_COMPONENTS to only include those whose assets are found
              const availableComponents = Object.keys(GUI_COMPONENTS).filter(key => {
                  const component = GUI_COMPONENTS[key];
                  if (component.type === 'hud') {
@@ -622,6 +623,7 @@
                  return;
              }
 
+             // Map filtered components to buttons
              guiList.innerHTML = availableComponents.map(key => `<div class="gui-selection-item" data-key="${key}">${key}</div>`).join('');
              
              guiList.querySelectorAll('.gui-selection-item').forEach(item => {
@@ -631,6 +633,7 @@
                      displayGuiComponent(item.dataset.key);
                  });
              });
+             // Automatically click the first available component if any
              if (guiList.firstChild) guiList.firstChild.click();
         }
         
@@ -653,17 +656,17 @@
 
         async function displayGuiComponent(name) {
             const imageViewer = document.getElementById('gui-viewer-canvas');
-            imageViewer.style.transform = 'scale(1)'; // Reset transform to prevent visual glitch
+            imageViewer.style.transform = 'scale(1)'; // Reset transform to prevent visual glitch *before* specific scaling
 
             if (GUI_COMPONENTS[name]?.type === 'hud') {
-                imageViewer.style.transform = 'scale(1.5)';
                 const hudCanvas = await createHudPreview();
                 imageViewer.src = hudCanvas.toDataURL();
+                imageViewer.style.transform = 'scale(1.5)'; // Apply specific scale after setting src
             } else if (GUI_COMPONENTS[name]?.type === 'crosshair') {
-                imageViewer.style.transform = 'scale(8)'; // Zoom in on the small crosshair
                 const crosshairCanvas = await createCrosshairPreview();
                 if (crosshairCanvas) {
                     imageViewer.src = crosshairCanvas.toDataURL();
+                    imageViewer.style.transform = 'scale(8)'; // Apply specific scale after setting src
                 } else {
                     imageViewer.src = ''; // Clear image if icons.png is not found
                     showToast('Could not generate crosshair preview.', 'error');
