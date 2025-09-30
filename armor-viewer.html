@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MCHub — Texture Pack</title>
+    <title>Armor Viewer - MCHub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>
-    body { opacity: 0; transition: opacity 0.2s ease-in; }
+        body { opacity: 0; transition: opacity 0.2s ease-in; }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -16,29 +16,28 @@
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
             --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
             --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
-            --border-strong: rgba(255, 255, 255, .2); --danger: #ef4444; --success: #22c55e;
+            --brand-1-rgb: 222, 33, 42;
+            --border-strong: rgba(255, 255, 255, .2);
             --gradient-brand: linear-gradient(135deg, var(--brand-1), var(--brand-2));
-            --brand-1-rgb: 222, 33, 42; /* Added for dynamic rgba colors */
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 15px/1.6 Inter, sans-serif; }
-        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-image: var(--bg-image, url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg')); background-size: cover; background-position: center; filter: blur(8px); opacity: 0.2; z-index: -1; transition: background-image 0.5s ease-in-out; }
+        body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 14px/1.6 Inter, sans-serif; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-image: var(--bg-image, url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg')); background-size: cover; filter: blur(8px); opacity: 0.2; z-index: -1; transition: background-image 0.5s ease-in-out; }
         a { color: inherit; text-decoration: none; }
-        .tiny { font-size: 12px; color: var(--muted); }
-        .btn { padding: .7rem 1.2rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
-        .btn.primary { background: var(--gradient-brand); box-shadow: var(--shadow-brand); color: white; }
-        .btn.ghost { border-color: var(--border); background: var(--bg-2); color: var(--text); }
-        .spinner { width: 48px; height: 48px; border: 5px solid var(--border); border-bottom-color: var(--brand-1); border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
-        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
+        .tiny { font-size: 11px; color: var(--muted); }
+        .spinner { width: 1em; height: 1em; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
         header { position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(1.2) blur(10px); background: rgba(12, 12, 12, 0.75); border-bottom: 1px solid var(--border); }
         .nav { max-width: 1100px; margin: 0 auto; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; }
         .brand { display: flex; align-items: center; gap: .8rem; }
-        .brand-badge { height: 40px; width: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--gradient-brand); box-shadow: var(--shadow-brand); }
-        .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-11px); }
-        .brand-title { font-weight: 800; letter-spacing: .6px; font-size: 15px; }
-        .nav-actions { display: flex; align-items: center; gap: 0.6rem; }
-        
+        .brand-badge { height: 44px; width: 44px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); }
+        .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-13px); }
+        .brand-title { font-weight: 800; letter-spacing: .6px; }
+        .nav-actions { display: flex; gap: .6rem; }
+        .btn { padding: .6rem 1rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; }
+        .btn.ghost { border-color: var(--border); background: transparent; color: var(--text); }
+        .btn.primary { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); box-shadow: var(--shadow-brand); color: white; border: none; }
         .user-dropdown { position: relative; display: inline-block; }
         .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
         .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
@@ -49,743 +48,393 @@
         .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
 
         .container { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
-        .loading-container, .error-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; min-height: 60vh; color: var(--muted); text-align: center;}
-        .error-container h2 { color: var(--text); }
-
-        .pack-layout { display: grid; grid-template-columns: 1fr 320px; gap: 2rem; align-items: flex-start; }
+        .viewer-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 1.5rem;
+            align-items: flex-start;
+        }
+        
+        .controls-panel { position: sticky; top: 100px; }
         .card { border-radius: 16px; background: rgba(18, 18, 18, 0.9); backdrop-filter: saturate(1.2) blur(20px); border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        
-        .pack-header { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; position: relative; }
-        .pack-header-icon { width: 80px; height: 80px; border-radius: 16px; object-fit: cover; background-color: var(--bg-2); flex-shrink: 0; border: 1px solid var(--border); }
-        .pack-title-area h1 { font-size: 2.2rem; font-weight: 800; line-height: 1.2; margin: 0 0 4px 0; }
-        .pack-creator-info { font-size: 0.9rem; }
-        .star-rating { color: var(--muted); font-size: 1rem; margin-top: 8px; }
-        .star-rating .fa-star { margin-right: 2px; }
-        .edit-pack-btn { position: absolute; top: 0; right: 0; padding: .5rem 1rem; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--border); color: var(--text); font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
-        .edit-pack-btn:hover { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.1); }
-
-        .media-gallery { margin-top: 1.5rem; }
-        .main-media { width: 100%; border-radius: 12px; aspect-ratio: 16/9; object-fit: cover; background: var(--bg-2); border: 1px solid var(--border); overflow: hidden; }
-        .main-media iframe { width: 100%; height: 100%; border: none; }
-        .thumbnail-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0.75rem; margin-top: 0.75rem; }
-        .thumbnail { width: 100%; border-radius: 8px; aspect-ratio: 16/9; object-fit: cover; background: var(--bg-2); border: 2px solid transparent; cursor: pointer; opacity: 0.6; transition: all 0.2s; position: relative; }
-        .thumbnail:hover, .thumbnail.active { opacity: 1; border-color: var(--brand-1); }
-        .thumbnail .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.5rem; color: white; background: rgba(0,0,0,0.5); border-radius: 50%; width: 40px; height: 40px; display: grid; place-items: center; }
-        
-        .description-section, .tags-section { margin-top: 2.5rem; }
-        .section-title { font-size: 1rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
-        .pack-description { line-height: 1.7; color: var(--muted); }
-        .tags-container { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-        .tag { padding: .4rem .8rem; border-radius: 8px; background: var(--bg-2); border: 1px solid var(--border); font-weight: 600; font-size: 0.8rem; text-transform: capitalize; }
-        
-        .sidebar-card { position: sticky; top: 90px; display: flex; flex-direction: column; gap: 1.5rem; }
+        .card-header { padding: 1rem 1.2rem; border-bottom: 1px solid var(--border); }
+        .card-header h2 { font-weight: 800; font-size: 1.2rem; margin: 0; }
         .card-body { padding: 1.2rem; }
-        .download-card-header { text-align: center; }
-        .download-card-header h2 { font-size: 1.2rem; margin: 0; }
-        .pack-stats { list-style: none; padding: 0; margin: 1.5rem 0; }
-        .pack-stats li { display: flex; justify-content: space-between; padding: 0.75rem 0; font-size: 0.9rem; }
-        .pack-stats li:not(:last-child) { border-bottom: 1px solid var(--border); }
-        .pack-stats .label { color: var(--muted); }
-        .pack-stats .value { font-weight: 600; color: var(--text); }
 
-        .comments-section { margin-top: 3rem; }
-        .comments-placeholder { text-align: center; padding: 2rem; background: var(--bg-1); border-radius: 12px; border: 1px solid var(--border); color: var(--muted); }
+        .upload-area {
+            border: 2px dashed var(--border); border-radius: 12px; padding: 2rem;
+            text-align: center; cursor: pointer; transition: all 0.2s ease;
+        }
+        .upload-area:hover { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.1); }
+        .upload-area i { font-size: 2.5rem; color: var(--brand-1); margin-bottom: 1rem; }
+        .upload-area p { color: var(--muted); font-weight: 600; }
+        #file-input { display: none; }
+
+        .armor-selection-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 400px; overflow-y: auto; }
+        .armor-item {
+            padding: 0.75rem 1rem; background: var(--bg-2); border-radius: 10px;
+            border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease;
+            font-weight: 600; text-transform: capitalize;
+        }
+        .armor-item:hover { border-color: var(--text); }
+        .armor-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: white; }
         
-        #toast-container { position: fixed; top: 80px; right: 20px; z-index: 1000; }
-        .toast { padding: 12px 18px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; background: var(--bg-1); border: 1px solid var(--border); }
-        @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
+        #viewer-canvas { border-radius: 16px; width: 100%; aspect-ratio: 4/5; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg'); background-size: cover; background-position: center; }
+        #viewer-canvas.dragging { cursor: grabbing; }
 
+        .placeholder-text { text-align: center; color: var(--muted); padding: 2rem 0; }
+        
+        /* ====== NEW MOBILE SIDEBAR STYLES ====== */
         .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
-        
-        /* Armor Preview Styles */
-        #skin-viewer-canvas { width: 100%; aspect-ratio: 4/5; border-radius: 12px; background-image: url(https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg); background-size: cover; background-position: center; cursor: grab; }
-        .armor-selection-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 200px; overflow-y: auto; margin-top: 1rem; }
-        .armor-item { padding: 0.5rem 0.8rem; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s ease; font-weight: 600; font-size: 0.85rem; text-transform: capitalize; }
-        .armor-item:hover, .armor-item.active { border-color: var(--brand-1); background: rgba(222, 33, 42, 0.2); color: white; }
+        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
+        .mobile-nav-backdrop.show { display: block; opacity: 1; }
+        .mobile-nav-sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: 280px; background: var(--bg-1);
+            z-index: 999; transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            display: flex; flex-direction: column;
+            border-right: 1px solid var(--border);
+        }
+        .mobile-nav-sidebar.show { transform: translateX(0); }
+        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
+        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
+        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+        .mobile-nav-user-info { display: flex; flex-direction: column; }
+        .mobile-nav-username { font-weight: 700; color: var(--text); }
+        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
+        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
+        .mobile-nav-main-links { flex-grow: 1; }
+        .mobile-nav-main-links a, .mobile-nav-footer-links a {
+            padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem;
+            font-weight: 600; color: var(--muted); transition: all 0.2s ease;
+        }
+        .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
+        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
+        .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
 
-        /* Edit Modal Styles */
-        .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 1000; }
-        .modal.show { display: flex; }
-        .modal-dialog { background: var(--bg-1); border: 1px solid var(--border); border-radius: 20px; width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
-        .modal-header-section { padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .modal-header-section h2 { font-size: 1.5rem; font-weight: 700; margin: 0; }
-        .modal-content-section { padding: 1.5rem; }
-        .form-group { margin-bottom: 1rem; }
-        .form-label { display: block; font-size: 0.9rem; color: var(--muted); margin-bottom: 0.5rem; }
-        .form-input, .form-textarea { width: 100%; padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text); font-size: 1rem; }
-        .form-textarea { min-height: 100px; resize: vertical; }
-        .media-upload-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem; }
-        .media-item { position: relative; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; }
-        .media-item img, .media-item iframe { width: 100%; height: 100%; object-fit: cover; }
-        .remove-media-btn { position: absolute; top: 5px; right: 5px; background: rgba(222, 33, 42, 0.7); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 0.8rem; cursor: pointer; display: grid; place-items: center; }
-        .add-media-input-group { display: flex; gap: 0.5rem; margin-top: 1rem; }
-        .add-media-input-group input { flex-grow: 1; }
-        .add-media-input-group button { flex-shrink: 0; }
-        .modal-footer-section { padding: 1rem 1.5rem; border-top: 1px solid var(--border); text-align: right; }
-        .swatches, .tags-editor-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 0.5rem; }
-        .swatch { width: 34px; height: 34px; border-radius: 999px; border: 2px solid var(--border); cursor: pointer; display: grid; place-items: center; }
-        .swatch.active { border-color: var(--brand-1); outline: 3px solid rgba(var(--brand-1-rgb), 0.3); }
-        .tag-checkbox { padding: .4rem .8rem; border-radius: 8px; background: var(--bg-2); border: 1px solid var(--border); cursor: pointer; font-weight: 600; font-size: 0.85rem; text-transform: capitalize; }
-        .tag-checkbox.selected { background: var(--brand-1); border-color: var(--brand-2); color: white; }
-
-        @media (max-width: 992px) { .pack-layout { grid-template-columns: 1fr; } .sidebar-card { position: static; order: -1; } }
-        @media (max-width: 768px) { .nav-actions { display: none; } .mobile-nav-toggle { display: block; } }
+        /* ====== MOBILE RESPONSIVENESS ====== */
+        @media (max-width: 768px) {
+            .nav-actions { display: none; }
+            .mobile-nav-toggle { display: block; }
+            .viewer-layout { grid-template-columns: 1fr; }
+            .controls-panel { position: static; }
+        }
     </style>
 </head>
 <body>
     <header>
-        <div class="nav">
+        <nav class="nav">
             <a class="brand" href="/">
                 <div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div>
-                <div><div class="brand-title">MCHUB</div><div class="tiny">Minecraft Bedrock • community</div></div>
+                <div>
+                    <div class="brand-title">MCHUB</div>
+                    <div class="tiny">Minecraft Bedrock • community</div>
+                </div>
             </a>
             <div id="nav-actions" class="nav-actions"></div>
-        </div>
+        </nav>
     </header>
 
-    <main class="container" id="page-container">
-        <div class="loading-container"><div class="spinner"></div><p>Loading Pack...</p></div>
-    </main>
-    
-    <div id="toast-container"></div>
-
-    <!-- Edit Pack Modal -->
-    <div id="edit-pack-modal" class="modal">
-        <div class="modal-dialog">
-            <div class="modal-header-section">
-                <h2>Edit Pack</h2>
-                <button class="btn ghost" onclick="closeEditPackModal()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="modal-content-section">
-                <form id="edit-pack-form">
-                    <input type="hidden" id="edit-pack-id">
-                    <div class="form-group">
-                        <label for="edit-pack-name" class="form-label">Pack Name</label>
-                        <input type="text" id="edit-pack-name" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-pack-description" class="form-label">Description</label>
-                        <textarea id="edit-pack-description" class="form-textarea"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Primary Color</label>
-                        <div class="swatches" id="edit-pack-colors"></div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Resolution</label>
-                        <div class="swatches" id="edit-pack-resolutions"></div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Tags</label>
-                        <div class="tags-editor-container" id="edit-pack-tags"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-youtube-url" class="form-label">YouTube Video URL</label>
-                        <input type="url" id="edit-youtube-url" class="form-input" placeholder="e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Media Gallery</label>
-                        <div class="media-upload-grid" id="edit-media-gallery-grid">
-                            <!-- Existing media will be loaded here -->
+    <main class="container">
+        <div class="viewer-layout">
+            <div class="controls-panel">
+                <div class="card">
+                    <div class="card-header"><h2>Controls</h2></div>
+                    <div class="card-body">
+                        <div id="upload-area" class="upload-area">
+                            <i class="fa-solid fa-file-arrow-up"></i>
+                            <p>Upload Pack</p>
+                            <span class="tiny">Click or drag a .zip or .mcpack file</span>
                         </div>
-                        <div class="add-media-input-group">
-                            <input type="url" id="add-media-url-input" class="form-input" placeholder="Add image URL">
-                            <button type="button" class="btn primary" onclick="addMediaToGallery()"><i class="fa-solid fa-plus"></i> Add</button>
+                        <input type="file" id="file-input" accept=".zip,.mcpack">
+                    </div>
+                </div>
+                <div class="card" style="margin-top: 1.5rem;">
+                    <div class="card-header"><h2>Found Armor</h2></div>
+                    <div class="card-body">
+                        <div id="armor-list" class="armor-selection-list">
+                            <p class="placeholder-text">Upload a pack to see armor sets</p>
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
-            <div class="modal-footer-section">
-                <button type="button" class="btn ghost" onclick="closeEditPackModal()">Cancel</button>
-                <button type="submit" form="edit-pack-form" class="btn primary"><i class="fa-solid fa-save"></i> Save Changes</button>
+            <div class="viewer-panel">
+                 <canvas id="viewer-canvas"></canvas>
             </div>
         </div>
-    </div>
-    
+    </main>
+
     <script type="module" src="/theme.js"></script>
     <script type="module" src="/auth.js"></script>
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        const pageContainer = document.getElementById('page-container');
-        let skinViewer = null;
-        let currentPackData = null; // Store current pack data for editing
-        let currentUserRole = 'viewer'; // Default to viewer, update from auth.js
-
-        // Constants for tags, colors, resolutions (match texturepacks.html for consistency)
-        const ALL_TAGS = ['pvp', 'bedwars', 'skywars', 'anime', 'crystal pvp', 'survival', 'visual'];
-        const ALL_COLORS = [{key: 'none', hex: '#4b5563', icon: 'fa-solid fa-ban'}, {key: 'red',hex: '#ef4444'}, {key: 'blue',hex: '#3b82f6'}, {key: 'green',hex: '#22c55e'}, {key: 'yellow',hex: '#eab308'}, {key: 'purple',hex: '#a855f7'}, {key: 'pink',hex: '#ec4899'}, {key: 'orange',hex: '#f97316'}, {key: 'teal',hex: '#14b8a6'}, {key: 'gray',hex: '#6b7280'}, {key: 'black',hex: '#1f2937'}];
-        const ALL_RESOLUTIONS = ['16x', '32x', '64x', '128x'];
-
-        // --- Toast Notifications ---
-        function showToast(message, type = 'error') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'circle-check' : 'circle-exclamation'}"></i> <span>${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.style.transform = 'translateX(120%)';
-                setTimeout(() => toast.remove(), 300);
-            }, 4000);
-        }
-
-        // --- Utility Functions ---
-        function formatDate(isoString) {
-            if (!isoString) return 'N/A';
-            return new Date(isoString).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-        }
-
-        function escapeHtml(str) { 
-            return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); 
-        }
-
-        function getYouTubeVideoId(url) {
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
-        }
-
-        // --- Download Handler ---
-        async function handleDownload(packId, filename, packName) {
-            showToast('Starting download...', 'success');
-            try {
-                fetch("/api/increment-download", {
-                    method: "POST", headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({ id: packId })
-                }).then(() => {
-                    const el = document.getElementById('download-count-val');
-                    if(el) el.textContent = (parseInt(el.textContent.replace(/,/g, ''), 10) + 1).toLocaleString();
-                });
-
-                const { data: urlData, error: urlError } = supabase.storage.from('packs').getPublicUrl(filename);
-                if (urlError || !urlData) throw new Error('Could not get download URL.');
-
-                const response = await fetch(urlData.publicUrl);
-                if (!response.ok) throw new Error('Download link failed.');
-                const blob = await response.blob();
-
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                const extension = filename.split('.').pop();
-                link.download = `${packName}.${extension}`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(link.href);
-
-            } catch (error) {
-                console.error("Download Error:", error);
-                showToast('Failed to start download.', 'error');
-            }
-        }
-
-        // --- Render Main Page ---
-        function renderPackPage(pack) {
-            currentPackData = pack; // Store for editing
-            document.title = `${pack.name} — MCHub`;
+    <script>
+        // Wait for skinview3d to be loaded
+        window.addEventListener('load', function() {
+            const ARMOR_PATHS_JAVA = [
+                'assets/minecraft/textures/models/armor/netherite_layer_1.png', 
+                'assets/minecraft/textures/models/armor/netherite_layer_2.png',
+                'assets/minecraft/textures/models/armor/diamond_layer_1.png', 
+                'assets/minecraft/textures/models/armor/diamond_layer_2.png',
+                'assets/minecraft/textures/models/armor/iron_layer_1.png', 
+                'assets/minecraft/textures/models/armor/iron_layer_2.png',
+                'assets/minecraft/textures/models/armor/gold_layer_1.png', 
+                'assets/minecraft/textures/models/armor/gold_layer_2.png',
+                'assets/minecraft/textures/models/armor/chainmail_layer_1.png', 
+                'assets/minecraft/textures/models/armor/chainmail_layer_2.png',
+                'assets/minecraft/textures/models/armor/leather_layer_1.png', 
+                'assets/minecraft/textures/models/armor/leather_layer_2.png',
+                'assets/minecraft/textures/models/armor/turtle_layer_1.png'
+            ];
             
-            const packIcon = pack.icon_url 
-                ? pack.icon_url 
-                : `https://placehold.co/80x80/1c1c1c/e8eefc?text=ICON`;
-            
-            const tagsHtml = (pack.tags || '')
-                .split(',')
-                .filter(tag => tag.trim() !== '')
-                .map(tag => `<span class="tag">${escapeHtml(tag)}</span>`)
-                .join('');
-            
-            pageContainer.innerHTML = `
-                <div class="pack-layout">
-                    <div class="pack-main-content">
-                        <div class="pack-header">
-                            <img src="${packIcon}" alt="${escapeHtml(pack.name)} icon" class="pack-header-icon">
-                            <div class="pack-title-area">
-                                <h1>${escapeHtml(pack.name)}</h1>
-                                <div class="tiny" style="font-weight: 600;">Uploaded ${formatDate(pack.created_at)}</div>
-                                <div class="star-rating">
-                                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i>
-                                    <span class="tiny" style="margin-left: 0.5rem;">(No reviews yet)</span>
-                                </div>
-                            </div>
-                            ${currentUserRole === 'admin' ? `<button class="edit-pack-btn" onclick="openEditPackModal()"><i class="fa-solid fa-pencil"></i> Edit Pack</button>` : ''}
-                        </div>
-                        
-                        <div class="media-gallery">
-                            <div id="main-media" class="main-media">
-                               <img src="${packIcon}" alt="${escapeHtml(pack.name)} icon" style="width:100%; height:100%; object-fit:cover;">
-                            </div>
-                            <div class="thumbnail-strip" id="thumbnail-strip">
-                                <!-- Thumbnails will be generated here -->
-                            </div>
-                        </div>
+            const ARMOR_PATHS_BEDROCK = [
+                'textures/models/armor/netherite_1.png', 
+                'textures/models/armor/netherite_2.png',
+                'textures/models/armor/diamond_1.png', 
+                'textures/models/armor/diamond_2.png',
+                'textures/models/armor/iron_1.png', 
+                'textures/models/armor/iron_2.png',
+                'textures/models/armor/gold_1.png', 
+                'textures/models/armor/gold_2.png',
+                'textures/models/armor/chainmail_1.png', 
+                'textures/models/armor/chainmail_2.png',
+                'textures/models/armor/leather_1.png', 
+                'textures/models/armor/leather_2.png',
+                'textures/models/armor/turtle_1.png'
+            ];
 
-                        <div class="description-section">
-                            <h3 class="section-title">Description</h3>
-                            <div class="pack-description">
-                                ${pack.description ? escapeHtml(pack.description) : '<p>This pack has no description.</p>'}
-                            </div>
-                        </div>
+            const uploadArea = document.getElementById('upload-area');
+            const fileInput = document.getElementById('file-input');
+            const armorList = document.getElementById('armor-list');
+            const canvas = document.getElementById('viewer-canvas');
 
-                        <div class="tags-section">
-                            <h3 class="section-title">Tags</h3>
-                            <div class="tags-container">
-                                ${tagsHtml || '<p class="tiny">No tags for this pack.</p>'}
-                            </div>
-                        </div>
+            let skinViewer = null;
+            let foundArmor = {};
 
-                        <div class="comments-section">
-                            <h3 class="section-title">Comments</h3>
-                            <div class="comments-placeholder">
-                                <i class="fa-solid fa-comments" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-                                <p>Comments are coming soon!</p>
-                            </div>
-                        </div>
-                    </div>
-                    <aside class="sidebar-card">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="download-card-header">
-                                    <h2>Downloads</h2>
-                                    <p class="tiny">${(pack.download_count || 0).toLocaleString()} Total</p>
-                                </div>
-                                <ul class="pack-stats">
-                                    <li><span class="label">Resolution</span> <span class="value">${escapeHtml(pack.resolution || 'N/A')}</span></li>
-                                    <li><span class="label">Version</span> <span class="value">${escapeHtml(pack.version || 'N/A')}</span></li>
-                                </ul>
-                                <button class="btn primary" id="download-btn" style="width: 100%;">
-                                    <i class="fa-solid fa-download"></i> Download Pack
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="card-body">
-                                <h3 class="section-title" style="margin-top:0; border:0; padding:0;">3D Armor Preview</h3>
-                                <canvas id="skin-viewer-canvas"></canvas>
-                                <div id="armor-list-container"></div>
-                                <button class="btn ghost" id="preview-armor-btn" style="width:100%; margin-top: 1rem;">
-                                    <i class="fa-solid fa-cube"></i> Preview Armor
-                                </button>
-                            </div>
-                        </div>
-                    </aside>
-                </div>
-            `;
-            
-            generateMediaThumbnails(pack);
-            initSkinViewer(); // Initialize skin viewer once, it'll load default skin
-            // Armor preview button handler
-            document.getElementById('preview-armor-btn').addEventListener('click', () => {
-                loadAndProcessPackForPreview(pack);
-            });
-            document.getElementById('download-btn').addEventListener('click', () => {
-                handleDownload(pack.id, pack.filename, pack.name);
-            });
-        }
-        
-        function generateMediaThumbnails(pack) {
-            const container = document.getElementById('thumbnail-strip');
-            container.innerHTML = '';
-            
-            // Add pack icon first
-            let mediaItems = [{ type: 'image', url: pack.icon_url || `https://placehold.co/280x280/1c1c1c/e8eefc?text=ICON` }];
-            
-            // Add YouTube thumbnail if URL exists
-            if (pack.youtube_url) {
-                const videoId = getYouTubeVideoId(pack.youtube_url);
-                if (videoId) {
-                    mediaItems.push({
-                        type: 'youtube',
-                        url: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
-                        videoId: videoId
+            function initSkinViewer() {
+                try {
+                    skinViewer = new skinview3d.SkinViewer({
+                        canvas: canvas,
+                        width: canvas.clientWidth,
+                        height: canvas.clientHeight
                     });
-                }
-            }
-            
-            // Add other media gallery images
-            if (Array.isArray(pack.media_gallery)) {
-                pack.media_gallery.forEach(url => mediaItems.push({ type: 'image', url }));
-            }
-            
-            mediaItems.forEach((item, index) => {
-                const thumb = document.createElement('div');
-                thumb.className = 'thumbnail';
-                thumb.style.backgroundImage = `url(${item.url})`;
-                thumb.style.backgroundSize = 'cover';
-                thumb.style.backgroundPosition = 'center';
-
-                if (item.type === 'youtube') {
-                    thumb.innerHTML = `<div class="play-icon"><i class="fa-solid fa-play"></i></div>`;
-                }
-                
-                if (index === 0) thumb.classList.add('active');
-                
-                thumb.addEventListener('click', () => {
-                    document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
-                    thumb.classList.add('active');
-                    const mainMediaContainer = document.getElementById('main-media');
-                    if (item.type === 'youtube') {
-                        mainMediaContainer.innerHTML = `<iframe src="https://www.youtube.com/embed/${item.videoId}?autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-                    } else {
-                        mainMediaContainer.innerHTML = `<img src="${item.url}" alt="Pack preview" style="width:100%; height:100%; object-fit:cover;">`;
-                    }
-                });
-                container.appendChild(thumb);
-            });
-        }
-
-        function showError(title, message) {
-            pageContainer.innerHTML = `<div class="error-container"><h2>${title}</h2><p>${message}</p></div>`;
-        }
-        
-        // --- 3D Armor Preview Logic ---
-        const ARMOR_PATHS = [ 'assets/minecraft/textures/models/armor/netherite_layer_1.png', 'assets/minecraft/textures/models/armor/netherite_layer_2.png', 'textures/models/armor/netherite_1.png', 'textures/models/armor/netherite_2.png', 'assets/minecraft/textures/models/armor/diamond_layer_1.png', 'assets/minecraft/textures/models/armor/diamond_layer_2.png', 'textures/models/armor/diamond_1.png', 'textures/models/armor/diamond_2.png', 'assets/minecraft/textures/models/armor/iron_layer_1.png', 'assets/minecraft/textures/models/armor/iron_layer_2.png', 'textures/models/armor/iron_1.png', 'textures/models/armor/iron_2.png' ];
-
-        function initSkinViewer() {
-            try {
-                const canvas = document.getElementById('skin-viewer-canvas');
-                skinViewer = new skinview3d.SkinViewer({
-                    canvas: canvas,
-                    width: canvas.clientWidth,
-                    height: canvas.clientHeight,
-                    skin: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png' // Default skin
-                });
-                skinViewer.autoRotate = true;
-                skinViewer.camera.position.set(0, 0, 40);
-                new ResizeObserver(() => skinViewer.setSize(canvas.clientWidth, canvas.clientHeight)).observe(canvas);
-                
-                // Mouse controls for rotation
-                let mouseDown = false;
-                canvas.addEventListener('mousedown', () => {
-                    mouseDown = true;
-                    canvas.style.cursor = 'grabbing';
-                    skinViewer.autoRotate = false;
-                });
-                canvas.addEventListener('mouseup', () => {
-                    mouseDown = false;
-                    canvas.style.cursor = 'grab';
+                    
+                    // Set up auto rotation and camera
                     skinViewer.autoRotate = true;
-                });
-                canvas.addEventListener('mouseleave', () => {
-                    if (mouseDown) {
-                        mouseDown = false;
-                        canvas.style.cursor = 'grab';
-                        skinViewer.autoRotate = true;
-                    }
-                });
+                    skinViewer.autoRotateSpeed = 0.5;
+                    skinViewer.camera.position.set(0, 0, 40);
+                    skinViewer.animation = new skinview3d.WalkingAnimation();
+                    skinViewer.animation.speed = 0.5;
+                    
+                    // Handle window resizing
+                    new ResizeObserver(() => {
+                        if (skinViewer) {
+                            skinViewer.setSize(canvas.clientWidth, canvas.clientHeight);
+                        }
+                    }).observe(canvas);
 
-            } catch (e) { console.error("Failed to init 3D viewer", e); }
-        }
-
-        async function loadAndProcessPackForPreview(pack) {
-            const btn = document.getElementById('preview-armor-btn');
-            btn.disabled = true;
-            btn.innerHTML = '<div class="spinner" style="width:1em;height:1em;border-width:2px;"></div> Loading Pack...';
-
-            try {
-                const { data: urlData } = supabase.storage.from('packs').getPublicUrl(pack.filename);
-                if (!urlData || !urlData.publicUrl) throw new Error('Failed to get pack file URL for preview.');
-                
-                const response = await fetch(urlData.publicUrl);
-                if (!response.ok) throw new Error('Failed to download pack file for preview.');
-                const fileBlob = await response.blob();
-                
-                const armorContainer = document.getElementById('armor-list-container');
-                armorContainer.innerHTML = `<p class="tiny" style="text-align: center;">Unzipping and searching for armor...</p>`;
-                
-                const zip = await JSZip.loadAsync(fileBlob);
-                
-                let foundArmor = {};
-                for (const path of ARMOR_PATHS) {
-                    const file = zip.file(path);
-                    if (file) {
-                        const blob = await file.async('blob');
-                        const url = URL.createObjectURL(blob);
-                        let name = path.split('/').pop().replace(/(_1|_2|_layer_1|_layer_2)\.png$/, '');
-                        const layer = path.includes('_2') || path.includes('layer_2') ? 'layer2' : 'layer1';
-                        if (!foundArmor[name]) foundArmor[name] = {};
-                        foundArmor[name][layer] = url;
-                    }
-                }
-
-                if (Object.keys(foundArmor).length === 0) {
-                    armorContainer.innerHTML = '<p class="tiny" style="text-align: center;">No standard armor textures found in this pack.</p>';
-                } else {
-                    armorContainer.innerHTML = '<div class="armor-selection-list"></div>';
-                    const list = armorContainer.querySelector('.armor-selection-list');
-                    Object.keys(foundArmor).sort().forEach(name => {
-                        const item = document.createElement('div');
-                        item.className = 'armor-item';
-                        item.textContent = name;
-                        item.onclick = async () => {
-                            document.querySelectorAll('.armor-item').forEach(i => i.classList.remove('active'));
-                            item.classList.add('active');
-                            applyArmor(foundArmor[name]);
-                        };
-                        list.appendChild(item);
+                    // Mouse controls
+                    let mouseDown = false;
+                    canvas.addEventListener('mousedown', () => {
+                        mouseDown = true;
+                        canvas.classList.add('dragging');
+                        skinViewer.autoRotate = false;
                     });
-                    // Select the first armor item automatically
-                    if (list.firstChild) list.firstChild.click();
+                    
+                    canvas.addEventListener('mouseup', () => {
+                        mouseDown = false;
+                        canvas.classList.remove('dragging');
+                        skinViewer.autoRotate = true;
+                    });
+                    
+                    canvas.addEventListener('mouseleave', () => {
+                        if (mouseDown) {
+                            mouseDown = false;
+                            canvas.classList.remove('dragging');
+                            skinViewer.autoRotate = true;
+                        }
+                    });
+                    
+                } catch (error) {
+                    console.error("Failed to initialize skin viewer:", error);
+                }
+            }
+
+            // NEW FUNCTION: Combines two armor layer image URLs into a single image blob URL
+            async function combineArmorLayers(url1, url2) {
+                const img1 = new Image();
+                const img2 = new Image();
+
+                // Load images from Blob URLs
+                const loadImg = (img, url) => new Promise(resolve => {
+                    img.onload = resolve;
+                    // Important for security/cross-origin if URLs were remote, safer to include
+                    img.crossOrigin = "Anonymous"; 
+                    img.src = url;
+                });
+
+                await Promise.all([loadImg(img1, url1), loadImg(img2, url2)]);
+
+                const canvas = document.createElement('canvas');
+                // Ensure canvas size accommodates both layers (assuming they are same size)
+                canvas.width = img1.width;
+                canvas.height = img1.height;
+                const ctx = canvas.getContext('2d');
+
+                // Draw Layer 1 (Base Layer)
+                ctx.drawImage(img1, 0, 0);
+                // Draw Layer 2 (Overlay Layer on top of Layer 1)
+                ctx.drawImage(img2, 0, 0);
+
+                // Convert the combined canvas back to a PNG Blob URL
+                return new Promise(resolve => {
+                    canvas.toBlob(blob => {
+                        resolve(URL.createObjectURL(blob));
+                    }, 'image/png');
+                });
+            }
+
+            async function handleFileSelect(file) {
+                if (!file) return;
+                
+                armorList.innerHTML = `<p class="placeholder-text"><span class="spinner" style="width:1.5em; height:1.5em; border-width:3px; display:inline-block; margin-bottom:-0.25em; margin-right: 0.5em;"></span>Searching pack...</p>`;
+                foundArmor = {};
+                
+                try {
+                    const zip = await JSZip.loadAsync(file);
+                    const allArmorPaths = [...ARMOR_PATHS_JAVA, ...ARMOR_PATHS_BEDROCK];
+                    
+                    // Search for armor textures
+                    for (const path of allArmorPaths) {
+                        const zipFile = zip.file(path);
+                        if (zipFile) {
+                            const blob = await zipFile.async('blob');
+                            const url = URL.createObjectURL(blob);
+                            
+                            // Extract armor name
+                            let armorName = path.split('/').pop().replace(/(_1|_2|_layer_1|_layer_2)\.png$/, '');
+                            if (armorName === 'chainmail') armorName = 'chain';
+                            
+                            // Determine layer (1 or 2)
+                            const isLayer2 = path.includes('layer_2') || path.includes('_2.png');
+                            const layer = isLayer2 ? 'layer2' : 'layer1';
+                            
+                            if (!foundArmor[armorName]) {
+                                foundArmor[armorName] = {};
+                            }
+                            foundArmor[armorName][layer] = url;
+                        }
+                    }
+                    
+                    renderArmorList();
+                    
+                } catch (error) {
+                    console.error("Error processing pack:", error);
+                    armorList.innerHTML = `<p class="placeholder-text">Could not read the pack file. Make sure it's a valid .zip or .mcpack file.</p>`;
+                }
+            }
+            
+            function renderArmorList() {
+                const armorNames = Object.keys(foundArmor);
+                
+                if (armorNames.length === 0) {
+                    armorList.innerHTML = `<p class="placeholder-text">No standard armor textures found in this pack.</p>`;
+                    return;
+                }
+                
+                // Sort armor names for consistent display
+                armorNames.sort();
+                
+                armorList.innerHTML = armorNames.map(name => 
+                    `<div class="armor-item" data-armor="${name}">${name}</div>`
+                ).join('');
+                
+                // Add click handlers
+                armorList.querySelectorAll('.armor-item').forEach(item => {
+                    item.addEventListener('click', async function() { // ADDED async
+                        // Update active state
+                        armorList.querySelectorAll('.armor-item').forEach(el => el.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        // Apply the armor
+                        await applyArmor(this.dataset.armor); // ADDED await
+                    });
+                });
+
+                // Auto-select first armor
+                const firstItem = armorList.querySelector('.armor-item');
+                if (firstItem) {
+                    firstItem.click();
+                }
+            }
+
+            // UPDATED FUNCTION: Correctly combines both layers or uses one
+            async function applyArmor(armorName) {
+                if (!skinViewer || !foundArmor[armorName]) {
+                    console.error("Cannot apply armor:", armorName);
+                    return;
+                }
+                
+                const armorSet = foundArmor[armorName];
+                let skinUrl = null;
+
+                if (armorSet.layer1 && armorSet.layer2) {
+                    // SOLUTION: Combine Layer 1 and Layer 2 into a single image
+                    skinUrl = await combineArmorLayers(armorSet.layer1, armorSet.layer2);
+                } else if (armorSet.layer1) {
+                    // Fallback to Layer 1 only
+                    skinUrl = armorSet.layer1;
+                } else if (armorSet.layer2) {
+                    // Fallback to Layer 2 only
+                    skinUrl = armorSet.layer2;
                 }
 
-            } catch (error) {
-                console.error("Armor preview error:", error);
-                showToast("Could not preview armor from this pack. " + error.message, "error");
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-cube"></i> Preview Armor';
-            }
-        }
-
-        async function applyArmor(armorSet) {
-            let skinUrl = null;
-            if (armorSet.layer1 && armorSet.layer2) {
-                skinUrl = await combineArmorLayers(armorSet.layer1, armorSet.layer2);
-            } else {
-                skinUrl = armorSet.layer1 || armorSet.layer2;
-            }
-            if (skinUrl) skinViewer.loadSkin(skinUrl);
-        }
-
-        async function combineArmorLayers(url1, url2) {
-            const [img1, img2] = await Promise.all([loadImage(url1), loadImage(url2)]);
-            const canvas = document.createElement('canvas');
-            canvas.width = img1.width;
-            canvas.height = img1.height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img1, 0, 0);
-            ctx.drawImage(img2, 0, 0);
-            return new Promise(res => canvas.toBlob(b => res(URL.createObjectURL(b)), 'image/png'));
-        }
-        const loadImage = (url) => new Promise(res => { const i = new Image(); i.onload = () => res(i); i.src = url; });
-
-        // --- Edit Pack Modal Functions ---
-        let currentEditMediaGallery = []; // Holds media gallery items for editing
-
-        function openEditPackModal() {
-            const modal = document.getElementById('edit-pack-modal');
-            document.getElementById('edit-pack-id').value = currentPackData.id;
-            document.getElementById('edit-pack-name').value = currentPackData.name || '';
-            document.getElementById('edit-pack-description').value = currentPackData.description || '';
-            document.getElementById('edit-youtube-url').value = currentPackData.youtube_url || '';
-            
-            // Populate colors
-            const colorsContainer = document.getElementById('edit-pack-colors');
-            colorsContainer.innerHTML = ''; // Clear previous swatches
-            ALL_COLORS.forEach(color => {
-                const swatch = document.createElement('button');
-                swatch.type = 'button';
-                swatch.className = `swatch ${currentPackData.color === color.key ? 'active' : ''}`;
-                swatch.style.backgroundColor = color.hex;
-                swatch.title = color.key;
-                if (color.icon) { swatch.innerHTML = `<i class="${color.icon}"></i>`; }
-                swatch.onclick = () => {
-                    document.querySelectorAll('#edit-pack-colors .swatch').forEach(s => s.classList.remove('active'));
-                    swatch.classList.add('active');
-                    currentPackData.color = color.key;
-                };
-                colorsContainer.appendChild(swatch);
-            });
-
-            // Populate resolutions
-            const resolutionsContainer = document.getElementById('edit-pack-resolutions');
-            resolutionsContainer.innerHTML = ''; // Clear previous
-            ALL_RESOLUTIONS.forEach(resolution => {
-                const resBtn = document.createElement('button');
-                resBtn.type = 'button';
-                resBtn.className = `tag-checkbox ${currentPackData.resolution === resolution ? 'selected' : ''}`;
-                resBtn.textContent = resolution;
-                resBtn.onclick = () => {
-                    document.querySelectorAll('#edit-pack-resolutions .tag-checkbox').forEach(b => b.classList.remove('selected'));
-                    resBtn.classList.add('selected');
-                    currentPackData.resolution = resolution;
-                };
-                resolutionsContainer.appendChild(resBtn);
-            });
-
-            // Populate tags
-            const tagsContainer = document.getElementById('edit-pack-tags');
-            tagsContainer.innerHTML = ''; // Clear previous tags
-            const currentPackTags = new Set((currentPackData.tags || '').split(',').map(tag => tag.trim()).filter(tag => tag !== ''));
-            ALL_TAGS.forEach(tag => {
-                const tagCheckbox = document.createElement('button');
-                tagCheckbox.type = 'button';
-                tagCheckbox.className = `tag-checkbox ${currentPackTags.has(tag) ? 'selected' : ''}`;
-                tagCheckbox.textContent = tag;
-                tagCheckbox.onclick = () => {
-                    tagCheckbox.classList.toggle('selected');
-                    if (tagCheckbox.classList.contains('selected')) {
-                        currentPackTags.add(tag);
-                    } else {
-                        currentPackTags.delete(tag);
-                    }
-                    currentPackData.tags = Array.from(currentPackTags).join(',');
-                };
-                tagsContainer.appendChild(tagCheckbox);
-            });
-
-            // Populate media gallery
-            currentEditMediaGallery = Array.isArray(currentPackData.media_gallery) ? [...currentPackData.media_gallery] : [];
-            renderEditMediaGallery();
-
-            modal.classList.add('show');
-        }
-
-        function closeEditPackModal() {
-            document.getElementById('edit-pack-modal').classList.remove('show');
-        }
-
-        function renderEditMediaGallery() {
-            const grid = document.getElementById('edit-media-gallery-grid');
-            grid.innerHTML = '';
-            if (currentEditMediaGallery.length === 0) {
-                grid.innerHTML = `<p class="tiny" style="grid-column: 1 / -1;">No extra media in gallery.</p>`;
-                return;
-            }
-
-            currentEditMediaGallery.forEach((url, index) => {
-                const item = document.createElement('div');
-                item.className = 'media-item';
-                const videoId = getYouTubeVideoId(url);
-                if (videoId) {
-                    item.innerHTML = `
-                        <img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg" alt="YouTube thumbnail">
-                        <i class="fa-solid fa-play play-icon"></i>
-                        <button type="button" class="remove-media-btn" onclick="removeMediaFromGallery(${index})"><i class="fa-solid fa-xmark"></i></button>
-                    `;
+                if (skinUrl) {
+                    // Load the combined/single image as the player skin texture (the necessary workaround)
+                    skinViewer.loadSkin(skinUrl);
                 } else {
-                    item.innerHTML = `
-                        <img src="${url}" alt="Media thumbnail">
-                        <button type="button" class="remove-media-btn" onclick="removeMediaFromGallery(${index})"><i class="fa-solid fa-xmark"></i></button>
-                    `;
+                    console.warn("No armor texture found for:", armorName);
                 }
-                grid.appendChild(item);
-            });
-        }
-
-        window.addMediaToGallery = function() {
-            const input = document.getElementById('add-media-url-input');
-            const url = input.value.trim();
-            if (url) {
-                currentEditMediaGallery.push(url);
-                input.value = '';
-                renderEditMediaGallery();
-            } else {
-                showToast("Please enter a URL to add media.", "warning");
             }
-        }
 
-        window.removeMediaFromGallery = function(index) {
-            currentEditMediaGallery.splice(index, 1);
-            renderEditMediaGallery();
-        }
-
-        document.getElementById('edit-pack-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const packId = document.getElementById('edit-pack-id').value;
-            const packName = document.getElementById('edit-pack-name').value.trim();
-            const description = document.getElementById('edit-pack-description').value.trim();
-            const youtubeUrl = document.getElementById('edit-youtube-url').value.trim();
+            // File upload handlers
+            uploadArea.addEventListener('click', () => fileInput.click());
             
-            const updates = {
-                name: packName,
-                description: description,
-                color: currentPackData.color,
-                tags: currentPackData.tags,
-                resolution: currentPackData.resolution,
-                youtube_url: youtubeUrl || null,
-                media_gallery: currentEditMediaGallery.length > 0 ? currentEditMediaGallery : null // Save as null if empty
-            };
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    handleFileSelect(e.target.files[0]);
+                }
+            });
+            
+            // Drag and drop handlers
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadArea.style.borderColor = 'var(--brand-1)';
+                uploadArea.style.background = 'rgba(var(--brand-1-rgb), 0.1)';
+            });
+            
+            uploadArea.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadArea.style.borderColor = 'var(--border)';
+                uploadArea.style.background = 'transparent';
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadArea.style.borderColor = 'var(--border)';
+                uploadArea.style.background = 'transparent';
+                
+                const files = e.dataTransfer.files;
+                if (files && files.length > 0) {
+                    handleFileSelect(files[0]);
+                }
+            });
 
-            try {
-                const { error } = await supabase
-                    .from('packs')
-                    .update(updates)
-                    .eq('id', packId);
-
-                if (error) throw error;
-
-                showToast('Pack updated successfully!', 'success');
-                closeEditPackModal();
-                // Reload pack data to reflect changes on page
-                loadPack();
-
-            } catch (error) {
-                console.error('Error updating pack:', error);
-                showToast('Failed to update pack: ' + error.message, 'error');
-            }
+            // Initialize the viewer
+            setTimeout(initSkinViewer, 100);
         });
-
-        // --- Load Pack Data on Page Load ---
-        async function loadPack() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const packId = urlParams.get('id');
-
-            if (!packId) {
-                return showError("No Pack Found", "A pack ID was not provided in the URL.");
-            }
-
-            try {
-                const packIdAsNumber = parseInt(packId, 10);
-                if (isNaN(packIdAsNumber)) {
-                    throw new Error("Invalid Pack ID format.");
-                }
-
-                const { data: pack, error: packError } = await supabase
-                    .from('packs')
-                    .select('*')
-                    .eq('id', packIdAsNumber) 
-                    .single();
-
-                if (packError || !pack) {
-                    throw new Error("Pack data could not be found.");
-                }
-
-                // Ensure media_gallery is an array if it exists
-                if (pack.media_gallery && typeof pack.media_gallery === 'string') {
-                    try {
-                        pack.media_gallery = JSON.parse(pack.media_gallery);
-                    } catch (e) {
-                        console.error("Failed to parse media_gallery string:", e);
-                        pack.media_gallery = [];
-                    }
-                } else if (!Array.isArray(pack.media_gallery)) {
-                    pack.media_gallery = [];
-                }
-
-                renderPackPage(pack);
-
-            } catch (error) {
-                console.error(error);
-                showError("Could Not Load Pack", "The pack you're looking for doesn't exist or there was an error loading it.");
-            }
-        }
-
-        // --- Auth State Change for Admin Check ---
-        document.addEventListener('auth-ready', async (event) => {
-            const { user } = event.detail;
-            if (user) {
-                const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-                if (profile && profile.role === 'admin') {
-                    currentUserRole = 'admin';
-                    // Re-render the page to show the edit button if auth loads after pack
-                    if (currentPackData) {
-                        renderPackPage(currentPackData);
-                    }
-                }
-            } else {
-                currentUserRole = 'viewer';
-                 if (currentPackData) {
-                    renderPackPage(currentPackData); // Remove edit button if user logs out
-                }
-            }
-        });
-
-        document.addEventListener('DOMContentLoaded', loadPack);
     </script>
 </body>
 </html>
-
