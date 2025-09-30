@@ -105,8 +105,8 @@
         .armor-item:hover { border-color: var(--text); }
         .armor-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); }
         
-        #item-viewer-container, #gui-viewer-container { border-radius: 12px; width: 100%; aspect-ratio: 1 / 1; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); background-size: cover; background-position: center; display: grid; place-items: center; padding: 1rem; }
-        #item-viewer-canvas, #gui-viewer-canvas { width: 100%; height: 100%; image-rendering: pixelated; }
+        #item-viewer-container { border-radius: 12px; width: 100%; aspect-ratio: 1 / 1; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); background-size: cover; background-position: center; display: grid; place-items: center; padding: 1rem; }
+        #item-viewer-canvas { width: 100%; height: 100%; image-rendering: pixelated; }
         
         .item-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 0.5rem; margin-top: 1rem; }
         .item-icon-card { position: relative; width: 100%; aspect-ratio: 1/1; background: var(--bg-2); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s ease; display: grid; place-items: center; padding: 4px; }
@@ -116,6 +116,9 @@
         .enchant-btn { position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: #fcc2ff; border-radius: 6px; font-size: 10px; cursor: pointer; display: none; align-items: center; justify-content: center; }
         .item-icon-card.enchantable .enchant-btn { display: flex; }
         .enchant-btn.active { background: #a855f7; color: white; border-color: #c084fc; }
+
+        #gui-viewer-container { border-radius: 12px; width: 100%; aspect-ratio: 1/1; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); background-size: cover; background-position: center; display: grid; place-items: center; padding: 1rem; }
+        #gui-viewer-canvas { max-width: 100%; max-height: 100%; object-fit: contain; image-rendering: pixelated; transform: scale(3); transform-origin: center; }
         
         .gui-selection-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; }
         .gui-selection-item { padding: 0.6rem 1rem; background: var(--bg-2); border-radius: 10px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; font-weight: 600; text-transform: capitalize; }
@@ -215,9 +218,12 @@
         };
         const GUI_PATHS = { 
             'icons': 'gui/icons.png', 
+            'widgets': 'gui/widgets.png',
             'crosshair': 'gui/crosshair.png'
         };
-
+        const GUI_COMPONENTS = { 
+            'Full HUD': { type: 'hud' } 
+        };
 
         function showToast(message, type = 'error') {
             const container = document.getElementById('toast-container');
@@ -335,7 +341,7 @@
                                     </div>
                                 </div>
                                 <div id="gui-panel" class="preview-panel">
-                                     <div id="gui-viewer-container"><canvas id="gui-viewer-canvas" width="256" height="256"></canvas></div>
+                                     <div id="gui-viewer-container"><img id="gui-viewer-canvas" /></div>
                                      <div id="gui-list-container">
                                         <div id="gui-list" class="gui-selection-list"></div>
                                         <div id="gui-loader"><p class="preview-placeholder-text">Click tab to load preview</p></div>
@@ -356,7 +362,6 @@
             
             setupPreviewer();
             initSkinViewer();
-            // Auto-load armor
             loadAndProcessPackForArmor(pack);
         }
 
@@ -392,16 +397,16 @@
                 `textures/items/${filename}`, `assets/minecraft/textures/gui/${filename}`,
                 `textures/gui/${filename}`, `textures/ui/${filename}`
             ]);
-            // Some packs have another root folder, try to account for that
+
             const rootFolders = zip.folder(/^[^/]+\/$/);
-            if(rootFolders.length > 0) {
-                 const root = rootFolders[0].name;
-                 potentialPaths.add(`${root}assets/minecraft/textures/item/${filename}`);
-                 potentialPaths.add(`${root}assets/minecraft/textures/items/${filename}`);
-                 potentialPaths.add(`${root}textures/items/${filename}`);
-                 potentialPaths.add(`${root}assets/minecraft/textures/gui/${filename}`);
-                 potentialPaths.add(`${root}textures/gui/${filename}`);
-                 potentialPaths.add(`${root}textures/ui/${filename}`);
+            if (rootFolders.length > 0) {
+                const root = rootFolders[0].name;
+                potentialPaths.add(`${root}assets/minecraft/textures/item/${filename}`);
+                potentialPaths.add(`${root}assets/minecraft/textures/items/${filename}`);
+                potentialPaths.add(`${root}textures/items/${filename}`);
+                potentialPaths.add(`${root}assets/minecraft/textures/gui/${filename}`);
+                potentialPaths.add(`${root}textures/gui/${filename}`);
+                potentialPaths.add(`${root}textures/ui/${filename}`);
             }
 
             const wildcardMatches = zip.file(new RegExp(`(^|/)${filename.replace(/\./g, '\\.')}$`));
@@ -498,10 +503,10 @@
             itemGrid.querySelectorAll('.item-icon-card').forEach(card => {
                 card.addEventListener('click', (e) => {
                     if(e.target.closest('.enchant-btn')) return;
-                    document.querySelectorAll('.item-icon-card').forEach(c => c.classList.remove('active'));
+                    document.querySelectorAll('.item-icon-card, .gui-selection-item').forEach(c => c.classList.remove('active'));
                     card.classList.add('active');
                     const isEnchanted = card.querySelector('.enchant-btn')?.classList.contains('active');
-                    displayAssetOnCanvas('item-viewer-canvas', foundAssets.items[card.dataset.key].url, isEnchanted);
+                    displayItemOnCanvas('item-viewer-canvas', foundAssets.items[card.dataset.key].url, isEnchanted);
                 });
             });
 
@@ -511,7 +516,7 @@
                     btn.classList.toggle('active');
                     const card = btn.closest('.item-icon-card');
                     if (card.classList.contains('active')) {
-                        displayAssetOnCanvas('item-viewer-canvas', foundAssets.items[card.dataset.key].url, btn.classList.contains('active'));
+                        displayItemOnCanvas('item-viewer-canvas', foundAssets.items[card.dataset.key].url, btn.classList.contains('active'));
                     }
                 });
             });
@@ -522,40 +527,95 @@
         function renderGuiSelectionList() {
              const guiList = document.getElementById('gui-list');
              const guiKeys = Object.keys(foundAssets.gui);
-             if (guiKeys.length === 0) {
+             const componentKeys = Object.keys(GUI_COMPONENTS);
+             const allKeys = [...componentKeys, ...guiKeys];
+
+             if (allKeys.length === 0) {
                  guiList.innerHTML = `<p class="preview-placeholder-text">No GUI textures found.</p>`;
                  return;
              }
-             guiList.innerHTML = guiKeys.map(key => `<div class="gui-selection-item" data-key="${key}">${key}</div>`).join('');
+             guiList.innerHTML = allKeys.map(key => `<div class="gui-selection-item" data-key="${key}">${key.replace(/_/g, ' ')}</div>`).join('');
              guiList.querySelectorAll('.gui-selection-item').forEach(item => {
                  item.addEventListener('click', () => {
-                     document.querySelectorAll('.gui-selection-item').forEach(el => el.classList.remove('active'));
+                     document.querySelectorAll('.gui-selection-item, .item-icon-card').forEach(el => el.classList.remove('active'));
                      item.classList.add('active');
-                     displayAssetOnCanvas('gui-viewer-canvas', foundAssets.gui[item.dataset.key].url);
+                     if (GUI_COMPONENTS[item.dataset.key]) {
+                         displayGuiComponent(item.dataset.key);
+                     } else {
+                         displayGuiImage(foundAssets.gui[item.dataset.key].url);
+                     }
                  });
              });
              if (guiList.firstChild) guiList.firstChild.click();
         }
         
-        async function displayAssetOnCanvas(canvasId, url, enchanted = false) {
-             const canvas = document.getElementById(canvasId);
-             if(!canvas) return;
-             const ctx = canvas.getContext('2d');
-             ctx.imageSmoothingEnabled = false;
-             ctx.clearRect(0, 0, canvas.width, canvas.height);
+        async function displayItemOnCanvas(canvasId, url, enchanted = false) {
+            const canvas = document.getElementById(canvasId);
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-             const finalUrl = enchanted ? await createEnchantedVersion(url) : url;
-             const img = await loadImage(finalUrl);
-             
-             const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * 0.7;
-             const drawWidth = img.width * scale;
-             const drawHeight = img.height * scale;
-             const x = (canvas.width - drawWidth) / 2;
-             const y = (canvas.height - drawHeight) / 2;
-             ctx.drawImage(img, x, y, drawWidth, drawHeight);
+            const finalUrl = enchanted ? await createEnchantedVersion(url) : url;
+            const img = await loadImage(finalUrl);
+            
+            const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * 0.7;
+            const drawWidth = img.width * scale;
+            const drawHeight = img.height * scale;
+            const x = (canvas.width - drawWidth) / 2;
+            const y = (canvas.height - drawHeight) / 2;
+            ctx.drawImage(img, x, y, drawWidth, drawHeight);
+        }
+
+        async function displayGuiComponent(name) {
+            const imageViewer = document.getElementById('gui-viewer-canvas');
+            if (GUI_COMPONENTS[name]?.type === 'hud') {
+                const hudCanvas = await createHudPreview();
+                imageViewer.src = hudCanvas.toDataURL();
+                imageViewer.style.transform = 'scale(2)';
+            }
+        }
+
+        function displayGuiImage(url) {
+            const imageViewer = document.getElementById('gui-viewer-canvas');
+            imageViewer.src = url;
+            imageViewer.style.transform = 'scale(1)';
         }
         
         const loadImage = (url) => new Promise((res, rej) => { const i = new Image(); i.crossOrigin = "Anonymous"; i.onload = () => res(i); i.onerror = rej; i.src = url; });
+
+        async function createHudPreview() {
+            const hudCanvas = document.createElement('canvas');
+            hudCanvas.width = 182; hudCanvas.height = 50;
+            const ctx = hudCanvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+
+            const iconsSheet = foundAssets.gui.icons ? await loadImage(foundAssets.gui.icons) : null;
+            const widgetsSheet = foundAssets.gui.widgets ? await loadImage(foundAssets.gui.widgets) : null;
+            
+            if (widgetsSheet) ctx.drawImage(widgetsSheet, 0, 0, 182, 22, 0, hudCanvas.height - 22, 182, 22);
+            
+            if (iconsSheet) {
+                for (let i = 0; i < 10; i++) ctx.drawImage(iconsSheet, 16, 0, 9, 9, (hudCanvas.width / 2) - 91 + (i * 8), hudCanvas.height - 41, 9, 9);
+                for (let i = 0; i < 8; i++) ctx.drawImage(iconsSheet, 52, 0, 9, 9, (hudCanvas.width / 2) - 91 + (i * 8), hudCanvas.height - 41, 9, 9);
+                ctx.drawImage(iconsSheet, 61, 0, 9, 9, (hudCanvas.width / 2) - 91 + (8 * 8), hudCanvas.height - 41, 9, 9);
+                for (let i = 0; i < 2; i++) ctx.drawImage(iconsSheet, 160, 0, 9, 9, (hudCanvas.width / 2) - 91 + ((i + 8) * 8), hudCanvas.height - 41, 9, 9);
+                for (let i = 0; i < 10; i++) ctx.drawImage(iconsSheet, 16, 9, 9, 9, (hudCanvas.width / 2) + 10 + (i * 8), hudCanvas.height - 41, 9, 9);
+                for (let i = 0; i < 3; i++) ctx.drawImage(iconsSheet, 34, 9, 9, 9, (hudCanvas.width / 2) + 10 + (i * 8), hudCanvas.height - 41, 9, 9);
+                ctx.drawImage(iconsSheet, 0, 64, 182, 5, 0, hudCanvas.height - 27, 182, 5);
+                ctx.drawImage(iconsSheet, 0, 69, 120, 5, 0, hudCanvas.height - 27, 120, 5); 
+            }
+            
+            ctx.font = "bold 10px Inter, sans-serif";
+            ctx.fillStyle = '#80FF20';
+            ctx.shadowColor = "rgba(0,0,0,0.5)";
+            ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1; ctx.shadowBlur = 1;
+            const levelText = '17';
+            const textWidth = ctx.measureText(levelText).width;
+            ctx.fillText(levelText, (hudCanvas.width / 2) - (textWidth / 2), hudCanvas.height - 29);
+            ctx.shadowColor = "transparent";
+            return hudCanvas;
+        }
 
         async function createEnchantedVersion(url) {
             const img = await loadImage(url);
@@ -586,7 +646,6 @@
                             skinViewer.camera.position.set(0, 0, 40);
                             skinViewer.camera.rotation.set(0, 0, 0);
                             skinViewer.autoRotate = true;
-                            skinViewer.autoRotateAnimation.paused = false;
                         }
                     });
                 }
@@ -764,3 +823,4 @@
     </script>
 </body>
 </html>
+
