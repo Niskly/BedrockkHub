@@ -201,20 +201,26 @@
             const creator = pack.profiles;
             const creatorPfp = creator.avatar_url 
                 ? creator.avatar_url 
-                : `https://placehold.co/36x36/1c1c1c/de212a?text=${creator.username.charAt(0).toUpperCase()}`;
+                : `https://placehold.co/36x36/1c1c1c/de212a?text=${(creator.username || '?').charAt(0).toUpperCase()}`;
 
             const packIcon = pack.icon_url 
                 ? pack.icon_url 
                 : `https://placehold.co/280x280/1c1c1c/e8eefc?text=${escapeHtml(pack.name)}`;
+            
+            const creatorLink = creator.username === 'Unknown Creator' 
+                ? `<div class="creator-info">`
+                : `<a href="/profile.html?user=${creator.username}" class="creator-info">`;
+            const creatorLinkEnd = creator.username === 'Unknown Creator' ? `</div>` : `</a>`;
+
 
             pageContainer.innerHTML = `
                 <div class="pack-layout">
                     <div class="pack-main-content">
                         <div class="pack-header">
-                             <a href="/profile.html?user=${creator.username}" class="creator-info">
+                             ${creatorLink}
                                 <img src="${creatorPfp}" alt="${creator.username}'s avatar" class="creator-avatar">
                                 <span class="creator-username">${creator.username}</span>
-                            </a>
+                            ${creatorLinkEnd}
                             <h1 class="pack-title">${escapeHtml(pack.name)}</h1>
                         </div>
                         <div class="pack-description">
@@ -278,7 +284,10 @@
                 }
 
                 if (!pack.profiles) {
-                    throw new Error("This pack is not associated with a valid creator.");
+                    pack.profiles = {
+                        username: 'Unknown Creator',
+                        avatar_url: null
+                    };
                 }
 
                 renderPackPage(pack);
@@ -293,3 +302,4 @@
     </script>
 </body>
 </html>
+
