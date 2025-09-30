@@ -166,19 +166,16 @@
     <script type="module" src="/theme.js"></script>
     <script>
         window.addEventListener('load', function() {
-            // --- PATH DEFINITIONS ---
             const ASSET_PATHS = {
                 items: { 'ender_pearl': 'ender_pearl.png', 'golden_apple': 'golden_apple.png', 'enchanted_golden_apple': 'apple_golden.png', 'iron_sword': 'iron_sword.png', 'golden_sword': 'golden_sword.png', 'diamond_sword': 'diamond_sword.png' },
                 gui: { 'icons': 'gui/icons.png', 'widgets': 'gui/widgets.png' }
             };
             const GUI_COMPONENTS = { 'Full HUD': { type: 'hud' } };
 
-            // --- DOM ELEMENTS ---
             const uploadArea = document.getElementById('upload-area');
             const fileInput = document.getElementById('file-input');
             const itemList = document.getElementById('item-list');
             const guiList = document.getElementById('gui-list');
-            const imageViewerContainer = document.getElementById('image-viewer-container');
             const imageViewer = document.getElementById('image-viewer');
             
             let foundAssets = { items: {}, gui: {} };
@@ -204,8 +201,7 @@
             async function findAssets(zip, paths, targetObject, type) {
                 const addAsset = async (key, filename) => {
                     const javaPath = `assets/minecraft/textures/${type}/${filename}`;
-                    const bedrockPath = `textures/items/${filename}`; // Corrected bedrock path for items
-                    
+                    const bedrockPath = `textures/${type}s/${filename}`; 
                     for (const p of [javaPath, bedrockPath]) {
                         const zipFile = zip.file(p);
                         if (zipFile) {
@@ -220,7 +216,6 @@
                 await Promise.all(promises);
             }
 
-            // --- RENDER FUNCTIONS ---
             function renderItemList() {
                 const names = Object.keys(foundAssets.items);
                 if (names.length === 0) return itemList.innerHTML = `<p class="placeholder-text">No standard items found.</p>`;
@@ -254,7 +249,6 @@
                 if (guiList.firstChild) guiList.firstChild.click();
             }
 
-            // --- DISPLAY/APPLY FUNCTIONS ---
             async function displayImage(url, enchanted) {
                 const finalUrl = enchanted ? await createEnchantedVersion(url) : url;
                 imageViewer.src = finalUrl;
@@ -267,7 +261,6 @@
                 }
             }
 
-            // --- UTILITY FUNCTIONS ---
             const loadImage = url => new Promise((res, rej) => { const i = new Image(); i.crossOrigin = "Anonymous"; i.onload = () => res(i); i.onerror = rej; i.src = url; });
 
             async function createEnchantedVersion(url) {
@@ -293,22 +286,16 @@
                 if (widgetsSheet) ctx.drawImage(widgetsSheet, 0, 0, 182, 22, 0, hudCanvas.height - 22, 182, 22);
                 
                 if (iconsSheet) {
-                    // Health Bar
                     for (let i = 0; i < 10; i++) ctx.drawImage(iconsSheet, 16, 0, 9, 9, (hudCanvas.width / 2) - 91 + (i * 8), hudCanvas.height - 41, 9, 9);
                     for (let i = 0; i < 8; i++) ctx.drawImage(iconsSheet, 52, 0, 9, 9, (hudCanvas.width / 2) - 91 + (i * 8), hudCanvas.height - 41, 9, 9);
                     ctx.drawImage(iconsSheet, 61, 0, 9, 9, (hudCanvas.width / 2) - 91 + (8 * 8), hudCanvas.height - 41, 9, 9);
                     for (let i = 0; i < 2; i++) ctx.drawImage(iconsSheet, 160, 0, 9, 9, (hudCanvas.width / 2) - 91 + ((i + 8) * 8), hudCanvas.height - 41, 9, 9);
-                    
-                    // Armor Bar
                     for (let i = 0; i < 10; i++) ctx.drawImage(iconsSheet, 16, 9, 9, 9, (hudCanvas.width / 2) + 10 + (i * 8), hudCanvas.height - 41, 9, 9);
                     for (let i = 0; i < 3; i++) ctx.drawImage(iconsSheet, 34, 9, 9, 9, (hudCanvas.width / 2) + 10 + (i * 8), hudCanvas.height - 41, 9, 9);
-                    
-                    // XP Bar
                     ctx.drawImage(iconsSheet, 0, 64, 182, 5, 0, hudCanvas.height - 27, 182, 5);
                     ctx.drawImage(iconsSheet, 0, 69, 120, 5, 0, hudCanvas.height - 27, 120, 5); 
                 }
                 
-                // XP Level (simulated)
                 ctx.font = "bold 10px Inter, sans-serif";
                 ctx.fillStyle = '#80FF20';
                 ctx.shadowColor = "rgba(0,0,0,0.5)";
@@ -317,12 +304,9 @@
                 const textWidth = ctx.measureText(levelText).width;
                 ctx.fillText(levelText, (hudCanvas.width / 2) - (textWidth / 2), hudCanvas.height - 29);
                 ctx.shadowColor = "transparent";
-
-
                 return hudCanvas;
             }
             
-            // --- EVENT LISTENERS ---
             uploadArea.onclick = () => fileInput.click();
             fileInput.onchange = (e) => handleFileSelect(e.target.files[0]);
             ['dragover', 'drop'].forEach(evt => uploadArea.addEventListener(evt, e => e.preventDefault()));
@@ -331,22 +315,20 @@
             document.querySelectorAll('.tab-btn').forEach(btn => btn.onclick = () => {
                 document.querySelectorAll('.tab-btn, .tab-content').forEach(el => el.classList.remove('active'));
                 btn.classList.add('active');
-                const content = document.getElementById(btn.dataset.tab + '-content');
-                content.classList.add('active');
+                document.getElementById(btn.dataset.tab + '-content').classList.add('active');
                 const list = btn.dataset.tab === 'items' ? itemList : guiList;
                 if (list.querySelector('.active')) list.querySelector('.active').click();
             });
+
             const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
             const mobileNavSidebar = document.querySelector('.mobile-nav-sidebar');
             const mobileNavBackdrop = document.querySelector('.mobile-nav-backdrop');
             const mobileNavClose = document.querySelector('.mobile-nav-close');
-            if (mobileNavToggle) {
-                const openMenu = () => { mobileNavSidebar.classList.add('show'); mobileNavBackdrop.classList.add('show'); };
-                const closeMenu = () => { mobileNavSidebar.classList.remove('show'); mobileNavBackdrop.classList.remove('show'); };
-                mobileNavToggle.addEventListener('click', openMenu);
-                mobileNavClose.addEventListener('click', closeMenu);
-                mobileNavBackdrop.addEventListener('click', closeMenu);
-            }
+            const openMenu = () => { mobileNavSidebar.classList.add('show'); mobileNavBackdrop.classList.add('show'); };
+            const closeMenu = () => { mobileNavSidebar.classList.remove('show'); mobileNavBackdrop.classList.remove('show'); };
+            mobileNavToggle.addEventListener('click', openMenu);
+            mobileNavClose.addEventListener('click', closeMenu);
+            mobileNavBackdrop.addEventListener('click', closeMenu);
         });
     </script>
 </body>
