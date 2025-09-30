@@ -176,7 +176,7 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Resolution</label>
-                        <div class="swatches" id="edit-pack-resolutions"></div>
+                        <div class="resolutions" id="edit-pack-resolutions"></div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Tags</label>
@@ -191,356 +191,406 @@
         </div>
     </div>
     
-    <script type="module" src="/theme.js"></script>
-    <script type="module" src="/auth.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
-            const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            
-            const pageContainer = document.getElementById('page-container');
-            let skinViewer = null;
-            let currentPackData = null;
-            let currentUserRole = 'viewer';
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        const pageContainer = document.getElementById('page-container');
+        let skinViewer = null;
+        let currentPackData = null;
+        let currentUserRole = 'viewer';
 
-            const ALL_TAGS = ['pvp', 'bedwars', 'skywars', 'anime', 'crystal pvp', 'survival', 'visual'];
-            const ALL_COLORS = [{key: 'none', hex: '#4b5563', icon: 'fa-solid fa-ban'}, {key: 'red',hex: '#ef4444'}, {key: 'blue',hex: '#3b82f6'}, {key: 'green',hex: '#22c55e'}, {key: 'yellow',hex: '#eab308'}, {key: 'purple',hex: '#a855f7'}, {key: 'pink',hex: '#ec4899'}, {key: 'orange',hex: '#f97316'}, {key: 'teal',hex: '#14b8a6'}, {key: 'gray',hex: '#6b7280'}, {key: 'black',hex: '#1f2937'}];
-            const ALL_RESOLUTIONS = ['16x', '32x', '64x', '128x'];
-            const ARMOR_ICONS = {
-                diamond: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/diamond.png',
-                netherite: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/netherite.png',
-                iron: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/iron.png',
-                gold: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/gold.png',
-                chain: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/chain.png',
-                leather: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/leather.png',
-                turtle: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/turtle.png'
-            };
+        const ALL_TAGS = ['pvp', 'bedwars', 'skywars', 'anime', 'crystal pvp', 'survival', 'visual'];
+        const ALL_COLORS = [{key: 'none', hex: '#4b5563', icon: 'fa-solid fa-ban'}, {key: 'red',hex: '#ef4444'}, {key: 'blue',hex: '#3b82f6'}, {key: 'green',hex: '#22c55e'}, {key: 'yellow',hex: '#eab308'}, {key: 'purple',hex: '#a855f7'}, {key: 'pink',hex: '#ec4899'}, {key: 'orange',hex: '#f97316'}, {key: 'teal',hex: '#14b8a6'}, {key: 'gray',hex: '#6b7280'}, {key: 'black',hex: '#1f2937'}];
+        const ALL_RESOLUTIONS = ['16x', '32x', '64x', '128x'];
+        const ARMOR_ICONS = {
+            diamond: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/diamond.png',
+            netherite: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/netherite.png',
+            iron: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/iron.png',
+            gold: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/gold.png',
+            chain: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/chain.png',
+            leather: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/leather.png',
+            turtle: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/turtle.png'
+        };
 
-            function showToast(message, type = 'error') {
-                const container = document.getElementById('toast-container');
-                const toast = document.createElement('div');
-                toast.className = `toast ${type}`;
-                toast.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'circle-check' : 'circle-exclamation'}"></i> <span>${message}</span>`;
-                container.appendChild(toast);
-                setTimeout(() => {
-                    if (toast) {
-                        toast.style.transform = 'translateX(120%)';
-                        setTimeout(() => toast.remove(), 300);
-                    }
-                }, 4000);
-            }
-
-            function formatDate(isoString) {
-                if (!isoString) return 'N/A';
-                return new Date(isoString).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-            }
-
-            function escapeHtml(str) { 
-                return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); 
-            }
-
-            async function handleDownload(packId, filename, packName) {
-                showToast('Starting download...', 'success');
-                try {
-                    fetch("/api/increment-download", {
-                        method: "POST", headers: {"Content-Type": "application/json"},
-                        body: JSON.stringify({ id: packId })
-                    }).then(() => {
-                        const el = document.getElementById('download-count-val');
-                        if(el) el.textContent = (parseInt(el.textContent.replace(/,/g, ''), 10) + 1).toLocaleString();
-                    });
-
-                    const { data: urlData, error: urlError } = supabase.storage.from('packs').getPublicUrl(filename);
-                    if (urlError || !urlData) throw new Error('Could not get download URL.');
-
-                    const response = await fetch(urlData.publicUrl);
-                    if (!response.ok) throw new Error('Download link failed.');
-                    const blob = await response.blob();
-
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    const extension = filename.split('.').pop();
-                    link.download = `${packName}.${extension}`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(link.href);
-
-                } catch (error) {
-                    console.error("Download Error:", error);
-                    showToast('Failed to start download.', 'error');
+        function showToast(message, type = 'error') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'circle-check' : 'circle-exclamation'}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                if (toast) {
+                    toast.style.transform = 'translateX(120%)';
+                    setTimeout(() => toast.remove(), 300);
                 }
+            }, 4000);
+        }
+
+        function formatDate(isoString) {
+            if (!isoString) return 'N/A';
+            return new Date(isoString).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        function escapeHtml(str) { 
+            return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); 
+        }
+
+        async function handleDownload(packId, filename, packName) {
+            showToast('Starting download...', 'success');
+            try {
+                fetch("/api/increment-download", {
+                    method: "POST", headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({ id: packId })
+                }).then(() => {
+                    const el = document.getElementById('download-count-val');
+                    if(el) el.textContent = (parseInt(el.textContent.replace(/,/g, ''), 10) + 1).toLocaleString();
+                });
+
+                const { data: urlData, error: urlError } = supabase.storage.from('packs').getPublicUrl(filename);
+                if (urlError || !urlData) throw new Error('Could not get download URL.');
+
+                const response = await fetch(urlData.publicUrl);
+                if (!response.ok) throw new Error('Download link failed.');
+                const blob = await response.blob();
+
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                const extension = filename.split('.').pop();
+                link.download = `${packName}.${extension}`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+
+            } catch (error) {
+                console.error("Download Error:", error);
+                showToast('Failed to start download.', 'error');
             }
+        }
 
-            function renderPackPage(pack) {
-                currentPackData = pack; 
-                document.title = `${pack.name} — MCHub`;
-                
-                const packIcon = pack.icon_url 
-                    ? pack.icon_url 
-                    : `https://placehold.co/80x80/1c1c1c/e8eefc?text=ICON`;
-                
-                const tagsHtml = (pack.tags || '')
-                    .split(',')
-                    .filter(tag => tag.trim() !== '')
-                    .map(tag => `<span class="tag">${escapeHtml(tag)}</span>`)
-                    .join('');
-                
-                pageContainer.innerHTML = `
-                    <div class="pack-layout">
-                        <div class="pack-main-content">
-                            <div class="pack-header">
-                                <img src="${packIcon}" alt="${escapeHtml(pack.name)} icon" class="pack-header-icon">
-                                <div class="pack-title-area">
-                                    <h1>${escapeHtml(pack.name)}</h1>
-                                    <div class="tiny" style="font-weight: 600;">Uploaded ${formatDate(pack.created_at)}</div>
-                                    <div class="star-rating">
-                                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i>
-                                        <span class="tiny" style="margin-left: 0.5rem;">(No reviews yet)</span>
-                                    </div>
-                                </div>
-                                ${currentUserRole === 'admin' ? `<button class="edit-pack-btn" onclick="openEditPackModal()"><i class="fa-solid fa-pencil"></i> Edit Pack</button>` : ''}
-                            </div>
-
-                            <div class="description-section">
-                                <h3 class="section-title">Description</h3>
-                                <div class="pack-description">
-                                    ${pack.description ? escapeHtml(pack.description) : '<p>This pack has no description.</p>'}
+        function renderPackPage(pack) {
+            currentPackData = pack; 
+            document.title = `${pack.name} — MCHub`;
+            
+            const packIcon = pack.icon_url 
+                ? pack.icon_url 
+                : `https://placehold.co/80x80/1c1c1c/e8eefc?text=ICON`;
+            
+            const tagsHtml = (pack.tags || '')
+                .split(',')
+                .filter(tag => tag.trim() !== '')
+                .map(tag => `<span class="tag">${escapeHtml(tag)}</span>`)
+                .join('');
+            
+            pageContainer.innerHTML = `
+                <div class="pack-layout">
+                    <div class="pack-main-content">
+                        <div class="pack-header">
+                            <img src="${packIcon}" alt="${escapeHtml(pack.name)} icon" class="pack-header-icon">
+                            <div class="pack-title-area">
+                                <h1>${escapeHtml(pack.name)}</h1>
+                                <div class="tiny" style="font-weight: 600;">Uploaded ${formatDate(pack.created_at)}</div>
+                                <div class="star-rating">
+                                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i>
+                                    <span class="tiny" style="margin-left: 0.5rem;">(No reviews yet)</span>
                                 </div>
                             </div>
+                            ${currentUserRole === 'admin' ? `<button class="edit-pack-btn" onclick="openEditPackModal()"><i class="fa-solid fa-pencil"></i> Edit Pack</button>` : ''}
+                        </div>
 
-                            <div class="tags-section">
-                                <h3 class="section-title">Tags</h3>
-                                <div class="tags-container">
-                                    ${tagsHtml || '<p class="tiny">No tags for this pack.</p>'}
-                                </div>
-                            </div>
-
-                            <div class="comments-section">
-                                <h3 class="section-title">Comments</h3>
-                                <div class="comments-placeholder">
-                                    <i class="fa-solid fa-comments" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-                                    <p>Comments are coming soon!</p>
-                                </div>
+                        <div class="description-section">
+                            <h3 class="section-title">Description</h3>
+                            <div class="pack-description">
+                                ${pack.description ? escapeHtml(pack.description) : '<p>This pack has no description.</p>'}
                             </div>
                         </div>
-                        <aside class="sidebar-card">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="download-card-header">
-                                        <h2>Downloads</h2>
-                                        <p class="tiny" id="download-count-val">${(pack.download_count || 0).toLocaleString()} Total</p>
-                                    </div>
-                                    <ul class="pack-stats">
-                                        <li><span class="label">Resolution</span> <span class="value">${escapeHtml(pack.resolution || 'N/A')}</span></li>
-                                        <li><span class="label">Version</span> <span class="value">${escapeHtml(pack.version || 'N/A')}</span></li>
-                                    </ul>
-                                    <button class="btn primary" id="download-btn" style="width: 100%;">
-                                        <i class="fa-solid fa-download"></i> Download Pack
-                                    </button>
-                                </div>
+
+                        <div class="tags-section">
+                            <h3 class="section-title">Tags</h3>
+                            <div class="tags-container">
+                                ${tagsHtml || '<p class="tiny">No tags for this pack.</p>'}
                             </div>
-                            <div class="card">
-                                <div class="card-body">
-                                    <h3 class="section-title" style="margin-top:0; border:0; padding:0;">3D Armor Preview</h3>
-                                    <canvas id="skin-viewer-canvas"></canvas>
-                                    <div id="armor-list-container"></div>
-                                    <button class="btn ghost" id="preview-armor-btn" style="width:100%; margin-top: 1rem;">
-                                        <i class="fa-solid fa-cube"></i> Preview Armor
-                                    </button>
-                                </div>
+                        </div>
+
+                        <div class="comments-section">
+                            <h3 class="section-title">Comments</h3>
+                            <div class="comments-placeholder">
+                                <i class="fa-solid fa-comments" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                                <p>Comments are coming soon!</p>
                             </div>
-                        </aside>
+                        </div>
                     </div>
-                `;
-                
-                // Use setTimeout to ensure the canvas is in the DOM and has dimensions
-                setTimeout(initSkinViewer, 100);
-                
-                document.getElementById('preview-armor-btn').addEventListener('click', () => {
-                    loadAndProcessPackForPreview(pack);
-                });
-                document.getElementById('download-btn').addEventListener('click', () => {
-                    handleDownload(pack.id, pack.filename, pack.name);
-                });
-            }
+                    <aside class="sidebar-card">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="download-card-header">
+                                    <h2>Downloads</h2>
+                                    <p class="tiny" id="download-count-val">${(pack.download_count || 0).toLocaleString()} Total</p>
+                                </div>
+                                <ul class="pack-stats">
+                                    <li><span class="label">Resolution</span> <span class="value">${escapeHtml(pack.resolution || 'N/A')}</span></li>
+                                    <li><span class="label">Version</span> <span class="value">${escapeHtml(pack.version || 'N/A')}</span></li>
+                                </ul>
+                                <button class="btn primary" id="download-btn" style="width: 100%;">
+                                    <i class="fa-solid fa-download"></i> Download Pack
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="section-title" style="margin-top:0; border:0; padding:0;">3D Armor Preview</h3>
+                                <canvas id="skin-viewer-canvas"></canvas>
+                                <div id="armor-list-container"></div>
+                                <button class="btn ghost" id="preview-armor-btn" style="width:100%; margin-top: 1rem;">
+                                    <i class="fa-solid fa-cube"></i> Preview Armor
+                                </button>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            `;
             
-            function showError(title, message) {
-                pageContainer.innerHTML = `<div class="error-container"><h2>${title}</h2><p>${message}</p></div>`;
-            }
+            setTimeout(initSkinViewer, 100);
             
-            const ARMOR_PATHS_JAVA = [ 'assets/minecraft/textures/models/armor/netherite_layer_1.png', 'assets/minecraft/textures/models/armor/netherite_layer_2.png', 'assets/minecraft/textures/models/armor/diamond_layer_1.png', 'assets/minecraft/textures/models/armor/diamond_layer_2.png', 'assets/minecraft/textures/models/armor/iron_layer_1.png', 'assets/minecraft/textures/models/armor/iron_layer_2.png', 'assets/minecraft/textures/models/armor/gold_layer_1.png', 'assets/minecraft/textures/models/armor/gold_layer_2.png', 'assets/minecraft/textures/models/armor/chainmail_layer_1.png', 'assets/minecraft/textures/models/armor/chainmail_layer_2.png', 'assets/minecraft/textures/models/armor/leather_layer_1.png', 'assets/minecraft/textures/models/armor/leather_layer_2.png', 'assets/minecraft/textures/models/armor/turtle_layer_1.png' ];
-            const ARMOR_PATHS_BEDROCK = [ 'textures/models/armor/netherite_1.png', 'textures/models/armor/netherite_2.png', 'textures/models/armor/diamond_1.png', 'textures/models/armor/diamond_2.png', 'textures/models/armor/iron_1.png', 'textures/models/armor/iron_2.png', 'textures/models/armor/gold_1.png', 'textures/models/armor/gold_2.png', 'textures/models/armor/chainmail_1.png', 'textures/models/armor/chainmail_2.png', 'textures/models/armor/leather_1.png', 'textures/models/armor/leather_2.png', 'textures/models/armor/turtle_1.png' ];
+            document.getElementById('preview-armor-btn').addEventListener('click', () => {
+                loadAndProcessPackForPreview(pack);
+            });
+            document.getElementById('download-btn').addEventListener('click', () => {
+                handleDownload(pack.id, pack.filename, pack.name);
+            });
+        }
+        
+        function showError(title, message) {
+            pageContainer.innerHTML = `<div class="error-container"><h2>${title}</h2><p>${message}</p></div>`;
+        }
+        
+        const ARMOR_PATHS_JAVA = [ 'assets/minecraft/textures/models/armor/netherite_layer_1.png', 'assets/minecraft/textures/models/armor/netherite_layer_2.png', 'assets/minecraft/textures/models/armor/diamond_layer_1.png', 'assets/minecraft/textures/models/armor/diamond_layer_2.png', 'assets/minecraft/textures/models/armor/iron_layer_1.png', 'assets/minecraft/textures/models/armor/iron_layer_2.png', 'assets/minecraft/textures/models/armor/gold_layer_1.png', 'assets/minecraft/textures/models/armor/gold_layer_2.png', 'assets/minecraft/textures/models/armor/chainmail_layer_1.png', 'assets/minecraft/textures/models/armor/chainmail_layer_2.png', 'assets/minecraft/textures/models/armor/leather_layer_1.png', 'assets/minecraft/textures/models/armor/leather_layer_2.png', 'assets/minecraft/textures/models/armor/turtle_layer_1.png' ];
+        const ARMOR_PATHS_BEDROCK = [ 'textures/models/armor/netherite_1.png', 'textures/models/armor/netherite_2.png', 'textures/models/armor/diamond_1.png', 'textures/models/armor/diamond_2.png', 'textures/models/armor/iron_1.png', 'textures/models/armor/iron_2.png', 'textures/models/armor/gold_1.png', 'textures/models/armor/gold_2.png', 'textures/models/armor/chainmail_1.png', 'textures/models/armor/chainmail_2.png', 'textures/models/armor/leather_1.png', 'textures/models/armor/leather_2.png', 'textures/models/armor/turtle_1.png' ];
 
-            function initSkinViewer() {
-                try {
-                    const canvas = document.getElementById('skin-viewer-canvas');
-                    if (!canvas) return;
-                    skinViewer = new skinview3d.SkinViewer({
-                        canvas: canvas,
-                        width: canvas.clientWidth,
-                        height: canvas.clientHeight,
-                        skin: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png'
-                    });
-                    skinViewer.autoRotate = true;
-                    skinViewer.camera.position.set(0, 0, 40);
-                    new ResizeObserver(() => {
-                        if (skinViewer && canvas.clientWidth > 0 && canvas.clientHeight > 0) {
-                            skinViewer.setSize(canvas.clientWidth, canvas.clientHeight);
-                        }
-                    }).observe(canvas);
-                    
-                    let mouseDown = false;
-                    canvas.addEventListener('mousedown', () => { mouseDown = true; canvas.classList.add('dragging'); skinViewer.autoRotate = false; });
-                    canvas.addEventListener('mouseup', () => { mouseDown = false; canvas.classList.remove('dragging'); skinViewer.autoRotate = true; });
-                    canvas.addEventListener('mouseleave', () => { if(mouseDown) { mouseDown = false; canvas.classList.remove('dragging'); skinViewer.autoRotate = true; }});
-
-                } catch (e) { console.error("Failed to init 3D viewer", e); }
-            }
-
-            async function loadAndProcessPackForPreview(pack) {
-                const btn = document.getElementById('preview-armor-btn');
-                btn.disabled = true;
-                btn.innerHTML = '<div class="spinner" style="width:1em;height:1em;border-width:2px;"></div> Loading Pack...';
-
-                try {
-                    const { data: urlData } = supabase.storage.from('packs').getPublicUrl(pack.filename);
-                    if (!urlData || !urlData.publicUrl) throw new Error('Failed to get pack file URL for preview.');
-                    
-                    const response = await fetch(urlData.publicUrl);
-                    if (!response.ok) throw new Error('Failed to download pack file for preview.');
-                    const fileBlob = await response.blob();
-                    
-                    const armorContainer = document.getElementById('armor-list-container');
-                    armorContainer.innerHTML = `<p class="tiny" style="text-align: center;">Unzipping and searching for armor...</p>`;
-                    
-                    const zip = await JSZip.loadAsync(fileBlob);
-                    const allArmorPaths = [...ARMOR_PATHS_JAVA, ...ARMOR_PATHS_BEDROCK];
-                    
-                    let foundArmor = {};
-                    for (const path of allArmorPaths) {
-                        const file = zip.file(path);
-                        if (file) {
-                            const blob = await file.async('blob');
-                            const url = URL.createObjectURL(blob);
-                            let name = path.split('/').pop().replace(/(_1|_2|_layer_1|_layer_2)\.png$/, '');
-                            if (name === 'chainmail') name = 'chain';
-                            const layer = path.includes('_2') || path.includes('layer_2') ? 'layer2' : 'layer1';
-                            if (!foundArmor[name]) foundArmor[name] = {};
-                            foundArmor[name][layer] = url;
-                        }
+        function initSkinViewer() {
+            try {
+                const canvas = document.getElementById('skin-viewer-canvas');
+                if (!canvas || !skinview3d) return;
+                skinViewer = new skinview3d.SkinViewer({
+                    canvas: canvas,
+                    width: canvas.clientWidth,
+                    height: canvas.clientHeight,
+                    skin: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png'
+                });
+                skinViewer.autoRotate = true;
+                skinViewer.camera.position.set(0, 0, 40);
+                new ResizeObserver(() => {
+                    if (skinViewer && canvas.clientWidth > 0 && canvas.clientHeight > 0) {
+                        skinViewer.setSize(canvas.clientWidth, canvas.clientHeight);
                     }
+                }).observe(canvas);
+                
+                let mouseDown = false;
+                canvas.addEventListener('mousedown', () => { mouseDown = true; canvas.classList.add('dragging'); skinViewer.autoRotate = false; });
+                canvas.addEventListener('mouseup', () => { mouseDown = false; canvas.classList.remove('dragging'); skinViewer.autoRotate = true; });
+                canvas.addEventListener('mouseleave', () => { if(mouseDown) { mouseDown = false; canvas.classList.remove('dragging'); skinViewer.autoRotate = true; }});
 
-                    if (Object.keys(foundArmor).length === 0) {
-                        armorContainer.innerHTML = '<p class="tiny" style="text-align: center;">No standard armor textures found in this pack.</p>';
-                    } else {
-                        armorContainer.innerHTML = '<div class="armor-selection-list"></div>';
-                        const list = armorContainer.querySelector('.armor-selection-list');
-                        Object.keys(foundArmor).sort().forEach(name => {
-                            const item = document.createElement('div');
-                            item.className = 'armor-item';
-                            
-                            const iconUrl = ARMOR_ICONS[name] || `https://placehold.co/24x24/1c1c1c/e8eefc?text=${name.charAt(0).toUpperCase()}`;
-                            item.innerHTML = `<img src="${iconUrl}" alt="${name}" style="width: 24px; height: 24px; margin-right: 10px; image-rendering: pixelated; vertical-align: middle;"> <span style="vertical-align: middle;">${name}</span>`;
-                            item.style.display = 'flex';
-                            item.style.alignItems = 'center';
+            } catch (e) { console.error("Failed to init 3D viewer", e); }
+        }
 
-                            item.onclick = async () => {
-                                document.querySelectorAll('.armor-item').forEach(i => i.classList.remove('active'));
-                                item.classList.add('active');
-                                await applyArmor(foundArmor[name]);
-                            };
-                            list.appendChild(item);
-                        });
-                        if (list.firstChild) list.firstChild.click();
+        async function loadAndProcessPackForPreview(pack) {
+            const btn = document.getElementById('preview-armor-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner" style="width:1em;height:1em;border-width:2px;"></div> Loading Pack...';
+
+            try {
+                const { data: urlData } = supabase.storage.from('packs').getPublicUrl(pack.filename);
+                if (!urlData || !urlData.publicUrl) throw new Error('Failed to get pack file URL for preview.');
+                
+                const response = await fetch(urlData.publicUrl);
+                if (!response.ok) throw new Error('Failed to download pack file for preview.');
+                const fileBlob = await response.blob();
+                
+                const armorContainer = document.getElementById('armor-list-container');
+                armorContainer.innerHTML = `<p class="tiny" style="text-align: center;">Unzipping and searching for armor...</p>`;
+                
+                const zip = await JSZip.loadAsync(fileBlob);
+                const allArmorPaths = [...ARMOR_PATHS_JAVA, ...ARMOR_PATHS_BEDROCK];
+                
+                let foundArmor = {};
+                for (const path of allArmorPaths) {
+                    const file = zip.file(path);
+                    if (file) {
+                        const blob = await file.async('blob');
+                        const url = URL.createObjectURL(blob);
+                        let name = path.split('/').pop().replace(/(_1|_2|_layer_1|_layer_2)\.png$/, '');
+                        if (name === 'chainmail') name = 'chain';
+                        const layer = path.includes('_2') || path.includes('layer_2') ? 'layer2' : 'layer1';
+                        if (!foundArmor[name]) foundArmor[name] = {};
+                        foundArmor[name][layer] = url;
                     }
-
-                } catch (error) {
-                    console.error("Armor preview error:", error);
-                    showToast("Could not preview armor from this pack. " + error.message, "error");
-                } finally {
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fa-solid fa-cube"></i> Preview Armor';
                 }
-            }
 
-            async function applyArmor(armorSet) {
-                if (!skinViewer) return;
-                let skinUrl = null;
-                if (armorSet.layer1 && armorSet.layer2) {
-                    skinUrl = await combineArmorLayers(armorSet.layer1, armorSet.layer2);
+                if (Object.keys(foundArmor).length === 0) {
+                    armorContainer.innerHTML = '<p class="tiny" style="text-align: center;">No standard armor textures found in this pack.</p>';
                 } else {
-                    skinUrl = armorSet.layer1 || armorSet.layer2;
-                }
-                if (skinUrl) skinViewer.loadSkin(skinUrl);
-            }
+                    armorContainer.innerHTML = '<div class="armor-selection-list"></div>';
+                    const list = armorContainer.querySelector('.armor-selection-list');
+                    Object.keys(foundArmor).sort().forEach(name => {
+                        const item = document.createElement('div');
+                        item.className = 'armor-item';
+                        
+                        const iconUrl = ARMOR_ICONS[name] || `https://placehold.co/24x24/1c1c1c/e8eefc?text=${name.charAt(0).toUpperCase()}`;
+                        item.innerHTML = `<img src="${iconUrl}" alt="${name}" style="width: 24px; height: 24px; margin-right: 10px; image-rendering: pixelated; vertical-align: middle;"> <span style="vertical-align: middle;">${name}</span>`;
+                        item.style.display = 'flex';
+                        item.style.alignItems = 'center';
 
-            async function combineArmorLayers(url1, url2) {
-                const [img1, img2] = await Promise.all([loadImage(url1), loadImage(url2)]);
-                const canvas = document.createElement('canvas');
-                canvas.width = Math.max(img1.width, img2.width);
-                canvas.height = Math.max(img1.height, img2.height);
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img1, 0, 0);
-                ctx.drawImage(img2, 0, 0);
-                return new Promise(res => canvas.toBlob(b => res(URL.createObjectURL(b)), 'image/png'));
-            }
-            const loadImage = (url) => new Promise((res, rej) => { const i = new Image(); i.crossOrigin = "Anonymous"; i.onload = () => res(i); i.onerror = rej; i.src = url; });
-
-            window.openEditPackModal = function() {
-                // Modal HTML is removed, so this function is empty.
-            }
-
-            window.closeEditPackModal = function() {
-                // Modal HTML is removed, so this function is empty.
-            }
-
-            async function loadPack() {
-                const urlParams = new URLSearchParams(window.location.search);
-                const packId = urlParams.get('id');
-
-                if (!packId) {
-                    return showError("No Pack Found", "A pack ID was not provided in the URL.");
+                        item.onclick = async () => {
+                            document.querySelectorAll('.armor-item').forEach(i => i.classList.remove('active'));
+                            item.classList.add('active');
+                            await applyArmor(foundArmor[name]);
+                        };
+                        list.appendChild(item);
+                    });
+                    if (list.firstChild) list.firstChild.click();
                 }
 
-                try {
-                    const packIdAsNumber = parseInt(packId, 10);
-                    if (isNaN(packIdAsNumber)) {
-                        throw new Error("Invalid Pack ID format.");
-                    }
-
-                    const { data: pack, error: packError } = await supabase
-                        .from('packs')
-                        .select('*')
-                        .eq('id', packIdAsNumber) 
-                        .single();
-
-                    if (packError || !pack) {
-                        throw new Error("Pack data could not be found.");
-                    }
-
-                    renderPackPage(pack);
-
-                } catch (error) {
-                    console.error(error);
-                    showError("Could Not Load Pack", "The pack you're looking for doesn't exist or there was an error loading it.");
-                }
+            } catch (error) {
+                console.error("Armor preview error:", error);
+                showToast("Could not preview armor from this pack. " + error.message, "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-cube"></i> Preview Armor';
             }
+        }
 
-            document.addEventListener('auth-ready', async (event) => {
-                const { user } = event.detail;
-                if (user) {
-                    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-                    if (profile && profile.role === 'admin') {
-                        currentUserRole = 'admin';
-                        if (currentPackData) renderPackPage(currentPackData);
-                    }
-                }
+        async function applyArmor(armorSet) {
+            if (!skinViewer) return;
+            let skinUrl = null;
+            if (armorSet.layer1 && armorSet.layer2) {
+                skinUrl = await combineArmorLayers(armorSet.layer1, armorSet.layer2);
+            } else {
+                skinUrl = armorSet.layer1 || armorSet.layer2;
+            }
+            if (skinUrl) skinViewer.loadSkin(skinUrl);
+        }
+
+        async function combineArmorLayers(url1, url2) {
+            const [img1, img2] = await Promise.all([loadImage(url1), loadImage(url2)]);
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(img1.width, img2.width);
+            canvas.height = Math.max(img1.height, img2.height);
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img1, 0, 0);
+            ctx.drawImage(img2, 0, 0);
+            return new Promise(res => canvas.toBlob(b => res(URL.createObjectURL(b)), 'image/png'));
+        }
+        const loadImage = (url) => new Promise((res, rej) => { const i = new Image(); i.crossOrigin = "Anonymous"; i.onload = () => res(i); i.onerror = rej; i.src = url; });
+
+        window.openEditPackModal = function() {
+            const modal = document.getElementById('edit-pack-modal');
+            if (!currentPackData || !modal) return;
+
+            document.getElementById('edit-pack-id').value = currentPackData.id;
+            document.getElementById('edit-pack-name').value = currentPackData.name || '';
+            document.getElementById('edit-pack-description').value = currentPackData.description || '';
+            
+            const colorsContainer = document.getElementById('edit-pack-colors');
+            colorsContainer.innerHTML = ALL_COLORS.map(c => `<div class="swatch ${currentPackData.color === c.key ? 'active' : ''}" style="background-color: ${c.hex};" data-color="${c.key}">${c.icon ? `<i class="${c.icon}"></i>` : ''}</div>`).join('');
+            colorsContainer.querySelectorAll('.swatch').forEach(sw => sw.onclick = () => {
+                colorsContainer.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+                sw.classList.add('active');
             });
 
-            loadPack();
+            const resolutionsContainer = document.getElementById('edit-pack-resolutions');
+            resolutionsContainer.innerHTML = ALL_RESOLUTIONS.map(r => `<div class="tag-checkbox ${currentPackData.resolution === r ? 'selected' : ''}" data-res="${r}">${r}</div>`).join('');
+            resolutionsContainer.querySelectorAll('.tag-checkbox').forEach(rc => rc.onclick = () => {
+                 resolutionsContainer.querySelectorAll('.tag-checkbox').forEach(r => r.classList.remove('selected'));
+                 rc.classList.add('selected');
+            });
+            
+            const tagsContainer = document.getElementById('edit-pack-tags');
+            const currentTags = new Set(currentPackData.tags ? currentPackData.tags.split(',') : []);
+            tagsContainer.innerHTML = ALL_TAGS.map(t => `<div class="tag-checkbox ${currentTags.has(t) ? 'selected' : ''}" data-tag="${t}">${t}</div>`).join('');
+            tagsContainer.querySelectorAll('.tag-checkbox').forEach(tc => tc.onclick = () => tc.classList.toggle('selected'));
+            
+            modal.classList.add('show');
+        }
+
+        window.closeEditPackModal = function() {
+            const modal = document.getElementById('edit-pack-modal');
+            if (modal) modal.classList.remove('show');
+        }
+        
+        document.getElementById('edit-pack-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const packId = document.getElementById('edit-pack-id').value;
+            const selectedColor = document.querySelector('#edit-pack-colors .swatch.active')?.dataset.color || 'none';
+            const selectedResolution = document.querySelector('#edit-pack-resolutions .tag-checkbox.selected')?.dataset.res || null;
+            const selectedTags = Array.from(document.querySelectorAll('#edit-pack-tags .tag-checkbox.selected')).map(el => el.dataset.tag);
+            
+            const updates = {
+                name: document.getElementById('edit-pack-name').value.trim(),
+                description: document.getElementById('edit-pack-description').value.trim(),
+                color: selectedColor,
+                resolution: selectedResolution,
+                tags: selectedTags.join(',')
+            };
+
+            try {
+                const { error } = await supabase.from('packs').update(updates).eq('id', packId);
+                if (error) throw error;
+                showToast('Pack updated successfully!', 'success');
+                closeEditPackModal();
+                await loadPack(); // Reload the pack data to show changes
+            } catch (error) {
+                showToast('Failed to update pack: ' + error.message, 'error');
+            }
         });
+
+        async function loadPack() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const packId = urlParams.get('id');
+
+            if (!packId) {
+                return showError("No Pack Found", "A pack ID was not provided in the URL.");
+            }
+
+            try {
+                const packIdAsNumber = parseInt(packId, 10);
+                if (isNaN(packIdAsNumber)) {
+                    throw new Error("Invalid Pack ID format.");
+                }
+
+                const { data: pack, error: packError } = await supabase
+                    .from('packs')
+                    .select('*')
+                    .eq('id', packIdAsNumber) 
+                    .single();
+
+                if (packError || !pack) {
+                    throw new Error("Pack data could not be found.");
+                }
+
+                renderPackPage(pack);
+
+            } catch (error) {
+                console.error(error);
+                showError("Could Not Load Pack", "The pack you're looking for doesn't exist or there was an error loading it.");
+            }
+        }
+
+        document.addEventListener('auth-ready', async (event) => {
+            const { user } = event.detail;
+            if (user) {
+                const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+                if (profile && profile.role === 'admin') {
+                    currentUserRole = 'admin';
+                    if (currentPackData) renderPackPage(currentPackData);
+                }
+            }
+        });
+
+        loadPack();
     </script>
 </body>
 </html>
