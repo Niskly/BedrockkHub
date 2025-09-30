@@ -61,8 +61,8 @@
         .selection-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: white; }
         
         .viewer-panel { position: sticky; top: 100px; }
-        #image-viewer-container { border-radius: 16px; width: 100%; aspect-ratio: 1 / 1; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); background-size: cover; background-position: center; display: grid; place-items: center; padding: 2rem; }
-        #image-viewer-canvas { width: 100%; height: 100%; image-rendering: pixelated; }
+        #image-viewer-container { border-radius: 16px; width: 100%; aspect-ratio: 16/9; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); background-size: cover; background-position: center; display: grid; place-items: center; padding: 2rem; }
+        #image-viewer { max-width: 100%; max-height: 100%; object-fit: contain; image-rendering: pixelated; transform: scale(3); transform-origin: center; }
         
         .placeholder-text { text-align: center; color: var(--muted); padding: 2rem 0; }
         .enchant-toggle { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.8rem; }
@@ -157,7 +157,7 @@
             </div>
             <div class="viewer-panel">
                 <div id="image-viewer-container">
-                    <canvas id="image-viewer-canvas" width="256" height="256"></canvas>
+                    <img id="image-viewer" src="">
                 </div>
             </div>
         </div>
@@ -167,8 +167,18 @@
     <script>
         window.addEventListener('load', function() {
             const ASSET_PATHS = {
-                items: { 'ender_pearl': 'ender_pearl.png', 'golden_apple': 'golden_apple.png', 'enchanted_golden_apple': 'apple_golden.png', 'iron_sword': 'iron_sword.png', 'golden_sword': 'golden_sword.png', 'diamond_sword': 'diamond_sword.png' },
-                gui: { 'icons': 'gui/icons.png', 'widgets': 'gui/widgets.png' }
+                items: { 
+                    'ender_pearl': 'ender_pearl.png', 
+                    'golden_apple': 'golden_apple.png', 
+                    'enchanted_golden_apple': 'apple_golden.png', 
+                    'iron_sword': 'iron_sword.png', 
+                    'golden_sword': 'golden_sword.png', 
+                    'diamond_sword': 'diamond_sword.png' 
+                },
+                gui: { 
+                    'icons': 'gui/icons.png', 
+                    'widgets': 'gui/widgets.png' 
+                }
             };
             const GUI_COMPONENTS = { 'Full HUD': { type: 'hud' } };
 
@@ -176,27 +186,33 @@
             const fileInput = document.getElementById('file-input');
             const itemList = document.getElementById('item-list');
             const guiList = document.getElementById('gui-list');
-            
-            const imageViewerCanvas = document.getElementById('image-viewer-canvas');
-            const imageViewerCtx = imageViewerCanvas.getContext('2d');
-            imageViewerCtx.imageSmoothingEnabled = false; // Keep it pixelated!
+            const imageViewer = document.getElementById('image-viewer');
             
             let foundAssets = { items: {}, gui: {} };
-            
-            function clearViewer() {
-                imageViewerCtx.clearRect(0, 0, imageViewerCanvas.width, imageViewerCanvas.height);
-            }
 
             async function findBasePath(zip) {
                 const manifestFiles = zip.file(/manifest\.json$/);
-                if (manifestFiles.length > 0) return manifestFiles[0].name.replace('manifest.json', '');
+                if (manifestFiles.length > 0) {
+                    const path = manifestFiles[0].name.replace('manifest.json', '');
+                    console.log("Bedrock pack detected, base path:", path);
+                    return path;
+                }
                 
                 const packMetaFiles = zip.file(/pack\.mcmeta$/);
-                if (packMetaFiles.length > 0) return packMetaFiles[0].name.replace('pack.mcmeta', '');
+                if (packMetaFiles.length > 0) {
+                    const path = packMetaFiles[0].name.replace('pack.mcmeta', '');
+                    console.log("Java pack detected, base path:", path);
+                    return path;
+                }
 
                 const assetsFolder = zip.folder(/^[^/]*\/assets\/minecraft\//);
-                 if (assetsFolder.length > 0) return assetsFolder[0].name.replace('assets/minecraft/', '');
+                 if (assetsFolder.length > 0) {
+                    const path = assetsFolder[0].name.replace('assets/minecraft/', '');
+                    console.log("Guessed Java base path:", path);
+                    return path;
+                }
 
+                console.log("Could not determine specific base path, assuming root.");
                 return ''; 
             }
 
@@ -204,7 +220,7 @@
                 if (!file) return;
                 [itemList, guiList].forEach(list => list.innerHTML = `<p class="placeholder-text"><span class="spinner"></span> Searching...</p>`);
                 foundAssets = { items: {}, gui: {} };
-                clearViewer();
+                imageViewer.src = "";
                 try {
                     const zip = await JSZip.loadAsync(file);
                     const basePath = await findBasePath(zip);
@@ -227,21 +243,27 @@
                     const pathsToCheck = new Set();
                     const filename = partialPath.split('/').pop();
 
+                    // 1. Add specific, high-probability paths
                     if (type === 'item') {
                         pathsToCheck.add(`${basePath}assets/minecraft/textures/item/${filename}`);
-                        pathsToCheck.add(`${basePath}assets/minecraft/textures/items/${filename}`); // Older Java
-                        pathsToCheck.add(`${basePath}textures/items/${filename}`); // Bedrock
+                        pathsToCheck.add(`${basePath}assets/minecraft/textures/items/${filename}`);
+                        pathsToCheck.add(`${basePath}textures/items/${filename}`);
                     } else if (type === 'gui') {
-                        pathsToCheck.add(`${basePath}assets/minecraft/textures/${partialPath}`); // Java
-                        pathsToCheck.add(`${basePath}textures/${partialPath}`); // Bedrock
-                        pathsToCheck.add(`${basePath}textures/ui/${filename}`); // Bedrock (alternate)
+                        pathsToCheck.add(`${basePath}assets/minecraft/textures/${partialPath}`);
+                        pathsToCheck.add(`${basePath}textures/${partialPath}`);
+                        pathsToCheck.add(`${basePath}textures/ui/${filename}`);
                     }
-                    
+
+                    // 2. Add a generic, root-level check
+                    pathsToCheck.add(partialPath);
+
+                    // 3. Fallback: Search the entire zip for the filename. This is the "smart" part.
                     const wildcardMatches = zip.file(new RegExp(`(^|/)${filename.replace(/\./g, '\\.')}$`));
                     for (const file of wildcardMatches) {
                         pathsToCheck.add(file.name);
                     }
 
+                    // 4. Iterate and find the first valid file
                     for (const p of pathsToCheck) {
                         const normalizedPath = p.startsWith('/') ? p.substring(1) : p;
                         if (!normalizedPath) continue;
@@ -250,11 +272,14 @@
                         if (zipFile && !zipFile.dir) {
                             const blob = await zipFile.async('blob');
                             const url = URL.createObjectURL(blob);
-                            targetObject[key] = { url, width: 0, height: 0 };
+                            targetObject[key] = url;
+                            console.log(`SUCCESS: Found asset '${key}' at path: ${normalizedPath}`);
                             return;
                         }
                     }
+                    console.warn(`FAIL: Asset '${key}' ('${filename}') not found.`);
                 };
+
                 const promises = Object.entries(paths).map(([key, filename]) => addAsset(key, filename));
                 await Promise.all(promises);
             }
@@ -264,13 +289,13 @@
                 if (names.length === 0) return itemList.innerHTML = `<p class="placeholder-text">No standard items found.</p>`;
                 itemList.innerHTML = names.sort().map(name => {
                     const isSword = name.includes('sword');
-                    return `<div class="selection-item" data-asset="${name}" data-url="${foundAssets.items[name].url}">
+                    return `<div class="selection-item" data-asset="${name}" data-url="${foundAssets.items[name]}">
                                 ${name.replace(/_/g, ' ')}
                                 ${isSword ? `<label class="enchant-toggle"><input type="checkbox" class="enchant-check"> Enchanted</label>` : ''}
                             </div>`;
                 }).join('');
                 itemList.querySelectorAll('.selection-item').forEach(item => item.onclick = (e) => {
-                    if (e.target.type === 'checkbox') e.stopPropagation();
+                    if (e.target.type === 'checkbox') { e.stopPropagation(); }
                     itemList.querySelectorAll('.selection-item').forEach(el => el.classList.remove('active'));
                     item.classList.add('active');
                     displayImage(item.dataset.url, item.querySelector('.enchant-check')?.checked);
@@ -291,28 +316,16 @@
                 });
                 if (guiList.firstChild) guiList.firstChild.click();
             }
-            
-            // **FIXED**: Renders any image source (Image, Canvas, etc.) normalized onto the main canvas.
-            function renderToViewer(source) {
-                clearViewer();
-                const scale = Math.min(imageViewerCanvas.width / source.width, imageViewerCanvas.height / source.height);
-                const drawWidth = source.width * scale;
-                const drawHeight = source.height * scale;
-                const x = (imageViewerCanvas.width - drawWidth) / 2;
-                const y = (imageViewerCanvas.height - drawHeight) / 2;
-                imageViewerCtx.drawImage(source, x, y, drawWidth, drawHeight);
-            }
 
             async function displayImage(url, enchanted) {
                 const finalUrl = enchanted ? await createEnchantedVersion(url) : url;
-                const img = await loadImage(finalUrl);
-                renderToViewer(img);
+                imageViewer.src = finalUrl;
             }
             
             async function displayGuiComponent(name) {
                 if (GUI_COMPONENTS[name]?.type === 'hud') {
                     const hudCanvas = await createHudPreview();
-                    if(hudCanvas) renderToViewer(hudCanvas);
+                    imageViewer.src = hudCanvas.toDataURL();
                 }
             }
 
@@ -335,11 +348,9 @@
                 const ctx = hudCanvas.getContext('2d');
                 ctx.imageSmoothingEnabled = false;
 
-                const iconsSheet = foundAssets.gui.icons ? await loadImage(foundAssets.gui.icons.url) : null;
-                const widgetsSheet = foundAssets.gui.widgets ? await loadImage(foundAssets.gui.widgets.url) : null;
+                const iconsSheet = foundAssets.gui.icons ? await loadImage(foundAssets.gui.icons) : null;
+                const widgetsSheet = foundAssets.gui.widgets ? await loadImage(foundAssets.gui.widgets) : null;
                 
-                if (!iconsSheet && !widgetsSheet) return null; // Can't draw anything
-
                 if (widgetsSheet) ctx.drawImage(widgetsSheet, 0, 0, 182, 22, 0, hudCanvas.height - 22, 182, 22);
                 
                 if (iconsSheet) {
@@ -393,4 +404,3 @@
     </script>
 </body>
 </html>
-
