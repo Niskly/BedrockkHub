@@ -739,11 +739,6 @@
             return null;
         }
 
-        /**
-         * **FIXED UPLOAD HANDLING**
-         * - Uses a sequential `for...of` loop for accurate progress bar updates.
-         * - Removes 'needs-tags' from bulk uploads.
-         */
         window.handleUpload = async function(e) {
             e.preventDefault();
             const submitBtn = document.getElementById("submitBtn");
@@ -779,14 +774,13 @@
                 const totalFiles = filesToProcess.length;
                 let processedCount = 0;
 
-                // Use a for...of loop to process files sequentially for accurate progress
                 for (const file of filesToProcess) {
                     processedCount++;
                     progressText.textContent = `[${processedCount}/${totalFiles}] Processing: ${file.name}`;
 
                     if (!file.name.toLowerCase().match(/\.(mcpack|zip)$/)) {
                         showToast(`Skipping invalid file type: ${file.name}`, "warning");
-                        continue; // Skip this file and go to the next one
+                        continue;
                     }
 
                     const iconUrl = await extractAndUploadIcon(file, processedCount - 1, session.user.id);
@@ -815,7 +809,7 @@
                         packData = {
                             name: file.name.replace(/\.(mcpack|zip)$/i, ""),
                             color: 'none',
-                            tags: [], // **FIX**: No 'needs-tags' anymore
+                            tags: [],
                             resolution: 'unknown',
                             version: file.name.toLowerCase().endsWith(".mcpack") ? "bedrock" : "java",
                             filename: packStoragePath,
@@ -825,7 +819,6 @@
                     }
                     packsToUpload.push(packData);
                     
-                    // **FIX**: Update progress bar after each file is fully processed
                     const progress = (processedCount / totalFiles) * 100;
                     progressBarFill.style.width = `${progress}%`;
                 }
@@ -908,6 +901,7 @@
 
         window.handleDownload = async function(event, packId, filename, packName) {
             event.preventDefault();
+            event.stopPropagation();
             try {
                 await fetch("/api/increment-download", {
                     method: "POST", headers: { "Content-Type": "application/json" },
@@ -984,12 +978,12 @@
                 : `<div class="glyph" style="background:${color}"><i class="fa-solid fa-cube"></i></div>`;
             const thumbBackgroundStyle = p.icon_url ? `background: linear-gradient(135deg,#1f2937,#0f172a);` : `background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})`;
             
-            const downloadLink = `<a href="#" onclick="handleDownload(event, ${p.id}, '${p.filename}', '${escapeHtml(p.name)}')"><i class="fa-solid fa-download"></i> Download</a>`;
-            const editLink = currentUserRole === 'admin' ? `<a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>` : '';
+            const downloadLink = `<a href="#" onclick="handleDownload(event, '${p.id}', '${p.filename}', '${escapeHtml(p.name)}')"><i class="fa-solid fa-download"></i> Download</a>`;
+            const editLink = currentUserRole === 'admin' ? `<a href="#" onclick="openEditModal('${p.id}'); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>` : '';
 
             return `
-                <div class="card pack" onclick="navigateToPack(event, ${p.id})">
-                     <button class="pack-options-btn" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                <div class="card pack" onclick="navigateToPack(event, '${p.id}')">
+                     <button class="pack-options-btn" onclick="toggleOptionsMenu(event, '${p.id}')"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                      <div class="pack-options-menu" id="options-menu-${p.id}">${downloadLink}${editLink}</div>
                     <div class="thumb" style="${thumbBackgroundStyle}">
                         ${thumbContent}
@@ -1281,7 +1275,9 @@
                 });
 
                 window.addEventListener('click', (e) => {
-                    if (!e.target.closest('.pack-options-btn')) document.querySelectorAll('.pack-options-menu').forEach(m => m.style.display = 'none');
+                    if (!e.target.closest('.pack-options-btn')) {
+                        document.querySelectorAll('.pack-options-menu').forEach(menu => menu.style.display = 'none');
+                    }
                     if (!e.target.closest('#sortContainer')) {
                         document.getElementById('sortMenu').style.display = 'none';
                         document.getElementById('sortContainer').classList.remove('open');
