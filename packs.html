@@ -731,6 +731,28 @@
         
         const loadImage = (url) => new Promise((res, rej) => { const i = new Image(); i.crossOrigin = "Anonymous"; i.onload = () => res(i); i.onerror = rej; i.src = url; });
 
+        /**
+         * Determines the effective scale factor for GUI element coordinates based on pack resolution.
+         * The base resolution is 16x.
+         * @param {string} resolutionString - e.g., '16x', '32x', '64x', '128x'
+         * @returns {number} The scale factor to multiply base (16x) pixel coordinates by.
+         */
+        function getEffectiveScale(resolutionString) {
+            const res = parseInt(resolutionString?.replace('x', '') || '16', 10);
+            
+            // Custom scaling logic based on user feedback:
+            if (res === 16) return 16 / 16;
+            if (res === 32) return 32 / 16;
+            // 64x packs look good with 32x scale (factor 2)
+            if (res === 64) return 32 / 16; 
+            // 128x packs look good with 64x scale (factor 4)
+            if (res === 128) return 64 / 16; 
+
+            // Fallback: use actual factor (e.g., 256x will use 16)
+            return res / 16; 
+        }
+
+
         async function createHudPreview() {
             const hudCanvas = document.createElement('canvas');
             hudCanvas.width = 182;
@@ -742,8 +764,8 @@
             const widgetsSheet = foundAssets.gui.widgets ? await loadImage(foundAssets.gui.widgets.url) : null;
             
             // --- Determine Scale Factor from Pack Resolution ---
-            const resolution = parseInt(currentPackData?.resolution?.replace('x', '') || '16', 10);
-            const scaleFactor = resolution / 16;
+            const resolution = currentPackData?.resolution;
+            const effectiveScaleFactor = getEffectiveScale(resolution);
             
             // Base 16x dimensions
             const BASE_WIDGETS_H = 22;
@@ -751,12 +773,13 @@
             const BASE_ICON_SPACING = 8;
             const BASE_ICONS_SHEET_RES = 256;
 
-            // Dimensions and positions are scaled by the factor
             const ACTIONBAR_H = BASE_WIDGETS_H;
             
             if (widgetsSheet) {
-                const srcW = 182 * scaleFactor;
-                const srcH = BASE_WIDGETS_H * scaleFactor;
+                // We use the effective scale factor to find the correct source size from the sheet
+                const S_F_W = widgetsSheet.width / BASE_ICONS_SHEET_RES; // True source sheet scale
+                const srcW = 182 * S_F_W;
+                const srcH = BASE_WIDGETS_H * S_F_W;
                 const destW = 182;
                 const destH = BASE_WIDGETS_H;
                 
@@ -765,22 +788,20 @@
             }
             
             if (iconsSheet) {
-                // ICON SHEET SOURCE POSITIONS (Fixed in 16x texture sheet, scaled by factor)
-                // Source X, Y, W, H of the feature in the BASE 16x texture sheet
-                
-                // Scale factor for reading positions on the source sheet
+                // ICON SHEET SOURCE POSITIONS (Fixed in 16x texture sheet, scaled by true source sheet factor)
                 const S_F = iconsSheet.width / BASE_ICONS_SHEET_RES; 
                 
-                // Destination size on the fixed-size canvas (always 9x9, scaled by base 16x icon size)
-                const ICON_SIZE_D = BASE_ICON_SIZE * S_F; // Display size (9x9 pixels at native pack res)
+                // Destination size on the fixed-size canvas (using effective scale for display size)
+                const ICON_SIZE_D = BASE_ICON_SIZE * effectiveScaleFactor; 
                 
                 // Destination position variables
                 const X_CENTER = hudCanvas.width / 2;
-                const X_START_LEFT = X_CENTER - (91); // 91 is start pixel offset in 16x, kept fixed for canvas coordinates
+                const X_START_LEFT = X_CENTER - (91); 
                 const X_START_RIGHT = X_CENTER + (91) - BASE_ICON_SIZE; 
                 const ICON_SPACING_D = BASE_ICON_SPACING;
 
-                const HEALTH_Y = hudCanvas.height - ACTIONBAR_H - BASE_ICON_SIZE; // Approx 22px from bottom of widget bar
+                // Fixed Y positions relative to the bottom of the widget bar (using base 16x coordinates)
+                const HEALTH_Y = hudCanvas.height - ACTIONBAR_H - BASE_ICON_SIZE; 
                 const ARMOR_Y = HEALTH_Y - BASE_ICON_SIZE;
                 const HUNGER_Y = HEALTH_Y;
                 
@@ -807,7 +828,6 @@
                 
                 // DRAW HUNGER (RIGHT SIDE)
                 for (let i = 0; i < 10; i++) {
-                    // Position is mirrored, starting from the right edge
                     const X_POS = X_START_RIGHT - (i * ICON_SPACING_D); 
                     
                     // Hunger Border (16, 27)
@@ -819,13 +839,13 @@
                 // EXPERIENCE BAR
                 const XP_Y = hudCanvas.height - ACTIONBAR_H;
                 // Background (0, 64)
-                ctx.drawImage(iconsSheet, 0 * S_F, 64 * S_F, 182 * S_F, 5 * S_F, 0, XP_Y - 5, hudCanvas.width, 5);
+                ctx.drawImage(iconsSheet, 0 * S_F, 64 * S_F, 182 * S_F, 5 * S_F, 0, XP_Y - 5, hudCanvas.width, 5); 
                 // Fill (0, 69)
                 ctx.drawImage(iconsSheet, 0 * S_F, 69 * S_F, 120 * S_F, 5 * S_F, 0, XP_Y - 5, 120, 5); 
             }
             
             // LEVEL TEXT
-            const FONT_SIZE = 10; // Fixed font size for readability on the small canvas
+            const FONT_SIZE = 10; 
             ctx.font = `bold ${FONT_SIZE}px Inter, sans-serif`;
             ctx.fillStyle = '#80FF20';
             ctx.shadowColor = "rgba(0,0,0,0.5)";
@@ -842,31 +862,38 @@
                 return null;
             }
             const crosshairCanvas = document.createElement('canvas');
-            const targetSize = 64; // The size the crosshair will be displayed in
+            const targetSize = 64; // The fixed size the crosshair will be displayed in
             crosshairCanvas.width = targetSize;
             crosshairCanvas.height = targetSize;
             const ctx = crosshairCanvas.getContext('2d');
             ctx.imageSmoothingEnabled = false;
+            
+            // Fill with transparent black to prevent artifacts/show texture pack container bg
+            ctx.fillStyle = 'rgba(0,0,0,0)'; 
+            ctx.fillRect(0, 0, targetSize, targetSize); 
 
             try {
                 const iconsSheet = await loadImage(iconsSheetUrl);
                 
                 // --- Determine Scale Factor from Pack Resolution ---
-                const resolution = parseInt(currentPackData?.resolution?.replace('x', '') || '16', 10);
-                const scaleFactor = resolution / 16; 
+                const resolution = currentPackData?.resolution;
+                const effectiveScaleFactor = getEffectiveScale(resolution);
+                
+                // ICON SHEET SOURCE SCALING
+                const BASE_ICONS_SHEET_RES = 256;
+                const S_F = iconsSheet.width / BASE_ICONS_SHEET_RES; // True source sheet scale
                 
                 // We extract the entire top-left UI tile (16x16 base pixels)
                 const CROSSHAIR_BASE_TILE_SIZE = 16; 
                 
-                // Source coordinates are always 0, 0
-                const sx = 0, sy = 0; 
-                
-                // Source size is scaled by the pack resolution
-                const sWidth = CROSSHAIR_BASE_TILE_SIZE * scaleFactor;
-                const sHeight = CROSSHAIR_BASE_TILE_SIZE * scaleFactor; 
+                // Source size is scaled by the effective scale factor (32x scale for 64x pack, etc.)
+                const sWidth = CROSSHAIR_BASE_TILE_SIZE * effectiveScaleFactor;
+                const sHeight = CROSSHAIR_BASE_TILE_SIZE * effectiveScaleFactor; 
 
                 // Draw the extracted area scaled up to fill the 64x64 canvas
-                ctx.drawImage(iconsSheet, sx, sy, Math.round(sWidth), Math.round(sHeight), 0, 0, targetSize, targetSize);
+                // Source: (0, 0)
+                // Destination: (0, 0, 64, 64)
+                ctx.drawImage(iconsSheet, 0, 0, Math.round(sWidth), Math.round(sHeight), 0, 0, targetSize, targetSize);
                 
                 return crosshairCanvas;
             } catch (error) {
