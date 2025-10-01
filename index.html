@@ -94,27 +94,19 @@
         .search-result-info { text-align: left; }
         .search-result-name { font-weight: 600; color: var(--text); }
         .search-result-sub { font-size: 0.8rem; color: var(--muted); }
+
+        .hero-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
         
         /* ====== LATEST UPLOADS ====== */
         .latest-packs-grid {
-            display: flex;
-            overflow-x: auto;
-            gap: 1rem;
-            padding-bottom: 1rem;
-            scroll-snap-type: x mandatory;
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
-        }
-        .latest-packs-grid::-webkit-scrollbar { 
-            height: 8px;
-        }
-        .latest-packs-grid::-webkit-scrollbar-track { 
-            background: var(--bg-2); 
-            border-radius: 4px; 
-        }
-        .latest-packs-grid::-webkit-scrollbar-thumb { 
-            background: var(--border-strong); 
-            border-radius: 4px; 
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
         }
         .latest-pack-card {
             background: var(--bg-1);
@@ -123,9 +115,8 @@
             display: flex;
             flex-direction: column;
             transition: all 0.2s ease;
-            width: 300px;
-            flex-shrink: 0;
-            scroll-snap-align: start;
+            text-decoration: none;
+            color: var(--text);
         }
         .latest-pack-card:hover { 
             transform: translateY(-4px); 
@@ -140,13 +131,20 @@
             flex-grow: 1; 
         }
         .pack-icon { 
-            width: 64px; 
-            height: 64px; 
+            width: 80px;
+            height: 80px;
             border-radius: 12px; 
             object-fit: cover; 
             flex-shrink: 0; 
         }
-        .pack-details { flex-grow: 1; min-width: 0; }
+        .pack-details { 
+            flex-grow: 1; 
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
         .pack-name { 
             font-size: 1.1rem; 
             font-weight: 700; 
@@ -154,22 +152,28 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            margin-bottom: 0.5rem;
+        }
+        .pack-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: auto;
         }
         .pack-meta { 
             display: flex; 
-            align-items: center; 
-            gap: 1rem; 
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.25rem; 
             font-size: 0.8rem; 
             color: var(--muted); 
-            margin-top: 0.25rem; 
         }
-        .pack-footer {
-            padding: 0 1rem 1rem;
-            margin-top: auto; /* Pushes footer to the bottom */
+        .pack-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-        .pack-action-footer {
-            margin-top: 0.75rem;
-        }
+        
         .loading { display: flex; align-items: center; justify-content: center; padding: 2rem; color: var(--muted); width: 100%; grid-column: 1 / -1; }
         .loading::after { content: ''; width: 20px; height: 20px; border: 2px solid var(--border); border-top: 2px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-left: 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -179,7 +183,7 @@
         .glowing-title { font-size: 2.5rem; font-weight: 900; margin-bottom: 1rem; }
         footer { margin-top: 6rem; padding: 3rem 0; border-top: 1px solid var(--border); background: var(--bg-1); text-align: center; }
         
-        /* ====== MOBILE NAV ====== */
+        /* ====== MOBILE NAV & RESPONSIVENESS ====== */
         .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
         .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
         .mobile-nav-backdrop.show { display: block; opacity: 1; }
@@ -198,6 +202,33 @@
         .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
         .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
         
+        @media (max-width: 1024px) {
+             .latest-packs-grid {
+                grid-template-columns: 1fr;
+                display: flex;
+                overflow-x: auto;
+                scroll-snap-type: x mandatory;
+                padding-bottom: 1rem;
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+             .latest-packs-grid::-webkit-scrollbar {
+                height: 6px;
+            }
+            .latest-packs-grid::-webkit-scrollbar-track {
+                background: var(--bg-2);
+                border-radius: 3px;
+            }
+            .latest-packs-grid::-webkit-scrollbar-thumb {
+                background: var(--border-strong);
+                border-radius: 3px;
+            }
+            .latest-pack-card {
+                width: 300px;
+                flex-shrink: 0;
+                scroll-snap-align: start;
+            }
+        }
         @media (max-width: 768px) { 
             .nav-actions { display: none; }
             .mobile-nav-toggle { display: block; }
@@ -254,6 +285,10 @@
                         </div>
                         <div id="search-results"></div>
                     </div>
+                     <div class="hero-actions">
+                        <a href="#latest-uploads" class="btn ghost" id="scroll-to-latest"><i class="fa-solid fa-sparkles"></i> Latest Uploads</a>
+                        <a href="/texturepacks.html" class="btn primary"><i class="fa-solid fa-compass"></i> Explore Packs</a>
+                    </div>
                 </div>
 
                 <aside class="preview" id="latest-uploads" style="margin-top: 4rem;">
@@ -307,7 +342,7 @@
             const container = document.getElementById('latest-packs-grid');
             if (!container) return;
             try {
-                const { data, error } = await supabase.from('packs').select('*').not('tags', 'ilike', '%user-upload%').order('created_at', { ascending: false }).limit(6);
+                const { data, error } = await supabase.from('packs').select('*').not('tags', 'ilike', '%user-upload%').order('created_at', { ascending: false }).limit(4);
                 if (error) throw error;
                 container.innerHTML = data && data.length > 0 ? data.map(pack => {
                     const iconContent = pack.icon_url 
@@ -315,26 +350,24 @@
                         : `<div class="pack-icon" style="background:var(--bg-2); display:grid; place-items:center;"><i class="fa-solid fa-cube" style="color:var(--muted); font-size:2.2em;"></i></div>`;
 
                     return `
-                        <div class="latest-pack-card">
+                        <a href="/packs.html?id=${pack.id}" class="latest-pack-card">
                             <div class="pack-main-info">
                                 ${iconContent}
                                 <div class="pack-details">
                                     <h4 class="pack-name" title="${escapeHtml(pack.name)}">${escapeHtml(pack.name)}</h4>
-                                     <div class="pack-meta">
-                                        <span><i class="fa-solid fa-download fa-xs"></i> ${formatDownloads(pack.download_count)}</span>
-                                        <span><i class="fa-solid fa-calendar-day fa-xs"></i> ${formatDate(pack.created_at)}</span>
+                                    <div class="pack-footer">
+                                        <div class="pack-meta">
+                                            <span><i class="fa-solid fa-download fa-fw"></i> ${formatDownloads(pack.download_count)}</span>
+                                            <span><i class="fa-solid fa-calendar-day fa-fw"></i> ${formatDate(pack.created_at)}</span>
+                                        </div>
+                                        <div class="btn ghost" style="padding: 0.5rem 1rem;">View</div>
                                     </div>
                                 </div>
                             </div>
-                             <div class="pack-footer">
-                                 <div class="pack-action-footer">
-                                   <a href="/packs.html?id=${pack.id}" class="btn ghost" style="padding: 0.5rem 1rem; width: 100%;">View</a>
-                                 </div>
-                            </div>
-                        </div>`;
-                }).join('') : '<p class="tiny" style="text-align: center; width: 100%;">No official packs have been uploaded yet.</p>';
+                        </a>`;
+                }).join('') : '<p class="tiny" style="text-align: center; width: 100%; grid-column: 1 / -1;">No official packs have been uploaded yet.</p>';
             } catch (err) {
-                 container.innerHTML = '<p class="tiny" style="text-align: center; width: 100%;">Could not load packs. Please try again later.</p>';
+                 container.innerHTML = '<p class="tiny" style="text-align: center; width: 100%; grid-column: 1 / -1;">Could not load packs. Please try again later.</p>';
             }
         }
         
@@ -437,7 +470,28 @@
             }
         });
 
-        document.addEventListener('DOMContentLoaded', loadLatestPacks);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadLatestPacks();
+
+            const scrollToLatestBtn = document.getElementById('scroll-to-latest');
+            if (scrollToLatestBtn) {
+                scrollToLatestBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetElement = document.getElementById('latest-uploads');
+                    if (targetElement) {
+                        const headerOffset = document.querySelector('header')?.offsetHeight || 70;
+                        const elementPosition = targetElement.getBoundingClientRect().top;
+                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset - 28;
+
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
+
