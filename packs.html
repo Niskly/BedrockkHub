@@ -102,43 +102,46 @@
         .armor-item img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
         .armor-item:hover { border-color: var(--text); }
         .armor-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); }
-        #gui-viewer-container { border-radius: 12px; width: 100%; aspect-ratio: 1 / 1; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); background-size: cover; background-position: center; display: grid; place-items: center; padding: 1rem; }
+        #item-viewer-container { border-radius: 12px; width: 100%; aspect-ratio: 1 / 1; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); background-size: cover; background-position: center; display: grid; place-items: center; padding: 1rem; }
+        #item-viewer-canvas { width: 100%; height: 100%; image-rendering: pixelated; }
+        .item-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 0.5rem; margin-top: 1rem; }
+        .item-icon-card { position: relative; width: 100%; aspect-ratio: 1/1; background: var(--bg-2); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s ease; display: grid; place-items: center; padding: 4px; }
+        .item-icon-card:hover { border-color: var(--text); }
+        .item-icon-card.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); }
+        .item-icon-card img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+        .enchant-btn { position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: #fcc2ff; border-radius: 6px; font-size: 10px; cursor: pointer; display: none; align-items: center; justify-content: center; }
+        .item-icon-card.enchantable .enchant-btn { display: flex; }
+        .enchant-btn.active { background: #a855f7; color: white; border-color: #c084fc; }
+        #gui-viewer-container { border-radius: 12px; width: 100%; aspect-ratio: 1/1; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); background-size: cover; background-position: center; display: grid; place-items: center; padding: 1rem; }
         #gui-viewer-canvas { max-width: 100%; max-height: 100%; object-fit: contain; image-rendering: pixelated; transform-origin: center; }
-        
-        /* Modified GUI selection list for horizontal layout and icons */
+        /* START: GUI Selection Item Styling for circular buttons */
         .gui-selection-list { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; justify-content: center; }
-        .gui-selection-item {
-            width: 60px; /* Make it square for icons */
-            height: 60px;
-            background: var(--bg-2);
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: grid;
-            place-items: center; /* Center content */
-            padding: 4px;
-            font-weight: 600;
-            font-size: 0.8rem;
-            text-transform: capitalize;
-            text-align: center;
+        .gui-selection-item { 
+            width: 70px; /* Fixed width */
+            height: 70px; /* Fixed height to make it a square for circle */
+            padding: 0; /* Remove padding as content will be centered */
+            background: var(--bg-2); 
+            border: 1px solid var(--border); 
+            border-radius: 50%; /* Make it circular */
+            cursor: pointer; 
+            transition: all 0.2s ease; 
+            font-weight: 600; 
+            text-transform: capitalize; 
+            display: flex; /* Use flexbox for centering content */
+            flex-direction: column; /* Stack icon and text */
+            align-items: center; 
+            justify-content: center;
+            font-size: 0.7rem; /* Smaller font for text */
             line-height: 1.2;
-            color: var(--muted);
+            text-align: center;
         }
-        .gui-selection-item i {
-            font-size: 1.5rem; /* Larger icon size */
-            color: var(--muted);
-            line-height: 1; /* Align icon vertically */
+        .gui-selection-item i { /* Style for icon inside circular button */
+            font-size: 1.5rem; /* Larger icon */
+            margin-bottom: 0.2rem; /* Space between icon and text */
         }
-        .gui-selection-item img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            image-rendering: pixelated;
-        }
-        .gui-selection-item:hover { border-color: var(--text); color: var(--text); }
+        /* END: GUI Selection Item Styling */
+        .gui-selection-item:hover { border-color: var(--text); }
         .gui-selection-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: white; }
-
         .preview-placeholder-text { text-align: center; color: var(--muted); padding: 1rem 0; font-size: 13px; }
         .preview-placeholder-text .spinner-sm { width: 1em; height: 1em; border-width: 2px; display: inline-block; animation: rotation 1s linear infinite; }
 
@@ -244,7 +247,7 @@
                     <div class="form-group">
                         <label class="form-label">Tags</label>
                         <div class="tags-editor-container" id="edit-pack-tags"></div>
-                    </div>
+                    </d
                 </form>
             </div>
             <div class="modal-footer-section">
@@ -259,7 +262,7 @@
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImexYyI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         const pageContainer = document.getElementById('page-container');
@@ -289,31 +292,22 @@
         };
 
         const ITEM_PATHS = {
-             'diamond_sword': 'diamond_sword.png', 'iron_sword': 'iron_sword.png',
-             'golden_sword': 'golden_sword.png', 'ender_pearl': 'ender_pearl.png',
-             'golden_apple': 'apple_golden.png', 'apple': 'apple.png',
-             'bow': 'bow.png', 'fishing_rod': 'fishing_rod.png',
-             'totem_of_undying': 'totem.png', 'crossbow_standby': 'crossbow_standby.png'
+            'diamond_sword': 'diamond_sword.png', 'iron_sword': 'iron_sword.png',
+            'golden_sword': 'golden_sword.png', 'ender_pearl': 'ender_pearl.png',
+            'golden_apple': 'apple_golden.png', 'apple': 'apple.png',
+            'bow': 'bow.png', 'fishing_rod': 'fishing_rod.png',
+            'totem_of_undying': 'totem.png', 'crossbow_standby': 'crossbow_standby.png'
         };
-        const ENCHANTABLE_ITEMS = ['diamond_sword', 'iron_sword', 'golden_sword', 'golden_apple', 'bow', 'crossbow_standby'];
-
         const GUI_PATHS = { 
             'icons': 'icons.png', 
-            'widgets': 'widgets.png',
-            'panorama_overlay': 'panorama_overlay.png'
+            'widgets': 'widgets.png'
         };
+        // START: Updated GUI_COMPONENTS with icons and labels for circular buttons
         const GUI_COMPONENTS = { 
-            'Full HUD': { type: 'hud' },
-            'Crosshair': { type: 'crosshair' }
+            'Crosshair': { type: 'crosshair', icon: 'fa-solid fa-crosshairs', label: 'Crosshair'},
+            'Full HUD': { type: 'hud', icon: 'fa-solid fa-gauge-high', label: 'HUD' } 
         };
-
-        const GUI_PREVIEW_ICONS = {
-            'Full HUD': '<i class="fa-solid fa-layer-group"></i>',
-            'Crosshair': '<i class="fa-solid fa-crosshairs"></i>',
-            'icons': '<i class="fa-solid fa-gem"></i>',
-            'widgets': '<i class="fa-solid fa-sliders"></i>'
-        };
-
+        // END: Updated GUI_COMPONENTS
 
         function showToast(message, type = 'error') {
             const container = document.getElementById('toast-container');
@@ -426,16 +420,16 @@
                                 <div id="items-panel" class="preview-panel">
                                     <div id="item-viewer-container"><canvas id="item-viewer-canvas" width="256" height="256"></canvas></div>
                                     <div id="item-grid-container">
-                                       <div id="item-grid" class="item-grid"></div>
-                                       <div id="items-loader"><p class="preview-placeholder-text">Click tab to load preview</p></div>
+                                        <div id="item-grid" class="item-grid"></div>
+                                        <div id="items-loader"><p class="preview-placeholder-text">Click tab to load preview</p></div>
                                     </div>
                                 </div>
                                 <div id="gui-panel" class="preview-panel">
-                                     <div id="gui-viewer-container"><img id="gui-viewer-canvas" /></div>
-                                     <div id="gui-list-container">
+                                    <div id="gui-viewer-container"><img id="gui-viewer-canvas" /></div>
+                                    <div id="gui-list-container">
                                         <div id="gui-list" class="gui-selection-list"></div>
                                         <div id="gui-loader"><p class="preview-placeholder-text">Click tab to load preview</p></div>
-                                     </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -446,7 +440,7 @@
             const actionContainer = document.getElementById('header-action-container');
             actionContainer.innerHTML = `<button class="btn primary" id="download-btn"><i class="fa-solid fa-download"></i> Download</button>`;
             if (currentUserRole === 'admin') {
-                 actionContainer.innerHTML += `<button class="btn edit-pack-btn" onclick="openEditPackModal()"><i class="fa-solid fa-pencil"></i> Edit</button>`;
+                actionContainer.innerHTML += `<button class="btn edit-pack-btn" onclick="openEditPackModal()"><i class="fa-solid fa-pencil"></i> Edit</button>`;
             }
             document.getElementById('download-btn').onclick = () => handleDownload(pack.id, pack.filename, pack.name);
             
@@ -570,7 +564,7 @@
                 const zip = await downloadAndUnzipPack(pack);
                 foundAssets.gui = {};
                 const guiPromises = Object.entries(GUI_PATHS).map(async ([key, filename]) => {
-                     const url = await findGenericAsset(zip, filename, 'gui');
+                    const url = await findGenericAsset(zip, filename, 'gui');
                     if (url) foundAssets.gui[key] = { url };
                 });
                 await Promise.all(guiPromises);
@@ -578,7 +572,7 @@
                 list.style.display = 'flex';
                 renderGuiSelectionList();
             } catch (error) {
-                 console.error("GUI preview error:", error);
+                console.error("GUI preview error:", error);
                 loader.innerHTML = `<p class="preview-placeholder-text" style="color:var(--danger)">Could not load GUI assets.</p>`;
             }
         }
@@ -601,10 +595,7 @@
             }
             itemGrid.innerHTML = itemKeys.map(key => {
                 const item = foundAssets.items[key];
-                
-                // REVERTED LOGIC: Use loose matching for enchantable items (what the user requested back)
-                const enchantable = key.includes('sword') || key.includes('apple') || key.includes('bow') || key.includes('fishing_rod') || key.includes('totem') || key.includes('crossbow');
-
+                const enchantable = key.includes('sword') || key === 'golden_apple' || key.includes('bow') || key === 'crossbow_standby';
                 return `
                 <div class="item-icon-card ${enchantable ? 'enchantable' : ''}" data-key="${key}">
                     <img src="${item.url}" alt="${key.replace(/_/g, ' ')}">
@@ -639,46 +630,37 @@
             }
         }
 
+        // START: Updated renderGuiSelectionList to show all components and use icons/labels
         function renderGuiSelectionList() {
-             const guiList = document.getElementById('gui-list');
-             const componentKeys = Object.keys(GUI_COMPONENTS);
-             const textureKeys = Object.keys(foundAssets.gui).filter(key => key !== 'panorama_overlay');
-             const allDisplayKeys = [...componentKeys, ...textureKeys];
-             
-             if (allDisplayKeys.length === 0) {
-                 guiList.innerHTML = `<p class="preview-placeholder-text">No GUI textures found.</p>`;
-                 return;
-             }
+            const guiList = document.getElementById('gui-list');
+            // Show all GUI_COMPONENTS, remove filtering based on found assets
+            const allComponentsKeys = Object.keys(GUI_COMPONENTS);
 
-             guiList.innerHTML = allDisplayKeys.map(key => {
-                 const icon = GUI_PREVIEW_ICONS[key] || `<i class="fa-solid fa-image"></i>`;
-                 const displayName = key.replace(/_/g, ' ');
-                 return `
-                    <div class="gui-selection-item" data-key="${key}" title="${displayName}">
-                        ${icon}
+            if (allComponentsKeys.length === 0) {
+                guiList.innerHTML = `<p class="preview-placeholder-text">No GUI components defined.</p>`;
+                return;
+            }
+
+            guiList.innerHTML = allComponentsKeys.map(key => {
+                const component = GUI_COMPONENTS[key];
+                return `
+                    <div class="gui-selection-item" data-key="${key}">
+                        <i class="${component.icon}"></i>
+                        <span>${component.label}</span>
                     </div>`;
-             }).join('');
-
-             guiList.querySelectorAll('.gui-selection-item').forEach(item => {
-                 item.addEventListener('click', async () => {
-                     document.querySelectorAll('.gui-selection-item').forEach(el => el.classList.remove('active'));
-                     item.classList.add('active');
-                     const key = item.dataset.key;
-                     if (GUI_COMPONENTS[key]) {
-                         displayGuiComponent(key);
-                     } else if (foundAssets.gui[key]) {
-                         displayGuiImage(foundAssets.gui[key].url);
-                     }
-                 });
-             });
-
-             const crosshairItem = guiList.querySelector('.gui-selection-item[data-key="Crosshair"]');
-             if (crosshairItem) {
-                 crosshairItem.click();
-             } else if (guiList.firstChild) {
-                 guiList.firstChild.click();
-             }
+            }).join('');
+            
+            guiList.querySelectorAll('.gui-selection-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.gui-selection-item, .item-icon-card').forEach(el => el.classList.remove('active'));
+                    item.classList.add('active');
+                    displayGuiComponent(item.dataset.key);
+                });
+            });
+            // Automatically click the first available component if any
+            if (guiList.firstChild) guiList.firstChild.click();
         }
+        // END: Updated renderGuiSelectionList
         
         async function displayItemOnCanvas(canvasId, url, enchanted = false) {
             const canvas = document.getElementById(canvasId);
@@ -697,53 +679,67 @@
             ctx.drawImage(img, x, y, drawWidth, drawHeight);
         }
 
-        /**
-         * Determines the effective scale factor for GUI element coordinates based on pack resolution.
-         * The base resolution is 16x.
-         * Custom scaling logic based on user feedback is implemented here.
-         * @param {string} resolutionString - e.g., '16x', '32x', '64x', '128x', '256x'
-         * @returns {number} The scale factor to multiply base (16x) pixel coordinates by.
-         */
-        function getEffectiveScale(resolutionString) {
-            const res = parseInt(resolutionString?.replace('x', '') || '16', 10);
-            
-            // Custom scaling logic based on user feedback:
-            if (res === 16) return 16 / 16;   // 16x -> 16x (Factor 1)
-            if (res === 32) return 32 / 16;   // 32x -> 32x (Factor 2)
-            if (res === 64) return 32 / 16;   // 64x -> 32x (Factor 2)
-            if (res === 128) return 64 / 16;  // 128x -> 64x (Factor 4)
-            if (res === 256) return 128 / 16; // 256x -> 128x (Factor 8)
-
-            // Fallback: use actual factor
-            return res / 16; 
-        }
-
+        // START: Updated displayGuiComponent for graceful feedback
         async function displayGuiComponent(name) {
             const imageViewer = document.getElementById('gui-viewer-canvas');
-            if (GUI_COMPONENTS[name]?.type === 'hud') {
-                const hudCanvas = await createHudPreview();
-                imageViewer.src = hudCanvas.toDataURL();
-                imageViewer.style.transform = 'scale(1.5)'; 
-            } else if (GUI_COMPONENTS[name]?.type === 'crosshair') {
-                if (foundAssets.gui.icons) {
-                    const crosshairCanvas = await createCrosshairPreview(foundAssets.gui.icons.url);
-                    imageViewer.src = crosshairCanvas.toDataURL();
-                    // Using scale(5) to make the crosshair visible and clear inside the viewer container
-                    imageViewer.style.transform = 'scale(5)'; 
+            imageViewer.style.transform = 'scale(1)'; // Reset transform to prevent visual glitch *before* specific scaling
+
+            const component = GUI_COMPONENTS[name];
+
+            if (!component) {
+                imageViewer.src = ''; // Clear image
+                showToast(`Unknown GUI component: ${name}`, 'error');
+                return;
+            }
+
+            if (component.type === 'hud') {
+                if (foundAssets.gui.icons?.url && foundAssets.gui.widgets?.url) {
+                    const hudCanvas = await createHudPreview();
+                    imageViewer.src = hudCanvas.toDataURL();
+                    imageViewer.style.transform = 'scale(1.5)'; // Apply specific scale after setting src
                 } else {
-                    imageViewer.src = 'https://placehold.co/64x64/2c2c2c/e8eefc?text=X';
+                    imageViewer.src = ''; // Clear image
+                    showToast('Missing "icons.png" or "widgets.png" for Full HUD preview.', 'error');
+                }
+            } else if (component.type === 'crosshair') {
+                if (foundAssets.gui.icons?.url) {
+                    const crosshairCanvas = await createCrosshairPreview();
+                    imageViewer.src = crosshairCanvas.toDataURL();
+                    imageViewer.style.transform = 'scale(8)'; // Apply specific scale after setting src
+                } else {
+                    imageViewer.src = ''; // Clear image
+                    showToast('Missing "icons.png" for Crosshair preview.', 'error');
+                }
+            } else {
+                // Fallback for other direct GUI textures if needed (not defined in GUI_COMPONENTS by default)
+                if (foundAssets.gui[name]?.url) {
+                    imageViewer.src = foundAssets.gui[name].url;
                     imageViewer.style.transform = 'scale(1)';
+                } else {
+                    imageViewer.src = ''; // Clear image
+                    showToast(`Missing asset for ${name} preview.`, 'error');
                 }
             }
         }
-
-        function displayGuiImage(url) {
-            const imageViewer = document.getElementById('gui-viewer-canvas');
-            imageViewer.src = url;
-            imageViewer.style.transform = 'scale(1)';
-        }
+        // END: Updated displayGuiComponent
         
         const loadImage = (url) => new Promise((res, rej) => { const i = new Image(); i.crossOrigin = "Anonymous"; i.onload = () => res(i); i.onerror = rej; i.src = url; });
+
+        async function createCrosshairPreview() {
+            if (!foundAssets.gui.icons || !foundAssets.gui.icons.url) {
+                return null;
+            }
+            const crosshairCanvas = document.createElement('canvas');
+            crosshairCanvas.width = 16;
+            crosshairCanvas.height = 16;
+            const ctx = crosshairCanvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+
+            const iconsSheet = await loadImage(foundAssets.gui.icons.url);
+            ctx.drawImage(iconsSheet, 0, 0, 16, 16, 0, 0, 16, 16);
+
+            return crosshairCanvas;
+        }
 
         async function createHudPreview() {
             const hudCanvas = document.createElement('canvas');
@@ -755,158 +751,42 @@
             const iconsSheet = foundAssets.gui.icons ? await loadImage(foundAssets.gui.icons.url) : null;
             const widgetsSheet = foundAssets.gui.widgets ? await loadImage(foundAssets.gui.widgets.url) : null;
             
-            // --- Determine Scale Factor from Pack Resolution ---
-            const resolution = currentPackData?.resolution;
-            const effectiveScaleFactor = getEffectiveScale(resolution);
-            
-            // Base 16x dimensions
-            const BASE_WIDGETS_H = 22;
-            const BASE_ICON_SIZE = 9;
-            const BASE_ICON_SPACING = 8;
-            const BASE_ICONS_SHEET_RES = 256;
-
-            const ACTIONBAR_H = BASE_WIDGETS_H;
-            
-            if (widgetsSheet) {
-                const S_F_W = widgetsSheet.width / BASE_ICONS_SHEET_RES; // True source sheet scale
-                const srcW = 182 * S_F_W;
-                const srcH = BASE_WIDGETS_H * S_F_W;
-                const destW = 182;
-                const destH = BASE_WIDGETS_H;
-                
-                // Draw the widgets (action bar background)
-                ctx.drawImage(widgetsSheet, 0, 0, srcW, srcH, 0, hudCanvas.height - destH, destW, destH);
-            }
+            if (widgetsSheet) ctx.drawImage(widgetsSheet, 0, 0, 182, 22, 0, hudCanvas.height - 22, 182, 22);
             
             if (iconsSheet) {
-                // ICON SHEET SOURCE POSITIONS (Fixed in 16x texture sheet, scaled by true source sheet factor)
-                const S_F = iconsSheet.width / BASE_ICONS_SHEET_RES; 
-                
-                // Destination size on the fixed-size canvas (using base 16x size)
-                const ICON_SIZE_D = BASE_ICON_SIZE; 
-                
-                // ICON SHEET SOURCE SIZE (Scaled by effective factor)
-                const SRC_ICON_SIZE = BASE_ICON_SIZE * effectiveScaleFactor; 
-                
-                // Destination position variables (using base 16x units for canvas coordinates)
-                const X_CENTER = hudCanvas.width / 2;
-                const X_START_LEFT = X_CENTER - (91); 
-                const X_START_RIGHT = X_CENTER + (91) - BASE_ICON_SIZE; 
-                const ICON_SPACING_D = BASE_ICON_SPACING;
+                const healthY = hudCanvas.height - 41;
+                const armorY = healthY - 10;
+                const hungerY = healthY;
 
-                // Fixed Y positions relative to the bottom of the widget bar (using base 16x coordinates)
-                const HEALTH_Y = hudCanvas.height - ACTIONBAR_H - BASE_ICON_SIZE; 
-                const ARMOR_Y = HEALTH_Y - BASE_ICON_SIZE;
-                const HUNGER_Y = HEALTH_Y;
-                
-                // DRAW HEARTS (LEFT SIDE)
                 for (let i = 0; i < 10; i++) {
-                    const X_POS = X_START_LEFT + (i * ICON_SPACING_D); 
-                    
-                    // Heart Border (16, 0)
-                    ctx.drawImage(iconsSheet, 16 * S_F, 0 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, HEALTH_Y, ICON_SIZE_D, ICON_SIZE_D);
-                    // Filled Heart (52, 0)
-                    if (i < 8) ctx.drawImage(iconsSheet, 52 * S_F, 0 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, HEALTH_Y, ICON_SIZE_D, ICON_SIZE_D);
+                    ctx.drawImage(iconsSheet, 16, 0, 9, 9, (hudCanvas.width / 2) - 91 + (i * 8), healthY, 9, 9);
+                    if (i < 8) ctx.drawImage(iconsSheet, 52, 0, 9, 9, (hudCanvas.width / 2) - 91 + (i * 8), healthY, 9, 9);
                 }
-                // Partial Heart (61, 0)
-                ctx.drawImage(iconsSheet, 61 * S_F, 0 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_START_LEFT + (8 * ICON_SPACING_D), HEALTH_Y, ICON_SIZE_D, ICON_SIZE_D);
+                ctx.drawImage(iconsSheet, 61, 0, 9, 9, (hudCanvas.width / 2) - 91 + (8 * 8), healthY, 9, 9);
                 
-                // DRAW ARMOR
                 for (let i = 0; i < 10; i++) {
-                    const X_POS = X_START_LEFT + (i * ICON_SPACING_D);
-                    // Armor Border (16, 9)
-                    ctx.drawImage(iconsSheet, 16 * S_F, 9 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, ARMOR_Y, ICON_SIZE_D, ICON_SIZE_D);
-                    // Filled Armor (34, 9)
-                    if (i < 8) ctx.drawImage(iconsSheet, 34 * S_F, 9 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, ARMOR_Y, ICON_SIZE_D, ICON_SIZE_D);
+                    ctx.drawImage(iconsSheet, 16, 9, 9, 9, (hudCanvas.width / 2) - 91 + (i * 8), armorY, 9, 9);
+                    if (i < 8) ctx.drawImage(iconsSheet, 34, 9, 9, 9, (hudCanvas.width / 2) - 91 + (i * 8), armorY, 9, 9);
                 }
                 
-                // DRAW HUNGER (RIGHT SIDE)
                 for (let i = 0; i < 10; i++) {
-                    // Position is mirrored, starting from the right edge
-                    const X_POS = X_START_RIGHT - (i * ICON_SPACING_D); 
-                    
-                    // Hunger Border (16, 27)
-                    ctx.drawImage(iconsSheet, 16 * S_F, 27 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, HUNGER_Y, ICON_SIZE_D, ICON_SIZE_D);
-                    // Filled Hunger (52, 27)
-                    if(i < 7) ctx.drawImage(iconsSheet, 52 * S_F, 27 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, HUNGER_Y, ICON_SIZE_D, ICON_SIZE_D);
+                    ctx.drawImage(iconsSheet, 16, 27, 9, 9, (hudCanvas.width / 2) + 91 - (i * 8) - 9, hungerY, 9, 9);
+                    if(i < 7) ctx.drawImage(iconsSheet, 52, 27, 9, 9, (hudCanvas.width / 2) + 91 - (i * 8) - 9, hungerY, 9, 9);
                 }
                 
-                // EXPERIENCE BAR
-                const XP_Y = hudCanvas.height - ACTIONBAR_H;
-                const XP_SRC_W = 182 * S_F;
-                const XP_SRC_H = 5 * S_F;
-                // Background (0, 64)
-                ctx.drawImage(iconsSheet, 0 * S_F, 64 * S_F, XP_SRC_W, XP_SRC_H, 0, XP_Y - 5, hudCanvas.width, 5); 
-                // Fill (0, 69)
-                ctx.drawImage(iconsSheet, 0 * S_F, 69 * S_F, 120 * S_F, XP_SRC_H, 0, XP_Y - 5, 120, 5); 
+                ctx.drawImage(iconsSheet, 0, 64, 182, 5, 0, hudCanvas.height - 29, 182, 5);
+                ctx.drawImage(iconsSheet, 0, 69, 120, 5, 0, hudCanvas.height - 29, 120, 5);
             }
             
-            // LEVEL TEXT
-            const FONT_SIZE = 10; 
-            ctx.font = `bold ${FONT_SIZE}px Inter, sans-serif`;
+            ctx.font = "bold 10px Inter, sans-serif";
             ctx.fillStyle = '#80FF20';
             ctx.shadowColor = "rgba(0,0,0,0.5)";
             ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1; ctx.shadowBlur = 1;
             const levelText = '17';
             const textWidth = ctx.measureText(levelText).width;
-            ctx.fillText(levelText, (hudCanvas.width / 2) - (textWidth / 2), hudCanvas.height - ACTIONBAR_H + 9); 
+            ctx.fillText(levelText, (hudCanvas.width / 2) - (textWidth / 2), hudCanvas.height - 31);
             ctx.shadowColor = "transparent";
             return hudCanvas;
-        }
-
-        async function createCrosshairPreview(iconsSheetUrl) {
-            if (!iconsSheetUrl) {
-                return null;
-            }
-            const crosshairCanvas = document.createElement('canvas');
-            const CROSSHAIR_CANVAS_SIZE = 16; // Use 16x16 canvas to strictly contain the icon tile
-            crosshairCanvas.width = CROSSHAIR_CANVAS_SIZE;
-            crosshairCanvas.height = CROSSHAIR_CANVAS_SIZE;
-            const ctx = crosshairCanvas.getContext('2d');
-            ctx.imageSmoothingEnabled = false;
-
-            // Clear to transparent, preventing any canvas-level black background
-            ctx.clearRect(0, 0, CROSSHAIR_CANVAS_SIZE, CROSSHAIR_CANVAS_SIZE); 
-
-            try {
-                const iconsSheet = await loadImage(iconsSheetUrl);
-                
-                // --- Determine Scale Factor from Pack Resolution ---
-                const resolution = currentPackData?.resolution;
-                const effectiveScaleFactor = getEffectiveScale(resolution);
-                
-                // ICON SHEET SOURCE SCALING
-                const BASE_ICONS_SHEET_RES = 256;
-                const S_F = iconsSheet.width / BASE_ICONS_SHEET_RES; // True source sheet scale
-                
-                // We extract the entire top-left UI tile (16x16 base pixels)
-                const CROSSHAIR_BASE_TILE_SIZE = 16; 
-                
-                // Source size is scaled by the effective factor (e.g., 8 for a 256x pack)
-                const sWidth = CROSSHAIR_BASE_TILE_SIZE * effectiveScaleFactor;
-                const sHeight = CROSSHAIR_BASE_TILE_SIZE * effectiveScaleFactor; 
-                
-                // Draw the extracted area onto the 16x16 containment canvas
-                ctx.drawImage(
-                    iconsSheet, 
-                    0, 0, 
-                    Math.round(sWidth), Math.round(sHeight), // Source: Grab the correctly scaled tile size
-                    0, 0,
-                    CROSSHAIR_CANVAS_SIZE, CROSSHAIR_CANVAS_SIZE // Destination: Fill the whole 16x16 containment canvas
-                );
-                
-                return crosshairCanvas;
-            } catch (error) {
-                console.error("Failed to create crosshair preview:", error);
-                // Fallback drawing logic
-                ctx.strokeStyle = 'var(--muted)';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(0,0); ctx.lineTo(CROSSHAIR_CANVAS_SIZE, CROSSHAIR_CANVAS_SIZE);
-                ctx.moveTo(CROSSHAIR_CANVAS_SIZE,0); ctx.lineTo(0, CROSSHAIR_CANVAS_SIZE);
-                ctx.stroke();
-                return crosshairCanvas;
-            }
         }
 
         async function createEnchantedVersion(url) {
@@ -1104,8 +984,8 @@
         });
         
         window.addEventListener('click', (e) => {
-             const dropdown = document.querySelector('.dropdown-content.show');
-             if (dropdown && !e.target.closest('.user-dropdown')) dropdown.classList.remove('show');
+            const dropdown = document.querySelector('.dropdown-content.show');
+            if (dropdown && !e.target.closest('.user-dropdown')) dropdown.classList.remove('show');
         });
 
         window.openEditPackModal = function() {
@@ -1126,8 +1006,8 @@
             const resolutionsContainer = document.getElementById('edit-pack-resolutions');
             resolutionsContainer.innerHTML = ALL_RESOLUTIONS.map(r => `<div class="tag-checkbox ${currentPackData.resolution === r ? 'selected' : ''}" data-res="${r}">${r}</div>`).join('');
             resolutionsContainer.querySelectorAll('.tag-checkbox').forEach(rc => rc.onclick = () => {
-                 resolutionsContainer.querySelectorAll('.tag-checkbox').forEach(r => r.classList.remove('selected'));
-                 rc.classList.add('selected');
+                resolutionsContainer.querySelectorAll('.tag-checkbox').forEach(r => r.classList.remove('selected'));
+                rc.classList.add('selected');
             });
             
             const tagsContainer = document.getElementById('edit-pack-tags');
