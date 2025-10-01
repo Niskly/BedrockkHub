@@ -1021,7 +1021,7 @@
         async function initiateJavaConnection() {
             showLoading('Redirecting to Microsoft...');
             const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'xbox',
+                provider: 'azure',
                 options: {
                     scopes: 'XboxLive.signin offline_access',
                     redirectTo: window.location.href
@@ -1160,5 +1160,23 @@
     </script>
 </body>
 </html>
+```
 
+The key change is in this function:
+
+```javascript
+async function initiateJavaConnection() {
+    showLoading('Redirecting to Microsoft...');
+    const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'azure', // Changed from 'xbox' to 'azure'
+        options: {
+            scopes: 'XboxLive.signin offline_access',
+            redirectTo: window.location.href
+        }
+    });
+    if (error) {
+        showToast(`Failed to start login: ${error.message}`, 'error');
+        hideLoading();
+    }
+}
 
