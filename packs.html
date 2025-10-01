@@ -77,9 +77,6 @@
         
         .card-body { padding: 1.2rem; }
         
-        .comments-section { margin-top: 3rem; }
-        .comments-placeholder { text-align: center; padding: 2rem; background: var(--bg-1); border-radius: 12px; border: 1px solid var(--border); color: var(--muted); }
-        
         #toast-container { position: fixed; top: 80px; right: 20px; z-index: 1000; }
         .toast { padding: 12px 18px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; background: var(--bg-1); border: 1px solid var(--border); }
         @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
@@ -186,6 +183,28 @@
         .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
         .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
         
+        /* ====== NEW COMMENT STYLES ====== */
+        .comments-section { margin-top: 3rem; }
+        .comment-form-container { display: flex; gap: 1rem; margin-bottom: 2rem; }
+        .comment-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .comment-form { flex-grow: 1; }
+        .comment-textarea { width: 100%; min-height: 80px; resize: vertical; padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text); font-size: 1rem; font-family: inherit; }
+        .comment-textarea:focus { outline: none; border-color: var(--brand-1); box-shadow: 0 0 0 3px rgba(var(--brand-1-rgb), 0.2); }
+        .comment-form-actions { display: flex; justify-content: flex-end; margin-top: 0.5rem; }
+        .comments-list { display: flex; flex-direction: column; gap: 1.5rem; }
+        .comment-thread { display: flex; flex-direction: column; gap: 1.5rem; }
+        .comment { display: flex; gap: 1rem; }
+        .comment-content { flex-grow: 1; }
+        .comment-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; }
+        .comment-author { font-weight: 700; color: var(--text); }
+        .comment-timestamp { font-size: 0.8rem; color: var(--muted); }
+        .comment-body { line-height: 1.6; color: var(--muted); }
+        .comment-actions { display: flex; align-items: center; gap: 1rem; margin-top: 0.5rem; }
+        .comment-action-btn { background: none; border: none; color: var(--muted); font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; }
+        .comment-action-btn:hover { color: var(--text); }
+        .comment-action-btn.liked { color: var(--brand-1); }
+        .replies { margin-top: 1.5rem; margin-left: 3.5rem; display: flex; flex-direction: column; gap: 1.5rem; border-left: 2px solid var(--border); padding-left: 1.5rem; }
+        
         @media (min-width: 993px) {
             .pack-layout {
                 grid-template-columns: 1fr 320px;
@@ -276,6 +295,8 @@
         let skinViewer = null;
         let currentPackData = null;
         let currentUserRole = 'viewer';
+        let loggedInUser = null;
+        let loggedInProfile = null;
         
         let armorPreviewLoaded = false;
         let itemsPreviewLoaded = false;
@@ -450,7 +471,15 @@
                             </div>
                         </div>
                     </aside>
-                    <div class="comments-section"><div class="card"><div class="card-body"><h3 class="section-title" style="margin-top:0;">Comments</h3><div class="comments-placeholder"><i class="fa-solid fa-comments" style="font-size: 2rem; margin-bottom: 1rem;"></i><p>Comments are coming soon!</p></div></div></div></div>
+                    <div class="comments-section card">
+                        <div class="card-body">
+                            <h3 class="section-title" style="margin-top:0;">Comments</h3>
+                            <div id="comment-form-area"></div>
+                            <div id="comments-list-container">
+                                <div class="comments-placeholder"><div class="spinner"></div></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>`;
 
             const actionContainer = document.getElementById('header-action-container');
@@ -463,6 +492,7 @@
             setupPreviewer();
             initSkinViewer();
             loadAndProcessPackForArmor(pack);
+            loadComments(pack.id); // <-- NEW: Load comments for this pack
         }
 
         function setupPreviewer() {
@@ -612,7 +642,6 @@
             itemGrid.innerHTML = itemKeys.map(key => {
                 const item = foundAssets.items[key];
                 
-                // REVERTED LOGIC: Use loose matching for enchantable items (what the user requested back)
                 const enchantable = key.includes('sword') || key.includes('apple') || key.includes('bow') || key.includes('fishing_rod') || key.includes('totem') || key.includes('crossbow');
 
                 return `
@@ -707,24 +736,13 @@
             ctx.drawImage(img, x, y, drawWidth, drawHeight);
         }
 
-        /**
-         * Determines the effective scale factor for GUI element coordinates based on pack resolution.
-         * The base resolution is 16x.
-         * Custom scaling logic based on user feedback is implemented here.
-         * @param {string} resolutionString - e.g., '16x', '32x', '64x', '128x', '256x'
-         * @returns {number} The scale factor to multiply base (16x) pixel coordinates by.
-         */
         function getEffectiveScale(resolutionString) {
             const res = parseInt(resolutionString?.replace('x', '') || '16', 10);
-            
-            // Custom scaling logic based on user feedback:
-            if (res === 16) return 16 / 16;   // 16x -> 16x (Factor 1)
-            if (res === 32) return 32 / 16;   // 32x -> 32x (Factor 2)
-            if (res === 64) return 32 / 16;   // 64x -> 32x (Factor 2)
-            if (res === 128) return 64 / 16;  // 128x -> 64x (Factor 4)
-            if (res === 256) return 128 / 16; // 256x -> 128x (Factor 8)
-
-            // Fallback: use actual factor
+            if (res === 16) return 1;
+            if (res === 32) return 2;
+            if (res === 64) return 2;
+            if (res === 128) return 4;
+            if (res === 256) return 8;
             return res / 16; 
         }
 
@@ -738,7 +756,6 @@
                 if (foundAssets.gui.icons) {
                     const crosshairCanvas = await createCrosshairPreview(foundAssets.gui.icons.url);
                     imageViewer.src = crosshairCanvas.toDataURL();
-                    // Using scale(5) to make the crosshair visible and clear inside the viewer container
                     imageViewer.style.transform = 'scale(5)'; 
                 } else {
                     imageViewer.src = 'https://placehold.co/64x64/2c2c2c/e8eefc?text=X';
@@ -765,11 +782,9 @@
             const iconsSheet = foundAssets.gui.icons ? await loadImage(foundAssets.gui.icons.url) : null;
             const widgetsSheet = foundAssets.gui.widgets ? await loadImage(foundAssets.gui.widgets.url) : null;
             
-            // --- Determine Scale Factor from Pack Resolution ---
             const resolution = currentPackData?.resolution;
             const effectiveScaleFactor = getEffectiveScale(resolution);
             
-            // Base 16x dimensions
             const BASE_WIDGETS_H = 22;
             const BASE_ICON_SIZE = 9;
             const BASE_ICON_SPACING = 8;
@@ -778,80 +793,55 @@
             const ACTIONBAR_H = BASE_WIDGETS_H;
             
             if (widgetsSheet) {
-                const S_F_W = widgetsSheet.width / BASE_ICONS_SHEET_RES; // True source sheet scale
+                const S_F_W = widgetsSheet.width / BASE_ICONS_SHEET_RES;
                 const srcW = 182 * S_F_W;
                 const srcH = BASE_WIDGETS_H * S_F_W;
                 const destW = 182;
                 const destH = BASE_WIDGETS_H;
                 
-                // Draw the widgets (action bar background)
                 ctx.drawImage(widgetsSheet, 0, 0, srcW, srcH, 0, hudCanvas.height - destH, destW, destH);
             }
             
             if (iconsSheet) {
-                // ICON SHEET SOURCE POSITIONS (Fixed in 16x texture sheet, scaled by true source sheet factor)
                 const S_F = iconsSheet.width / BASE_ICONS_SHEET_RES; 
-                
-                // Destination size on the fixed-size canvas (using base 16x size)
                 const ICON_SIZE_D = BASE_ICON_SIZE; 
-                
-                // ICON SHEET SOURCE SIZE (Scaled by effective factor)
                 const SRC_ICON_SIZE = BASE_ICON_SIZE * effectiveScaleFactor; 
                 
-                // Destination position variables (using base 16x units for canvas coordinates)
                 const X_CENTER = hudCanvas.width / 2;
-                const X_START_LEFT = X_CENTER - (91); 
-                const X_START_RIGHT = X_CENTER + (91) - BASE_ICON_SIZE; 
+                const X_START_LEFT = X_CENTER - 91; 
+                const X_START_RIGHT = X_CENTER + 91 - BASE_ICON_SIZE; 
                 const ICON_SPACING_D = BASE_ICON_SPACING;
 
-                // Fixed Y positions relative to the bottom of the widget bar (using base 16x coordinates)
                 const HEALTH_Y = hudCanvas.height - ACTIONBAR_H - BASE_ICON_SIZE; 
                 const ARMOR_Y = HEALTH_Y - BASE_ICON_SIZE;
                 const HUNGER_Y = HEALTH_Y;
                 
-                // DRAW HEARTS (LEFT SIDE)
                 for (let i = 0; i < 10; i++) {
                     const X_POS = X_START_LEFT + (i * ICON_SPACING_D); 
-                    
-                    // Heart Border (16, 0)
                     ctx.drawImage(iconsSheet, 16 * S_F, 0 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, HEALTH_Y, ICON_SIZE_D, ICON_SIZE_D);
-                    // Filled Heart (52, 0)
                     if (i < 8) ctx.drawImage(iconsSheet, 52 * S_F, 0 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, HEALTH_Y, ICON_SIZE_D, ICON_SIZE_D);
                 }
-                // Partial Heart (61, 0)
                 ctx.drawImage(iconsSheet, 61 * S_F, 0 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_START_LEFT + (8 * ICON_SPACING_D), HEALTH_Y, ICON_SIZE_D, ICON_SIZE_D);
                 
-                // DRAW ARMOR
                 for (let i = 0; i < 10; i++) {
                     const X_POS = X_START_LEFT + (i * ICON_SPACING_D);
-                    // Armor Border (16, 9)
                     ctx.drawImage(iconsSheet, 16 * S_F, 9 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, ARMOR_Y, ICON_SIZE_D, ICON_SIZE_D);
-                    // Filled Armor (34, 9)
                     if (i < 8) ctx.drawImage(iconsSheet, 34 * S_F, 9 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, ARMOR_Y, ICON_SIZE_D, ICON_SIZE_D);
                 }
                 
-                // DRAW HUNGER (RIGHT SIDE)
                 for (let i = 0; i < 10; i++) {
-                    // Position is mirrored, starting from the right edge
                     const X_POS = X_START_RIGHT - (i * ICON_SPACING_D); 
-                    
-                    // Hunger Border (16, 27)
                     ctx.drawImage(iconsSheet, 16 * S_F, 27 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, HUNGER_Y, ICON_SIZE_D, ICON_SIZE_D);
-                    // Filled Hunger (52, 27)
                     if(i < 7) ctx.drawImage(iconsSheet, 52 * S_F, 27 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, HUNGER_Y, ICON_SIZE_D, ICON_SIZE_D);
                 }
                 
-                // EXPERIENCE BAR
                 const XP_Y = hudCanvas.height - ACTIONBAR_H;
                 const XP_SRC_W = 182 * S_F;
                 const XP_SRC_H = 5 * S_F;
-                // Background (0, 64)
                 ctx.drawImage(iconsSheet, 0 * S_F, 64 * S_F, XP_SRC_W, XP_SRC_H, 0, XP_Y - 5, hudCanvas.width, 5); 
-                // Fill (0, 69)
                 ctx.drawImage(iconsSheet, 0 * S_F, 69 * S_F, 120 * S_F, XP_SRC_H, 0, XP_Y - 5, 120, 5); 
             }
             
-            // LEVEL TEXT
             const FONT_SIZE = 10; 
             ctx.font = `bold ${FONT_SIZE}px Inter, sans-serif`;
             ctx.fillStyle = '#80FF20';
@@ -865,50 +855,29 @@
         }
 
         async function createCrosshairPreview(iconsSheetUrl) {
-            if (!iconsSheetUrl) {
-                return null;
-            }
+            if (!iconsSheetUrl) return null;
             const crosshairCanvas = document.createElement('canvas');
-            const CROSSHAIR_CANVAS_SIZE = 16; // Use 16x16 canvas to strictly contain the icon tile
+            const CROSSHAIR_CANVAS_SIZE = 16;
             crosshairCanvas.width = CROSSHAIR_CANVAS_SIZE;
             crosshairCanvas.height = CROSSHAIR_CANVAS_SIZE;
             const ctx = crosshairCanvas.getContext('2d');
             ctx.imageSmoothingEnabled = false;
-
-            // Clear to transparent, preventing any canvas-level black background
             ctx.clearRect(0, 0, CROSSHAIR_CANVAS_SIZE, CROSSHAIR_CANVAS_SIZE); 
 
             try {
                 const iconsSheet = await loadImage(iconsSheetUrl);
-                
-                // --- Determine Scale Factor from Pack Resolution ---
                 const resolution = currentPackData?.resolution;
                 const effectiveScaleFactor = getEffectiveScale(resolution);
-                
-                // ICON SHEET SOURCE SCALING
                 const BASE_ICONS_SHEET_RES = 256;
-                const S_F = iconsSheet.width / BASE_ICONS_SHEET_RES; // True source sheet scale
-                
-                // We extract the entire top-left UI tile (16x16 base pixels)
+                const S_F = iconsSheet.width / BASE_ICONS_SHEET_RES;
                 const CROSSHAIR_BASE_TILE_SIZE = 16; 
-                
-                // Source size is scaled by the effective factor (e.g., 8 for a 256x pack)
                 const sWidth = CROSSHAIR_BASE_TILE_SIZE * effectiveScaleFactor;
                 const sHeight = CROSSHAIR_BASE_TILE_SIZE * effectiveScaleFactor; 
                 
-                // Draw the extracted area onto the 16x16 containment canvas
-                ctx.drawImage(
-                    iconsSheet, 
-                    0, 0, 
-                    Math.round(sWidth), Math.round(sHeight), // Source: Grab the correctly scaled tile size
-                    0, 0,
-                    CROSSHAIR_CANVAS_SIZE, CROSSHAIR_CANVAS_SIZE // Destination: Fill the whole 16x16 containment canvas
-                );
-                
+                ctx.drawImage(iconsSheet, 0, 0, Math.round(sWidth), Math.round(sHeight), 0, 0, CROSSHAIR_CANVAS_SIZE, CROSSHAIR_CANVAS_SIZE);
                 return crosshairCanvas;
             } catch (error) {
                 console.error("Failed to create crosshair preview:", error);
-                // Fallback drawing logic
                 ctx.strokeStyle = 'var(--muted)';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
@@ -1088,9 +1057,93 @@
                 sidebar.querySelector('#mobile-logout-btn')?.addEventListener('click', async (e) => { e.preventDefault(); await supabase.auth.signOut(); });
             }
         }
+
+        /* ====== NEW COMMENT FUNCTIONS ====== */
+        function timeAgo(date) {
+            const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + " years ago";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + " months ago";
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + " days ago";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + " hours ago";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + " minutes ago";
+            return "just now";
+        }
+        
+        async function loadComments(packId) {
+            const { data: comments, error } = await supabase
+                .from('packs_comments')
+                .select('*')
+                .eq('pack_id', packId)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Error fetching comments:', error);
+                document.getElementById('comments-list-container').innerHTML = '<p class="tiny" style="text-align:center;">Could not load comments.</p>';
+                return;
+            }
+            renderComments(comments);
+        }
+
+        function renderComments(comments) {
+            const container = document.getElementById('comments-list-container');
+            if (comments.length === 0) {
+                container.innerHTML = '<p class="tiny" style="text-align:center;">Be the first to comment!</p>';
+                return;
+            }
+
+            const commentsByParent = comments.reduce((acc, comment) => {
+                const parent = comment.parent_id || 'root';
+                if (!acc[parent]) acc[parent] = [];
+                acc[parent].push(comment);
+                return acc;
+            }, {});
+
+            const createCommentHtml = (comment) => {
+                const avatar = comment.author_avatar_url || `https://placehold.co/40x40/1c1c1c/de212a?text=${(comment.author_username || '?').charAt(0).toUpperCase()}`;
+                const replies = commentsByParent[comment.id] || [];
+                
+                return `
+                    <div class="comment-thread">
+                        <div class="comment">
+                            <img src="${avatar}" alt="${escapeHtml(comment.author_username)}'s avatar" class="comment-avatar">
+                            <div class="comment-content">
+                                <div class="comment-header">
+                                    <a href="/profile.html?user=${escapeHtml(comment.author_username)}" class="comment-author">${escapeHtml(comment.author_username)}</a>
+                                    <span class="comment-timestamp">${timeAgo(comment.created_at)}</span>
+                                </div>
+                                <p class="comment-body">${escapeHtml(comment.content)}</p>
+                                <div class="comment-actions">
+                                    <button class="comment-action-btn"><i class="fa-solid fa-heart"></i> ${comment.likes.length}</button>
+                                    <button class="comment-action-btn"><i class="fa-solid fa-reply"></i> Reply</button>
+                                </div>
+                            </div>
+                        </div>
+                        ${replies.length > 0 ? `<div class="replies">${replies.map(createCommentHtml).join('')}</div>` : ''}
+                    </div>
+                `;
+            };
+
+            const topLevelComments = commentsByParent['root'] || [];
+            container.innerHTML = `<div class="comments-list">${topLevelComments.map(createCommentHtml).join('')}</div>`;
+        }
+
+        async function handleCommentSubmit(event) {
+            event.preventDefault();
+            // This will be implemented in Phase 2
+            showToast("Posting comments is not yet enabled.", "error");
+        }
+        /* ================================ */
         
         document.addEventListener('auth-ready', async (event) => {
             const { user, profile } = event.detail;
+            loggedInUser = user;
+            loggedInProfile = profile;
+            
             const navActions = document.getElementById('nav-actions');
 
             if (user && profile) {
@@ -1108,7 +1161,6 @@
 
             setupMobileNav(profile, user);
             
-            // Wait for auth to be ready before loading pack data
             await loadPack();
         });
         
