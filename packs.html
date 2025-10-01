@@ -29,6 +29,7 @@
         .btn.primary { background: var(--gradient-brand); box-shadow: var(--shadow-brand); color: white; }
         .btn.ghost { border-color: var(--border); background: transparent; color: var(--text); }
         .btn.ghost:hover { background: rgba(255, 255, 255, 0.05); }
+        .btn.danger { background: var(--danger); color: white; border-color: transparent; }
         .spinner { width: 48px; height: 48px; border: 5px solid var(--border); border-bottom-color: var(--brand-1); border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
@@ -162,7 +163,7 @@
         .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
         .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
         
-        /* ====== NEW COMMENT STYLES ====== */
+        /* ====== UPGRADED COMMENT STYLES ====== */
         .comments-section { margin-top: 3rem; }
         .comment-form-container { display: flex; gap: 1rem; margin-bottom: 2rem; }
         .comment-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
@@ -170,12 +171,12 @@
         .comment-textarea { width: 100%; min-height: 80px; resize: vertical; padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text); font-size: 1rem; font-family: inherit; }
         .comment-textarea:focus { outline: none; border-color: var(--brand-1); box-shadow: 0 0 0 3px rgba(var(--brand-1-rgb), 0.2); }
         .comment-textarea:disabled { background: var(--bg-1); cursor: not-allowed; }
-        .comment-form-actions { display: flex; justify-content: flex-end; margin-top: 0.5rem; }
+        .comment-form-actions { display: flex; justify-content: flex-end; margin-top: 0.5rem; gap: 0.5rem; }
         .comments-list { display: flex; flex-direction: column; gap: 1.5rem; }
         .comment-thread { display: flex; flex-direction: column; gap: 1.5rem; }
         .comment { display: flex; gap: 1rem; }
         .comment-content { flex-grow: 1; }
-        .comment-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; }
+        .comment-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; flex-wrap: wrap; }
         .comment-author { font-weight: 700; color: var(--text); }
         .comment-author:hover { text-decoration: underline; }
         .comment-timestamp { font-size: 0.8rem; color: var(--muted); }
@@ -184,9 +185,14 @@
         .comment-action-btn { background: none; border: none; color: var(--muted); font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; padding: 0; }
         .comment-action-btn:hover { color: var(--text); }
         .comment-action-btn.liked { color: var(--brand-1); }
-        .replies { margin-top: 1.5rem; margin-left: 3.5rem; display: flex; flex-direction: column; gap: 1.5rem; border-left: 2px solid var(--border); padding-left: 1.5rem; }
+        .comment-action-btn.delete-btn:hover { color: var(--danger); }
+        .replies { margin-top: 1.5rem; margin-left: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; border-left: 2px solid var(--border); padding-left: 1.5rem; }
         .reply-form-container { margin-top: 1rem; }
         
+        .confirmation-modal-dialog { max-width: 400px; padding: 2rem; text-align: center; }
+        .confirmation-modal-dialog p { font-size: 1.1rem; margin: 1rem 0 1.5rem 0; }
+        .confirmation-modal-dialog .btn-group { display: flex; justify-content: center; gap: 1rem; }
+
         @media (min-width: 993px) {
             .pack-layout {
                 grid-template-columns: 1fr 320px;
@@ -202,6 +208,8 @@
         @media (max-width: 480px) {
             .pack-header-actions { flex-basis: 100%; margin-top: 1rem; }
             .pack-header-actions .btn { width: 100%; }
+            .replies { margin-left: 1rem; padding-left: 1rem; }
+            .comment { flex-direction: column; gap: 0.5rem; }
         }
     </style>
 </head>
@@ -265,6 +273,18 @@
         </div>
     </div>
     
+    <!-- NEW: Confirmation Modal for Deleting Comments -->
+    <div id="confirmation-modal" class="modal">
+        <div class="modal-dialog confirmation-modal-dialog">
+            <h2 id="confirmation-title">Are you sure?</h2>
+            <p id="confirmation-message">This action cannot be undone.</p>
+            <div class="btn-group">
+                <button id="cancel-confirmation-btn" class="btn ghost">Cancel</button>
+                <button id="confirm-action-btn" class="btn danger">Confirm</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="/theme.js"></script>
     <script type="module" src="/auth.js"></script>
     <script type="module">
@@ -287,6 +307,7 @@
         let foundArmorAssets = {};
         let foundAssets = { items: {}, gui: {} };
         let commentsCache = [];
+        let confirmCallback = null;
 
         const ALL_TAGS = ['pvp', 'bedwars', 'skywars', 'anime', 'crystal pvp', 'survival', 'visual'];
         const ALL_COLORS = [{key: 'none', hex: '#4b5563', icon: 'fa-solid fa-ban'}, {key: 'red',hex: '#ef4444'}, {key: 'blue',hex: '#3b82f6'}, {key: 'green',hex: '#22c55e'}, {key: 'yellow',hex: '#eab308'}, {key: 'purple',hex: '#a855f7'}, {key: 'pink',hex: '#ec4899'}, {key: 'orange',hex: '#f97316'}, {key: 'teal',hex: '#14b8a6'}, {key: 'gray',hex: '#6b7280'}, {key: 'black',hex: '#1f2937'}];
@@ -1040,7 +1061,7 @@
             }
         }
 
-        /* ====== NEW COMMENT FUNCTIONS (ALL PHASES) ====== */
+        /* ====== UPGRADED COMMENT FUNCTIONS ====== */
         function timeAgo(date) {
             const seconds = Math.floor((new Date() - new Date(date)) / 1000);
             let interval = seconds / 31536000;
@@ -1055,7 +1076,7 @@
             if (interval > 1) return Math.floor(interval) + " minutes ago";
             return "just now";
         }
-
+        
         function loadAndListenForComments(packId) {
             const fetchComments = async () => {
                 const { data, error } = await supabase
@@ -1084,6 +1105,7 @@
 
         function renderComments(comments) {
             const container = document.getElementById('comments-list-container');
+            if (!container) return;
             if (comments.length === 0) {
                 container.innerHTML = '<p class="tiny" style="text-align:center;">Be the first to comment!</p>';
                 return;
@@ -1102,7 +1124,7 @@
                 const isLiked = loggedInUser && comment.likes.includes(loggedInUser.id);
                 
                 let deleteBtn = '';
-                if(loggedInUser && (loggedInUser.id === comment.author_id || loggedInProfile?.role === 'admin')) {
+                if(loggedInUser && (loggedInUser.id === comment.author_id || currentUserRole === 'admin')) {
                     deleteBtn = `<button class="comment-action-btn delete-btn" data-comment-id="${comment.id}" data-author-id="${comment.author_id}"><i class="fa-solid fa-trash-can"></i> Delete</button>`;
                 }
 
@@ -1133,9 +1155,10 @@
             container.innerHTML = `<div class="comments-list">${topLevelComments.map(createCommentHtml).join('')}</div>`;
             addCommentEventListeners();
         }
-
+        
         function renderCommentForm(parentId = null, containerEl = null) {
             const targetContainer = containerEl || document.getElementById('comment-form-area');
+            if (!targetContainer) return;
             const placeholder = parentId ? "Write a reply..." : "Add a comment...";
             
             if (loggedInProfile && loggedInUser) {
@@ -1173,10 +1196,13 @@
             event.preventDefault();
             const form = event.target;
             const textarea = form.querySelector('textarea');
+            const submitBtn = form.querySelector('button[type="submit"]');
             const content = textarea.value.trim();
             const parentId = form.dataset.parentId || null;
 
             if (!content || !loggedInUser || !loggedInProfile) return;
+            
+            submitBtn.disabled = true;
 
             const { error } = await supabase.from('packs_comments').insert({
                 pack_id: currentPackData.id,
@@ -1186,6 +1212,8 @@
                 author_avatar_url: loggedInProfile.avatar_url,
                 parent_id: parentId
             });
+            
+            submitBtn.disabled = false;
 
             if (error) {
                 showToast('Failed to post comment: ' + error.message, 'error');
@@ -1199,7 +1227,9 @@
         
         function addCommentEventListeners() {
             document.querySelectorAll('.reply-btn').forEach(btn => btn.addEventListener('click', () => {
+                if(!loggedInUser) return showToast('You must be logged in to reply.', 'error');
                 const commentId = btn.dataset.commentId;
+                document.querySelectorAll('.reply-form-container').forEach(c => c.innerHTML = ''); // Close other reply forms
                 const container = document.getElementById(`reply-form-container-${commentId}`);
                 renderCommentForm(commentId, container);
             }));
@@ -1224,17 +1254,35 @@
             if(error) showToast('Failed to update like.', 'error');
         }
 
-        async function handleDeleteComment(commentId, authorId) {
+        function handleDeleteComment(commentId, authorId) {
             if(!loggedInUser) return;
-            if(loggedInUser.id !== authorId && loggedInProfile?.role !== 'admin') {
+            if(loggedInUser.id !== authorId && currentUserRole !== 'admin') {
                 return showToast('You can only delete your own comments.', 'error');
             }
             
-            if(confirm("Are you sure you want to delete this comment? This cannot be undone.")){
-                 const { error } = await supabase.from('packs_comments').delete().eq('id', commentId);
-                 if(error) showToast('Failed to delete comment: ' + error.message, 'error');
-            }
+            showConfirmation('Are you sure you want to permanently delete this comment?', async () => {
+                const { error } = await supabase.from('packs_comments').delete().eq('id', commentId);
+                if(error) showToast('Failed to delete comment: ' + error.message, 'error');
+            });
         }
+        
+        function showConfirmation(message, onConfirm) {
+            const modal = document.getElementById('confirmation-modal');
+            modal.querySelector('#confirmation-message').textContent = message;
+            confirmCallback = onConfirm;
+            modal.classList.add('show');
+        }
+
+        document.getElementById('cancel-confirmation-btn')?.addEventListener('click', () => {
+            document.getElementById('confirmation-modal').classList.remove('show');
+            confirmCallback = null;
+        });
+
+        document.getElementById('confirm-action-btn')?.addEventListener('click', () => {
+            if (confirmCallback) confirmCallback();
+            document.getElementById('confirmation-modal').classList.remove('show');
+            confirmCallback = null;
+        });
         
         document.addEventListener('auth-ready', async (event) => {
             const { user, profile } = event.detail;
