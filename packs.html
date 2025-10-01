@@ -236,8 +236,8 @@
             .pack-header-actions .btn { width: 100%; }
             .replies { margin-left: 1rem; padding-left: 1rem; }
             .comment { flex-direction: column; gap: 0.5rem; }
-            .comment-avatar { display: none; }
-            .replies { border-left: none; padding-left: 0; margin-left: 0; }
+            .comment-avatar { display: block; }
+            .replies { border-left: 2px solid var(--border); padding-left: 1.5rem; margin-left: 1.5rem; }
         }
     </style>
 </head>
@@ -505,9 +505,9 @@
                     </aside>
                     <div class="comments-section card">
                         <div class="card-body">
-                            <div class="comment-header-main">
+                             <div class="comment-header-main">
                                 <h3 class="section-title" style="margin:0; border:none;" id="comment-count-display">Comments</h3>
-                            </div>
+                             </div>
                             <div id="comment-form-area"><!-- Comment form will be rendered here --></div>
                             <div id="comments-list-container">
                                 <div class="comments-placeholder" style="display:flex; flex-direction:column; gap:1rem;"><div class="spinner"></div><span>Loading comments...</span></div>
@@ -1169,7 +1169,7 @@
             const createCommentHtml = (comment) => {
                 const avatar = comment.author_avatar_url || `https://placehold.co/40x40/1c1c1c/de212a?text=${(comment.author_username || '?').charAt(0).toUpperCase()}`;
                 const replies = commentsByParent[comment.id] || [];
-                const isLiked = loggedInUser && comment.likes.includes(loggedInUser.id);
+                const isLiked = loggedInUser && (comment.likes || []).includes(loggedInUser.id);
                 
                 let optionsMenu = '';
                 if(loggedInUser && (loggedInUser.id === comment.author_id || currentUserRole === 'admin')) {
@@ -1196,7 +1196,7 @@
                                     <div class="comment-actions">
                                         <button class="comment-action-btn like-btn ${isLiked ? 'liked' : ''}" data-comment-id="${comment.id}">
                                             <i class="fa-solid fa-thumbs-up"></i>
-                                            <span>${comment.likes.length}</span>
+                                            <span>${(comment.likes || []).length}</span>
                                         </button>
                                         <button class="comment-action-btn reply-btn" data-comment-id="${comment.id}">
                                             <i class="fa-solid fa-reply"></i>
@@ -1350,7 +1350,7 @@
         /* ====== NEW STAR RATING FUNCTIONS ====== */
         function renderStarRating() {
             const container = document.getElementById('star-rating-container');
-            if (!container) return;
+            if (!container || !currentPackData) return;
 
             const ratings = currentPackData.ratings || {};
             const ratingValues = Object.values(ratings);
@@ -1381,7 +1381,7 @@
                         }
                     });
                 });
-                container.querySelector('.stars').addEventListener('mouseout', () => renderStarRating()); // Re-render to show original state
+                container.querySelector('.stars').addEventListener('mouseout', () => renderStarRating());
             }
         }
 
@@ -1394,7 +1394,7 @@
             if (error) {
                 showToast('Failed to submit rating.', 'error');
             } else {
-                currentPackData = data; // Update local pack data with new ratings
+                currentPackData = data;
                 renderStarRating();
                 showToast('Your rating has been submitted!', 'success');
             }
