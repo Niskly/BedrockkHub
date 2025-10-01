@@ -399,7 +399,6 @@
 
         const socialPlatforms = {
             xbox: { name: 'Xbox Live', icon: 'fa-brands fa-xbox', color: '#107c10', type: 'oauth' },
-            java: { name: 'Minecraft Java', icon: 'fa-solid fa-cube', color: '#5a8d4d', type: 'oauth_java' },
             discord: { name: 'Discord', icon: 'fa-brands fa-discord', color: '#5865F2', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'your_username', link: '' }, linkPrefix: 'https://discord.gg/' },
             spotify: { name: 'Spotify', icon: 'fa-brands fa-spotify', color: '#1DB954', modes: ['link'], defaultMode: 'link', placeholders: { link: '' }, linkPrefix: 'https://open.spotify.com/user/' },
             reddit: { name: 'Reddit', icon: 'fa-brands fa-reddit-alien', color: '#FF4500', modes: ['text', 'link'], defaultMode: 'text', placeholders: { text: 'your_username', link: '' }, linkPrefix: 'https://reddit.com/user/' },
@@ -552,7 +551,7 @@
                         <section id="connections-tab" class="content-area">
                             <div class="card">
                                 <div class="card-header"><h2>Manage Connections</h2><p>Link your social and gaming profiles to display on your MCHub page.</p></div>
-                                <div class="card-body" id="socials-container"></div>
+                                <div class="card-body"><div id="socials-container"></div></div>
                             </div>
                         </section>
                         <section id="security-tab" class="content-area">
@@ -859,13 +858,12 @@
             const socialLinks = profile.social_links || {};
             const gridHtml = Object.entries(socialPlatforms).reduce((html, [key, platform]) => {
                 if (platform.newRow) html += `<div style="flex-basis: 100%; height: 0;"></div>`;
-                const isLinked = key === 'xbox' ? !!profile.bedrock_gamertag : (key === 'java' ? !!profile.java_username : !!socialLinks[key]);
+                const isLinked = key === 'xbox' ? !!profile.bedrock_gamertag : !!socialLinks[key];
                 html += `<button class="social-icon-btn ${isLinked ? 'linked' : ''}" data-social="${key}" title="Link ${platform.name}"><i class="${platform.icon}"></i></button>`;
                 return html;
             }, '');
             let cardsHtml = '';
             if (profile.bedrock_gamertag) cardsHtml += createLinkedAccountCard('xbox', profile.bedrock_gamertag);
-            if (profile.java_username) cardsHtml += createLinkedAccountCard('java', profile.java_username);
             for (const [key, value] of Object.entries(socialLinks)) {
                 if (value && socialPlatforms[key]) cardsHtml += createLinkedAccountCard(key, value);
             }
@@ -891,7 +889,6 @@
                 btn.addEventListener('click', () => {
                     const key = btn.dataset.social;
                     if (key === 'xbox') initiateXboxConnection();
-                    else if (key === 'java') initiateJavaConnection();
                     else openSocialModal(key);
                 });
             });
@@ -900,7 +897,6 @@
                     const key = btn.closest('.linked-account-card').dataset.social;
                     showConfirmation(`Unlink your ${socialPlatforms[key].name} account?`, () => {
                         if (key === 'xbox') unlinkXboxConnection();
-                        else if (key === 'java') unlinkJavaConnection();
                         else unlinkSocial(key);
                     });
                 });
@@ -1017,21 +1013,6 @@
             };
             window.addEventListener('message', handleMessage);
         }
-
-        async function initiateJavaConnection() {
-            showLoading('Redirecting to Microsoft...');
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'azure',
-                options: {
-                    scopes: 'XboxLive.signin offline_access',
-                    redirectTo: window.location.href
-                }
-            });
-            if (error) {
-                showToast(`Failed to start login: ${error.message}`, 'error');
-                hideLoading();
-            }
-        }
         
         async function unlinkXboxConnection() {
             showLoading('Disconnecting Xbox account...');
@@ -1039,18 +1020,6 @@
                 const { error } = await supabase.from('profiles').update({ xuid: null, bedrock_gamertag: null, bedrock_gamerpic_url: null }).eq('id', currentUser.id);
                 if (error) throw error;
                 showToast('Xbox account disconnected', 'success');
-                await loadProfileAndPopulate();
-            } catch (error) {
-                showToast(error.message, 'error');
-            } finally { hideLoading(); }
-        }
-        
-        async function unlinkJavaConnection() {
-            showLoading('Disconnecting Java account...');
-            try {
-                const { error } = await supabase.from('profiles').update({ java_username: null, java_uuid: null }).eq('id', currentUser.id);
-                if (error) throw error;
-                showToast('Java account disconnected', 'success');
                 await loadProfileAndPopulate();
             } catch (error) {
                 showToast(error.message, 'error');
@@ -1103,55 +1072,14 @@
             }
         }
 
-        async function finalizeJavaLink(provider_token) {
-            showLoading('Verifying Minecraft account...');
-            try {
-                 const { data: { session } } = await supabase.auth.getSession();
-                 if (!session) throw new Error('You are not logged in.');
-
-                 const response = await fetch('/api/link-java', {
-                     method: 'POST',
-                     headers: { 'Content-Type': 'application/json' },
-                     body: JSON.stringify({ 
-                        mchub_token: session.access_token, 
-                        provider_token: provider_token 
-                    })
-                 });
-                 const result = await response.json();
-                 if (!response.ok) throw new Error(result.details);
-                 
-                 showToast(`Java account linked: ${result.java_username}`, 'success');
-                 await loadProfileAndPopulate();
-
-            } catch(error) {
-                showToast(`Failed to link Java account: ${error.message}`, 'error');
-            } finally {
-                hideLoading();
-                // Clean the URL
-                window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-            }
-        }
-
         document.addEventListener('auth-ready', async (event) => {
             const { user, profile, error } = event.detail;
-
-            // Handle the redirect from Microsoft for Java linking
-            const hash = window.location.hash;
-            if (hash.includes('provider_token=')) {
-                const params = new URLSearchParams(hash.substring(1));
-                const providerToken = params.get('provider_token');
-                if (providerToken) {
-                    await finalizeJavaLink(providerToken);
-                    return; // Stop further execution to allow profile to reload
-                }
-            }
-            
             if (error || !user) {
                 settingsContainer.innerHTML = `<div class="loading-container"><p>Please log in to view your settings.</p><a href="/login.html" class="btn primary" style="margin-top: 1rem;">Login</a></div>`;
                 return;
             }
             currentUser = user;
-            currentProfile = profile;
+            currentProfile = profile; // The profile from auth-ready is a good starting point
             buildPageStructure();
             await loadProfileAndPopulate();
             setupAllEventListeners();
