@@ -21,6 +21,7 @@
             --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
             --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
             --border-strong: rgba(255, 255, 255, .2); --danger: #ef4444; --success: #22c55e;
+            --brand-1-rgb: 222, 33, 42;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 14px/1.6 Inter, sans-serif; min-height: 100vh; }
@@ -80,20 +81,28 @@
 
         .profile-content-grid { display: grid; grid-template-columns: 300px 1fr; gap: 1.5rem; align-items: flex-start; }
         .card { border-radius: 16px; background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); border: 1px solid var(--border); }
-        .card-body { padding: 1.2rem; }
         
-        .minecraft-profile-card { display: flex; flex-direction: column; }
-        .bedrock-display { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
-        .bedrock-skin-viewer { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); position: relative; width: 100%; max-width: 280px; height: 350px; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg'); background-size: cover; background-position: center; }
-        .bedrock-skin-viewer canvas { display: block; cursor: grab; width: 100% !important; height: 100% !important; }
-        .bedrock-gamertag { font-size: 1.2rem; font-weight: 700; text-align: center; color: var(--text); }
+        /* MINECRAFT CARD STYLES */
+        .minecraft-profile-card .card-body { padding: 0; }
+        .mc-tabs { display: flex; border-bottom: 1px solid var(--border); }
+        .mc-tab-btn { flex: 1; padding: 0.8rem 1rem; background: none; border: none; color: var(--muted); font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; border-bottom: 2px solid transparent; transition: all 0.2s ease; }
+        .mc-tab-btn.active { color: var(--text); border-bottom-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.1); }
+        .mc-tab-content { display: none; padding: 1.2rem; }
+        .mc-tab-content.active { display: block; }
+        .mc-display { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+        .mc-skin-viewer { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); position: relative; width: 100%; max-width: 280px; height: 350px; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg'); background-size: cover; background-position: center; }
+        .mc-skin-viewer canvas { display: block; cursor: grab; width: 100% !important; height: 100% !important; }
+        .mc-username { font-size: 1.2rem; font-weight: 700; text-align: center; color: var(--text); }
+        .mc-uuid { font-size: 0.7rem; color: var(--muted); text-align: center; margin-top: -0.25rem; margin-bottom: 0.5rem; word-break: break-all; }
         .skin-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; color: var(--muted); width: 100%; height: 100%; text-align: center; backdrop-filter: blur(4px); background: rgba(0,0,0,0.3); }
+        .no-mc-account { text-align: center; padding: 2rem; color: var(--muted); }
+        .no-mc-account i { font-size: 3rem; opacity: 0.3; margin-bottom: 1rem; }
         
-        .packs-header { display: flex; justify-content: space-between; align-items: center; }
+        .packs-header { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem; border-bottom: 1px solid var(--border); }
         .upload-btn { height: 36px; width: 36px; border-radius: 10px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); color: white; font-size: 1rem; cursor: pointer; }
-        .packs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin-top: 1.2rem; }
+        .packs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; padding: 1.2rem; }
         .pack-card { background: var(--bg-1); border-radius: 16px; overflow: hidden; position: relative; border: 1px solid var(--border); }
-        .pack-card-link { display: block; color: inherit; text-decoration: none; cursor: pointer; }
+        .pack-card-link { display: block; color: inherit; text-decoration: none; }
         .thumb { height: 120px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
         .thumb .pack-icon { position: relative; width: 80px; height: 80px; border-radius: 8px; object-fit: cover; z-index: 1; }
         .content { padding: 10px; }
@@ -104,7 +113,7 @@
         .pack-options-menu a:hover, .pack-options-menu button:hover { background: var(--bg-1); color: var(--text); }
         .pack-options-menu .delete-option:hover { background: var(--danger); color: white; }
         .pack-options-menu i { width: 16px; text-align: center; }
-        .pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 1.5rem; }
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 1.5rem; padding-bottom: 1.2rem; }
         .pagination-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; }
         .pagination-btn:hover { border-color: white; }
 
@@ -124,39 +133,7 @@
         .toast { padding: 12px 18px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; background: var(--bg-1); border: 1px solid var(--border); }
         @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
 
-        /* ====== NEW MOBILE SIDEBAR STYLES ====== */
-        .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
-        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
-        .mobile-nav-backdrop.show { display: block; opacity: 1; }
-        .mobile-nav-sidebar {
-            position: fixed; top: 0; left: 0; bottom: 0;
-            width: 280px; background: var(--bg-1);
-            z-index: 999; transform: translateX(-100%);
-            transition: transform 0.3s ease;
-            display: flex; flex-direction: column;
-            border-right: 1px solid var(--border);
-        }
-        .mobile-nav-sidebar.show { transform: translateX(0); }
-        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
-        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
-        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
-        .mobile-nav-user-info { display: flex; flex-direction: column; }
-        .mobile-nav-username { font-weight: 700; color: var(--text); }
-        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
-        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
-        .mobile-nav-main-links { flex-grow: 1; }
-        .mobile-nav-main-links a, .mobile-nav-footer-links a {
-            padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem;
-            font-weight: 600; color: var(--muted); transition: all 0.2s ease;
-        }
-        .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
-        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
-        .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
-
-        /* ====== MOBILE RESPONSIVENESS ====== */
         @media (max-width: 768px) {
-            .nav-actions { display: none; }
-            .mobile-nav-toggle { display: block; }
             .profile-content-grid { grid-template-columns: 1fr; }
             .profile-banner { height: 150px; }
             .profile-meta { flex-direction: column; align-items: center; text-align: center; }
@@ -249,7 +226,8 @@
         const profileContainer = document.getElementById('profile-container');
 
         let loggedInUser = null;
-        let skinViewer = null;
+        let bedrockSkinViewer = null;
+        let javaSkinViewer = null;
         let currentProfileData = null;
         let confirmCallback = null;
         let localPacksCache = [];
@@ -313,7 +291,7 @@
             card.id = `pack-card-${pack.id}`; // Add unique ID for removal
             const thumbContent = pack.icon_url ? `<img class="pack-icon" src="${pack.icon_url}" alt="${pack.name} Icon">` : `<div style="width:100%; height:100%; display:grid; place-items:center; background:var(--bg-2)"><i class="fa-solid fa-cube fa-2x"></i></div>`;
             
-            let optionsMenu = `<a href="#" onclick="handleDownload(event, ${pack.id}, '${pack.filename}', '${escapeHtml(pack.name)}')"><i class="fa-solid fa-download"></i> Download</a>`;
+            let optionsMenu = `<a href="/packs.html?id=${pack.id}"><i class="fa-solid fa-eye"></i> View</a>`;
             if (isOwnProfile) {
                 optionsMenu += `<button class="delete-option" onclick="promptDeletePack(${pack.id})"><i class="fa-solid fa-trash-can"></i> Delete</button>`;
             }
@@ -321,7 +299,7 @@
             card.innerHTML = `
                 <button class="pack-options-btn" onclick="toggleOptionsMenu(event, ${pack.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                 <div class="pack-options-menu" id="options-menu-${pack.id}">${optionsMenu}</div>
-                <div class="pack-card-link" onclick="handleDownload(event, ${pack.id}, '${pack.filename}', '${escapeHtml(pack.name)}')">
+                <a class="pack-card-link" href="/packs.html?id=${pack.id}">
                     <div class="thumb">${thumbContent}</div>
                     <div class="content">
                         <h4 style="font-size:0.9rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow: ellipsis;">${escapeHtml(pack.name)}</h4>
@@ -330,10 +308,11 @@
                             <span>${formatDate(pack.created_at)}</span>
                         </div>
                     </div>
-                </div>
+                </a>
             `;
             return card;
         }
+
 
         function renderPacksForPage() {
             const packsGridEl = document.getElementById('packs-grid-placeholder');
@@ -341,11 +320,11 @@
             const isOwnProfile = loggedInUser && loggedInUser.id === currentProfileData.id;
 
             packsGridEl.innerHTML = '';
-            paginationControlsEl.innerHTML = '';
+            if (paginationControlsEl) paginationControlsEl.innerHTML = '';
 
             const totalPacks = localPacksCache.length;
             if (totalPacks === 0) {
-                packsGridEl.innerHTML = `<p class="tiny" style="padding-top: 1rem; grid-column: 1 / -1;">This user hasn't uploaded any packs yet.</p>`;
+                packsGridEl.innerHTML = `<p class="tiny" style="padding-top: 1rem; grid-column: 1 / -1; text-align:center;">This user hasn't uploaded any packs yet.</p>`;
                 return;
             }
 
@@ -354,7 +333,7 @@
             packsForPage.forEach(pack => packsGridEl.appendChild(renderPackCard(pack, isOwnProfile)));
 
             const totalPages = Math.ceil(totalPacks / packsPerPage);
-            if (totalPages > 1) {
+            if (totalPages > 1 && paginationControlsEl) {
                 if (currentPage > 1) {
                     paginationControlsEl.innerHTML += `<button class="pagination-btn" onclick="changePage(${currentPage - 1})"><i class="fa-solid fa-arrow-left"></i></button>`;
                 }
@@ -375,18 +354,50 @@
             localPacksCache = packs;
             currentPage = 1;
             const pfpHtml = profile.avatar_url ? `<img src="${profile.avatar_url}" alt="${profile.username}'s avatar" class="profile-avatar">` : `<div class="pfp-placeholder"><span>${(profile.username || '?').charAt(0).toUpperCase()}</span></div>`;
-            const bedrockHtml = (profile.bedrock_gamertag && profile.xuid) 
-                ? `<div class="minecraft-profile-card">
-                        <div class="bedrock-gamertag">${profile.bedrock_gamertag}</div>
-                        <div class="tiny" style="text-align:center; margin-bottom: 0.5rem;">XUID: ${profile.xuid}</div>
-                        <div class="bedrock-display">
-                            <div class="bedrock-skin-viewer" id="bedrock-skin-viewer">
+            
+            const hasBedrock = profile.bedrock_gamertag && profile.xuid;
+            const hasJava = profile.java_username && profile.java_uuid;
+            
+            let minecraftHtml = `<div class="no-mc-account"><i class="fa-brands fa-xbox"></i><p>No Minecraft account linked</p></div>`;
+
+            if(hasBedrock || hasJava) {
+                const bedrockTabActive = hasBedrock; // Default to Bedrock if available
+                const javaTabActive = !hasBedrock && hasJava;
+
+                let tabsHtml = '';
+                if(hasBedrock && hasJava) {
+                    tabsHtml = `
+                        <div class="mc-tabs">
+                            <button class="mc-tab-btn ${bedrockTabActive ? 'active' : ''}" data-tab="bedrock"><i class="fa-brands fa-xbox"></i> Bedrock</button>
+                            <button class="mc-tab-btn ${javaTabActive ? 'active' : ''}" data-tab="java"><i class="fa-solid fa-cube"></i> Java</button>
+                        </div>`;
+                }
+
+                const bedrockContent = hasBedrock ? `
+                    <div id="bedrock-tab" class="mc-tab-content ${bedrockTabActive ? 'active' : ''}">
+                        <div class="mc-display">
+                            <div class="mc-username">${profile.bedrock_gamertag}</div>
+                            <div class="mc-uuid">XUID: ${profile.xuid}</div>
+                            <div class="mc-skin-viewer" id="bedrock-skin-viewer">
                                 <div class="skin-loading"><div class="spinner"></div><span>Loading 3D skin...</span></div>
                             </div>
                         </div>
-                    </div>` 
-                : `<div style="text-align: center; padding: 2rem; color: var(--muted);"><i class="fa-brands fa-xbox fa-3x" style="opacity: 0.3; margin-bottom: 1rem;"></i><p>No Bedrock account linked</p></div>`;
-            
+                    </div>` : '';
+
+                const javaContent = hasJava ? `
+                    <div id="java-tab" class="mc-tab-content ${javaTabActive ? 'active' : ''}">
+                        <div class="mc-display">
+                            <div class="mc-username">${profile.java_username}</div>
+                            <div class="mc-uuid">UUID: ${profile.java_uuid}</div>
+                            <div class="mc-skin-viewer" id="java-skin-viewer">
+                                <div class="skin-loading"><div class="spinner"></div><span>Loading 3D skin...</span></div>
+                            </div>
+                        </div>
+                    </div>` : '';
+
+                minecraftHtml = `${tabsHtml}${bedrockContent}${javaContent}`;
+            }
+
             const socialLinksHtml = renderSocialLinks(profile.social_links);
             const isOwnProfile = currentUser && currentUser.id === profile.id;
             
@@ -421,24 +432,26 @@
                 </div>
                 <div class="profile-content-grid">
                     <div id="minecraft-container">
-                        <div class="card"> <div class="card-body"> ${bedrockHtml} </div> </div>
+                        <div class="card minecraft-profile-card"> <div class="card-body"> ${minecraftHtml} </div> </div>
                     </div>
                     <div id="packs-container">
                         <div class="card">
-                            <div class="card-body">
-                                <div class="packs-header">
-                                    <h3>Texture Packs</h3>
-                                    ${isOwnProfile ? '<div class="upload-btn" title="Upload new pack"><i class="fa-solid fa-plus"></i></div>' : ''}
-                                </div>
-                                <div class="packs-grid" id="packs-grid-placeholder"></div>
-                                <div class="pagination" id="pagination-controls"></div>
+                            <div class="packs-header">
+                                <h3>Texture Packs</h3>
+                                ${isOwnProfile ? '<div class="upload-btn" title="Upload new pack"><i class="fa-solid fa-plus"></i></div>' : ''}
                             </div>
+                            <div class="packs-grid" id="packs-grid-placeholder"></div>
+                            <div class="pagination" id="pagination-controls"></div>
                         </div>
                     </div>
                 </div>`;
             
             renderPacksForPage();
-            if (profile.bedrock_gamertag && profile.xuid) { initBedrockSkinViewer(profile); }
+            
+            if (hasBedrock) initBedrockSkinViewer(profile);
+            if (hasJava && !hasBedrock) initJavaSkinViewer(profile);
+
+            setupMcTabSwitching(profile);
             
             const uploadBtn = document.querySelector('.upload-btn');
             if (uploadBtn) {
@@ -446,19 +459,48 @@
             }
         }
 
+        function setupMcTabSwitching(profile) {
+            document.querySelectorAll('.mc-tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.mc-tab-btn, .mc-tab-content').forEach(el => el.classList.remove('active'));
+                    btn.classList.add('active');
+                    const tabName = btn.dataset.tab;
+                    document.getElementById(tabName + '-tab').classList.add('active');
+
+                    if(tabName === 'bedrock' && !bedrockSkinViewer) initBedrockSkinViewer(profile);
+                    if(tabName === 'java' && !javaSkinViewer) initJavaSkinViewer(profile);
+                });
+            });
+        }
+
         async function initBedrockSkinViewer(profile) {
             const viewerContainer = document.getElementById('bedrock-skin-viewer');
             if (!viewerContainer) return;
             try {
-                viewerContainer.innerHTML = '<canvas id="skin-canvas"></canvas>';
-                const canvas = document.getElementById('skin-canvas');
-                skinViewer = new skinview3d.SkinViewer({ canvas: canvas, width: 280, height: 350 });
-                skinViewer.controls.enableRotate = true; skinViewer.controls.enableZoom = true;
-                const skinUrl = `/api/bedrock-skin?xuid=${profile.xuid}&gamertag=${encodeURIComponent(profile.bedrock_gamertag)}`;
-                await skinViewer.loadSkin(skinUrl);
-                skinViewer.autoRotateAnimation.speed = 0.5;
-                canvas.addEventListener('mousedown', () => skinViewer.autoRotateAnimation.paused = true, { once: true });
-            } catch (error) { console.error('Failed to init skin viewer:', error); }
+                viewerContainer.innerHTML = '<canvas id="bedrock-skin-canvas"></canvas>';
+                const canvas = document.getElementById('bedrock-skin-canvas');
+                bedrockSkinViewer = new skinview3d.SkinViewer({ canvas: canvas, width: 280, height: 350 });
+                bedrockSkinViewer.controls.enableRotate = true; bedrockSkinViewer.controls.enableZoom = true;
+                const skinUrl = `/api/bedrock-skin?xuid=${profile.xuid}`;
+                await bedrockSkinViewer.loadSkin(skinUrl);
+                bedrockSkinViewer.autoRotateAnimation.speed = 0.5;
+                canvas.addEventListener('mousedown', () => bedrockSkinViewer.autoRotateAnimation.paused = true, { once: true });
+            } catch (error) { console.error('Failed to init Bedrock skin viewer:', error); }
+        }
+
+        async function initJavaSkinViewer(profile) {
+            const viewerContainer = document.getElementById('java-skin-viewer');
+            if (!viewerContainer) return;
+            try {
+                viewerContainer.innerHTML = '<canvas id="java-skin-canvas"></canvas>';
+                const canvas = document.getElementById('java-skin-canvas');
+                javaSkinViewer = new skinview3d.SkinViewer({ canvas: canvas, width: 280, height: 350 });
+                javaSkinViewer.controls.enableRotate = true; javaSkinViewer.controls.enableZoom = true;
+                const skinUrl = `/api/java-skin?uuid=${profile.java_uuid}`;
+                await javaSkinViewer.loadSkin(skinUrl);
+                javaSkinViewer.autoRotateAnimation.speed = 0.5;
+                canvas.addEventListener('mousedown', () => javaSkinViewer.autoRotateAnimation.paused = true, { once: true });
+            } catch (error) { console.error('Failed to init Java skin viewer:', error); }
         }
         
         async function setupFollowSystem(profile, currentUser) {
@@ -608,41 +650,6 @@
                 submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; 
             }
         };
-        
-        window.handleDownload = async (event, packId, filename, packName) => {
-            event.preventDefault();
-            event.stopPropagation();
-            showToast('Starting download...', 'success');
-            try {
-                fetch("/api/increment-download", {
-                    method: "POST", headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({ id: packId })
-                }).then(() => {
-                    const el = document.getElementById(`downloads-${packId}`);
-                    if(el) el.textContent = (parseInt(el.textContent.replace(/,/g, ''), 10) + 1).toLocaleString();
-                });
-
-                const { data: urlData } = supabase.storage.from('packs').getPublicUrl(filename);
-                if (!urlData) throw new Error('Could not get download URL.');
-
-                const response = await fetch(urlData.publicUrl);
-                if (!response.ok) throw new Error('Download link failed.');
-                const blob = await response.blob();
-
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                const extension = filename.split('.').pop();
-                link.download = `${packName}.${extension}`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(link.href);
-
-            } catch (error) {
-                console.error("Download Error:", error);
-                showToast('Failed to start download.', 'error');
-            }
-        };
 
         window.toggleOptionsMenu = (event, packId) => {
             event.stopPropagation();
@@ -703,4 +710,3 @@
     </script>
 </body>
 </html>
-
