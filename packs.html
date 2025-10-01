@@ -170,9 +170,6 @@
         /* ====== UPGRADED COMMENT STYLES ====== */
         .comments-section { margin-top: 3rem; }
         .comment-header-main { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem; }
-        .reactions-summary { display: flex; gap: 0.75rem; flex-wrap: wrap; }
-        .reaction-chip { display: flex; align-items: center; gap: 0.4rem; background: var(--bg-2); border-radius: 99px; padding: 4px 10px; font-size: 13px; font-weight: 600; }
-        .reaction-chip .emoji { font-size: 16px; }
         #comment-count-display { font-weight: 700; color: var(--muted); }
 
         .comment-form-container { display: flex; gap: 1rem; margin-bottom: 2rem; }
@@ -193,16 +190,11 @@
         .comment-body { line-height: 1.6; color: var(--muted); white-space: pre-wrap; word-break: break-word; }
         
         .comment-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; }
-        .comment-actions { display: flex; align-items: center; gap: 1.25rem; position: relative; }
+        .comment-actions { display: flex; align-items: center; gap: 1.25rem; }
         .comment-action-btn { background: none; border: none; color: var(--muted); font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; padding: 4px 0; }
         .comment-action-btn:hover { color: var(--text); }
         .comment-action-btn.liked { color: var(--brand-1); }
         
-        .reaction-picker { display: none; position: absolute; bottom: 100%; left: 0; margin-bottom: 0.5rem; background: var(--bg-2); border-radius: 99px; padding: 4px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; gap: 4px; }
-        .reaction-picker.show { display: flex; }
-        .reaction-emoji { font-size: 20px; cursor: pointer; padding: 4px; border-radius: 50%; transition: transform 0.1s ease-out; }
-        .reaction-emoji:hover { transform: scale(1.2); }
-
         .comment-options { position: absolute; top: 0; right: 0; }
         .comment-options-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 4px 8px; border-radius: 6px; display: none; }
         .comment:hover .comment-options-btn { display: block; }
@@ -223,6 +215,8 @@
 
         .star-rating-display { display: flex; align-items: center; gap: 0.5rem; }
         .star-rating-display .stars { color: var(--star-color); font-size: 1.2rem; }
+        .star-rating-display .stars.interactive .fa-star { cursor: pointer; }
+        .star-rating-display .stars .fa-star:hover { transform: scale(1.2); }
         .star-rating-display .rating-text { font-size: 0.9rem; font-weight: 600; color: var(--muted); }
 
         @media (min-width: 993px) {
@@ -468,6 +462,7 @@
                                 <div class="pack-meta-info">
                                     <span class="tiny"><i class="fa-solid fa-calendar-day fa-fw"></i> ${formatDate(pack.created_at)}</span>
                                     <span class="tiny" id="download-count-val"><i class="fa-solid fa-download fa-fw"></i> ${(pack.download_count || 0).toLocaleString()} Downloads</span>
+                                    <div id="star-rating-container"></div>
                                 </div>
                             </div>
                             <div class="pack-header-actions" id="header-action-container"></div>
@@ -512,8 +507,7 @@
                         <div class="card-body">
                             <div class="comment-header-main">
                                 <h3 class="section-title" style="margin:0; border:none;" id="comment-count-display">Comments</h3>
-                                <div class="reactions-summary" id="reactions-summary-container"></div>
-                             </div>
+                            </div>
                             <div id="comment-form-area"><!-- Comment form will be rendered here --></div>
                             <div id="comments-list-container">
                                 <div class="comments-placeholder" style="display:flex; flex-direction:column; gap:1rem;"><div class="spinner"></div><span>Loading comments...</span></div>
@@ -533,6 +527,7 @@
             initSkinViewer();
             loadAndProcessPackForArmor(pack);
             loadAndListenForComments(pack.id);
+            renderStarRating();
         }
 
         function setupPreviewer() {
@@ -1154,7 +1149,11 @@
 
         function renderComments(comments) {
             const container = document.getElementById('comments-list-container');
-            if (!container) return;
+            const countDisplay = document.getElementById('comment-count-display');
+            if (!container || !countDisplay) return;
+
+            countDisplay.textContent = `${comments.length} Comment${comments.length !== 1 ? 's' : ''}`;
+
             if (comments.length === 0) {
                 container.innerHTML = '<p class="tiny" style="text-align:center;">Be the first to comment!</p>';
                 return;
@@ -1172,9 +1171,15 @@
                 const replies = commentsByParent[comment.id] || [];
                 const isLiked = loggedInUser && comment.likes.includes(loggedInUser.id);
                 
-                let deleteBtn = '';
+                let optionsMenu = '';
                 if(loggedInUser && (loggedInUser.id === comment.author_id || currentUserRole === 'admin')) {
-                    deleteBtn = `<button class="comment-action-btn delete-btn" data-comment-id="${comment.id}" data-author-id="${comment.author_id}"><i class="fa-solid fa-trash-can"></i> Delete</button>`;
+                    optionsMenu = `
+                        <div class="comment-options">
+                            <button class="comment-options-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                            <div class="comment-options-menu">
+                                <button class="delete-btn" data-comment-id="${comment.id}" data-author-id="${comment.author_id}"><i class="fa-solid fa-trash-can"></i> Delete</button>
+                            </div>
+                        </div>`;
                 }
 
                 return `
@@ -1187,13 +1192,21 @@
                                     <span class="comment-timestamp">${timeAgo(comment.created_at)}</span>
                                 </div>
                                 <p class="comment-body">${escapeHtml(comment.content)}</p>
-                                <div class="comment-actions">
-                                    <button class="comment-action-btn like-btn ${isLiked ? 'liked' : ''}" data-comment-id="${comment.id}"><i class="fa-solid fa-heart"></i> ${comment.likes.length}</button>
-                                    <button class="comment-action-btn reply-btn" data-comment-id="${comment.id}"><i class="fa-solid fa-reply"></i> Reply</button>
-                                    ${deleteBtn}
+                                <div class="comment-footer">
+                                    <div class="comment-actions">
+                                        <button class="comment-action-btn like-btn ${isLiked ? 'liked' : ''}" data-comment-id="${comment.id}">
+                                            <i class="fa-solid fa-thumbs-up"></i>
+                                            <span>${comment.likes.length}</span>
+                                        </button>
+                                        <button class="comment-action-btn reply-btn" data-comment-id="${comment.id}">
+                                            <i class="fa-solid fa-reply"></i>
+                                            <span>Reply</span>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="reply-form-container" id="reply-form-container-${comment.id}"></div>
                             </div>
+                            ${optionsMenu}
                         </div>
                         ${replies.length > 0 ? `<div class="replies">${replies.map(createCommentHtml).join('')}</div>` : ''}
                     </div>
@@ -1285,6 +1298,17 @@
             }));
             
             document.querySelectorAll('.like-btn').forEach(btn => btn.addEventListener('click', () => handleLikeComment(btn.dataset.commentId)));
+            
+            document.querySelectorAll('.comment-options-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const menu = btn.nextElementSibling;
+                    const isVisible = menu.classList.contains('show');
+                    document.querySelectorAll('.comment-options-menu').forEach(m => m.classList.remove('show'));
+                    if(!isVisible) menu.classList.add('show');
+                });
+            });
+
             document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', () => handleDeleteComment(btn.dataset.commentId, btn.dataset.authorId)));
         }
         
@@ -1322,18 +1346,61 @@
             confirmCallback = onConfirm;
             modal.classList.add('show');
         }
-
-        document.getElementById('cancel-confirmation-btn')?.addEventListener('click', () => {
-            document.getElementById('confirmation-modal').classList.remove('show');
-            confirmCallback = null;
-        });
-
-        document.getElementById('confirm-action-btn')?.addEventListener('click', () => {
-            if (confirmCallback) confirmCallback();
-            document.getElementById('confirmation-modal').classList.remove('show');
-            confirmCallback = null;
-        });
         
+        /* ====== NEW STAR RATING FUNCTIONS ====== */
+        function renderStarRating() {
+            const container = document.getElementById('star-rating-container');
+            if (!container) return;
+
+            const ratings = currentPackData.ratings || {};
+            const ratingValues = Object.values(ratings);
+            const average = ratingValues.length > 0 ? (ratingValues.reduce((a, b) => a + b, 0) / ratingValues.length) : 0;
+            const totalRatings = ratingValues.length;
+
+            let starsHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                const isFull = i <= Math.round(average);
+                starsHtml += `<i class="fa-${isFull ? 'solid' : 'regular'} fa-star" data-value="${i}"></i>`;
+            }
+
+            container.innerHTML = `
+                <div class="star-rating-display">
+                    <div class="stars ${loggedInUser ? 'interactive' : ''}">${starsHtml}</div>
+                    <span class="rating-text">${average.toFixed(1)} (${totalRatings} reviews)</span>
+                </div>
+            `;
+            
+            if(loggedInUser) {
+                const stars = container.querySelectorAll('.fa-star');
+                stars.forEach(star => {
+                    star.addEventListener('click', () => submitRating(star.dataset.value));
+                    star.addEventListener('mouseover', () => {
+                        for(let i = 0; i < stars.length; i++){
+                            stars[i].classList.toggle('fa-solid', i < star.dataset.value);
+                            stars[i].classList.toggle('fa-regular', i >= star.dataset.value);
+                        }
+                    });
+                });
+                container.querySelector('.stars').addEventListener('mouseout', () => renderStarRating()); // Re-render to show original state
+            }
+        }
+
+        async function submitRating(ratingValue) {
+            if (!loggedInUser || !currentPackData) return;
+            const currentRatings = currentPackData.ratings || {};
+            currentRatings[loggedInUser.id] = parseInt(ratingValue, 10);
+            
+            const { data, error } = await supabase.from('packs').update({ ratings: currentRatings }).eq('id', currentPackData.id).select().single();
+            if (error) {
+                showToast('Failed to submit rating.', 'error');
+            } else {
+                currentPackData = data; // Update local pack data with new ratings
+                renderStarRating();
+                showToast('Your rating has been submitted!', 'success');
+            }
+        }
+
+
         document.addEventListener('auth-ready', async (event) => {
             const { user, profile } = event.detail;
             loggedInUser = user;
@@ -1362,6 +1429,22 @@
         window.addEventListener('click', (e) => {
             const dropdown = document.querySelector('.dropdown-content.show');
             if (dropdown && !e.target.closest('.user-dropdown')) dropdown.classList.remove('show');
+
+            const optionsMenu = document.querySelector('.comment-options-menu.show');
+            if (optionsMenu && !e.target.closest('.comment-options')) {
+                optionsMenu.classList.remove('show');
+            }
+        });
+
+        document.getElementById('cancel-confirmation-btn')?.addEventListener('click', () => {
+            document.getElementById('confirmation-modal').classList.remove('show');
+            confirmCallback = null;
+        });
+
+        document.getElementById('confirm-action-btn')?.addEventListener('click', () => {
+            if (confirmCallback) confirmCallback();
+            document.getElementById('confirmation-modal').classList.remove('show');
+            confirmCallback = null;
         });
 
         window.openEditPackModal = function() {
