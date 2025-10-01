@@ -124,11 +124,15 @@
             box-shadow: 0 10px 30px -10px rgba(0,0,0, .2); 
         }
         .pack-main-info { 
-            display: flex; 
-            align-items: center; 
-            gap: 1rem; 
             padding: 1rem; 
-            flex-grow: 1; 
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .pack-top-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
         .pack-icon { 
             width: 80px;
@@ -140,10 +144,6 @@
         .pack-details { 
             flex-grow: 1; 
             min-width: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 100%;
         }
         .pack-name { 
             font-size: 1.1rem; 
@@ -153,12 +153,6 @@
             overflow: hidden;
             text-overflow: ellipsis;
             margin-bottom: 0.5rem;
-        }
-        .pack-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-top: auto;
         }
         .pack-meta { 
             display: flex; 
@@ -172,6 +166,9 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+        }
+        .pack-action-footer {
+            margin-top: 1rem;
         }
         
         .loading { display: flex; align-items: center; justify-content: center; padding: 2rem; color: var(--muted); width: 100%; grid-column: 1 / -1; }
@@ -352,16 +349,18 @@
                     return `
                         <a href="/packs.html?id=${pack.id}" class="latest-pack-card">
                             <div class="pack-main-info">
-                                ${iconContent}
-                                <div class="pack-details">
-                                    <h4 class="pack-name" title="${escapeHtml(pack.name)}">${escapeHtml(pack.name)}</h4>
-                                    <div class="pack-footer">
+                                <div class="pack-top-section">
+                                    ${iconContent}
+                                    <div class="pack-details">
+                                        <h4 class="pack-name" title="${escapeHtml(pack.name)}">${escapeHtml(pack.name)}</h4>
                                         <div class="pack-meta">
                                             <span><i class="fa-solid fa-download fa-fw"></i> ${formatDownloads(pack.download_count)}</span>
                                             <span><i class="fa-solid fa-calendar-day fa-fw"></i> ${formatDate(pack.created_at)}</span>
                                         </div>
-                                        <div class="btn ghost" style="padding: 0.5rem 1rem;">View</div>
                                     </div>
+                                </div>
+                                <div class="pack-action-footer">
+                                    <div class="btn ghost" style="padding: 0.5rem 1rem; width: 100%;">View</div>
                                 </div>
                             </div>
                         </a>`;
