@@ -1079,25 +1079,20 @@
             return "just now";
         }
         
-        function loadAndListenForComments(packId) {
-            const fetchAndRender = async () => {
-                const { data, error } = await supabase.from('packs_comments').select('*').eq('pack_id', packId).order('created_at', { ascending: false });
-                if (error) {
-                    console.error('Error fetching comments:', error);
-                    document.getElementById('comments-list-container').innerHTML = '<p class="tiny" style="text-align:center;">Could not load comments.</p>';
-                } else {
-                    commentsCache = data;
-                    renderComments(commentsCache);
-                }
-            };
-
-            fetchAndRender();
-            renderCommentForm(); 
+        async function loadAndListenForComments(packId) {
+             const { data, error } = await supabase.from('packs_comments').select('*').eq('pack_id', packId).order('created_at', { ascending: false });
+            if (error) {
+                console.error('Error fetching comments:', error);
+                document.getElementById('comments-list-container').innerHTML = '<p class="tiny" style="text-align:center;">Could not load comments.</p>';
+            } else {
+                commentsCache = data;
+                renderComments(commentsCache);
+            }
+            renderCommentForm();
 
             supabase.channel(`comments-for-pack-${packId}`)
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'packs_comments', filter: `pack_id=eq.${packId}` }, 
                 (payload) => {
-                    console.log('Realtime change received:', payload);
                     switch (payload.eventType) {
                         case 'INSERT':
                             commentsCache.unshift(payload.new);
@@ -1107,7 +1102,14 @@
                             if (indexToUpdate > -1) commentsCache[indexToUpdate] = payload.new;
                             break;
                         case 'DELETE':
-                            commentsCache = commentsCache.filter(c => c.id !== payload.old.id);
+                            const deletedId = payload.old.id;
+                            const idsToDelete = new Set([deletedId]);
+                            const findChildren = (parentId) => {
+                                const children = commentsCache.filter(c => c.parent_id === parentId);
+                                for (const child of children) { idsToDelete.add(child.id); findChildren(child.id); }
+                            };
+                            findChildren(deletedId);
+                            commentsCache = commentsCache.filter(c => !idsToDelete.has(c.id));
                             break;
                     }
                     commentsCache.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -1144,7 +1146,7 @@
                 return `
                     <div class="comment-thread" id="comment-thread-${comment.id}">
                         <div class="comment">
-                            <img src="${avatar}" alt="${escapeHtml(comment.author_username)}'s avatar" class="comment-avatar">
+                            <a href="/profile.html?user=${escapeHtml(comment.author_username)}"><img src="${avatar}" alt="${escapeHtml(comment.author_username)}'s avatar" class="comment-avatar"></a>
                             <div class="comment-content">
                                 <div class="comment-header">
                                     <a href="/profile.html?user=${escapeHtml(comment.author_username)}" class="comment-author">${escapeHtml(comment.author_username)}</a>
@@ -1211,7 +1213,8 @@
             const textarea = form.querySelector('textarea');
             const submitBtn = form.querySelector('button[type="submit"]');
             const content = textarea.value.trim();
-            const parentId = form.dataset.parentId || null;
+            const parentIdStr = form.dataset.parentId;
+            const parentId = parentIdStr ? parseInt(parentIdStr, 10) : null;
 
             if (!content || !loggedInUser || !loggedInProfile) return;
             
