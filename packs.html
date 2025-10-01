@@ -64,7 +64,6 @@
         .pack-header-icon { width: 80px; height: 80px; border-radius: 16px; object-fit: cover; background-color: var(--bg-2); flex-shrink: 0; border: 1px solid var(--border); }
         .pack-title-area { flex-grow: 1; }
         .pack-title-area h1 { font-size: 2.2rem; font-weight: 800; line-height: 1.2; margin: 0 0 4px 0; }
-        /* CHANGE 3: New desktop layout styles */
         .pack-reviews-and-meta { margin-top: 0.75rem; }
         .pack-meta-info { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; font-size: 0.9rem; color: var(--muted); margin-top: 0.5rem; }
         .pack-header-actions { flex-shrink: 0; display: flex; gap: 0.5rem; }
@@ -105,7 +104,6 @@
         .armor-item:hover { border-color: var(--text); }
         .armor-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); }
         
-        /* CHANGE 4: Styles for main item viewer and enchant button */
         #item-viewer-wrapper { position: relative; }
         #item-enchant-btn { position: absolute; top: 10px; right: 10px; z-index: 5; background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: #fcc2ff; border-radius: 8px; padding: 0.4rem 0.6rem; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: none; align-items: center; gap: 0.4rem; }
         #item-enchant-btn.active { background: #a855f7; color: white; border-color: #c084fc; }
@@ -167,16 +165,27 @@
         .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
         
         .comments-section { margin-top: 3rem; }
-        .comment-header-main { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem; }
+        .comment-header-main { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
         #comment-count-display { font-weight: 700; color: var(--muted); }
-        /* CHANGE 2: Styles for blurred comments */
+        
+        /* UPDATED BLUR STYLES */
         .comments-wrapper { position: relative; }
-        .comments-wrapper.blurred #comments-list-container { filter: blur(5px); pointer-events: none; user-select: none; }
-        .comments-login-overlay { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; z-index: 10; padding: 1rem; }
+        .comments-wrapper.blurred .comments-content-to-blur {
+            filter: blur(5px);
+            pointer-events: none;
+            user-select: none;
+        }
+        .comments-login-overlay {
+            position: absolute; inset: 0; display: none;
+            flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; z-index: 10; padding: 1rem;
+            background: rgba(18, 18, 18, 0.5);
+            border-radius: 16px;
+        }
         .comments-wrapper.blurred .comments-login-overlay { display: flex; }
         .comments-login-overlay p { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; background: rgba(0,0,0,0.5); padding: 0.5rem 1rem; border-radius: 8px; }
 
-        .comment-form-container { display: flex; gap: 1rem; margin-bottom: 2rem; }
+        .comment-form-container { display: flex; gap: 1rem; margin-top: 1rem; margin-bottom: 2rem; }
         .comment-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
         .comment-form { flex-grow: 1; }
         .comment-textarea { width: 100%; min-height: 80px; resize: vertical; padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text); font-size: 1rem; font-family: inherit; }
@@ -187,7 +196,6 @@
         .comment-thread { display: flex; flex-direction: column; gap: 2rem; }
         .comment { display: flex; gap: 1rem; position: relative; }
         .comment-content { flex-grow: 1; }
-        /* CHANGE 6: Move options button inside header */
         .comment-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; flex-wrap: wrap; }
         .comment-author { font-weight: 700; color: var(--text); }
         .comment-author:hover { text-decoration: underline; }
@@ -201,7 +209,7 @@
         .comment-action-btn.liked { color: var(--brand-1); }
         .comment-action-btn.disliked { color: var(--danger); }
         
-        .comment-options { position: relative; display: inline-flex; margin-left: 0.5rem; }
+        .comment-options { position: relative; display: inline-flex; margin-left: auto; }
         .comment-options-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 4px; border-radius: 6px; }
         .comment-options-btn:hover { color: var(--text); background: var(--bg-2); }
         .comment-options-menu { display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 10; overflow: hidden; }
@@ -234,7 +242,6 @@
             .pack-main-content { grid-area: main; }
             .sidebar-card { grid-area: sidebar; }
             .comments-section { grid-area: comments; }
-            /* CHANGE 3: Desktop-specific layout */
             .pack-title-area { display: flex; flex-direction: column; }
             .pack-title-area h1 { order: 1; }
             .pack-reviews-and-meta { order: 2; }
@@ -244,8 +251,6 @@
             .pack-header-actions { flex-basis: 100%; margin-top: 1rem; }
             .pack-header-actions .btn { width: 100%; }
             .replies { margin-left: 1rem; padding-left: 1rem; }
-            /* CHANGE 5: Remove column direction for comments on mobile */
-            /* .comment { flex-direction: column; gap: 0.5rem; } */
             .replies { border-left: 2px solid var(--border); padding-left: 1.5rem; margin-left: 1.5rem; }
         }
     </style>
@@ -345,10 +350,8 @@
         let commentsCache = [];
         let confirmCallback = null;
         
-        // CHANGE 4: More specific list of enchantable items
-        const ENCHANTABLE_ITEMS = ['diamond_sword', 'iron_sword', 'golden_sword', 'golden_apple', 'bow', 'crossbow_standby'];
+        const ENCHANTABLE_ITEMS = ['diamond_sword', 'iron_sword', 'golden_sword', 'bow', 'crossbow_standby'];
         let currentItemPreview = { key: null, isEnchantActive: false };
-
 
         const ALL_TAGS = ['pvp', 'bedwars', 'skywars', 'anime', 'crystal pvp', 'survival', 'visual'];
         const ALL_COLORS = [{key: 'none', hex: '#4b5563', icon: 'fa-solid fa-ban'}, {key: 'red',hex: '#ef4444'}, {key: 'blue',hex: '#3b82f6'}, {key: 'green',hex: '#22c55e'}, {key: 'yellow',hex: '#eab308'}, {key: 'purple',hex: '#a855f7'}, {key: 'pink',hex: '#ec4899'}, {key: 'orange',hex: '#f97316'}, {key: 'teal',hex: '#14b8a6'}, {key: 'gray',hex: '#6b7280'}, {key: 'black',hex: '#1f2937'}];
@@ -424,7 +427,6 @@
         async function handleDownload(packId, filename, packName) {
             showToast('Starting download...', 'success');
             try {
-                // CHANGE 1: Use an RPC call to increment the download count
                 const { error: rpcError } = await supabase.rpc('increment_download_count', { pack_id: packId });
                 if (rpcError) {
                     console.error("Failed to update download count via RPC:", rpcError);
@@ -471,7 +473,7 @@
             const videoId = getYouTubeVideoId(pack.youtube_url);
             const videoHtml = videoId ? `<div class="youtube-video-container"><iframe src="https://www.youtube.com/embed/${videoId}" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>` : '';
 
-            // CHANGE 3: Restructured title area for new layout
+            // UPDATED HTML structure for the comment section
             pageContainer.innerHTML = `
                 <div class="pack-layout">
                     <div class="pack-main-content">
@@ -530,13 +532,15 @@
                     </aside>
                     <div class="comments-section card">
                         <div class="card-body">
-                            <div class="comment-header-main">
-                                <h3 class="section-title" style="margin:0; border:none;" id="comment-count-display">Comments</h3>
-                            </div>
-                            <div id="comment-form-area"></div>
                             <div class="comments-wrapper" id="comments-wrapper">
-                                <div id="comments-list-container">
-                                    <div class="comments-placeholder" style="display:flex; flex-direction:column; gap:1rem;"><div class="spinner"></div><span>Loading comments...</span></div>
+                                <div class="comments-content-to-blur">
+                                    <div class="comment-header-main">
+                                        <h3 class="section-title" style="margin:0; border:none;" id="comment-count-display">Comments</h3>
+                                    </div>
+                                    <div id="comment-form-area"></div>
+                                    <div id="comments-list-container">
+                                        <div class="comments-placeholder" style="display:flex; flex-direction:column; gap:1rem;"><div class="spinner"></div><span>Loading comments...</span></div>
+                                    </div>
                                 </div>
                                 <div class="comments-login-overlay">
                                     <p>Please login to view the comment section</p>
@@ -568,17 +572,11 @@
                     btn.classList.add('active');
                     const panel = document.getElementById(btn.dataset.tab + '-panel');
                     panel.classList.add('active');
-
-                    if (btn.dataset.tab === 'armor' && !armorPreviewLoaded) {
-                        loadAndProcessPackForArmor(currentPackData);
-                    } else if (btn.dataset.tab === 'items' && !itemsPreviewLoaded) {
-                        loadAndProcessPackForItems(currentPackData);
-                    } else if (btn.dataset.tab === 'gui' && !guiPreviewLoaded) {
-                        loadAndProcessPackForGui(currentPackData);
-                    }
+                    if (btn.dataset.tab === 'armor' && !armorPreviewLoaded) loadAndProcessPackForArmor(currentPackData);
+                    else if (btn.dataset.tab === 'items' && !itemsPreviewLoaded) loadAndProcessPackForItems(currentPackData);
+                    else if (btn.dataset.tab === 'gui' && !guiPreviewLoaded) loadAndProcessPackForGui(currentPackData);
                 });
             });
-            // CHANGE 4: Add listener for the main enchant button
             document.getElementById('item-enchant-btn').addEventListener('click', () => {
                 currentItemPreview.isEnchantActive = !currentItemPreview.isEnchantActive;
                 document.getElementById('item-enchant-btn').classList.toggle('active', currentItemPreview.isEnchantActive);
@@ -711,17 +709,14 @@
                     card.classList.add('active');
                     const key = card.dataset.key;
                     currentItemPreview.key = key;
-                    currentItemPreview.isEnchantActive = false; // Reset enchant on new item click
-
+                    currentItemPreview.isEnchantActive = false;
                     const isEnchantable = ENCHANTABLE_ITEMS.includes(key);
                     const enchantBtn = document.getElementById('item-enchant-btn');
                     enchantBtn.style.display = isEnchantable ? 'flex' : 'none';
                     enchantBtn.classList.remove('active');
-
                     displayItemOnCanvas('item-viewer-canvas', foundAssets.items[key].url, false);
                 });
             });
-
             const diamondSwordCard = itemGrid.querySelector('.item-icon-card[data-key="diamond_sword"]');
             if (diamondSwordCard) {
                 diamondSwordCard.click();
@@ -748,11 +743,8 @@
                     document.querySelectorAll('.gui-selection-item').forEach(el => el.classList.remove('active'));
                     item.classList.add('active');
                     const key = item.dataset.key;
-                    if (GUI_COMPONENTS[key]) {
-                        displayGuiComponent(key);
-                    } else if (foundAssets.gui[key]) {
-                        displayGuiImage(foundAssets.gui[key].url);
-                    }
+                    if (GUI_COMPONENTS[key]) displayGuiComponent(key);
+                    else if (foundAssets.gui[key]) displayGuiImage(foundAssets.gui[key].url);
                 });
             });
             const crosshairItem = guiList.querySelector('.gui-selection-item[data-key="Crosshair"]');
@@ -779,10 +771,7 @@
 
         function getEffectiveScale(resolutionString) {
             const res = parseInt(resolutionString?.replace('x', '') || '16', 10);
-            if (res <= 16) return 1;
-            if (res <= 64) return 2;
-            if (res === 128) return 4;
-            return 8; 
+            if (res <= 16) return 1; if (res <= 64) return 2; if (res === 128) return 4; return 8; 
         }
 
         async function displayGuiComponent(name) {
@@ -805,22 +794,18 @@
 
         function displayGuiImage(url) {
             const imageViewer = document.getElementById('gui-viewer-canvas');
-            imageViewer.src = url;
-            imageViewer.style.transform = 'scale(1)';
+            imageViewer.src = url; imageViewer.style.transform = 'scale(1)';
         }
         
         const loadImage = (url) => new Promise((res, rej) => { const i = new Image(); i.crossOrigin = "Anonymous"; i.onload = () => res(i); i.onerror = rej; i.src = url; });
 
         async function createHudPreview() {
-            const hudCanvas = document.createElement('canvas');
-            hudCanvas.width = 182; hudCanvas.height = 60;
-            const ctx = hudCanvas.getContext('2d');
-            ctx.imageSmoothingEnabled = false;
+            const hudCanvas = document.createElement('canvas'); hudCanvas.width = 182; hudCanvas.height = 60;
+            const ctx = hudCanvas.getContext('2d'); ctx.imageSmoothingEnabled = false;
             const iconsSheet = foundAssets.gui.icons ? await loadImage(foundAssets.gui.icons.url) : null;
             const widgetsSheet = foundAssets.gui.widgets ? await loadImage(foundAssets.gui.widgets.url) : null;
             const effectiveScaleFactor = getEffectiveScale(currentPackData?.resolution);
-            const BASE_ICON_SIZE = 9, BASE_ICON_SPACING = 8, BASE_ICONS_SHEET_RES = 256;
-            const ACTIONBAR_H = 22;
+            const BASE_ICON_SIZE = 9, BASE_ICON_SPACING = 8, BASE_ICONS_SHEET_RES = 256, ACTIONBAR_H = 22;
             if (widgetsSheet) {
                 const S_F_W = widgetsSheet.width / BASE_ICONS_SHEET_RES;
                 ctx.drawImage(widgetsSheet, 0, 0, 182 * S_F_W, ACTIONBAR_H * S_F_W, 0, hudCanvas.height - ACTIONBAR_H, 182, ACTIONBAR_H);
@@ -854,8 +839,7 @@
             ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1; ctx.shadowBlur = 1;
             const levelText = '17'; const textWidth = ctx.measureText(levelText).width;
             ctx.fillText(levelText, (hudCanvas.width / 2) - (textWidth / 2), hudCanvas.height - ACTIONBAR_H + 9); 
-            ctx.shadowColor = "transparent";
-            return hudCanvas;
+            ctx.shadowColor = "transparent"; return hudCanvas;
         }
 
         async function createCrosshairPreview(iconsSheetUrl) {
@@ -915,8 +899,7 @@
                 for (const path of allArmorPaths) {
                     const file = zip.file(path);
                     if (file) {
-                        const blob = await file.async('blob');
-                        const url = URL.createObjectURL(blob);
+                        const blob = await file.async('blob'); const url = URL.createObjectURL(blob);
                         let name = path.split('/').pop().replace(/(_1|_2|_layer_1|_layer_2)\.png$/, '');
                         if (name === 'chainmail') name = 'chain';
                         const layer = path.includes('_2') || path.includes('layer_2') ? 'layer2' : 'layer1';
@@ -951,19 +934,15 @@
         async function applyArmor(armorSet) {
             if (!skinViewer) return;
             let skinUrl = 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png';
-            if (armorSet.layer1 && armorSet.layer2) {
-                skinUrl = await combineArmorLayers(armorSet.layer1, armorSet.layer2);
-            } else if (armorSet.layer1 || armorSet.layer2) {
-                skinUrl = armorSet.layer1 || armorSet.layer2;
-            }
+            if (armorSet.layer1 && armorSet.layer2) skinUrl = await combineArmorLayers(armorSet.layer1, armorSet.layer2);
+            else if (armorSet.layer1 || armorSet.layer2) skinUrl = armorSet.layer1 || armorSet.layer2;
             if (skinUrl) skinViewer.loadSkin(skinUrl);
         }
 
         async function combineArmorLayers(url1, url2) {
             const [img1, img2] = await Promise.all([loadImage(url1), loadImage(url2)]);
             const canvas = document.createElement('canvas');
-            canvas.width = Math.max(img1.width, img2.width);
-            canvas.height = Math.max(img1.height, img2.height);
+            canvas.width = Math.max(img1.width, img2.width); canvas.height = Math.max(img1.height, img2.height);
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img1, 0, 0); ctx.drawImage(img2, 0, 0);
             return new Promise(res => canvas.toBlob(b => res(URL.createObjectURL(b)), 'image/png'));
@@ -989,12 +968,9 @@
             document.querySelector('.mobile-nav-sidebar')?.remove();
             document.querySelector('.mobile-nav-backdrop')?.remove();
             const hamburgerBtn = document.createElement('button');
-            hamburgerBtn.className = 'mobile-nav-toggle';
-            hamburgerBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
-            const sidebar = document.createElement('div');
-            sidebar.className = 'mobile-nav-sidebar';
-            const backdrop = document.createElement('div');
-            backdrop.className = 'mobile-nav-backdrop';
+            hamburgerBtn.className = 'mobile-nav-toggle'; hamburgerBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
+            const sidebar = document.createElement('div'); sidebar.className = 'mobile-nav-sidebar';
+            const backdrop = document.createElement('div'); backdrop.className = 'mobile-nav-backdrop';
             let userHeader, mainLinks, footerLinks;
             if (profile && user) {
                 const avatarSrc = profile.avatar_url ? profile.avatar_url : `https://placehold.co/60x60/1c1c1c/de212a?text=${profile.username.charAt(0).toUpperCase()}`;
@@ -1007,30 +983,20 @@
                 footerLinks = `<a href="/login.html"><i class="fa-solid fa-right-to-bracket"></i><span>Login</span></a><a href="/signup.html" class="primary-mobile-link"><i class="fa-solid fa-user-plus"></i><span>Sign Up</span></a>`;
             }
             sidebar.innerHTML = `<button class="mobile-nav-close"><i class="fa-solid fa-xmark"></i></button>${userHeader}<nav class="mobile-nav-main-links">${mainLinks}</nav><nav class="mobile-nav-footer-links">${footerLinks}</nav>`;
-            navContainer.appendChild(hamburgerBtn);
-            document.body.appendChild(sidebar);
-            document.body.appendChild(backdrop);
+            navContainer.appendChild(hamburgerBtn); document.body.appendChild(sidebar); document.body.appendChild(backdrop);
             const openMenu = () => { sidebar.classList.add('show'); backdrop.classList.add('show'); };
             const closeMenu = () => { sidebar.classList.remove('show'); backdrop.classList.remove('show'); };
-            hamburgerBtn.addEventListener('click', openMenu);
-            sidebar.querySelector('.mobile-nav-close').addEventListener('click', closeMenu);
-            backdrop.addEventListener('click', closeMenu);
+            hamburgerBtn.addEventListener('click', openMenu); sidebar.querySelector('.mobile-nav-close').addEventListener('click', closeMenu); backdrop.addEventListener('click', closeMenu);
             if (profile) sidebar.querySelector('#mobile-logout-btn')?.addEventListener('click', async (e) => { e.preventDefault(); await supabase.auth.signOut(); });
         }
 
         function timeAgo(date) {
-            const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-            let interval = seconds / 31536000;
-            if (interval > 1) return Math.floor(interval) + " years ago";
-            interval = seconds / 2592000;
-            if (interval > 1) return Math.floor(interval) + " months ago";
-            interval = seconds / 86400;
-            if (interval > 1) return Math.floor(interval) + " days ago";
-            interval = seconds / 3600;
-            if (interval > 1) return Math.floor(interval) + " hours ago";
-            interval = seconds / 60;
-            if (interval > 1) return Math.floor(interval) + " minutes ago";
-            return "just now";
+            const seconds = Math.floor((new Date() - new Date(date)) / 1000); let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + " years ago"; interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + " months ago"; interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + " days ago"; interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + " hours ago"; interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + " minutes ago"; return "just now";
         }
         
         async function loadAndListenForComments(packId) {
@@ -1043,106 +1009,45 @@
                 renderComments(commentsCache);
             }
             renderCommentForm();
-
             supabase.channel(`comments-for-pack-${packId}`)
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'packs_comments', filter: `pack_id=eq.${packId}` }, 
-                (payload) => {
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'packs_comments', filter: `pack_id=eq.${packId}` }, (payload) => {
                     switch (payload.eventType) {
                         case 'INSERT': commentsCache.unshift(payload.new); break;
                         case 'UPDATE':
                             const indexToUpdate = commentsCache.findIndex(c => c.id === payload.new.id);
                             if (indexToUpdate > -1) commentsCache[indexToUpdate] = payload.new;
                             break;
-                        case 'DELETE':
-                            // The smooth delete is handled optimistically now, but we still update the cache from the subscription as a fallback.
-                            handleRecursiveDeleteFromCache(payload.old.id);
-                            break;
+                        case 'DELETE': handleRecursiveDeleteFromCache(payload.old.id); break;
                     }
                     commentsCache.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                     renderComments(commentsCache);
-                })
-                .subscribe();
+                }).subscribe();
         }
 
         function renderComments(comments) {
-            const wrapper = document.getElementById('comments-wrapper');
-            const container = document.getElementById('comments-list-container');
+            const wrapper = document.getElementById('comments-wrapper'); const container = document.getElementById('comments-list-container');
             const countDisplay = document.getElementById('comment-count-display');
             if (!container || !countDisplay || !wrapper) return;
-
-            // CHANGE 2: Handle UI for non-logged-in users
-            if (!loggedInUser) {
-                wrapper.classList.add('blurred');
-            } else {
-                wrapper.classList.remove('blurred');
-            }
-
+            wrapper.classList.toggle('blurred', !loggedInUser);
             countDisplay.textContent = `${comments.length} Comment${comments.length !== 1 ? 's' : ''}`;
             if (comments.length === 0) {
                 container.innerHTML = '<p class="tiny" style="text-align:center;">Be the first to comment!</p>';
                 return;
             }
-
             const commentsByParent = comments.reduce((acc, comment) => {
-                const parent = comment.parent_id || 'root';
-                if (!acc[parent]) acc[parent] = [];
-                acc[parent].push(comment);
-                return acc;
+                const parent = comment.parent_id || 'root'; if (!acc[parent]) acc[parent] = []; acc[parent].push(comment); return acc;
             }, {});
-
             const createCommentHtml = (comment) => {
                 const avatar = comment.author_avatar_url || `https://placehold.co/40x40/1c1c1c/de212a?text=${(comment.author_username || '?').charAt(0).toUpperCase()}`;
                 const replies = commentsByParent[comment.id] || [];
                 const isLiked = loggedInUser && (comment.likes || []).includes(loggedInUser.id);
                 const isDisliked = loggedInUser && (comment.dislikes || []).includes(loggedInUser.id);
-                
-                // CHANGE 6: Moved options menu into the header
                 let optionsMenu = '';
                 if(loggedInUser && (loggedInUser.id === comment.author_id || currentUserRole === 'admin')) {
-                    optionsMenu = `
-                        <div class="comment-options">
-                            <button class="comment-options-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                            <div class="comment-options-menu">
-                                <button class="delete-btn" data-comment-id="${comment.id}" data-author-id="${comment.author_id}"><i class="fa-solid fa-trash-can"></i> Delete</button>
-                            </div>
-                        </div>`;
+                    optionsMenu = `<div class="comment-options"><button class="comment-options-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button><div class="comment-options-menu"><button class="delete-btn" data-comment-id="${comment.id}" data-author-id="${comment.author_id}"><i class="fa-solid fa-trash-can"></i> Delete</button></div></div>`;
                 }
-
-                return `
-                    <div class="comment-thread" id="comment-thread-${comment.id}">
-                        <div class="comment">
-                            <a href="/profile.html?user=${escapeHtml(comment.author_username)}"><img src="${avatar}" alt="${escapeHtml(comment.author_username)}'s avatar" class="comment-avatar"></a>
-                            <div class="comment-content">
-                                <div class="comment-header">
-                                    <a href="/profile.html?user=${escapeHtml(comment.author_username)}" class="comment-author">${escapeHtml(comment.author_username)}</a>
-                                    <span class="comment-timestamp">${timeAgo(comment.created_at)}</span>
-                                    ${optionsMenu}
-                                </div>
-                                <p class="comment-body">${escapeHtml(comment.content)}</p>
-                                <div class="comment-footer">
-                                    <div class="comment-actions">
-                                        <button class="comment-action-btn like-btn ${isLiked ? 'liked' : ''}" data-comment-id="${comment.id}">
-                                            <i class="fa-solid fa-thumbs-up"></i>
-                                            <span>${(comment.likes || []).length}</span>
-                                        </button>
-                                        <button class="comment-action-btn dislike-btn ${isDisliked ? 'disliked' : ''}" data-comment-id="${comment.id}">
-                                            <i class="fa-solid fa-thumbs-down"></i>
-                                            <span>${(comment.dislikes || []).length}</span>
-                                        </button>
-                                        <button class="comment-action-btn reply-btn" data-comment-id="${comment.id}">
-                                            <i class="fa-solid fa-reply"></i>
-                                            <span>Reply</span>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="reply-form-container" id="reply-form-container-${comment.id}"></div>
-                            </div>
-                        </div>
-                        ${replies.length > 0 ? `<div class="replies">${replies.map(createCommentHtml).join('')}</div>` : ''}
-                    </div>
-                `;
+                return `<div class="comment-thread" id="comment-thread-${comment.id}"><div class="comment"><a href="/profile.html?user=${escapeHtml(comment.author_username)}"><img src="${avatar}" alt="${escapeHtml(comment.author_username)}'s avatar" class="comment-avatar"></a><div class="comment-content"><div class="comment-header"><a href="/profile.html?user=${escapeHtml(comment.author_username)}" class="comment-author">${escapeHtml(comment.author_username)}</a><span class="comment-timestamp">${timeAgo(comment.created_at)}</span>${optionsMenu}</div><p class="comment-body">${escapeHtml(comment.content)}</p><div class="comment-footer"><div class="comment-actions"><button class="comment-action-btn like-btn ${isLiked ? 'liked' : ''}" data-comment-id="${comment.id}"><i class="fa-solid fa-thumbs-up"></i><span>${(comment.likes || []).length}</span></button><button class="comment-action-btn dislike-btn ${isDisliked ? 'disliked' : ''}" data-comment-id="${comment.id}"><i class="fa-solid fa-thumbs-down"></i><span>${(comment.dislikes || []).length}</span></button><button class="comment-action-btn reply-btn" data-comment-id="${comment.id}"><i class="fa-solid fa-reply"></i><span>Reply</span></button></div></div><div class="reply-form-container" id="reply-form-container-${comment.id}"></div></div></div>${replies.length > 0 ? `<div class="replies">${replies.map(createCommentHtml).join('')}</div>` : ''}</div>`;
             };
-
             const topLevelComments = commentsByParent['root'] || [];
             container.innerHTML = `<div class="comments-list">${topLevelComments.map(createCommentHtml).join('')}</div>`;
             addCommentEventListeners();
@@ -1151,138 +1056,68 @@
         function renderCommentForm(parentId = null, containerEl = null) {
             const targetContainer = containerEl || document.getElementById('comment-form-area');
             if (!targetContainer) return;
-            // CHANGE 7: Updated placeholder text
             const placeholder = parentId ? "Write a reply..." : "Enjoyed the pack? Leave a review or ask a question!";
-            
             if (loggedInProfile && loggedInUser) {
                  const avatar = loggedInProfile.avatar_url || `https://placehold.co/40x40/1c1c1c/de212a?text=${loggedInProfile.username.charAt(0).toUpperCase()}`;
-                targetContainer.innerHTML = `
-                    <div class="comment-form-container">
-                        <img src="${avatar}" alt="Your avatar" class="comment-avatar">
-                        <form class="comment-form" data-parent-id="${parentId || ''}">
-                            <textarea class="comment-textarea" placeholder="${placeholder}" required></textarea>
-                            <div class="comment-form-actions">
-                                ${parentId ? `<button type="button" class="btn ghost cancel-reply-btn" style="padding: .5rem 1rem;">Cancel</button>`: ''}
-                                <button type="submit" class="btn primary" style="padding: .5rem 1rem;">Post</button>
-                            </div>
-                        </form>
-                    </div>`;
+                targetContainer.innerHTML = `<div class="comment-form-container"><img src="${avatar}" alt="Your avatar" class="comment-avatar"><form class="comment-form" data-parent-id="${parentId || ''}"><textarea class="comment-textarea" placeholder="${placeholder}" required></textarea><div class="comment-form-actions">${parentId ? `<button type="button" class="btn ghost cancel-reply-btn" style="padding: .5rem 1rem;">Cancel</button>`: ''}<button type="submit" class="btn primary" style="padding: .5rem 1rem;">Post</button></div></form></div>`;
                 targetContainer.querySelector('form').addEventListener('submit', handleCommentSubmit);
                 if(parentId) targetContainer.querySelector('.cancel-reply-btn').addEventListener('click', () => targetContainer.innerHTML = '');
             } else {
-                 targetContainer.innerHTML = `
-                    <div class="comment-form-container">
-                        <div class="comment-avatar" style="background:var(--bg-2); display:grid; place-items:center;"><i class="fa-solid fa-user"></i></div>
-                        <div class="comment-form">
-                            <textarea class="comment-textarea" placeholder="Please log in to leave a review" disabled></textarea>
-                            <div class="comment-form-actions">
-                                <a href="/login.html" class="btn primary" style="padding: .5rem 1rem;">Login to Review</a>
-                            </div>
-                        </div>
-                    </div>`;
+                 // UPDATED: No redundant button for logged-out users
+                 targetContainer.innerHTML = `<div class="comment-form-container"><div class="comment-avatar" style="background:var(--bg-2); display:grid; place-items:center;"><i class="fa-solid fa-user"></i></div><div class="comment-form"><textarea class="comment-textarea" placeholder="Please log in to leave a review" disabled></textarea></div></div>`;
             }
         }
         
         async function handleCommentSubmit(event) {
             event.preventDefault();
-            const form = event.target;
-            const textarea = form.querySelector('textarea');
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const content = textarea.value.trim();
-            const parentIdStr = form.dataset.parentId;
-            const parentId = parentIdStr ? parseInt(parentIdStr, 10) : null;
+            const form = event.target; const textarea = form.querySelector('textarea'); const submitBtn = form.querySelector('button[type="submit"]');
+            const content = textarea.value.trim(); const parentIdStr = form.dataset.parentId; const parentId = parentIdStr ? parseInt(parentIdStr, 10) : null;
             if (!content || !loggedInUser || !loggedInProfile) return;
             submitBtn.disabled = true;
-            const { error } = await supabase.from('packs_comments').insert({
-                pack_id: currentPackData.id, content: content, author_id: loggedInUser.id,
-                author_username: loggedInProfile.username, author_avatar_url: loggedInProfile.avatar_url, parent_id: parentId
-            });
+            const { error } = await supabase.from('packs_comments').insert({ pack_id: currentPackData.id, content: content, author_id: loggedInUser.id, author_username: loggedInProfile.username, author_avatar_url: loggedInProfile.avatar_url, parent_id: parentId });
             submitBtn.disabled = false;
-            if (error) {
-                showToast('Failed to post comment: ' + error.message, 'error');
-            } else {
-                form.reset();
-                if(parentId) document.getElementById(`reply-form-container-${parentId}`).innerHTML = '';
-            }
+            if (error) { showToast('Failed to post comment: ' + error.message, 'error'); } else { form.reset(); if(parentId) document.getElementById(`reply-form-container-${parentId}`).innerHTML = ''; }
         }
         
         function addCommentEventListeners() {
-            document.querySelectorAll('.reply-btn').forEach(btn => btn.addEventListener('click', () => {
-                if(!loggedInUser) return showToast('You must be logged in to reply.', 'error');
-                const commentId = btn.dataset.commentId;
-                document.querySelectorAll('.reply-form-container').forEach(c => c.innerHTML = '');
-                renderCommentForm(commentId, document.getElementById(`reply-form-container-${commentId}`));
-            }));
+            document.querySelectorAll('.reply-btn').forEach(btn => btn.addEventListener('click', () => { if(!loggedInUser) return showToast('You must be logged in to reply.', 'error'); const commentId = btn.dataset.commentId; document.querySelectorAll('.reply-form-container').forEach(c => c.innerHTML = ''); renderCommentForm(commentId, document.getElementById(`reply-form-container-${commentId}`)); }));
             document.querySelectorAll('.like-btn').forEach(btn => btn.addEventListener('click', () => handleLikeDislike(btn.dataset.commentId, 'like')));
             document.querySelectorAll('.dislike-btn').forEach(btn => btn.addEventListener('click', () => handleLikeDislike(btn.dataset.commentId, 'dislike')));
             document.querySelectorAll('.comment-options-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const menu = btn.nextElementSibling;
-                    const isVisible = menu.classList.contains('show');
-                    document.querySelectorAll('.comment-options-menu').forEach(m => m.classList.remove('show'));
-                    if(!isVisible) menu.classList.add('show');
-                });
+                btn.addEventListener('click', (e) => { e.stopPropagation(); const menu = btn.nextElementSibling; const isVisible = menu.classList.contains('show'); document.querySelectorAll('.comment-options-menu').forEach(m => m.classList.remove('show')); if(!isVisible) menu.classList.add('show'); });
             });
             document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', () => handleDeleteComment(btn.dataset.commentId, btn.dataset.authorId)));
         }
         
-        // CHANGE 7: Combined like/dislike handler
         async function handleLikeDislike(commentId, action) {
             if (!loggedInUser) return showToast('You must be logged in to vote.', 'error');
-            const comment = commentsCache.find(c => c.id == commentId);
-            if (!comment) return;
-
-            const likes = new Set(comment.likes || []);
-            const dislikes = new Set(comment.dislikes || []);
-            const userId = loggedInUser.id;
-
-            if (action === 'like') {
-                if (likes.has(userId)) likes.delete(userId);
-                else likes.add(userId);
-                dislikes.delete(userId); // A like removes a dislike
-            } else if (action === 'dislike') {
-                if (dislikes.has(userId)) dislikes.delete(userId);
-                else dislikes.add(userId);
-                likes.delete(userId); // A dislike removes a like
-            }
-
-            const { error } = await supabase.from('packs_comments').update({
-                likes: [...likes],
-                dislikes: [...dislikes]
-            }).eq('id', commentId);
-
+            const comment = commentsCache.find(c => c.id == commentId); if (!comment) return;
+            const likes = new Set(comment.likes || []); const dislikes = new Set(comment.dislikes || []); const userId = loggedInUser.id;
+            if (action === 'like') { if (likes.has(userId)) likes.delete(userId); else likes.add(userId); dislikes.delete(userId); } 
+            else if (action === 'dislike') { if (dislikes.has(userId)) dislikes.delete(userId); else dislikes.add(userId); likes.delete(userId); }
+            const { error } = await supabase.from('packs_comments').update({ likes: [...likes], dislikes: [...dislikes] }).eq('id', commentId);
             if (error) showToast('Failed to update vote.', 'error');
         }
 
-        // CHANGE 8: Smooth deletion logic
         function handleRecursiveDeleteFromCache(commentId) {
             const idsToDelete = new Set([parseInt(commentId, 10)]);
             const findChildren = (parentId) => {
                 const children = commentsCache.filter(c => c.parent_id === parentId);
-                for (const child of children) {
-                    idsToDelete.add(child.id);
-                    findChildren(child.id);
-                }
+                for (const child of children) { idsToDelete.add(child.id); findChildren(child.id); }
             };
             findChildren(parseInt(commentId, 10));
             commentsCache = commentsCache.filter(c => !idsToDelete.has(c.id));
         }
 
         async function handleDeleteComment(commentId, authorId) {
-            if (!loggedInUser || (loggedInUser.id !== authorId && currentUserRole !== 'admin')) {
-                return showToast('You can only delete your own comments.', 'error');
-            }
+            if (!loggedInUser || (loggedInUser.id !== authorId && currentUserRole !== 'admin')) return showToast('You can only delete your own comments.', 'error');
             showConfirmation('Are you sure you want to permanently delete this comment and all its replies?', async () => {
                 const { error } = await supabase.from('packs_comments').delete().eq('id', commentId);
-                if (error) {
-                    showToast('Failed to delete comment: ' + error.message, 'error');
-                } else {
-                    // Optimistic UI update for smooth deletion
+                if (error) { showToast('Failed to delete comment: ' + error.message, 'error'); } 
+                else {
                     document.getElementById(`comment-thread-${commentId}`)?.remove();
                     handleRecursiveDeleteFromCache(commentId);
-                    renderComments(commentsCache); // Re-render to update counts and state
-                    showToast('Comment deleted.', 'success');
+                    renderComments(commentsCache); showToast('Comment deleted.', 'success');
                 }
             });
         }
@@ -1290,22 +1125,16 @@
         function showConfirmation(message, onConfirm) {
             const modal = document.getElementById('confirmation-modal');
             modal.querySelector('#confirmation-message').textContent = message;
-            confirmCallback = onConfirm;
-            modal.classList.add('show');
+            confirmCallback = onConfirm; modal.classList.add('show');
         }
         
         function renderStarRating() {
             const container = document.getElementById('star-rating-container');
             if (!container || !currentPackData) return;
-            const ratings = currentPackData.ratings || {};
-            const ratingValues = Object.values(ratings);
+            const ratings = currentPackData.ratings || {}; const ratingValues = Object.values(ratings);
             const average = ratingValues.length > 0 ? (ratingValues.reduce((a, b) => a + b, 0) / ratingValues.length) : 0;
-            const totalRatings = ratingValues.length;
-            let starsHtml = '';
-            for (let i = 1; i <= 5; i++) {
-                const isFull = i <= Math.round(average);
-                starsHtml += `<i class="fa-${isFull ? 'solid' : 'regular'} fa-star" data-value="${i}"></i>`;
-            }
+            const totalRatings = ratingValues.length; let starsHtml = '';
+            for (let i = 1; i <= 5; i++) { const isFull = i <= Math.round(average); starsHtml += `<i class="fa-${isFull ? 'solid' : 'regular'} fa-star" data-value="${i}"></i>`; }
             container.innerHTML = `<div class="star-rating-display"><div class="stars ${loggedInUser ? 'interactive' : ''}">${starsHtml}</div><span class="rating-text">${average.toFixed(1)} (${totalRatings} reviews)</span></div>`;
             if(loggedInUser) {
                 const stars = container.querySelectorAll('.fa-star');
@@ -1322,19 +1151,13 @@
             const currentRatings = currentPackData.ratings || {};
             currentRatings[loggedInUser.id] = parseInt(ratingValue, 10);
             const { data, error } = await supabase.from('packs').update({ ratings: currentRatings }).eq('id', currentPackData.id).select().single();
-            if (error) {
-                showToast('Failed to submit rating.', 'error');
-            } else {
-                currentPackData = data;
-                renderStarRating();
-                showToast('Your rating has been submitted!', 'success');
-            }
+            if (error) { showToast('Failed to submit rating.', 'error'); } 
+            else { currentPackData = data; renderStarRating(); showToast('Your rating has been submitted!', 'success'); }
         }
 
         document.addEventListener('auth-ready', async (event) => {
             const { user, profile } = event.detail;
-            loggedInUser = user;
-            loggedInProfile = profile;
+            loggedInUser = user; loggedInProfile = profile;
             const navActions = document.getElementById('nav-actions');
             if (user && profile) {
                 currentUserRole = profile.role;
@@ -1362,8 +1185,7 @@
         document.getElementById('cancel-confirmation-btn')?.addEventListener('click', () => { document.getElementById('confirmation-modal').classList.remove('show'); confirmCallback = null; });
         document.getElementById('confirm-action-btn')?.addEventListener('click', () => { if (confirmCallback) confirmCallback(); document.getElementById('confirmation-modal').classList.remove('show'); confirmCallback = null; });
         window.openEditPackModal = function() {
-            const modal = document.getElementById('edit-pack-modal');
-            if (!currentPackData || !modal) return;
+            const modal = document.getElementById('edit-pack-modal'); if (!currentPackData || !modal) return;
             document.getElementById('edit-pack-id').value = currentPackData.id;
             document.getElementById('edit-pack-name').value = currentPackData.name || '';
             document.getElementById('edit-pack-description').value = currentPackData.description || '';
@@ -1382,20 +1204,11 @@
         }
         window.closeEditPackModal = function() { document.getElementById('edit-pack-modal').classList.remove('show'); }
         document.getElementById('edit-pack-form')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const packId = document.getElementById('edit-pack-id').value;
-            const updates = {
-                name: document.getElementById('edit-pack-name').value.trim(), description: document.getElementById('edit-pack-description').value.trim(),
-                youtube_url: document.getElementById('edit-youtube-url').value.trim() || null, color: document.querySelector('#edit-pack-colors .swatch.active')?.dataset.color || 'none',
-                resolution: document.querySelector('#edit-pack-resolutions .tag-checkbox.selected')?.dataset.res || null, tags: Array.from(document.querySelectorAll('#edit-pack-tags .tag-checkbox.selected')).map(el => el.dataset.tag).join(',')
-            };
-            try {
-                const { error } = await supabase.from('packs').update(updates).eq('id', packId);
-                if (error) throw error;
-                showToast('Pack updated successfully!', 'success');
-                closeEditPackModal(); await loadPack();
-            } catch (error) { showToast('Failed to update pack: ' + error.message, 'error'); }
+            e.preventDefault(); const packId = document.getElementById('edit-pack-id').value;
+            const updates = { name: document.getElementById('edit-pack-name').value.trim(), description: document.getElementById('edit-pack-description').value.trim(), youtube_url: document.getElementById('edit-youtube-url').value.trim() || null, color: document.querySelector('#edit-pack-colors .swatch.active')?.dataset.color || 'none', resolution: document.querySelector('#edit-pack-resolutions .tag-checkbox.selected')?.dataset.res || null, tags: Array.from(document.querySelectorAll('#edit-pack-tags .tag-checkbox.selected')).map(el => el.dataset.tag).join(',') };
+            try { const { error } = await supabase.from('packs').update(updates).eq('id', packId); if (error) throw error; showToast('Pack updated successfully!', 'success'); closeEditPackModal(); await loadPack(); } catch (error) { showToast('Failed to update pack: ' + error.message, 'error'); }
         });
     </script>
 </body>
 </html>
+
