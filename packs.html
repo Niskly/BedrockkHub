@@ -168,7 +168,6 @@
         .comment-header-main { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
         #comment-count-display { font-weight: 700; color: var(--muted); }
         
-        /* UPDATED BLUR STYLES */
         .comments-wrapper { position: relative; }
         .comments-wrapper.blurred .comments-content-to-blur {
             filter: blur(5px);
@@ -232,23 +231,14 @@
         .star-rating-display .stars .fa-star:hover { transform: scale(1.2); }
         .star-rating-display .rating-text { font-size: 0.9rem; font-weight: 600; color: var(--muted); }
         
-        /* New Item Sub-category styles */
         .item-category-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); }
         .item-category-tabs .preview-tab-btn { border-bottom: 2px solid transparent; margin-bottom: -1px; }
 
-        /* New Tool Variant styles */
         .tool-variant-list { display: flex; gap: 0.5rem; margin: 1rem 0; justify-content: center; flex-wrap: wrap; }
         .tool-variant-item { width: 40px; height: 40px; background: var(--bg-2); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s ease; display: grid; place-items: center; padding: 4px; }
         .tool-variant-item img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
         .tool-variant-item:hover { border-color: var(--text); }
         .tool-variant-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); }
-        
-        /* New Sky Preview styles */
-        #sky-panel .sky-preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .sky-preview-box { aspect-ratio: 1/1; border-radius: 12px; background-size: cover; background-position: center; background-color: var(--bg-2); border: 1px solid var(--border); text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
-        .sky-preview-box h4 { margin: 0; padding: 0.5rem; background: rgba(0,0,0,0.4); border-radius: 8px; font-size: 0.9rem; }
-        .sky-preview-box .preview-placeholder-text { position: absolute; }
-        .sky-preview-box img.sky-object { position: absolute; image-rendering: pixelated; }
 
         @media (min-width: 993px) {
             .pack-layout {
@@ -363,14 +353,13 @@
         let armorPreviewLoaded = false;
         let itemsPreviewLoaded = false;
         let guiPreviewLoaded = false;
-        let skyPreviewLoaded = false;
         
         let foundArmorAssets = {};
         let foundAssets = { items: {}, gui: {}, sky: {} };
         let commentsCache = [];
         let confirmCallback = null;
         
-        const ENCHANTABLE_ITEMS = ['diamond_sword', 'netherite_sword', 'iron_sword', 'golden_sword', 'wooden_sword', 'bow', 'crossbow_standby', 'golden_apple', 'enchanted_golden_apple'];
+        const ENCHANTABLE_ITEMS = ['wooden_sword','stone_sword','iron_sword','golden_sword','diamond_sword','netherite_sword','wooden_pickaxe','stone_pickaxe','iron_pickaxe','golden_pickaxe','diamond_pickaxe','netherite_pickaxe','wooden_axe','stone_axe','iron_axe','golden_axe','diamond_axe','netherite_axe','wooden_shovel','stone_shovel','iron_shovel','golden_shovel','diamond_shovel','netherite_shovel','wooden_hoe','stone_hoe','iron_hoe','golden_hoe','diamond_hoe','netherite_hoe','bow','golden_apple','enchanted_golden_apple'];
         let currentItemPreview = { key: null, isEnchantActive: false };
 
         const ALL_TAGS = ['pvp', 'bedwars', 'skywars', 'anime', 'crystal pvp', 'survival', 'visual'];
@@ -388,8 +377,8 @@
         };
         
         const TOOL_VARIANT_ICONS = {
-            'wooden': 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/spruce_planks.png',
-            'stone': 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/cobblestone.png',
+            'wooden': 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/wood.png',
+            'stone': 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/stone.png',
             'iron': ARMOR_ICONS.iron,
             'golden': 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/gold_ingot.png',
             'diamond': ARMOR_ICONS.diamond,
@@ -435,7 +424,7 @@
             // Blocks
             'cobblestone': { path: 'cobblestone.png', type: 'block', category: 'Blocks' },
             'spruce_log': { path: 'spruce_log.png', type: 'block', category: 'Blocks' },
-            'white_wool': { path: 'white_wool.png', type: 'block', category: 'Blocks' },
+            'white_wool': { path: 'wool_colored_white.png', altPath: 'white_wool.png', type: 'block', category: 'Blocks' },
             'stone': { path: 'stone.png', type: 'block', category: 'Blocks' },
             'clay': { path: 'clay.png', type: 'block', category: 'Blocks' },
             'coal_ore': { path: 'coal_ore.png', type: 'block', category: 'Blocks' },
@@ -448,39 +437,44 @@
             'ancient_debris': { path: 'ancient_debris_side.png', type: 'block', category: 'Blocks' },
             
             // Nature
-            'water_bucket': { path: 'water_bucket.png', type: 'item', category: 'Nature' },
-            'lava_bucket': { path: 'lava_bucket.png', type: 'item', category: 'Nature' },
+            'water_bucket': { path: 'bucket_water.png', altPath: 'water_bucket.png', type: 'item', category: 'Nature' },
+            'lava_bucket': { path: 'bucket_lava.png', altPath: 'lava_bucket.png', type: 'item', category: 'Nature' },
             'golden_apple': { path: 'apple_golden.png', type: 'item', category: 'Nature' },
             'enchanted_golden_apple': { path: 'apple_golden.png', type: 'item', category: 'Nature' },
             'totem_of_undying': { path: 'totem.png', type: 'item', category: 'Nature' },
             'ender_pearl': { path: 'ender_pearl.png', type: 'item', category: 'Nature' },
-            'potion': { path: 'potion_overlay.png', type: 'item', category: 'Nature', isOverlay: true },
-            'splash_potion': { path: 'splash_potion.png', type: 'item', category: 'Nature' },
+            'potion_drinkable_base': { path: 'potion_bottle_drinkable.png', type: 'item', category: 'Nature', isComponent: true },
+            'potion_splash_base': { path: 'potion_bottle_splash.png', type: 'item', category: 'Nature', isComponent: true },
+            'potion_liquid': { path: 'potion_overlay.png', type: 'item', category: 'Nature', isComponent: true },
+            'potion_drinkable': { type: 'item', category: 'Nature', isComposite: true, base: 'potion_drinkable_base', overlay: 'potion_liquid' },
+            'potion_splash': { type: 'item', category: 'Nature', isComposite: true, base: 'potion_splash_base', overlay: 'potion_liquid' },
         };
 
         const GUI_PATHS = { 
             'icons': 'icons.png', 
             'widgets': 'widgets.png',
-            'panorama_overlay': 'panorama_overlay.png'
-        };
-
-        const SKY_PATHS = {
+            'panorama_overlay': 'panorama_overlay.png',
+            // Sky assets now grouped with GUI
             'day_sky': 'sky0.png',
-            'night_sky': 'sky1.png', // Often used for night
+            'night_sky': 'sky1.png',
             'sun': 'sun.png',
             'moon': 'moon_phases.png'
         };
 
         const GUI_COMPONENTS = { 
             'Full HUD': { type: 'hud' },
-            'Crosshair': { type: 'crosshair' }
+            'Crosshair': { type: 'crosshair' },
+            'Day Sky': { type: 'sky', skyType: 'day' },
+            'Night Sky': { type: 'sky', skyType: 'night' }
         };
 
         const GUI_PREVIEW_ICONS = {
             'Full HUD': '<i class="fa-solid fa-layer-group"></i>',
             'Crosshair': '<i class="fa-solid fa-crosshairs"></i>',
             'icons': '<i class="fa-solid fa-gem"></i>',
-            'widgets': '<i class="fa-solid fa-sliders"></i>'
+            'widgets': '<i class="fa-solid fa-sliders"></i>',
+            'Day Sky': '<i class="fa-solid fa-sun"></i>',
+            'Night Sky': '<i class="fa-solid fa-moon"></i>'
         };
 
         function showToast(message, type = 'success') {
@@ -592,7 +586,6 @@
                                     <button class="preview-tab-btn active" data-tab="armor"><i class="fa-solid fa-shield"></i> Armor</button>
                                     <button class="preview-tab-btn" data-tab="items"><i class="fa-solid fa-diamond"></i> Items</button>
                                     <button class="preview-tab-btn" data-tab="gui"><i class="fa-solid fa-desktop"></i> GUI</button>
-                                    <button class="preview-tab-btn" data-tab="sky"><i class="fa-solid fa-sun"></i> Sky</button>
                                 </div>
                                 <div id="armor-panel" class="preview-panel active">
                                     <div class="skin-viewer-wrapper">
@@ -623,13 +616,6 @@
                                         <div id="gui-list" class="gui-selection-list"></div>
                                         <div id="gui-loader"><p class="preview-placeholder-text">Click tab to load preview</p></div>
                                     </div>
-                                </div>
-                                <div id="sky-panel" class="preview-panel">
-                                     <div id="sky-preview-grid" class="sky-preview-grid">
-                                        <div id="day-sky-preview" class="sky-preview-box"><h4>Day</h4></div>
-                                        <div id="night-sky-preview" class="sky-preview-box"><h4>Night</h4></div>
-                                     </div>
-                                     <div id="sky-loader"><p class="preview-placeholder-text">Click tab to load preview</p></div>
                                 </div>
                             </div>
                         </div>
@@ -683,7 +669,6 @@
                          if (btn.dataset.tab === 'armor' && !armorPreviewLoaded) loadAndProcessPackForArmor(currentPackData);
                          else if (btn.dataset.tab === 'items' && !itemsPreviewLoaded) loadAndProcessPackForItems(currentPackData);
                          else if (btn.dataset.tab === 'gui' && !guiPreviewLoaded) loadAndProcessPackForGui(currentPackData);
-                         else if (btn.dataset.tab === 'sky' && !skyPreviewLoaded) loadAndProcessPackForSky(currentPackData);
                     } else if (btn.closest('.item-category-tabs')) {
                         renderItemGrid(btn.dataset.category);
                     }
@@ -717,30 +702,36 @@
             return '';
         }
 
-        async function findGenericAsset(zip, filename, type) {
+        async function findGenericAsset(zip, filename, type, altFilename = null) {
             const basePath = await findBasePath(zip);
             const potentialPaths = new Set();
-            if (type === 'item') {
-                potentialPaths.add(`${basePath}assets/minecraft/textures/item/${filename}`);
-                potentialPaths.add(`${basePath}assets/minecraft/textures/items/${filename}`);
-                potentialPaths.add(`${basePath}textures/items/${filename}`);
-            } else if (type === 'block') {
-                 potentialPaths.add(`${basePath}assets/minecraft/textures/block/${filename}`);
-                 potentialPaths.add(`${basePath}textures/blocks/${filename}`);
-            } else if (type === 'gui') {
-                potentialPaths.add(`${basePath}assets/minecraft/textures/gui/${filename}`);
-                potentialPaths.add(`${basePath}assets/minecraft/textures/gui/title/background/${filename}`);
-                potentialPaths.add(`${basePath}textures/gui/${filename}`);
-                potentialPaths.add(`${basePath}textures/ui/${filename}`);
-            } else if (type === 'sky') {
-                 potentialPaths.add(`${basePath}assets/minecraft/textures/environment/${filename}`);
-                 potentialPaths.add(`${basePath}textures/environment/${filename}`);
-                 potentialPaths.add(`${basePath}textures/sky/${filename}`);
-            }
-            potentialPaths.add(filename);
-            const filenameRegex = new RegExp(`(^|/)${filename.replace(/\./g, '\\.')}$`, 'i');
-            const wildcardMatches = Object.keys(zip.files).filter(path => filenameRegex.test(path));
-            wildcardMatches.forEach(file => potentialPaths.add(file));
+            
+            const addPathsForFilename = (fn) => {
+                 if (type === 'item') {
+                    potentialPaths.add(`${basePath}assets/minecraft/textures/item/${fn}`);
+                    potentialPaths.add(`${basePath}assets/minecraft/textures/items/${fn}`);
+                    potentialPaths.add(`${basePath}textures/items/${fn}`);
+                } else if (type === 'block') {
+                    potentialPaths.add(`${basePath}assets/minecraft/textures/block/${fn}`);
+                    potentialPaths.add(`${basePath}textures/blocks/${fn}`);
+                } else if (type === 'gui' || type === 'sky') {
+                    potentialPaths.add(`${basePath}assets/minecraft/textures/gui/${fn}`);
+                    potentialPaths.add(`${basePath}assets/minecraft/textures/gui/title/background/${fn}`);
+                    potentialPaths.add(`${basePath}textures/gui/${fn}`);
+                    potentialPaths.add(`${basePath}textures/ui/${fn}`);
+                    potentialPaths.add(`${basePath}assets/minecraft/textures/environment/${fn}`);
+                    potentialPaths.add(`${basePath}textures/environment/${fn}`);
+                    potentialPaths.add(`${basePath}textures/sky/${fn}`);
+                }
+                potentialPaths.add(fn);
+                const filenameRegex = new RegExp(`(^|/)${fn.replace(/\./g, '\\.')}$`, 'i');
+                const wildcardMatches = Object.keys(zip.files).filter(path => filenameRegex.test(path));
+                wildcardMatches.forEach(file => potentialPaths.add(file));
+            };
+
+            addPathsForFilename(filename);
+            if(altFilename) addPathsForFilename(altFilename);
+
             for (const path of potentialPaths) {
                 const normalizedPath = path.replace(/^\/|\/$/g, '');
                 if (!normalizedPath) continue;
@@ -764,10 +755,20 @@
                 const zip = await downloadAndUnzipPack(pack);
                 foundAssets.items = {};
                 const itemPromises = Object.entries(ITEM_PATHS).map(async ([key, info]) => {
-                    const url = await findGenericAsset(zip, info.path, info.type);
+                    if (info.isComposite) return; // Skip composite items for now
+                    const url = await findGenericAsset(zip, info.path, info.type, info.altPath);
                     if (url) foundAssets.items[key] = { ...info, url };
                 });
                 await Promise.all(itemPromises);
+
+                // Handle composite potions
+                if (foundAssets.items.potion_drinkable_base && foundAssets.items.potion_liquid) {
+                    foundAssets.items.potion_drinkable = { ...ITEM_PATHS.potion_drinkable };
+                }
+                 if (foundAssets.items.potion_splash_base && foundAssets.items.potion_liquid) {
+                    foundAssets.items.potion_splash = { ...ITEM_PATHS.potion_splash };
+                }
+
                 loader.style.display = 'none';
                 grid.style.display = 'grid';
                 renderItemGrid("Tools");
@@ -783,43 +784,28 @@
             const list = document.getElementById('gui-list');
             loader.style.display = 'block';
             list.style.display = 'none';
-            loader.innerHTML = `<p class="preview-placeholder-text"><span class="spinner-sm"></span> Loading GUI...</p>`;
+            loader.innerHTML = `<p class="preview-placeholder-text"><span class="spinner-sm"></span> Loading GUI & Sky...</p>`;
             try {
                 const zip = await downloadAndUnzipPack(pack);
                 foundAssets.gui = {};
-                const guiPromises = Object.entries(GUI_PATHS).map(async ([key, filename]) => {
-                    const url = await findGenericAsset(zip, filename, 'gui');
-                    if (url) foundAssets.gui[key] = { url };
+                foundAssets.sky = {};
+                const assetPromises = Object.entries(GUI_PATHS).map(async ([key, filename]) => {
+                    const url = await findGenericAsset(zip, filename, 'gui'); // Use 'gui' type which checks environment too
+                    if (url) {
+                        if (['day_sky', 'night_sky', 'sun', 'moon'].includes(key)) {
+                            foundAssets.sky[key] = { url };
+                        } else {
+                            foundAssets.gui[key] = { url };
+                        }
+                    }
                 });
-                await Promise.all(guiPromises);
+                await Promise.all(assetPromises);
                 loader.style.display = 'none';
                 list.style.display = 'flex';
                 renderGuiSelectionList();
             } catch (error) {
                 console.error("GUI preview error:", error);
                 loader.innerHTML = `<p class="preview-placeholder-text" style="color:var(--danger)">Could not load GUI assets.</p>`;
-            }
-        }
-        
-        async function loadAndProcessPackForSky(pack) {
-            skyPreviewLoaded = true;
-            const loader = document.getElementById('sky-loader');
-            loader.style.display = 'block';
-            loader.innerHTML = `<p class="preview-placeholder-text"><span class="spinner-sm"></span> Loading Sky Textures...</p>`;
-            try {
-                const zip = await downloadAndUnzipPack(pack);
-                foundAssets.sky = {};
-                 const skyPromises = Object.entries(SKY_PATHS).map(async ([key, filename]) => {
-                    const url = await findGenericAsset(zip, filename, 'sky');
-                    if (url) foundAssets.sky[key] = { url };
-                });
-                await Promise.all(skyPromises);
-                renderSkyPreview();
-            } catch (error) {
-                console.error("Sky preview error:", error);
-                loader.innerHTML = `<p class="preview-placeholder-text" style="color:var(--danger)">Could not load sky assets.</p>`;
-            } finally {
-                loader.style.display = 'none';
             }
         }
         
@@ -835,8 +821,11 @@
         function renderItemGrid(category) {
             const itemGrid = document.getElementById('item-grid');
             const variantContainer = document.getElementById('tool-variant-container');
-            variantContainer.innerHTML = ''; // Clear variants
-            const itemsInCategory = Object.keys(foundAssets.items).filter(key => foundAssets.items[key].category === category);
+            variantContainer.innerHTML = '';
+            
+            const itemsInCategory = Object.keys(foundAssets.items).filter(key => 
+                foundAssets.items[key].category === category && !foundAssets.items[key].isComponent
+            );
             
             if (itemsInCategory.length === 0) {
                 itemGrid.innerHTML = `<p class="preview-placeholder-text" style="grid-column: 1 / -1;">No ${category.toLowerCase()} found in this pack.</p>`;
@@ -853,10 +842,14 @@
                 }
             });
 
-            itemGrid.innerHTML = Object.values(uniqueGroups).map(key => `
-                <div class="item-icon-card" data-key="${key}" data-group="${foundAssets.items[key].group || ''}">
-                    <img src="${foundAssets.items[key].url}" alt="${key.replace(/_/g, ' ')}">
-                </div>`).join('');
+            itemGrid.innerHTML = Object.values(uniqueGroups).map(key => {
+                 const item = foundAssets.items[key];
+                 const imgSrc = item.isComposite ? '' : item.url;
+                 const keyName = key.replace(/_/g, ' ');
+                 return `<div class="item-icon-card" data-key="${key}" data-group="${item.group || ''}" title="${keyName}">
+                            ${!item.isComposite ? `<img src="${imgSrc}" alt="${keyName}">` : ''}
+                        </div>`;
+            }).join('');
             
             itemGrid.querySelectorAll('.item-icon-card').forEach(card => {
                 card.addEventListener('click', () => {
@@ -865,15 +858,29 @@
                     const key = card.dataset.key;
                     const group = card.dataset.group;
                     
-                    if (group) { // It's a tool with variants
+                    if (group) {
                         renderToolVariants(group, key);
-                    } else { // It's a standalone item
+                    } else {
                         variantContainer.innerHTML = '';
                     }
 
                     displaySelectedItem(key);
                 });
             });
+
+            // Create canvas for composite items after they are in the DOM
+            Object.values(uniqueGroups).forEach(key => {
+                 const item = foundAssets.items[key];
+                 if (item.isComposite) {
+                     const card = itemGrid.querySelector(`.item-icon-card[data-key="${key}"]`);
+                     const canvas = document.createElement('canvas');
+                     canvas.width = 64; canvas.height = 64;
+                     card.appendChild(canvas);
+                     drawCompositeItem(canvas, item.base, item.overlay, '#F87D7D');
+                 }
+            });
+
+
             if (itemGrid.firstChild) itemGrid.firstChild.click();
         }
         
@@ -883,7 +890,7 @@
             variantContainer.innerHTML = variants.map(key => {
                 const material = key.split('_')[0];
                 return `<div class="tool-variant-item ${key === selectedKey ? 'active' : ''}" data-key="${key}" title="${material}">
-                            <img src="${TOOL_VARIANT_ICONS[material]}">
+                            <img src="${TOOL_VARIANT_ICONS[material] || ''}">
                         </div>`;
             }).join('');
             
@@ -904,11 +911,11 @@
              enchantBtn.style.display = isEnchantable ? 'flex' : 'none';
              enchantBtn.classList.toggle('active', currentItemPreview.isEnchantActive);
              
-             // Special handling for potions
-             if (foundAssets.items[key]?.isOverlay) {
-                 displayPotionOnCanvas('item-viewer-canvas', foundAssets.items[key].url);
+             const item = foundAssets.items[key];
+             if (item.isComposite) {
+                 drawCompositeItem('item-viewer-canvas', item.base, item.overlay, '#F87D7D');
              } else {
-                 displayItemOnCanvas('item-viewer-canvas', foundAssets.items[key].url, currentItemPreview.isEnchantActive);
+                 displayItemOnCanvas('item-viewer-canvas', item.url, currentItemPreview.isEnchantActive);
              }
         }
 
@@ -916,7 +923,12 @@
             const guiList = document.getElementById('gui-list');
             const componentKeys = Object.keys(GUI_COMPONENTS);
             const textureKeys = Object.keys(foundAssets.gui).filter(key => key !== 'panorama_overlay');
-            const allDisplayKeys = [...componentKeys, ...textureKeys];
+            let allDisplayKeys = [...componentKeys, ...textureKeys];
+
+            // Only show sky options if sky textures were found
+            if (!foundAssets.sky.day_sky) allDisplayKeys = allDisplayKeys.filter(k => k !== 'Day Sky');
+            if (!foundAssets.sky.night_sky) allDisplayKeys = allDisplayKeys.filter(k => k !== 'Night Sky');
+
             if (allDisplayKeys.length === 0) {
                 guiList.innerHTML = `<p class="preview-placeholder-text">No GUI textures found.</p>`;
                 return;
@@ -930,29 +942,14 @@
                     document.querySelectorAll('.gui-selection-item').forEach(el => el.classList.remove('active'));
                     item.classList.add('active');
                     const key = item.dataset.key;
-                    if (GUI_COMPONENTS[key]) displayGuiComponent(key);
+                    if (GUI_COMPONENTS[key]?.type === 'hud') displayGuiComponent(key);
+                    else if (GUI_COMPONENTS[key]?.type === 'sky') displaySkyPreview(GUI_COMPONENTS[key].skyType);
                     else if (foundAssets.gui[key]) displayGuiImage(foundAssets.gui[key].url);
                 });
             });
             const crosshairItem = guiList.querySelector('.gui-selection-item[data-key="Crosshair"]');
             if (crosshairItem) { crosshairItem.click(); } 
             else if (guiList.firstChild) { guiList.firstChild.click(); }
-        }
-        
-        function renderSkyPreview() {
-            const dayBox = document.getElementById('day-sky-preview');
-            const nightBox = document.getElementById('night-sky-preview');
-            
-            if (foundAssets.sky.day_sky) {
-                dayBox.style.backgroundImage = `url(${foundAssets.sky.day_sky.url})`;
-            } else {
-                dayBox.innerHTML = '<h4>Day</h4><p class="preview-placeholder-text">Not found</p>';
-            }
-            if (foundAssets.sky.night_sky) {
-                nightBox.style.backgroundImage = `url(${foundAssets.sky.night_sky.url})`;
-            } else {
-                nightBox.innerHTML = '<h4>Night</h4><p class="preview-placeholder-text">Not found</p>';
-            }
         }
         
         async function displayItemOnCanvas(canvasId, url, enchanted = false) {
@@ -972,37 +969,35 @@
             ctx.drawImage(img, x, y, drawWidth, drawHeight);
         }
 
-        async function displayPotionOnCanvas(canvasId, overlayUrl) {
-            const canvas = document.getElementById(canvasId);
-            if(!canvas) return;
-            const ctx = canvas.getContext('2d');
-            ctx.imageSmoothingEnabled = false;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw base potion bottle (gray)
-            ctx.fillStyle = '#C6C6C6'; // A neutral gray
-            const baseImg = await loadImage(foundAssets.items.splash_potion.url); // Use splash potion as base shape
+        async function drawCompositeItem(canvas, baseKey, overlayKey, color) {
+            const targetCanvas = typeof canvas === 'string' ? document.getElementById(canvas) : canvas;
+            if (!targetCanvas || !foundAssets.items[baseKey] || !foundAssets.items[overlayKey]) return;
             
+            const ctx = targetCanvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+            ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+            
+            const baseImg = await loadImage(foundAssets.items[baseKey].url);
+            const overlayImg = await loadImage(foundAssets.items[overlayKey].url);
+
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = baseImg.width; tempCanvas.height = baseImg.height;
             const tempCtx = tempCanvas.getContext('2d');
+            
             tempCtx.drawImage(baseImg, 0, 0);
             tempCtx.globalCompositeOperation = 'source-in';
-            tempCtx.fillStyle = '#F87D7D'; // Health potion color
+            tempCtx.fillStyle = color;
             tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-            
+            tempCtx.globalCompositeOperation = 'source-over';
+            tempCtx.drawImage(overlayImg, 0, 0);
+
             const paddingFactor = 0.7;
-            const scale = Math.min(canvas.width / tempCanvas.width, canvas.height / tempCanvas.height) * paddingFactor;
+            const scale = Math.min(targetCanvas.width / tempCanvas.width, targetCanvas.height / tempCanvas.height) * paddingFactor;
             const drawWidth = tempCanvas.width * scale;
             const drawHeight = tempCanvas.height * scale;
-            const x = (canvas.width - drawWidth) / 2;
-            const y = (canvas.height - drawHeight) / 2;
-            
+            const x = (targetCanvas.width - drawWidth) / 2;
+            const y = (targetCanvas.height - drawHeight) / 2;
             ctx.drawImage(tempCanvas, x, y, drawWidth, drawHeight);
-            
-            // Draw overlay
-            const overlayImg = await loadImage(overlayUrl);
-            ctx.drawImage(overlayImg, x, y, drawWidth, drawHeight);
         }
 
         function getEffectiveScale(resolutionString) {
@@ -1012,6 +1007,7 @@
 
         async function displayGuiComponent(name) {
             const imageViewer = document.getElementById('gui-viewer-canvas');
+            imageViewer.style.backgroundImage = 'none'; // Reset background for non-sky
             if (GUI_COMPONENTS[name]?.type === 'hud') {
                 const hudCanvas = await createHudPreview();
                 imageViewer.src = hudCanvas.toDataURL();
@@ -1027,16 +1023,32 @@
                 }
             }
         }
+        
+        async function displaySkyPreview(skyType) {
+            const imageViewer = document.getElementById('gui-viewer-canvas');
+            imageViewer.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; // Transparent pixel
+            imageViewer.style.transform = 'scale(1)';
+            
+            if (skyType === 'day' && foundAssets.sky.day_sky) {
+                imageViewer.style.backgroundImage = `url(${foundAssets.sky.day_sky.url})`;
+            } else if (skyType === 'night' && foundAssets.sky.night_sky) {
+                 imageViewer.style.backgroundImage = `url(${foundAssets.sky.night_sky.url})`;
+            } else {
+                imageViewer.style.backgroundImage = 'none';
+            }
+        }
 
         function displayGuiImage(url) {
             const imageViewer = document.getElementById('gui-viewer-canvas');
-            imageViewer.src = url; imageViewer.style.transform = 'scale(1)';
+            imageViewer.src = url; 
+            imageViewer.style.transform = 'scale(1)';
+            imageViewer.style.backgroundImage = 'none';
         }
         
         const loadImage = (url) => new Promise((res, rej) => { const i = new Image(); i.crossOrigin = "Anonymous"; i.onload = () => res(i); i.onerror = rej; i.src = url; });
 
         async function createHudPreview() {
-            const yOffset = 15;
+            const yOffset = 10;
             const hudCanvas = document.createElement('canvas'); hudCanvas.width = 182; hudCanvas.height = 60;
             const ctx = hudCanvas.getContext('2d'); ctx.imageSmoothingEnabled = false;
             const iconsSheet = foundAssets.gui.icons ? await loadImage(foundAssets.gui.icons.url) : null;
@@ -1057,7 +1069,6 @@
                 const ARMOR_Y = HEALTH_Y - BASE_ICON_SIZE;
                 const HUNGER_Y = HEALTH_Y;
                 
-                // Health
                 for (let i = 0; i < 10; i++) {
                     const X_POS = X_START_LEFT + (i * BASE_ICON_SPACING); 
                     ctx.drawImage(iconsSheet, 16 * S_F, 0, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, HEALTH_Y, BASE_ICON_SIZE, BASE_ICON_SIZE);
@@ -1065,27 +1076,23 @@
                 }
                 ctx.drawImage(iconsSheet, 61 * S_F, 0, SRC_ICON_SIZE, SRC_ICON_SIZE, X_START_LEFT + (8 * BASE_ICON_SPACING), HEALTH_Y, BASE_ICON_SIZE, BASE_ICON_SIZE);
                 
-                // Armor
                 for (let i = 0; i < 10; i++) {
                     const X_POS = X_START_LEFT + (i * BASE_ICON_SPACING);
                     ctx.drawImage(iconsSheet, 16 * S_F, 9 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, ARMOR_Y, BASE_ICON_SIZE, BASE_ICON_SIZE);
                     if (i < 8) ctx.drawImage(iconsSheet, 34 * S_F, 9 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, ARMOR_Y, BASE_ICON_SIZE, BASE_ICON_SIZE);
                 }
                 
-                // Hunger
                 for (let i = 0; i < 10; i++) {
                     const X_POS = X_START_RIGHT - (i * BASE_ICON_SPACING); 
                     ctx.drawImage(iconsSheet, 16 * S_F, 27 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, HUNGER_Y, BASE_ICON_SIZE, BASE_ICON_SIZE);
                     if(i < 7) ctx.drawImage(iconsSheet, 52 * S_F, 27 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, HUNGER_Y, BASE_ICON_SIZE, BASE_ICON_SIZE);
                 }
 
-                // XP Bar
-                const XP_Y = HOTBAR_Y - yOffset;
+                const XP_Y = HOTBAR_Y - yOffset + 12; // Adjusted Y position
                 const XP_SRC_W = 182 * S_F, XP_SRC_H = 5 * S_F;
                 ctx.drawImage(iconsSheet, 0, 64 * S_F, XP_SRC_W, XP_SRC_H, 0, XP_Y - 5, hudCanvas.width, 5); 
                 ctx.drawImage(iconsSheet, 0, 69 * S_F, 120 * S_F, XP_SRC_H, 0, XP_Y - 5, 120, 5); 
                 
-                // XP Level Text
                 const FONT_SIZE = 10; 
                 ctx.font = `bold ${FONT_SIZE}px Inter, sans-serif`; ctx.fillStyle = '#80FF20';
                 ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1; ctx.shadowBlur = 1;
@@ -1464,3 +1471,4 @@
     </script>
 </body>
 </html>
+
