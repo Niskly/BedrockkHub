@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -116,10 +115,12 @@
         .item-icon-card.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); }
         .item-icon-card img, .item-icon-card canvas { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
         
+        /* New styles for GUI preview layout */
+        .gui-preview-layout { display: grid; grid-template-columns: 1fr; gap: 1rem; }
         #gui-viewer-container { border-radius: 12px; width: 100%; aspect-ratio: 1/1; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); background-size: cover; background-position: center; display: grid; place-items: center; padding: 1rem; }
         #gui-viewer-canvas { max-width: 100%; max-height: 100%; object-fit: contain; image-rendering: pixelated; transform-origin: center; }
-        
-        .gui-selection-list { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; justify-content: center; }
+        #gui-list-container { max-height: 200px; overflow-y: auto; }
+        .gui-selection-list { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
         .gui-selection-item { width: 60px; height: 60px; background: var(--bg-2); border: 2px solid var(--border); border-radius: 10px; cursor: pointer; transition: all 0.2s ease; display: grid; place-items: center; padding: 4px; font-weight: 600; font-size: 0.8rem; text-transform: capitalize; text-align: center; line-height: 1.2; color: var(--muted); }
         .gui-selection-item i { font-size: 1.5rem; color: var(--muted); line-height: 1; }
         .gui-selection-item img { max-width: 100%; max-height: 100%; object-fit: contain; image-rendering: pixelated; }
@@ -255,6 +256,22 @@
             .pack-title-area h1 { order: 1; }
             .pack-reviews-and-meta { order: 2; }
         }
+        @media (min-width: 600px) {
+            .gui-preview-layout {
+                grid-template-columns: 2fr 1fr;
+                align-items: flex-start;
+            }
+            #gui-list-container {
+                height: 400px;
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 0.5rem;
+                background: var(--bg-2);
+            }
+            .gui-selection-list {
+                justify-content: flex-start;
+            }
+        }
         @media (max-width: 768px) { .nav-actions { display: none; } .mobile-nav-toggle { display: block; } }
         @media (max-width: 480px) {
             .pack-header-actions { flex-basis: 100%; margin-top: 1rem; }
@@ -356,7 +373,7 @@
         let guiPreviewLoaded = false;
         
         let foundArmorAssets = {};
-        let foundAssets = { items: {}, gui: {}, sky: {} };
+        let foundAssets = { items: {}, gui: {} };
         let commentsCache = [];
         let confirmCallback = null;
         
@@ -447,28 +464,19 @@
         const GUI_PATHS = { 
             'icons': 'icons.png', 
             'widgets': 'widgets.png',
-            'panorama_overlay': 'panorama_overlay.png',
-            // Sky assets now grouped with GUI
-            'day_sky': 'sky0.png',
-            'night_sky': 'sky1.png',
-            'sun': 'sun.png',
-            'moon': 'moon_phases.png'
+            'panorama_overlay': 'panorama_overlay.png'
         };
 
         const GUI_COMPONENTS = { 
             'Full HUD': { type: 'hud' },
-            'Crosshair': { type: 'crosshair' },
-            'Day Sky': { type: 'sky', skyType: 'day' },
-            'Night Sky': { type: 'sky', skyType: 'night' }
+            'Crosshair': { type: 'crosshair' }
         };
 
         const GUI_PREVIEW_ICONS = {
             'Full HUD': '<i class="fa-solid fa-layer-group"></i>',
             'Crosshair': '<i class="fa-solid fa-crosshairs"></i>',
             'icons': '<i class="fa-solid fa-gem"></i>',
-            'widgets': '<i class="fa-solid fa-sliders"></i>',
-            'Day Sky': '<i class="fa-solid fa-sun"></i>',
-            'Night Sky': '<i class="fa-solid fa-moon"></i>'
+            'widgets': '<i class="fa-solid fa-sliders"></i>'
         };
 
         function showToast(message, type = 'success') {
@@ -605,10 +613,12 @@
                                     </div>
                                 </div>
                                 <div id="gui-panel" class="preview-panel">
-                                    <div id="gui-viewer-container"><img id="gui-viewer-canvas" /></div>
-                                    <div id="gui-list-container">
-                                        <div id="gui-list" class="gui-selection-list"></div>
-                                        <div id="gui-loader"><p class="preview-placeholder-text">Click tab to load preview</p></div>
+                                    <div class="gui-preview-layout">
+                                        <div id="gui-viewer-container"><img id="gui-viewer-canvas" /></div>
+                                        <div id="gui-list-container">
+                                            <div id="gui-list" class="gui-selection-list"></div>
+                                            <div id="gui-loader"><p class="preview-placeholder-text">Click tab to load preview</p></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -708,14 +718,11 @@
                 } else if (type === 'block') {
                     potentialPaths.add(`${basePath}assets/minecraft/textures/block/${fn}`);
                     potentialPaths.add(`${basePath}textures/blocks/${fn}`);
-                } else if (type === 'gui' || type === 'sky') {
+                } else if (type === 'gui') {
                     potentialPaths.add(`${basePath}assets/minecraft/textures/gui/${fn}`);
                     potentialPaths.add(`${basePath}assets/minecraft/textures/gui/title/background/${fn}`);
                     potentialPaths.add(`${basePath}textures/gui/${fn}`);
                     potentialPaths.add(`${basePath}textures/ui/${fn}`);
-                    potentialPaths.add(`${basePath}assets/minecraft/textures/environment/${fn}`);
-                    potentialPaths.add(`${basePath}textures/environment/${fn}`);
-                    potentialPaths.add(`${basePath}textures/sky/${fn}`);
                 }
                 potentialPaths.add(fn);
                 const filenameRegex = new RegExp(`(^|/)${fn.replace(/\./g, '\\.')}$`, 'i');
@@ -770,19 +777,14 @@
             const list = document.getElementById('gui-list');
             loader.style.display = 'block';
             list.style.display = 'none';
-            loader.innerHTML = `<p class="preview-placeholder-text"><span class="spinner-sm"></span> Loading GUI & Sky...</p>`;
+            loader.innerHTML = `<p class="preview-placeholder-text"><span class="spinner-sm"></span> Loading GUI...</p>`;
             try {
                 const zip = await downloadAndUnzipPack(pack);
                 foundAssets.gui = {};
-                foundAssets.sky = {};
                 const assetPromises = Object.entries(GUI_PATHS).map(async ([key, filename]) => {
                     const url = await findGenericAsset(zip, filename, 'gui'); 
                     if (url) {
-                        if (['day_sky', 'night_sky', 'sun', 'moon'].includes(key)) {
-                            foundAssets.sky[key] = { url };
-                        } else {
-                            foundAssets.gui[key] = { url };
-                        }
+                        foundAssets.gui[key] = { url };
                     }
                 });
                 await Promise.all(assetPromises);
@@ -894,9 +896,6 @@
             const textureKeys = Object.keys(foundAssets.gui).filter(key => key !== 'panorama_overlay');
             let allDisplayKeys = [...componentKeys, ...textureKeys];
 
-            if (!foundAssets.sky.day_sky) allDisplayKeys = allDisplayKeys.filter(k => k !== 'Day Sky');
-            if (!foundAssets.sky.night_sky) allDisplayKeys = allDisplayKeys.filter(k => k !== 'Night Sky');
-
             if (allDisplayKeys.length === 0) {
                 guiList.innerHTML = `<p class="preview-placeholder-text">No GUI textures found.</p>`;
                 return;
@@ -910,10 +909,11 @@
                     document.querySelectorAll('.gui-selection-item').forEach(el => el.classList.remove('active'));
                     item.classList.add('active');
                     const key = item.dataset.key;
-                    if (GUI_COMPONENTS[key]?.type === 'hud') displayGuiComponent(key);
-                    else if (GUI_COMPONENTS[key]?.type === 'sky') displaySkyPreview(GUI_COMPONENTS[key].skyType);
-                    else if (GUI_COMPONENTS[key]?.type === 'crosshair') displayGuiComponent(key);
-                    else if (foundAssets.gui[key]) displayGuiImage(foundAssets.gui[key].url);
+                    if (GUI_COMPONENTS[key]?.type === 'hud' || GUI_COMPONENTS[key]?.type === 'crosshair') {
+                        displayGuiComponent(key);
+                    } else if (foundAssets.gui[key]) {
+                        displayGuiImage(foundAssets.gui[key].url);
+                    }
                 });
             });
             const crosshairItem = guiList.querySelector('.gui-selection-item[data-key="Crosshair"]');
@@ -962,20 +962,6 @@
             }
         }
         
-        async function displaySkyPreview(skyType) {
-            const imageViewer = document.getElementById('gui-viewer-canvas');
-            imageViewer.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; 
-            imageViewer.style.transform = 'scale(1)';
-            
-            if (skyType === 'day' && foundAssets.sky.day_sky) {
-                imageViewer.style.backgroundImage = `url(${foundAssets.sky.day_sky.url})`;
-            } else if (skyType === 'night' && foundAssets.sky.night_sky) {
-                 imageViewer.style.backgroundImage = `url(${foundAssets.sky.night_sky.url})`;
-            } else {
-                imageViewer.style.backgroundImage = 'none';
-            }
-        }
-
         function displayGuiImage(url) {
             const imageViewer = document.getElementById('gui-viewer-canvas');
             imageViewer.src = url; 
