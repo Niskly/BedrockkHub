@@ -909,12 +909,22 @@
             const finalUrl = enchanted ? await createEnchantedVersion(url) : url;
             const img = await loadImage(finalUrl);
             const paddingFactor = 0.7;
-            const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * paddingFactor;
-            const drawWidth = img.width * scale;
-            const drawHeight = img.height * scale;
-            const x = (canvas.width - drawWidth) / 2;
-            const y = (canvas.height - drawHeight) / 2;
-            ctx.drawImage(img, x, y, drawWidth, drawHeight);
+
+            // Determine the size of a single square frame (assuming width is the base size)
+            const frameSize = img.width; 
+
+            // Calculate the scaled size for drawing on the canvas
+            const scale = Math.min(canvas.width / frameSize, canvas.height / frameSize) * paddingFactor;
+            const drawSize = frameSize * scale;
+            
+            // Center the image on the canvas
+            const x = (canvas.width - drawSize) / 2;
+            const y = (canvas.height - drawSize) / 2;
+
+            // --- THIS IS THE MODIFIED LINE ---
+            // It now crops the source image to only use the top-most square frame.
+            // ctx.drawImage(sourceImage, sourceX, sourceY, sourceWidth, sourceHeight, destinationX, destinationY, destinationWidth, destinationHeight);
+            ctx.drawImage(img, 0, 0, frameSize, frameSize, x, y, drawSize, drawSize);
         }
 
         function getEffectiveScale(resolutionString) {
