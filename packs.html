@@ -87,7 +87,7 @@
 
         .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
         
-        .preview-tabs { display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+        .preview-tabs { display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; justify-content: center; }
         .preview-tab-btn { padding: 0.8rem 1rem; background: none; border: none; color: var(--muted); font-weight: 700; font-size: 0.9rem; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem; }
         .preview-tab-btn i { width: 1em; text-align: center; }
         .preview-tab-btn.active { color: var(--text); border-bottom-color: var(--brand-1); }
@@ -117,7 +117,7 @@
         
         #gui-viewer-container { border-radius: 12px; width: 100%; aspect-ratio: 1/1; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/item_bg.png'); background-size: cover; background-position: center; display: grid; place-items: center; padding: 1rem; }
         #gui-viewer-canvas { max-width: 100%; max-height: 100%; object-fit: contain; image-rendering: pixelated; transform-origin: center; }
-        .gui-selection-list { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-top: 1rem; }
+        .gui-selection-list { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; justify-content: center; }
         .gui-selection-item { width: 60px; height: 60px; background: var(--bg-2); border: 2px solid var(--border); border-radius: 10px; cursor: pointer; transition: all 0.2s ease; display: grid; place-items: center; padding: 4px; font-weight: 600; font-size: 0.8rem; text-transform: capitalize; text-align: center; line-height: 1.2; color: var(--muted); }
         .gui-selection-item i { font-size: 1.5rem; color: var(--muted); line-height: 1; }
         .gui-selection-item img { max-width: 100%; max-height: 100%; object-fit: contain; image-rendering: pixelated; }
@@ -230,7 +230,7 @@
         .star-rating-display .stars .fa-star:hover { transform: scale(1.2); }
         .star-rating-display .rating-text { font-size: 0.9rem; font-weight: 600; color: var(--muted); }
         
-        .item-category-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); }
+        .item-category-tabs { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); }
         .item-category-tabs .preview-tab-btn { border-bottom: 2px solid transparent; margin-bottom: -1px; }
 
         .tool-variant-list { display: flex; gap: 0.5rem; margin: 1rem 0; justify-content: center; flex-wrap: wrap; }
@@ -991,7 +991,7 @@
                     if(i < 7) ctx.drawImage(iconsSheet, 52 * S_F, 27 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, HUNGER_Y, BASE_ICON_SIZE, BASE_ICON_SIZE);
                 }
 
-                const XP_Y = HOTBAR_Y - yOffset + 14; 
+                const XP_Y = HOTBAR_Y - yOffset + 10; 
                 const XP_SRC_W = 182 * S_F, XP_SRC_H = 5 * S_F;
                 ctx.drawImage(iconsSheet, 0, 64 * S_F, XP_SRC_W, XP_SRC_H, 0, XP_Y - 5, hudCanvas.width, 5); 
                 ctx.drawImage(iconsSheet, 0, 69 * S_F, 120 * S_F, XP_SRC_H, 0, XP_Y - 5, 120, 5); 
@@ -1373,4 +1373,5 @@
     </script>
 </body>
 </html>
+
 
