@@ -660,7 +660,7 @@
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const COLORS = [{key: 'none', hex: '#4b5563', icon: 'fa-solid fa-ban'}, {key: 'red',hex: '#ef4444'}, {key: 'blue',hex: '#3b82f6'}, {key: 'green',hex: '#22c55e'}, {key: 'yellow',hex: '#eab308'}, {key: 'purple',hex: '#a855f7'}, {key: 'pink',hex: '#ec4899'}, {key: 'orange',hex: '#f97316'}, {key: 'teal',hex: '#14b8a6'}, {key: 'gray',hex: '#6b7280'}, {key: 'black',hex: '#1f2937'}];
         const TAGS = ['pvp', 'bedwars', 'skywars', 'anime', 'crystal pvp', 'survival', 'visual'];
-        const RESOLUTIONS = ['16x', '32x', '64x', '128x', '256x', '512x'];
+        const RESOLUTIONS = ['16x', '32x', '64x', '128x', '256x'];
         const VERSIONS = ['bedrock', 'java'];
         const packsPerPage = 9;
         let packs = [];
@@ -738,62 +738,6 @@
             }
             return null;
         }
-
-        async function detectPackResolution(file) {
-            if (!file) return 'unknown';
-            try {
-                const zip = await JSZip.loadAsync(file);
-                // List of common, fundamental textures to check for resolution.
-                const referenceTextures = [
-                    'textures/blocks/stone.png',
-                    'assets/minecraft/textures/block/stone.png',
-                    'textures/blocks/cobblestone.png',
-                    'assets/minecraft/textures/block/cobblestone.png',
-                    'pack_icon.png'
-                ];
-                
-                let textureFile = null;
-                for (const path of referenceTextures) {
-                    textureFile = zip.file(path);
-                    if (textureFile) break;
-                }
-
-                if (!textureFile) {
-                    // As a last resort, find any png in a block/blocks folder
-                    const anyBlock = zip.file(/textures\/(blocks|block)\/.*\.png/i)[0];
-                    if(anyBlock) textureFile = anyBlock;
-                }
-
-                if (!textureFile) return 'unknown';
-
-                const blob = await textureFile.async('blob');
-                const url = URL.createObjectURL(blob);
-
-                return new Promise((resolve) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        URL.revokeObjectURL(url);
-                        const width = img.width;
-                        // Check if the width is a power of 2, which is typical for Minecraft textures.
-                        if (width > 0 && (width & (width - 1)) === 0) {
-                            resolve(`${width}x`);
-                        } else {
-                            resolve('unknown');
-                        }
-                    };
-                    img.onerror = () => {
-                        URL.revokeObjectURL(url);
-                        resolve('unknown');
-                    };
-                    img.src = url;
-                });
-
-            } catch (error) {
-                console.error("Error detecting resolution:", error);
-                return 'unknown';
-            }
-        }
-
 
         window.handleUpload = async function(e) {
             e.preventDefault();
@@ -1198,7 +1142,7 @@
         window.clearVersions = () => { state.versions.clear(); buildSelectorBoxes(document.getElementById("versionBoxes"), (v, el) => { toggleSet(state.versions, v); el.classList.toggle('active'); render(); }, state.versions, VERSIONS); render(); };
         window.resetAll = () => { state.q = ''; state.currentPage = 1; clearSearchInput(); clearColors(); clearTags(); clearResolutions(); clearVersions(); };
         
-        window.hintFile = async () => {
+        window.hintFile = () => {
             const fileInput = document.getElementById("fileInput");
             const files = [...fileInput.files];
             
@@ -1207,17 +1151,6 @@
                 if (file) {
                     document.getElementById("fileHint").textContent = file.name;
                     document.getElementById("packName").value = file.name.replace(/\.(mcpack|zip)$/i, "");
-                    
-                    // New auto-detection logic
-                    const resolution = await detectPackResolution(file);
-                    if (resolution !== 'unknown' && RESOLUTIONS.includes(resolution)) {
-                        state.modalResolution = resolution;
-                        // Visually select the button
-                        const resContainer = document.getElementById('modalResolutions');
-                        resContainer.querySelectorAll('.res-box').forEach(btn => {
-                            btn.classList.toggle('active', btn.textContent === resolution);
-                        });
-                    }
                 }
             } else {
                 const bulkList = document.getElementById("bulk-file-list");
