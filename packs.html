@@ -87,7 +87,7 @@
 
         .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
         
-        .preview-tabs { display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+        .preview-tabs { display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; flex-wrap: wrap;}
         .preview-tab-btn { padding: 0.8rem 1rem; background: none; border: none; color: var(--muted); font-weight: 700; font-size: 0.9rem; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem; }
         .preview-tab-btn i { width: 1em; text-align: center; }
         .preview-tab-btn.active { color: var(--text); border-bottom-color: var(--brand-1); }
@@ -231,6 +231,24 @@
         .star-rating-display .stars.interactive .fa-star { cursor: pointer; }
         .star-rating-display .stars .fa-star:hover { transform: scale(1.2); }
         .star-rating-display .rating-text { font-size: 0.9rem; font-weight: 600; color: var(--muted); }
+        
+        /* New Item Sub-category styles */
+        .item-category-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); }
+        .item-category-tabs .preview-tab-btn { border-bottom: 2px solid transparent; margin-bottom: -1px; }
+
+        /* New Tool Variant styles */
+        .tool-variant-list { display: flex; gap: 0.5rem; margin: 1rem 0; justify-content: center; flex-wrap: wrap; }
+        .tool-variant-item { width: 40px; height: 40px; background: var(--bg-2); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s ease; display: grid; place-items: center; padding: 4px; }
+        .tool-variant-item img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+        .tool-variant-item:hover { border-color: var(--text); }
+        .tool-variant-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); }
+        
+        /* New Sky Preview styles */
+        #sky-panel .sky-preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .sky-preview-box { aspect-ratio: 1/1; border-radius: 12px; background-size: cover; background-position: center; background-color: var(--bg-2); border: 1px solid var(--border); text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+        .sky-preview-box h4 { margin: 0; padding: 0.5rem; background: rgba(0,0,0,0.4); border-radius: 8px; font-size: 0.9rem; }
+        .sky-preview-box .preview-placeholder-text { position: absolute; }
+        .sky-preview-box img.sky-object { position: absolute; image-rendering: pixelated; }
 
         @media (min-width: 993px) {
             .pack-layout {
@@ -252,6 +270,7 @@
             .pack-header-actions .btn { width: 100%; }
             .replies { margin-left: 1rem; padding-left: 1rem; }
             .replies { border-left: 2px solid var(--border); padding-left: 1.5rem; margin-left: 1.5rem; }
+            .preview-tabs { justify-content: center;}
         }
     </style>
 </head>
@@ -344,13 +363,14 @@
         let armorPreviewLoaded = false;
         let itemsPreviewLoaded = false;
         let guiPreviewLoaded = false;
+        let skyPreviewLoaded = false;
         
         let foundArmorAssets = {};
-        let foundAssets = { items: {}, gui: {} };
+        let foundAssets = { items: {}, gui: {}, sky: {} };
         let commentsCache = [];
         let confirmCallback = null;
         
-        const ENCHANTABLE_ITEMS = ['diamond_sword', 'iron_sword', 'golden_sword', 'bow', 'crossbow_standby', 'golden_apple'];
+        const ENCHANTABLE_ITEMS = ['diamond_sword', 'netherite_sword', 'iron_sword', 'golden_sword', 'wooden_sword', 'bow', 'crossbow_standby', 'golden_apple', 'enchanted_golden_apple'];
         let currentItemPreview = { key: null, isEnchantActive: false };
 
         const ALL_TAGS = ['pvp', 'bedwars', 'skywars', 'anime', 'crystal pvp', 'survival', 'visual'];
@@ -366,13 +386,76 @@
             leather: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/leather.png',
             turtle: 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/turtle.png'
         };
+        
+        const TOOL_VARIANT_ICONS = {
+            'wooden': 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/spruce_planks.png',
+            'stone': 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/cobblestone.png',
+            'iron': ARMOR_ICONS.iron,
+            'golden': 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/gold_ingot.png',
+            'diamond': ARMOR_ICONS.diamond,
+            'netherite': ARMOR_ICONS.netherite,
+        };
 
         const ITEM_PATHS = {
-             'diamond_sword': 'diamond_sword.png', 'iron_sword': 'iron_sword.png',
-             'golden_sword': 'golden_sword.png', 'ender_pearl': 'ender_pearl.png',
-             'golden_apple': 'apple_golden.png', 'apple': 'apple.png',
-             'bow': 'bow.png', 'fishing_rod': 'fishing_rod.png',
-             'totem_of_undying': 'totem.png', 'crossbow_standby': 'crossbow_standby.png'
+            // Tools
+            'wooden_sword': { path: 'wooden_sword.png', type: 'item', category: 'Tools', group: 'sword' },
+            'stone_sword': { path: 'stone_sword.png', type: 'item', category: 'Tools', group: 'sword' },
+            'iron_sword': { path: 'iron_sword.png', type: 'item', category: 'Tools', group: 'sword' },
+            'golden_sword': { path: 'golden_sword.png', type: 'item', category: 'Tools', group: 'sword' },
+            'diamond_sword': { path: 'diamond_sword.png', type: 'item', category: 'Tools', group: 'sword' },
+            'netherite_sword': { path: 'netherite_sword.png', type: 'item', category: 'Tools', group: 'sword' },
+            'wooden_pickaxe': { path: 'wooden_pickaxe.png', type: 'item', category: 'Tools', group: 'pickaxe' },
+            'stone_pickaxe': { path: 'stone_pickaxe.png', type: 'item', category: 'Tools', group: 'pickaxe' },
+            'iron_pickaxe': { path: 'iron_pickaxe.png', type: 'item', category: 'Tools', group: 'pickaxe' },
+            'golden_pickaxe': { path: 'golden_pickaxe.png', type: 'item', category: 'Tools', group: 'pickaxe' },
+            'diamond_pickaxe': { path: 'diamond_pickaxe.png', type: 'item', category: 'Tools', group: 'pickaxe' },
+            'netherite_pickaxe': { path: 'netherite_pickaxe.png', type: 'item', category: 'Tools', group: 'pickaxe' },
+            'wooden_axe': { path: 'wooden_axe.png', type: 'item', category: 'Tools', group: 'axe' },
+            'stone_axe': { path: 'stone_axe.png', type: 'item', category: 'Tools', group: 'axe' },
+            'iron_axe': { path: 'iron_axe.png', type: 'item', category: 'Tools', group: 'axe' },
+            'golden_axe': { path: 'golden_axe.png', type: 'item', category: 'Tools', group: 'axe' },
+            'diamond_axe': { path: 'diamond_axe.png', type: 'item', category: 'Tools', group: 'axe' },
+            'netherite_axe': { path: 'netherite_axe.png', type: 'item', category: 'Tools', group: 'axe' },
+            'wooden_shovel': { path: 'wooden_shovel.png', type: 'item', category: 'Tools', group: 'shovel' },
+            'stone_shovel': { path: 'stone_shovel.png', type: 'item', category: 'Tools', group: 'shovel' },
+            'iron_shovel': { path: 'iron_shovel.png', type: 'item', category: 'Tools', group: 'shovel' },
+            'golden_shovel': { path: 'golden_shovel.png', type: 'item', category: 'Tools', group: 'shovel' },
+            'diamond_shovel': { path: 'diamond_shovel.png', type: 'item', category: 'Tools', group: 'shovel' },
+            'netherite_shovel': { path: 'netherite_shovel.png', type: 'item', category: 'Tools', group: 'shovel' },
+            'wooden_hoe': { path: 'wooden_hoe.png', type: 'item', category: 'Tools', group: 'hoe' },
+            'stone_hoe': { path: 'stone_hoe.png', type: 'item', category: 'Tools', group: 'hoe' },
+            'iron_hoe': { path: 'iron_hoe.png', type: 'item', category: 'Tools', group: 'hoe' },
+            'golden_hoe': { path: 'golden_hoe.png', type: 'item', category: 'Tools', group: 'hoe' },
+            'diamond_hoe': { path: 'diamond_hoe.png', type: 'item', category: 'Tools', group: 'hoe' },
+            'netherite_hoe': { path: 'netherite_hoe.png', type: 'item', category: 'Tools', group: 'hoe' },
+            'bow': { path: 'bow.png', type: 'item', category: 'Tools' },
+            'fishing_rod': { path: 'fishing_rod.png', type: 'item', category: 'Tools' },
+            'flint_and_steel': { path: 'flint_and_steel.png', type: 'item', category: 'Tools' },
+
+            // Blocks
+            'cobblestone': { path: 'cobblestone.png', type: 'block', category: 'Blocks' },
+            'spruce_log': { path: 'spruce_log.png', type: 'block', category: 'Blocks' },
+            'white_wool': { path: 'white_wool.png', type: 'block', category: 'Blocks' },
+            'stone': { path: 'stone.png', type: 'block', category: 'Blocks' },
+            'clay': { path: 'clay.png', type: 'block', category: 'Blocks' },
+            'coal_ore': { path: 'coal_ore.png', type: 'block', category: 'Blocks' },
+            'iron_ore': { path: 'iron_ore.png', type: 'block', category: 'Blocks' },
+            'gold_ore': { path: 'gold_ore.png', type: 'block', category: 'Blocks' },
+            'diamond_ore': { path: 'diamond_ore.png', type: 'block', category: 'Blocks' },
+            'emerald_ore': { path: 'emerald_ore.png', type: 'block', category: 'Blocks' },
+            'lapis_ore': { path: 'lapis_ore.png', type: 'block', category: 'Blocks' },
+            'redstone_ore': { path: 'redstone_ore.png', type: 'block', category: 'Blocks' },
+            'ancient_debris': { path: 'ancient_debris_side.png', type: 'block', category: 'Blocks' },
+            
+            // Nature
+            'water_bucket': { path: 'water_bucket.png', type: 'item', category: 'Nature' },
+            'lava_bucket': { path: 'lava_bucket.png', type: 'item', category: 'Nature' },
+            'golden_apple': { path: 'apple_golden.png', type: 'item', category: 'Nature' },
+            'enchanted_golden_apple': { path: 'apple_golden.png', type: 'item', category: 'Nature' },
+            'totem_of_undying': { path: 'totem.png', type: 'item', category: 'Nature' },
+            'ender_pearl': { path: 'ender_pearl.png', type: 'item', category: 'Nature' },
+            'potion': { path: 'potion_overlay.png', type: 'item', category: 'Nature', isOverlay: true },
+            'splash_potion': { path: 'splash_potion.png', type: 'item', category: 'Nature' },
         };
 
         const GUI_PATHS = { 
@@ -380,6 +463,14 @@
             'widgets': 'widgets.png',
             'panorama_overlay': 'panorama_overlay.png'
         };
+
+        const SKY_PATHS = {
+            'day_sky': 'sky0.png',
+            'night_sky': 'sky1.png', // Often used for night
+            'sun': 'sun.png',
+            'moon': 'moon_phases.png'
+        };
+
         const GUI_COMPONENTS = { 
             'Full HUD': { type: 'hud' },
             'Crosshair': { type: 'crosshair' }
@@ -473,7 +564,6 @@
             const videoId = getYouTubeVideoId(pack.youtube_url);
             const videoHtml = videoId ? `<div class="youtube-video-container"><iframe src="https://www.youtube.com/embed/${videoId}" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>` : '';
 
-            // UPDATED HTML structure for the comment section
             pageContainer.innerHTML = `
                 <div class="pack-layout">
                     <div class="pack-main-content">
@@ -502,6 +592,7 @@
                                     <button class="preview-tab-btn active" data-tab="armor"><i class="fa-solid fa-shield"></i> Armor</button>
                                     <button class="preview-tab-btn" data-tab="items"><i class="fa-solid fa-diamond"></i> Items</button>
                                     <button class="preview-tab-btn" data-tab="gui"><i class="fa-solid fa-desktop"></i> GUI</button>
+                                    <button class="preview-tab-btn" data-tab="sky"><i class="fa-solid fa-sun"></i> Sky</button>
                                 </div>
                                 <div id="armor-panel" class="preview-panel active">
                                     <div class="skin-viewer-wrapper">
@@ -511,10 +602,16 @@
                                     <div id="armor-list-container"><p class="preview-placeholder-text">Loading armor preview...</p></div>
                                 </div>
                                 <div id="items-panel" class="preview-panel">
+                                    <div class="item-category-tabs">
+                                        <button class="preview-tab-btn active" data-category="Tools">Tools</button>
+                                        <button class="preview-tab-btn" data-category="Blocks">Blocks</button>
+                                        <button class="preview-tab-btn" data-category="Nature">Nature</button>
+                                    </div>
                                     <div id="item-viewer-wrapper">
                                         <button id="item-enchant-btn"><i class="fa-solid fa-sparkles"></i> Enchant</button>
                                         <div id="item-viewer-container"><canvas id="item-viewer-canvas" width="256" height="256"></canvas></div>
                                     </div>
+                                    <div id="tool-variant-container" class="tool-variant-list"></div>
                                     <div id="item-grid-container">
                                         <div id="item-grid" class="item-grid"></div>
                                         <div id="items-loader"><p class="preview-placeholder-text">Click tab to load preview</p></div>
@@ -526,6 +623,13 @@
                                         <div id="gui-list" class="gui-selection-list"></div>
                                         <div id="gui-loader"><p class="preview-placeholder-text">Click tab to load preview</p></div>
                                     </div>
+                                </div>
+                                <div id="sky-panel" class="preview-panel">
+                                     <div id="sky-preview-grid" class="sky-preview-grid">
+                                        <div id="day-sky-preview" class="sky-preview-box"><h4>Day</h4></div>
+                                        <div id="night-sky-preview" class="sky-preview-box"><h4>Night</h4></div>
+                                     </div>
+                                     <div id="sky-loader"><p class="preview-placeholder-text">Click tab to load preview</p></div>
                                 </div>
                             </div>
                         </div>
@@ -567,14 +671,22 @@
 
         function setupPreviewer() {
             document.querySelectorAll('.preview-tab-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.preview-tab-btn, .preview-panel').forEach(el => el.classList.remove('active'));
+                btn.addEventListener('click', (e) => {
+                    const group = e.target.closest('.preview-tabs, .item-category-tabs');
+                    group.querySelectorAll('.preview-tab-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    const panel = document.getElementById(btn.dataset.tab + '-panel');
-                    panel.classList.add('active');
-                    if (btn.dataset.tab === 'armor' && !armorPreviewLoaded) loadAndProcessPackForArmor(currentPackData);
-                    else if (btn.dataset.tab === 'items' && !itemsPreviewLoaded) loadAndProcessPackForItems(currentPackData);
-                    else if (btn.dataset.tab === 'gui' && !guiPreviewLoaded) loadAndProcessPackForGui(currentPackData);
+                    
+                    if (btn.closest('.preview-tabs')) {
+                         document.querySelectorAll('.preview-panel').forEach(el => el.classList.remove('active'));
+                         const panel = document.getElementById(btn.dataset.tab + '-panel');
+                         panel.classList.add('active');
+                         if (btn.dataset.tab === 'armor' && !armorPreviewLoaded) loadAndProcessPackForArmor(currentPackData);
+                         else if (btn.dataset.tab === 'items' && !itemsPreviewLoaded) loadAndProcessPackForItems(currentPackData);
+                         else if (btn.dataset.tab === 'gui' && !guiPreviewLoaded) loadAndProcessPackForGui(currentPackData);
+                         else if (btn.dataset.tab === 'sky' && !skyPreviewLoaded) loadAndProcessPackForSky(currentPackData);
+                    } else if (btn.closest('.item-category-tabs')) {
+                        renderItemGrid(btn.dataset.category);
+                    }
                 });
             });
             document.getElementById('item-enchant-btn').addEventListener('click', () => {
@@ -612,11 +724,18 @@
                 potentialPaths.add(`${basePath}assets/minecraft/textures/item/${filename}`);
                 potentialPaths.add(`${basePath}assets/minecraft/textures/items/${filename}`);
                 potentialPaths.add(`${basePath}textures/items/${filename}`);
+            } else if (type === 'block') {
+                 potentialPaths.add(`${basePath}assets/minecraft/textures/block/${filename}`);
+                 potentialPaths.add(`${basePath}textures/blocks/${filename}`);
             } else if (type === 'gui') {
                 potentialPaths.add(`${basePath}assets/minecraft/textures/gui/${filename}`);
                 potentialPaths.add(`${basePath}assets/minecraft/textures/gui/title/background/${filename}`);
                 potentialPaths.add(`${basePath}textures/gui/${filename}`);
                 potentialPaths.add(`${basePath}textures/ui/${filename}`);
+            } else if (type === 'sky') {
+                 potentialPaths.add(`${basePath}assets/minecraft/textures/environment/${filename}`);
+                 potentialPaths.add(`${basePath}textures/environment/${filename}`);
+                 potentialPaths.add(`${basePath}textures/sky/${filename}`);
             }
             potentialPaths.add(filename);
             const filenameRegex = new RegExp(`(^|/)${filename.replace(/\./g, '\\.')}$`, 'i');
@@ -644,14 +763,14 @@
             try {
                 const zip = await downloadAndUnzipPack(pack);
                 foundAssets.items = {};
-                const itemPromises = Object.entries(ITEM_PATHS).map(async ([key, filename]) => {
-                    const url = await findGenericAsset(zip, filename, 'item');
-                    if (url) foundAssets.items[key] = { url };
+                const itemPromises = Object.entries(ITEM_PATHS).map(async ([key, info]) => {
+                    const url = await findGenericAsset(zip, info.path, info.type);
+                    if (url) foundAssets.items[key] = { ...info, url };
                 });
                 await Promise.all(itemPromises);
                 loader.style.display = 'none';
                 grid.style.display = 'grid';
-                renderItemGrid();
+                renderItemGrid("Tools");
             } catch (error) {
                 console.error("Items preview error:", error);
                 loader.innerHTML = `<p class="preview-placeholder-text" style="color:var(--danger)">Could not load items.</p>`;
@@ -682,6 +801,28 @@
             }
         }
         
+        async function loadAndProcessPackForSky(pack) {
+            skyPreviewLoaded = true;
+            const loader = document.getElementById('sky-loader');
+            loader.style.display = 'block';
+            loader.innerHTML = `<p class="preview-placeholder-text"><span class="spinner-sm"></span> Loading Sky Textures...</p>`;
+            try {
+                const zip = await downloadAndUnzipPack(pack);
+                foundAssets.sky = {};
+                 const skyPromises = Object.entries(SKY_PATHS).map(async ([key, filename]) => {
+                    const url = await findGenericAsset(zip, filename, 'sky');
+                    if (url) foundAssets.sky[key] = { url };
+                });
+                await Promise.all(skyPromises);
+                renderSkyPreview();
+            } catch (error) {
+                console.error("Sky preview error:", error);
+                loader.innerHTML = `<p class="preview-placeholder-text" style="color:var(--danger)">Could not load sky assets.</p>`;
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+        
         async function downloadAndUnzipPack(pack) {
             const { data: urlData } = supabase.storage.from('packs').getPublicUrl(pack.filename);
             if (!urlData || !urlData.publicUrl) throw new Error('Failed to get pack URL.');
@@ -691,38 +832,84 @@
             return await JSZip.loadAsync(fileBlob);
         }
 
-        function renderItemGrid() {
+        function renderItemGrid(category) {
             const itemGrid = document.getElementById('item-grid');
-            const itemKeys = Object.keys(foundAssets.items);
-            if (itemKeys.length === 0) {
-                itemGrid.innerHTML = `<p class="preview-placeholder-text" style="grid-column: 1 / -1;">No standard items found in this pack.</p>`;
+            const variantContainer = document.getElementById('tool-variant-container');
+            variantContainer.innerHTML = ''; // Clear variants
+            const itemsInCategory = Object.keys(foundAssets.items).filter(key => foundAssets.items[key].category === category);
+            
+            if (itemsInCategory.length === 0) {
+                itemGrid.innerHTML = `<p class="preview-placeholder-text" style="grid-column: 1 / -1;">No ${category.toLowerCase()} found in this pack.</p>`;
                 return;
             }
-            itemGrid.innerHTML = itemKeys.map(key => `
-                <div class="item-icon-card" data-key="${key}">
+            
+            const uniqueGroups = {};
+            itemsInCategory.forEach(key => {
+                const item = foundAssets.items[key];
+                if (item.group) {
+                    if (!uniqueGroups[item.group]) uniqueGroups[item.group] = key;
+                } else {
+                    uniqueGroups[key] = key;
+                }
+            });
+
+            itemGrid.innerHTML = Object.values(uniqueGroups).map(key => `
+                <div class="item-icon-card" data-key="${key}" data-group="${foundAssets.items[key].group || ''}">
                     <img src="${foundAssets.items[key].url}" alt="${key.replace(/_/g, ' ')}">
                 </div>`).join('');
             
             itemGrid.querySelectorAll('.item-icon-card').forEach(card => {
                 card.addEventListener('click', () => {
-                    document.querySelectorAll('.item-icon-card, .gui-selection-item').forEach(c => c.classList.remove('active'));
+                    document.querySelectorAll('.item-icon-card').forEach(c => c.classList.remove('active'));
                     card.classList.add('active');
                     const key = card.dataset.key;
-                    currentItemPreview.key = key;
-                    currentItemPreview.isEnchantActive = false;
-                    const isEnchantable = ENCHANTABLE_ITEMS.includes(key);
-                    const enchantBtn = document.getElementById('item-enchant-btn');
-                    enchantBtn.style.display = isEnchantable ? 'flex' : 'none';
-                    enchantBtn.classList.remove('active');
-                    displayItemOnCanvas('item-viewer-canvas', foundAssets.items[key].url, false);
+                    const group = card.dataset.group;
+                    
+                    if (group) { // It's a tool with variants
+                        renderToolVariants(group, key);
+                    } else { // It's a standalone item
+                        variantContainer.innerHTML = '';
+                    }
+
+                    displaySelectedItem(key);
                 });
             });
-            const diamondSwordCard = itemGrid.querySelector('.item-icon-card[data-key="diamond_sword"]');
-            if (diamondSwordCard) {
-                diamondSwordCard.click();
-            } else if (itemGrid.firstChild) {
-                itemGrid.firstChild.click();
-            }
+            if (itemGrid.firstChild) itemGrid.firstChild.click();
+        }
+        
+        function renderToolVariants(group, selectedKey) {
+            const variantContainer = document.getElementById('tool-variant-container');
+            const variants = Object.keys(foundAssets.items).filter(key => foundAssets.items[key].group === group);
+            variantContainer.innerHTML = variants.map(key => {
+                const material = key.split('_')[0];
+                return `<div class="tool-variant-item ${key === selectedKey ? 'active' : ''}" data-key="${key}" title="${material}">
+                            <img src="${TOOL_VARIANT_ICONS[material]}">
+                        </div>`;
+            }).join('');
+            
+            variantContainer.querySelectorAll('.tool-variant-item').forEach(item => {
+                item.addEventListener('click', () => {
+                     variantContainer.querySelectorAll('.tool-variant-item').forEach(i => i.classList.remove('active'));
+                     item.classList.add('active');
+                     displaySelectedItem(item.dataset.key);
+                });
+            });
+        }
+        
+        function displaySelectedItem(key) {
+             currentItemPreview.key = key;
+             currentItemPreview.isEnchantActive = (key === 'enchanted_golden_apple');
+             const isEnchantable = ENCHANTABLE_ITEMS.includes(key);
+             const enchantBtn = document.getElementById('item-enchant-btn');
+             enchantBtn.style.display = isEnchantable ? 'flex' : 'none';
+             enchantBtn.classList.toggle('active', currentItemPreview.isEnchantActive);
+             
+             // Special handling for potions
+             if (foundAssets.items[key]?.isOverlay) {
+                 displayPotionOnCanvas('item-viewer-canvas', foundAssets.items[key].url);
+             } else {
+                 displayItemOnCanvas('item-viewer-canvas', foundAssets.items[key].url, currentItemPreview.isEnchantActive);
+             }
         }
 
         function renderGuiSelectionList() {
@@ -752,6 +939,22 @@
             else if (guiList.firstChild) { guiList.firstChild.click(); }
         }
         
+        function renderSkyPreview() {
+            const dayBox = document.getElementById('day-sky-preview');
+            const nightBox = document.getElementById('night-sky-preview');
+            
+            if (foundAssets.sky.day_sky) {
+                dayBox.style.backgroundImage = `url(${foundAssets.sky.day_sky.url})`;
+            } else {
+                dayBox.innerHTML = '<h4>Day</h4><p class="preview-placeholder-text">Not found</p>';
+            }
+            if (foundAssets.sky.night_sky) {
+                nightBox.style.backgroundImage = `url(${foundAssets.sky.night_sky.url})`;
+            } else {
+                nightBox.innerHTML = '<h4>Night</h4><p class="preview-placeholder-text">Not found</p>';
+            }
+        }
+        
         async function displayItemOnCanvas(canvasId, url, enchanted = false) {
             const canvas = document.getElementById(canvasId);
             if(!canvas) return;
@@ -767,6 +970,39 @@
             const x = (canvas.width - drawWidth) / 2;
             const y = (canvas.height - drawHeight) / 2;
             ctx.drawImage(img, x, y, drawWidth, drawHeight);
+        }
+
+        async function displayPotionOnCanvas(canvasId, overlayUrl) {
+            const canvas = document.getElementById(canvasId);
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw base potion bottle (gray)
+            ctx.fillStyle = '#C6C6C6'; // A neutral gray
+            const baseImg = await loadImage(foundAssets.items.splash_potion.url); // Use splash potion as base shape
+            
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = baseImg.width; tempCanvas.height = baseImg.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(baseImg, 0, 0);
+            tempCtx.globalCompositeOperation = 'source-in';
+            tempCtx.fillStyle = '#F87D7D'; // Health potion color
+            tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            
+            const paddingFactor = 0.7;
+            const scale = Math.min(canvas.width / tempCanvas.width, canvas.height / tempCanvas.height) * paddingFactor;
+            const drawWidth = tempCanvas.width * scale;
+            const drawHeight = tempCanvas.height * scale;
+            const x = (canvas.width - drawWidth) / 2;
+            const y = (canvas.height - drawHeight) / 2;
+            
+            ctx.drawImage(tempCanvas, x, y, drawWidth, drawHeight);
+            
+            // Draw overlay
+            const overlayImg = await loadImage(overlayUrl);
+            ctx.drawImage(overlayImg, x, y, drawWidth, drawHeight);
         }
 
         function getEffectiveScale(resolutionString) {
@@ -800,46 +1036,64 @@
         const loadImage = (url) => new Promise((res, rej) => { const i = new Image(); i.crossOrigin = "Anonymous"; i.onload = () => res(i); i.onerror = rej; i.src = url; });
 
         async function createHudPreview() {
+            const yOffset = 15;
             const hudCanvas = document.createElement('canvas'); hudCanvas.width = 182; hudCanvas.height = 60;
             const ctx = hudCanvas.getContext('2d'); ctx.imageSmoothingEnabled = false;
             const iconsSheet = foundAssets.gui.icons ? await loadImage(foundAssets.gui.icons.url) : null;
             const widgetsSheet = foundAssets.gui.widgets ? await loadImage(foundAssets.gui.widgets.url) : null;
             const effectiveScaleFactor = getEffectiveScale(currentPackData?.resolution);
             const BASE_ICON_SIZE = 9, BASE_ICON_SPACING = 8, BASE_ICONS_SHEET_RES = 256, ACTIONBAR_H = 22;
+            
+            const HOTBAR_Y = hudCanvas.height - ACTIONBAR_H;
             if (widgetsSheet) {
                 const S_F_W = widgetsSheet.width / BASE_ICONS_SHEET_RES;
-                ctx.drawImage(widgetsSheet, 0, 0, 182 * S_F_W, ACTIONBAR_H * S_F_W, 0, hudCanvas.height - ACTIONBAR_H, 182, ACTIONBAR_H);
+                ctx.drawImage(widgetsSheet, 0, 0, 182 * S_F_W, ACTIONBAR_H * S_F_W, 0, HOTBAR_Y, 182, ACTIONBAR_H);
             }
+
             if (iconsSheet) {
                 const S_F = iconsSheet.width / BASE_ICONS_SHEET_RES, SRC_ICON_SIZE = BASE_ICON_SIZE * effectiveScaleFactor;
                 const X_CENTER = hudCanvas.width / 2, X_START_LEFT = X_CENTER - 91, X_START_RIGHT = X_CENTER + 91 - BASE_ICON_SIZE;
-                const HEALTH_Y = hudCanvas.height - ACTIONBAR_H - BASE_ICON_SIZE, ARMOR_Y = HEALTH_Y - BASE_ICON_SIZE, HUNGER_Y = HEALTH_Y;
+                const HEALTH_Y = HOTBAR_Y - BASE_ICON_SIZE - yOffset;
+                const ARMOR_Y = HEALTH_Y - BASE_ICON_SIZE;
+                const HUNGER_Y = HEALTH_Y;
+                
+                // Health
                 for (let i = 0; i < 10; i++) {
                     const X_POS = X_START_LEFT + (i * BASE_ICON_SPACING); 
                     ctx.drawImage(iconsSheet, 16 * S_F, 0, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, HEALTH_Y, BASE_ICON_SIZE, BASE_ICON_SIZE);
                     if (i < 8) ctx.drawImage(iconsSheet, 52 * S_F, 0, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, HEALTH_Y, BASE_ICON_SIZE, BASE_ICON_SIZE);
                 }
                 ctx.drawImage(iconsSheet, 61 * S_F, 0, SRC_ICON_SIZE, SRC_ICON_SIZE, X_START_LEFT + (8 * BASE_ICON_SPACING), HEALTH_Y, BASE_ICON_SIZE, BASE_ICON_SIZE);
+                
+                // Armor
                 for (let i = 0; i < 10; i++) {
                     const X_POS = X_START_LEFT + (i * BASE_ICON_SPACING);
                     ctx.drawImage(iconsSheet, 16 * S_F, 9 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, ARMOR_Y, BASE_ICON_SIZE, BASE_ICON_SIZE);
                     if (i < 8) ctx.drawImage(iconsSheet, 34 * S_F, 9 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, ARMOR_Y, BASE_ICON_SIZE, BASE_ICON_SIZE);
                 }
+                
+                // Hunger
                 for (let i = 0; i < 10; i++) {
                     const X_POS = X_START_RIGHT - (i * BASE_ICON_SPACING); 
                     ctx.drawImage(iconsSheet, 16 * S_F, 27 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, HUNGER_Y, BASE_ICON_SIZE, BASE_ICON_SIZE);
                     if(i < 7) ctx.drawImage(iconsSheet, 52 * S_F, 27 * S_F, SRC_ICON_SIZE, SRC_ICON_SIZE, X_POS, HUNGER_Y, BASE_ICON_SIZE, BASE_ICON_SIZE);
                 }
-                const XP_Y = hudCanvas.height - ACTIONBAR_H, XP_SRC_W = 182 * S_F, XP_SRC_H = 5 * S_F;
+
+                // XP Bar
+                const XP_Y = HOTBAR_Y - yOffset;
+                const XP_SRC_W = 182 * S_F, XP_SRC_H = 5 * S_F;
                 ctx.drawImage(iconsSheet, 0, 64 * S_F, XP_SRC_W, XP_SRC_H, 0, XP_Y - 5, hudCanvas.width, 5); 
                 ctx.drawImage(iconsSheet, 0, 69 * S_F, 120 * S_F, XP_SRC_H, 0, XP_Y - 5, 120, 5); 
+                
+                // XP Level Text
+                const FONT_SIZE = 10; 
+                ctx.font = `bold ${FONT_SIZE}px Inter, sans-serif`; ctx.fillStyle = '#80FF20';
+                ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1; ctx.shadowBlur = 1;
+                const levelText = '17'; const textWidth = ctx.measureText(levelText).width;
+                ctx.fillText(levelText, (hudCanvas.width / 2) - (textWidth / 2), XP_Y - 7); 
+                ctx.shadowColor = "transparent";
             }
-            const FONT_SIZE = 10; 
-            ctx.font = `bold ${FONT_SIZE}px Inter, sans-serif`; ctx.fillStyle = '#80FF20';
-            ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1; ctx.shadowBlur = 1;
-            const levelText = '17'; const textWidth = ctx.measureText(levelText).width;
-            ctx.fillText(levelText, (hudCanvas.width / 2) - (textWidth / 2), hudCanvas.height - ACTIONBAR_H + 9); 
-            ctx.shadowColor = "transparent"; return hudCanvas;
+            return hudCanvas;
         }
 
         async function createCrosshairPreview(iconsSheetUrl) {
@@ -1063,7 +1317,6 @@
                 targetContainer.querySelector('form').addEventListener('submit', handleCommentSubmit);
                 if(parentId) targetContainer.querySelector('.cancel-reply-btn').addEventListener('click', () => targetContainer.innerHTML = '');
             } else {
-                 // UPDATED: No redundant button for logged-out users
                  targetContainer.innerHTML = `<div class="comment-form-container"><div class="comment-avatar" style="background:var(--bg-2); display:grid; place-items:center;"><i class="fa-solid fa-user"></i></div><div class="comment-form"><textarea class="comment-textarea" placeholder="Please log in to leave a review" disabled></textarea></div></div>`;
             }
         }
@@ -1211,4 +1464,3 @@
     </script>
 </body>
 </html>
-
