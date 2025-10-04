@@ -239,6 +239,10 @@
         .tool-variant-item img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
         .tool-variant-item:hover { border-color: var(--text); }
         .tool-variant-item.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); }
+        
+        .gui-panel-layout { display: flex; gap: 1rem; align-items: flex-start; }
+        .gui-panel-layout > div:first-child { flex: 1; }
+        .gui-panel-layout > div:last-child { flex: 1; max-height: 400px; overflow-y: auto; }
 
         @media (min-width: 993px) {
             .pack-layout {
@@ -254,7 +258,11 @@
             .pack-title-area h1 { order: 1; }
             .pack-reviews-and-meta { order: 2; }
         }
-        @media (max-width: 768px) { .nav-actions { display: none; } .mobile-nav-toggle { display: block; } }
+        @media (max-width: 768px) { 
+            .nav-actions { display: none; } .mobile-nav-toggle { display: block; } 
+            .gui-panel-layout { flex-direction: column; }
+            .gui-panel-layout > div:last-child { max-height: 200px; }
+        }
         @media (max-width: 480px) {
             .pack-header-actions { flex-basis: 100%; margin-top: 1rem; }
             .pack-header-actions .btn { width: 100%; }
@@ -604,10 +612,12 @@
                                     </div>
                                 </div>
                                 <div id="gui-panel" class="preview-panel">
-                                    <div id="gui-viewer-container"><img id="gui-viewer-canvas" /></div>
-                                    <div id="gui-list-container">
-                                        <div id="gui-list" class="gui-selection-list"></div>
-                                        <div id="gui-loader"><p class="preview-placeholder-text">Click tab to load preview</p></div>
+                                    <div class="gui-panel-layout">
+                                        <div id="gui-viewer-container"><img id="gui-viewer-canvas" /></div>
+                                        <div id="gui-list-container">
+                                            <div id="gui-list" class="gui-selection-list"></div>
+                                            <div id="gui-loader"><p class="preview-placeholder-text">Click tab to load preview</p></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
