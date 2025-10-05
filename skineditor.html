@@ -494,6 +494,30 @@
         });
 
         // --- Core Functions ---
+
+        // ✅ NEW: This function correctly updates all materials in the 3D viewers.
+        function refreshSkinTextures() {
+            [editorSkinViewer, previewSkinViewer].forEach(viewer => {
+                if (!viewer.playerObject?.skin) return;
+
+                // playerObject.skin contains body parts like 'head', 'body', etc.
+                for (const part of Object.values(viewer.playerObject.skin)) {
+                    // Each part can have 'innerLayer' and 'outerLayer' which are THREE.Group
+                    if (part) {
+                        for (const layer of Object.values(part)) {
+                            if (layer && layer.isGroup) {
+                                layer.traverse(child => {
+                                    if (child.isMesh && child.material && child.material.map) {
+                                        child.material.map.needsUpdate = true;
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
         async function update3DViewers(forceRedraw = false) {
             const isSlim = document.getElementById('alex-model-btn').classList.contains('active');
             const currentModel = isSlim ? 'slim' : 'default';
@@ -509,8 +533,8 @@
                     syncVisibility();
                 }
                 
-                if (editorSkinViewer.playerObject) editorSkinViewer.playerObject.skin.map.needsUpdate = true;
-                if (previewSkinViewer.playerObject) previewSkinViewer.playerObject.skin.map.needsUpdate = true;
+                // The old incorrect lines are removed from here.
+                // We now call refreshSkinTextures() directly after a draw operation.
                 
             } catch (err) {
                 console.error("Failed to load skin into viewers:", err);
@@ -630,15 +654,14 @@
         }
 
         function drawOnMasterCanvas(pos) {
-             if (!pos) return;
+            if (!pos) return;
             if (currentTool === 'pencil') {
                 masterCtx.fillStyle = colorPicker.value;
                 masterCtx.fillRect(pos.x, pos.y, 1, 1);
             } else if (currentTool === 'eraser') {
                 masterCtx.clearRect(pos.x, pos.y, 1, 1);
             }
-            if (editorSkinViewer.playerObject) editorSkinViewer.playerObject.skin.map.needsUpdate = true;
-            if (previewSkinViewer.playerObject) previewSkinViewer.playerObject.skin.map.needsUpdate = true;
+            refreshSkinTextures(); // ✅ Forces both viewers to update live
         }
         
         function drawTextureLineOnMaster(x0, y0, x1, y1) {
@@ -683,6 +706,7 @@
                 }
             }
             masterCtx.putImageData(imageData, 0, 0);
+            refreshSkinTextures(); // ✅ Call refresh after filling
         }
 
 
@@ -701,7 +725,6 @@
             
             if (currentTool === 'bucket' && !isDrawing) {
                 floodFill(pos.x, pos.y);
-                update3DViewers(); 
                 saveState();
                 return;
             }
@@ -949,4 +972,3 @@
     </script>
 </body>
 </html>
-
