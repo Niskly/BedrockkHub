@@ -83,7 +83,7 @@
         }
         .tool-btn i { color: var(--brand-1); transition: color 0.2s; }
         .tool-btn:hover { border-color: var(--border-strong); background: var(--bg-1); }
-        .tool-btn.active { background: var(--brand-1); color: white; border-color: var(--brand-2); }
+        .tool-btn.active { background: var(--brand-1); color: white; border-color: var(--brand-2); box-shadow: var(--shadow-brand); }
         .tool-btn.active i { color: white; }
         .tool-btn[disabled] { opacity: 0.5; cursor: not-allowed; background: var(--bg-2); border-color: var(--border); }
         .tool-btn[disabled] i { color: var(--muted); }
@@ -478,6 +478,7 @@
         let recentColors = JSON.parse(localStorage.getItem('recentColors')) || [];
         let isDrawingOn3D = false;
         let lastTexturePos = null;
+        let isSkinDirty = false;
         
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
@@ -510,26 +511,19 @@
         });
 
         // --- Core Rendering Logic ---
-        async function update3DViewers(forceRedraw = false) {
+        async function forceViewerUpdate() {
             const isSlim = document.getElementById('alex-model-btn').classList.contains('active');
             const currentModel = isSlim ? 'slim' : 'default';
             const dataUrl = masterCanvas.toDataURL();
-
-            if (forceRedraw) {
-                try {
-                    await Promise.all([
-                        previewSkinViewer.loadSkin(dataUrl, { model: currentModel }),
-                        editorSkinViewer.loadSkin(dataUrl, { model: currentModel })
-                    ]);
-                } catch (err) {
-                    console.error("Failed to load skin into viewers:", err);
-                    showToast("Error updating 3D preview.", "error");
-                }
-            } else {
-                if (editorSkinViewer.playerObject) editorSkinViewer.playerObject.skin.map.needsUpdate = true;
-                if (previewSkinViewer.playerObject) previewSkinViewer.playerObject.skin.map.needsUpdate = true;
+            try {
+                await Promise.all([
+                    previewSkinViewer.loadSkin(dataUrl, { model: currentModel }),
+                    editorSkinViewer.loadSkin(dataUrl, { model: currentModel })
+                ]);
+                syncVisibility(); 
+            } catch (err) {
+                console.error("Failed to force update skin viewers:", err);
             }
-            syncVisibility();
         }
         
         function syncVisibility() {
@@ -576,19 +570,19 @@
             historyIndex++;
             updateHistoryButtons();
         }
-        async function undo() {
+        function undo() {
             if (historyIndex > 0) {
                 historyIndex--;
                 masterCtx.putImageData(history[historyIndex], 0, 0);
-                await update3DViewers(true);
+                isSkinDirty = true;
                 updateHistoryButtons();
             }
         }
-        async function redo() {
+        function redo() {
             if (historyIndex < history.length - 1) {
                 historyIndex++;
                 masterCtx.putImageData(history[historyIndex], 0, 0);
-                await update3DViewers(true);
+                isSkinDirty = true;
                 updateHistoryButtons();
             }
         }
@@ -704,32 +698,29 @@
         }
 
         function drawOnMasterCanvas(pos) {
-             if (!pos) return;
+            if (!pos) return;
             if (currentTool === 'pencil') {
                 masterCtx.fillStyle = colorPicker.value;
                 masterCtx.fillRect(pos.x, pos.y, 1, 1);
             } else if (currentTool === 'eraser') {
                 masterCtx.clearRect(pos.x, pos.y, 1, 1);
             }
-            update3DViewers();
+            isSkinDirty = true;
         }
         
         function drawTextureLineOnMaster(x0, y0, x1, y1) {
             const dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
             const dy = -Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
             let err = dx + dy;
-            let pixelDrawn = false;
             while (true) {
                 if(currentTool === 'pencil') { masterCtx.fillStyle = colorPicker.value; masterCtx.fillRect(x0, y0, 1, 1); } 
                 else if (currentTool === 'eraser') { masterCtx.clearRect(x0, y0, 1, 1); }
-                pixelDrawn = true;
-
+                isSkinDirty = true;
                 if (x0 === x1 && y0 === y1) break;
                 let e2 = 2 * err;
                 if (e2 >= dy) { err += dy; x0 += sx; }
                 if (e2 <= dx) { err += dx; y0 += sy; }
             }
-            if (pixelDrawn) update3DViewers();
         }
 
         function hexToRgb(hex) {
@@ -737,7 +728,7 @@
             return result ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)] : null;
         }
 
-        async function floodFill(startX, startY) {
+        function floodFill(startX, startY) {
             const imageData = masterCtx.getImageData(0, 0, masterCanvas.width, masterCanvas.height);
             const { width, height, data } = imageData;
             
@@ -761,7 +752,7 @@
                 }
             }
             masterCtx.putImageData(imageData, 0, 0);
-            await update3DViewers(); 
+            isSkinDirty = true;
         }
 
         function handle3DInteraction(intersection, isDrawing) {
@@ -779,7 +770,8 @@
             }
             
             if (currentTool === 'bucket' && !isDrawing) {
-                floodFill(pos.x, pos.y).then(() => saveState());
+                floodFill(pos.x, pos.y);
+                saveState();
                 return;
             }
 
@@ -875,16 +867,16 @@
             }
             
             const reader = new FileReader();
-            reader.onload = async (event) => {
+            reader.onload = (event) => {
                 const img = new Image();
-                img.onload = async () => {
+                img.onload = () => {
                     const isPowerOfTwo = n => (n > 0) && ((n & (n - 1)) === 0);
                     if (isPowerOfTwo(img.width) && (img.width === img.height || img.width === img.height * 2)) {
                         masterCanvas.width = img.width; masterCanvas.height = img.height;
                         masterCtx.imageSmoothingEnabled = false;
                         masterCtx.clearRect(0, 0, masterCanvas.width, masterCanvas.height);
                         masterCtx.drawImage(img, 0, 0);
-                        await update3DViewers(true);
+                        isSkinDirty = true;
                         history = []; historyIndex = -1;
                         saveState();
                         showToast("Skin loaded successfully!", "success");
@@ -906,10 +898,10 @@
         });
         
         document.getElementById('reset-btn').addEventListener('click', () => {
-            showConfirmation('This will create a blank skin and all unsaved changes will be lost.', async () => {
+            showConfirmation('This will create a blank skin and all unsaved changes will be lost.', () => {
                 masterCanvas.width = 64; masterCanvas.height = 64;
                 masterCtx.clearRect(0, 0, 64, 64);
-                await update3DViewers(true);
+                isSkinDirty = true;
                 history = []; historyIndex = -1;
                 saveState();
                 showToast("New blank skin created.", "success");
@@ -918,10 +910,10 @@
 
         // --- Model & Visibility Controls ---
         document.querySelectorAll('.model-toggle .part-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
+            btn.addEventListener('click', () => {
                 document.querySelectorAll('.model-toggle .part-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                await update3DViewers(true); 
+                isSkinDirty = true;
             });
         });
         
@@ -952,6 +944,10 @@
         }
 
         function continuousRenderLoop() {
+            if (isSkinDirty) {
+                forceViewerUpdate();
+                isSkinDirty = false;
+            }
             previewSkinViewer.render();
             editorSkinViewer.render();
             requestAnimationFrame(continuousRenderLoop);
@@ -967,7 +963,7 @@
                 masterCtx.imageSmoothingEnabled = false; 
                 masterCtx.drawImage(initialImg, 0, 0);
                 
-                await update3DViewers(true); 
+                isSkinDirty = true; // Mark as dirty to trigger initial load in render loop
                 createPixelHighlighter(); 
                 setupVisibilityControls();
                 setupColorPicker();
