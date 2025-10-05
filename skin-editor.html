@@ -181,6 +181,7 @@
         .part-btn.hidden i.fa-eye { display: none; }
         .part-btn.hidden i.fa-eye-slash { display: inline-block; }
         .model-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 1rem; }
+        .panel-title-small { color: var(--muted); font-weight: 600; font-size: 0.8rem; margin-bottom: 0.5rem; }
         
         #toast-container { position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); z-index: 200; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;}
         .toast { padding: 12px 18px; border-radius: 10px; color: white; font-weight: 600; display: flex; align-items: center; gap: 10px; background: var(--bg-1); border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideUp 0.3s ease-out forwards; }
@@ -339,6 +340,7 @@
             </div>
             <div class="panel">
                  <h3 class="panel-title" style="margin-bottom: 1rem;">Editor Model Options</h3>
+                 <div class="panel-title-small">Body</div>
                  <div class="body-parts-grid">
                     <button class="part-btn visible" data-part="head"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> Head</button>
                     <button class="part-btn visible" data-part="body"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> Body</button>
@@ -346,6 +348,15 @@
                     <button class="part-btn visible" data-part="rightArm"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> R. Arm</button>
                     <button class="part-btn visible" data-part="leftLeg"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> L. Leg</button>
                     <button class="part-btn visible" data-part="rightLeg"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> R. Leg</button>
+                 </div>
+                 <div class="panel-title-small" style="margin-top: 1rem;">Overlay</div>
+                 <div class="body-parts-grid">
+                    <button class="part-btn visible" data-part="head2"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> Head</button>
+                    <button class="part-btn visible" data-part="body2"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> Body</button>
+                    <button class="part-btn visible" data-part="leftArm2"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> L. Arm</button>
+                    <button class="part-btn visible" data-part="rightArm2"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> R. Arm</button>
+                    <button class="part-btn visible" data-part="leftLeg2"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> L. Leg</button>
+                    <button class="part-btn visible" data-part="rightLeg2"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> R. Leg</button>
                  </div>
                  <div class="model-toggle">
                      <button class="part-btn visible" id="steve-model-btn" data-model="default">Classic</button>
@@ -457,29 +468,48 @@
             document.getElementById('confirmation-modal-backdrop').style.display = 'none';
             confirmCallback = null;
         });
-
+        
         // --- Core Functions ---
+        function applyViewerPartsVisibility() {
+            document.querySelectorAll('.panel .part-btn[data-part]').forEach(btn => {
+                const partName = btn.dataset.part;
+                const isVisible = btn.classList.contains('visible');
+                if (editorSkinViewer.playerObject?.skin[partName]) {
+                    editorSkinViewer.playerObject.skin[partName].visible = isVisible;
+                }
+                if (previewSkinViewer.playerObject?.skin[partName]) {
+                    previewSkinViewer.playerObject.skin[partName].visible = isVisible;
+                }
+            });
+        }
+
         async function update3DViewers(forceRedraw = false) {
             const currentModel = document.getElementById('alex-model-btn').classList.contains('visible') ? 'slim' : 'default';
-            if (forceRedraw) {
-                const dataUrl = masterCanvas.toDataURL();
-                try {
-                    const previewPromise = previewSkinViewer.loadSkin(dataUrl, { model: currentModel });
-                    const editorPromise = editorSkinViewer.loadSkin(dataUrl, { model: currentModel });
-                    await Promise.all([previewPromise, editorPromise]);
-                } catch (err) {
-                    console.error("Failed to load skin into viewers:", err);
-                    showToast("Error updating 3D preview.", "error");
+            const dataUrl = masterCanvas.toDataURL(); // Get current canvas state
+
+            try {
+                const promises = [];
+                // The editor viewer should always be updated to reflect drawing.
+                if (editorSkinViewer.playerObject) {
+                    promises.push(editorSkinViewer.loadSkin(dataUrl, { model: currentModel }));
                 }
-            } else {
-                 if (editorSkinViewer.playerObject) {
-                    editorSkinViewer.playerObject.skin.map.needsUpdate = true;
-                 }
-                 if (previewSkinViewer.playerObject) {
-                    previewSkinViewer.playerObject.skin.map.needsUpdate = true;
-                 }
+
+                // The preview viewer is only updated on `forceRedraw` (i.e., on mouse up/load) for performance.
+                if (forceRedraw && previewSkinViewer.playerObject) {
+                    promises.push(previewSkinViewer.loadSkin(dataUrl, { model: currentModel }));
+                }
+                
+                await Promise.all(promises);
+                
+                // After loading, re-apply visibility state from buttons, as loadSkin resets it.
+                applyViewerPartsVisibility(); 
+
+            } catch (err) {
+                // console.error("Failed to load skin into viewers:", err);
+                // showToast("Error updating 3D preview.", "error");
             }
         }
+
 
         // --- History (Undo/Redo) ---
         const undoBtn = document.getElementById('undo-btn');
@@ -637,7 +667,7 @@
             }
             
             lastTexturePos = pos;
-            update3DViewers();
+            update3DViewers(); // Update editor view in real-time
         }
         
         function updateLoupe(event) {
@@ -774,12 +804,19 @@
         // --- Model Controls ---
         document.querySelectorAll('.panel .part-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                if(btn.dataset.part) { // Body part toggle
+                if (btn.dataset.part) { // Body part OR Overlay part toggle
                     btn.classList.toggle('visible');
                     btn.classList.toggle('hidden');
                     const partName = btn.dataset.part;
-                    editorSkinViewer.playerObject.skin[partName].visible = btn.classList.contains('visible');
-                    editorSkinViewer.playerObject.skin[`${partName}2`].visible = btn.classList.contains('visible');
+                    const isVisible = btn.classList.contains('visible');
+
+                    // Apply change immediately to both viewers
+                    if (editorSkinViewer.playerObject?.skin[partName]) {
+                        editorSkinViewer.playerObject.skin[partName].visible = isVisible;
+                    }
+                    if (previewSkinViewer.playerObject?.skin[partName]) {
+                        previewSkinViewer.playerObject.skin[partName].visible = isVisible;
+                    }
                 } else if (btn.dataset.model) { // Model type toggle
                     document.querySelectorAll('.model-toggle .part-btn').forEach(b => b.classList.remove('visible'));
                     btn.classList.add('visible');
