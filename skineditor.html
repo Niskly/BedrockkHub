@@ -497,20 +497,21 @@
 
         // ✅ THE FIX: This function correctly updates all materials in the 3D viewers.
 function refreshSkinTextures() {
-    [editorSkinViewer, previewSkinViewer].forEach(viewer => {
-        if (!viewer.playerObject || !viewer.playerObject.skin) return;
+    const dataUrl = masterCanvas.toDataURL();
 
-        Object.values(viewer.playerObject.skin).forEach(part => {
-            if (!part) return;
-            Object.values(part).forEach(layer => {
-                // Even if layer is invisible, update texture
-                if (layer?.material?.map) {
-                    layer.material.map.image = masterCanvas; // reassign canvas as texture
-                    layer.material.map.needsUpdate = true;
-                }
-            });
-        });
+    [editorSkinViewer, previewSkinViewer].forEach(async viewer => {
+        if (!viewer.playerObject) return;
+
+        // reload the skin without changing model type
+        const currentModel = viewer.playerObject.model || 'default';
+        try {
+            await viewer.loadSkin(dataUrl, { model: currentModel, force: true });
+        } catch (err) {
+            console.error("Failed to refresh skin texture:", err);
+        }
     });
+}
+
 }
 
         
