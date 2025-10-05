@@ -431,6 +431,8 @@
         // Apply the shared texture to both viewers
         editorSkinViewer.playerObject.skin.map = sharedTexture;
         previewSkinViewer.playerObject.skin.map = sharedTexture;
+        editorSkinViewer.playerObject.skin.visible = true;
+        previewSkinViewer.playerObject.skin.visible = true;
 
 
         // --- State Management ---
@@ -829,4 +831,3 @@
     </script>
 </body>
 </html>
-
