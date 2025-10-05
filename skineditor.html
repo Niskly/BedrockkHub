@@ -885,30 +885,30 @@ function syncVisibility() {
         const layerName = checkbox.dataset.layer;
 
         [previewSkinViewer, editorSkinViewer].forEach(viewer => {
-            if (viewer.playerObject?.skin) {
-                const skinPart = viewer.playerObject.skin[partName];
-                if (skinPart?.[layerName]) {
-                    skinPart[layerName].visible = isChecked;
+            const skinPart = viewer.playerObject?.skin?.[partName];
+            const layer = skinPart?.[layerName];
+            if (layer) {
+                layer.visible = isChecked;
 
-                    // ✅ Also force the texture to update from masterCanvas
-                    if (skinPart[layerName].material?.map) {
-                        skinPart[layerName].material.map.image = masterCanvas;
-                        skinPart[layerName].material.map.needsUpdate = true;
+                // Traverse every mesh in that layer and force texture update
+                layer.traverse(child => {
+                    if (child.isMesh && child.material?.map) {
+                        child.material.map.image = masterCanvas;
+                        child.material.map.needsUpdate = true;
                     }
+                });
+
+                // Add meshes for raycasting if visible
+                if (isChecked) {
+                    layer.traverse(child => {
+                        if (child.isMesh) raycastableMeshes.push(child);
+                    });
                 }
             }
         });
-
-        if (isChecked) {
-            const group = editorSkinViewer.playerObject.skin[partName]?.[layerName];
-            if (group) {
-                group.traverse(child => {
-                    if (child.isMesh) raycastableMeshes.push(child);
-                });
-            }
-        }
     });
 }
+
 
         
         function setupVisibilityControls() {
