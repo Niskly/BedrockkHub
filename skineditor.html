@@ -10,6 +10,7 @@
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/skinview3d@3.0.1/bundles/skinview3d.bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root {
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
@@ -355,37 +356,37 @@
             <div class="panel">
                  <h3 class="panel-title" style="margin-bottom: 1rem;">Body Parts Visibility</h3>
                  <table id="layers-table" class="body-parts-table">
-                     <thead>
-                         <tr>
-                             <th>Layer</th>
-                             <th>Head</th>
-                             <th>Body</th>
-                             <th>R. Arm</th>
-                             <th>L. Arm</th>
-                             <th>R. Leg</th>
-                             <th>L. Leg</th>
-                         </tr>
-                     </thead>
-                     <tbody>
-                         <tr>
-                             <th>Inner</th>
-                             <td><input type="checkbox" data-layer="innerLayer" data-part="head" checked></td>
-                             <td><input type="checkbox" data-layer="innerLayer" data-part="body" checked></td>
-                             <td><input type="checkbox" data-layer="innerLayer" data-part="rightArm" checked></td>
-                             <td><input type="checkbox" data-layer="innerLayer" data-part="leftArm" checked></td>
-                             <td><input type="checkbox" data-layer="innerLayer" data-part="rightLeg" checked></td>
-                             <td><input type="checkbox" data-layer="innerLayer" data-part="leftLeg" checked></td>
-                         </tr>
-                         <tr>
-                             <th>Outer</th>
-                             <td><input type="checkbox" data-layer="outerLayer" data-part="head" checked></td>
-                             <td><input type="checkbox" data-layer="outerLayer" data-part="body" checked></td>
-                             <td><input type="checkbox" data-layer="outerLayer" data-part="rightArm" checked></td>
-                             <td><input type="checkbox" data-layer="outerLayer" data-part="leftArm" checked></td>
-                             <td><input type="checkbox" data-layer="outerLayer" data-part="rightLeg" checked></td>
-                             <td><input type="checkbox" data-layer="outerLayer" data-part="leftLeg" checked></td>
-                         </tr>
-                     </tbody>
+                       <thead>
+                           <tr>
+                               <th>Layer</th>
+                               <th>Head</th>
+                               <th>Body</th>
+                               <th>R. Arm</th>
+                               <th>L. Arm</th>
+                               <th>R. Leg</th>
+                               <th>L. Leg</th>
+                           </tr>
+                       </thead>
+                       <tbody>
+                           <tr>
+                               <th>Inner</th>
+                               <td><input type="checkbox" data-layer="innerLayer" data-part="head" checked></td>
+                               <td><input type="checkbox" data-layer="innerLayer" data-part="body" checked></td>
+                               <td><input type="checkbox" data-layer="innerLayer" data-part="rightArm" checked></td>
+                               <td><input type="checkbox" data-layer="innerLayer" data-part="leftArm" checked></td>
+                               <td><input type="checkbox" data-layer="innerLayer" data-part="rightLeg" checked></td>
+                               <td><input type="checkbox" data-layer="innerLayer" data-part="leftLeg" checked></td>
+                           </tr>
+                           <tr>
+                               <th>Outer</th>
+                               <td><input type="checkbox" data-layer="outerLayer" data-part="head" checked></td>
+                               <td><input type="checkbox" data-layer="outerLayer" data-part="body" checked></td>
+                               <td><input type="checkbox" data-layer="outerLayer" data-part="rightArm" checked></td>
+                               <td><input type="checkbox" data-layer="outerLayer" data-part="leftArm" checked></td>
+                               <td><input type="checkbox" data-layer="outerLayer" data-part="rightLeg" checked></td>
+                               <td><input type="checkbox" data-layer="outerLayer" data-part="leftLeg" checked></td>
+                           </tr>
+                       </tbody>
                  </table>
                  <div class="model-toggle">
                     <button class="part-btn active" id="steve-model-btn" data-model="default">Steve</button>
@@ -411,13 +412,13 @@
     
     <canvas id="master-skin-canvas" style="display: none;"></canvas>
 
-    <!-- These scripts are placeholders for your Vercel setup -->
-    <!-- <script type="module" src="/theme.js"></script> -->
-    <!-- <script type="module" src="/auth.js"></script> -->
-    <!-- <script type="module" src="/supabase-client.js"></script> -->
-    
     <script type="module">
         // --- 3D Viewer Setup ---
+        let pixelHighlighter;
+        let raycaster = new THREE.Raycaster();
+        let mouse = new THREE.Vector2();
+        let raycastableMeshes = [];
+
         const previewSkinViewer = new skinview3d.SkinViewer({
             canvas: document.getElementById("preview-skin-viewer"),
             skin: "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png"
@@ -504,10 +505,13 @@
                         previewSkinViewer.loadSkin(dataUrl, { model: currentModel }),
                         editorSkinViewer.loadSkin(dataUrl, { model: currentModel })
                     ]);
-                } else {
-                    if (editorSkinViewer.playerObject) editorSkinViewer.playerObject.skin.map.needsUpdate = true;
-                    if (previewSkinViewer.playerObject) previewSkinViewer.playerObject.skin.map.needsUpdate = true;
+                    // After reloading the skin, its state is reset. We must re-apply our UI's visibility settings.
+                    syncVisibility();
                 }
+                
+                if (editorSkinViewer.playerObject) editorSkinViewer.playerObject.skin.map.needsUpdate = true;
+                if (previewSkinViewer.playerObject) previewSkinViewer.playerObject.skin.map.needsUpdate = true;
+                
             } catch (err) {
                 console.error("Failed to load skin into viewers:", err);
                 showToast("Error updating 3D preview.", "error");
@@ -530,7 +534,6 @@
                 historyIndex--;
                 masterCtx.putImageData(history[historyIndex], 0, 0);
                 await update3DViewers(true);
-                setupVisibilityControls();
                 updateHistoryButtons();
             }
         }
@@ -539,7 +542,6 @@
                 historyIndex++;
                 masterCtx.putImageData(history[historyIndex], 0, 0);
                 await update3DViewers(true);
-                setupVisibilityControls();
                 updateHistoryButtons();
             }
         }
@@ -603,18 +605,28 @@
             editorSkinViewer.camera.fov = Math.min(100, editorSkinViewer.camera.fov + 5);
             editorSkinViewer.camera.updateProjectionMatrix();
         });
+
+        // --- Raycasting and Drawing Logic ---
+        function getIntersection(event) {
+            if (!editorSkinViewer.playerObject || raycastableMeshes.length === 0) return null;
+            
+            const bounds = editorCanvas.getBoundingClientRect();
+            mouse.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
+            mouse.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, editorSkinViewer.camera);
+            const intersects = raycaster.intersectObjects(raycastableMeshes, true);
+
+            return intersects.length > 0 ? intersects[0] : null;
+        }
         
-        // --- Direct 3D Drawing Logic ---
-        function get3DTexturePos(event) {
-            try {
-                const result = editorSkinViewer.raycaster.cast(event);
-                if (!result) return null;
-                const { uv } = result;
-                return { 
-                    x: Math.floor(uv.x * masterCanvas.width), 
-                    y: Math.floor(uv.y * masterCanvas.height) 
-                };
-            } catch (err) { return null; }
+        function getTexturePosFromIntersection(intersection) {
+            if (!intersection || !intersection.uv) return null;
+            const { uv } = intersection;
+            return {
+                x: Math.floor(uv.x * masterCanvas.width),
+                y: Math.floor((1.0 - uv.y) * masterCanvas.height)
+            };
         }
 
         function drawOnMasterCanvas(pos) {
@@ -625,6 +637,8 @@
             } else if (currentTool === 'eraser') {
                 masterCtx.clearRect(pos.x, pos.y, 1, 1);
             }
+            if (editorSkinViewer.playerObject) editorSkinViewer.playerObject.skin.map.needsUpdate = true;
+            if (previewSkinViewer.playerObject) previewSkinViewer.playerObject.skin.map.needsUpdate = true;
         }
         
         function drawTextureLineOnMaster(x0, y0, x1, y1) {
@@ -650,48 +664,35 @@
             const { width, height, data } = imageData;
             
             const startIdx = (startY * width + startX) * 4;
-            const startR = data[startIdx];
-            const startG = data[startIdx+1];
-            const startB = data[startIdx+2];
-            const startA = data[startIdx+3];
+            const startR = data[startIdx], startG = data[startIdx+1], startB = data[startIdx+2], startA = data[startIdx+3];
 
             const fillRgb = hexToRgb(colorPicker.value);
             if (!fillRgb) return;
             const [fillR, fillG, fillB] = fillRgb;
-            
             if (startR === fillR && startG === fillG && startB === fillB && startA === 255) return;
 
             const pixelStack = [[startX, startY]];
-            
             while (pixelStack.length) {
                 const [x, y] = pixelStack.pop();
-                const currentIdx = (y * width + x) * 4;
-
                 if (x < 0 || x >= width || y < 0 || y >= height) continue;
-
-                if (data[currentIdx] === startR && data[currentIdx + 1] === startG && data[currentIdx + 2] === startB && data[currentIdx + 3] === startA) {
-                    data[currentIdx] = fillR;
-                    data[currentIdx + 1] = fillG;
-                    data[currentIdx + 2] = fillB;
-                    data[currentIdx + 3] = 255; // Always fill with full alpha
-
-                    pixelStack.push([x + 1, y]);
-                    pixelStack.push([x - 1, y]);
-                    pixelStack.push([x, y + 1]);
-                    pixelStack.push([x, y - 1]);
+                
+                const currentIdx = (y * width + x) * 4;
+                if (data[currentIdx] === startR && data[currentIdx+1] === startG && data[currentIdx+2] === startB && data[currentIdx+3] === startA) {
+                    data[currentIdx] = fillR; data[currentIdx+1] = fillG; data[currentIdx+2] = fillB; data[currentIdx+3] = 255;
+                    pixelStack.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
                 }
             }
             masterCtx.putImageData(imageData, 0, 0);
         }
 
 
-        async function handle3DInteraction(event, isDrawing) {
-            const pos = get3DTexturePos(event);
+        function handle3DInteraction(intersection, isDrawing) {
+            const pos = getTexturePosFromIntersection(intersection);
             if (!pos) return;
 
             if (currentTool === 'picker') {
                 const pixelData = masterCtx.getImageData(pos.x, pos.y, 1, 1).data;
-                if (pixelData[3] > 0) { // check alpha
+                if (pixelData[3] > 0) {
                     const hexColor = "#" + ("000000" + ((pixelData[0] << 16) | (pixelData[1] << 8) | pixelData[2]).toString(16)).slice(-6);
                     colorPicker.value = hexColor;
                 }
@@ -700,8 +701,7 @@
             
             if (currentTool === 'bucket' && !isDrawing) {
                 floodFill(pos.x, pos.y);
-                await update3DViewers(true);
-                setupVisibilityControls();
+                update3DViewers(); 
                 saveState();
                 return;
             }
@@ -715,22 +715,20 @@
             } else { 
                 drawOnMasterCanvas(pos);
             }
-            
             lastTexturePos = pos;
-            update3DViewers();
         }
         
-        function updateLoupe(event) {
-            if (currentTool !== 'picker') {
+        function updateLoupe(intersection, event) {
+            if (currentTool !== 'picker' || !intersection || !event) {
                 loupeCanvas.style.display = 'none';
                 return;
             }
+            const pos = getTexturePosFromIntersection(intersection);
+            if (!pos) return;
+            
             loupeCanvas.style.display = 'block';
             loupeCanvas.style.left = `${event.clientX - 60}px`;
             loupeCanvas.style.top = `${event.clientY - 60}px`;
-
-            const pos = get3DTexturePos(event);
-            if (!pos) return;
 
             const zoomFactor = 7;
             const pixelSize = loupeCanvas.width / zoomFactor;
@@ -740,7 +738,6 @@
                 pos.x - Math.floor(zoomFactor / 2), pos.y - Math.floor(zoomFactor / 2), zoomFactor, zoomFactor, 
                 0, 0, loupeCanvas.width, loupeCanvas.height);
             
-            // Draw crosshair
             const center = Math.floor(zoomFactor/2) * pixelSize;
             loupeCtx.strokeStyle = 'rgba(255,255,255,0.8)';
             loupeCtx.lineWidth = 2;
@@ -748,19 +745,36 @@
         }
 
         const editorCanvas = editorSkinViewer.canvas;
+
         editorCanvas.addEventListener('mousedown', (e) => {
-            if (e.button !== 0) return; // Only main click
+            if (e.button !== 0) return; 
+            const intersection = getIntersection(e);
+            if (!intersection) return;
             isDrawingOn3D = true;
-            handle3DInteraction(e, false);
+            handle3DInteraction(intersection, false);
         });
+
         editorCanvas.addEventListener('mousemove', (e) => {
-            updateLoupe(e);
-            if (isDrawingOn3D) {
-                handle3DInteraction(e, true);
+            const intersection = getIntersection(e);
+            updateLoupe(intersection, e);
+            
+            if (intersection && intersection.face && pixelHighlighter) {
+                pixelHighlighter.visible = true;
+                const normal = intersection.face.normal.clone();
+                const worldNormal = normal.transformDirection(intersection.object.matrixWorld);
+                pixelHighlighter.position.copy(intersection.point).addScaledVector(worldNormal, 0.05);
+                pixelHighlighter.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), worldNormal);
+            } else if (pixelHighlighter) {
+                pixelHighlighter.visible = false;
+            }
+
+            if (isDrawingOn3D && intersection) {
+                handle3DInteraction(intersection, true);
             }
         });
+
         const stopDrawing = () => {
-            if (isDrawingOn3D && (currentTool === 'pencil' || currentTool === 'eraser')) {
+            if (isDrawingOn3D && (currentTool === 'pencil' || currentTool === 'eraser' || currentTool === 'bucket')) {
                 saveState();
             }
             isDrawingOn3D = false;
@@ -770,7 +784,9 @@
         editorCanvas.addEventListener('mouseleave', () => {
             stopDrawing();
             loupeCanvas.style.display = 'none';
+            if (pixelHighlighter) pixelHighlighter.visible = false;
         });
+
 
         // --- FILE HANDLING ---
         const uploadInput = document.getElementById('upload-skin-input');
@@ -778,34 +794,28 @@
             const file = e.target.files[0];
             if (!file || file.type !== "image/png") { 
                 if(file) showToast("Invalid file type. Please upload a .png file.", "error");
-                e.target.value = '';
-                return;
+                e.target.value = ''; return;
             }
             
             const reader = new FileReader();
             reader.onload = async (event) => {
-                const dataUrl = event.target.result;
                 const img = new Image();
                 img.onload = async () => {
                     const isPowerOfTwo = n => (n > 0) && ((n & (n - 1)) === 0);
                     if (isPowerOfTwo(img.width) && (img.width === img.height || img.width === img.height * 2)) {
-                        masterCanvas.width = img.width;
-                        masterCanvas.height = img.height;
+                        masterCanvas.width = img.width; masterCanvas.height = img.height;
                         masterCtx.imageSmoothingEnabled = false;
                         masterCtx.clearRect(0, 0, masterCanvas.width, masterCanvas.height);
                         masterCtx.drawImage(img, 0, 0);
-
                         await update3DViewers(true);
-                        setupVisibilityControls();
-                        history = [];
-                        historyIndex = -1;
+                        history = []; historyIndex = -1;
                         saveState();
                         showToast("Skin loaded successfully!", "success");
                     } else {
                          showToast(`Invalid skin dimensions (${img.width}x${img.height}).`, "error");
                     }
                 };
-                img.src = dataUrl;
+                img.src = event.target.result;
             };
             reader.readAsDataURL(file);
             e.target.value = '';
@@ -820,25 +830,21 @@
         
         document.getElementById('reset-btn').addEventListener('click', () => {
             showConfirmation('This will create a blank skin and all unsaved changes will be lost.', async () => {
-                masterCanvas.width = 64;
-                masterCanvas.height = 64;
+                masterCanvas.width = 64; masterCanvas.height = 64;
                 masterCtx.clearRect(0, 0, 64, 64);
                 await update3DViewers(true);
-                setupVisibilityControls();
-                history = [];
-                historyIndex = -1;
+                history = []; historyIndex = -1;
                 saveState();
                 showToast("New blank skin created.", "success");
             });
         });
 
-        // --- Model Controls ---
+        // --- Model & Visibility Controls ---
         document.querySelectorAll('.model-toggle .part-btn').forEach(btn => {
             btn.addEventListener('click', async () => {
                 document.querySelectorAll('.model-toggle .part-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 await update3DViewers(true); 
-                setupVisibilityControls();
             });
         });
         
@@ -849,39 +855,67 @@
             playPauseBtn.title = previewSkinViewer.autoRotate ? 'Pause Animation' : 'Play Animation';
         });
 
-        const gridBgToggle = document.getElementById('grid-bg-toggle');
-        gridBgToggle.addEventListener('change', () => {
-            document.querySelector('.editor-area').classList.toggle('solid-bg', !gridBgToggle.checked);
+        document.getElementById('grid-bg-toggle').addEventListener('change', (e) => {
+            document.querySelector('.editor-area').classList.toggle('solid-bg', !e.target.checked);
         });
 
-        // --- Body Part Visibility ---
-        const visibilityChangeHandler = (e) => {
-            const checkbox = e.target;
-            const part = checkbox.dataset.part;
-            const layer = checkbox.dataset.layer;
-            const isVisible = checkbox.checked;
+        // FIX: This function is the single source of truth for visibility.
+        // It syncs the 3D model's state to match the checkboxes and rebuilds the clickable mesh list.
+        function syncVisibility() {
+            raycastableMeshes = [];
+            if (!editorSkinViewer.playerObject) return;
 
-            if (!part || !layer) return;
+            const checkboxes = document.querySelectorAll('#layers-table input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                const isChecked = checkbox.checked;
+                const partName = checkbox.dataset.part;
+                const layerName = checkbox.dataset.layer;
 
-            [previewSkinViewer, editorSkinViewer].forEach(viewer => {
-                if (viewer && viewer.playerObject && viewer.playerObject.skin) {
-                    const skinPart = viewer.playerObject.skin[part];
-                    if (skinPart && typeof skinPart[layer] !== 'undefined') {
-                        skinPart[layer].visible = isVisible;
+                // Update visibility on both viewers' models
+                [previewSkinViewer, editorSkinViewer].forEach(viewer => {
+                    if (viewer.playerObject?.skin) {
+                        const skinPart = viewer.playerObject.skin[partName];
+                        if (skinPart?.[layerName]) {
+                            skinPart[layerName].visible = isChecked;
+                        }
+                    }
+                });
+
+                // If the checkbox is checked, add the corresponding meshes to the clickable list
+                if (isChecked) {
+                    const group = editorSkinViewer.playerObject.skin[partName]?.[layerName];
+                    if (group) {
+                        group.traverse(child => {
+                            if (child.isMesh) {
+                                raycastableMeshes.push(child);
+                            }
+                        });
                     }
                 }
             });
-        };
-
+        }
+        
         function setupVisibilityControls() {
-            const checkboxes = document.querySelectorAll('#layers-table input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
-                checkbox.removeEventListener('change', visibilityChangeHandler);
-                checkbox.addEventListener('change', visibilityChangeHandler);
+            document.querySelectorAll('#layers-table input[type="checkbox"]').forEach(checkbox => {
+                // When a checkbox changes, just re-run the sync logic
+                checkbox.addEventListener('change', syncVisibility);
             });
         }
         
         // --- INITIAL LOAD ---
+        function createPixelHighlighter() {
+            const highlightGeometry = new THREE.PlaneGeometry(1.05, 1.05); // Slightly larger
+            const wireframeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, side: THREE.DoubleSide });
+            pixelHighlighter = new THREE.Mesh(highlightGeometry, wireframeMaterial);
+            pixelHighlighter.visible = false;
+            editorSkinViewer.scene.add(pixelHighlighter);
+        }
+
+        function editorRenderLoop() {
+            requestAnimationFrame(editorRenderLoop);
+            editorSkinViewer.render();
+        }
+
         async function initializeEditor() {
             const initialSkinUrl = previewSkinViewer.skinUrl;
             const initialImg = new Image();
@@ -889,17 +923,21 @@
             initialImg.onload = async () => {
                 masterCanvas.width = initialImg.width;
                 masterCanvas.height = initialImg.height;
-                masterCtx.imageSmoothingEnabled = false; // Important for pixel art
+                masterCtx.imageSmoothingEnabled = false; 
                 masterCtx.drawImage(initialImg, 0, 0);
                 
-                await update3DViewers(true);
-                setupVisibilityControls();
+                await update3DViewers(true); // This loads the skin and calls syncVisibility for the first time
+                createPixelHighlighter(); 
+                setupVisibilityControls(); // This attaches listeners for future clicks
                 renderRecentColors();
                 saveState();
 
+                editorRenderLoop();
+
                 document.body.style.opacity = '1';
             };
-            initialImg.onerror = () => {
+            initialImg.onerror = (err) => {
+                console.error("Failed to load initial skin:", err);
                 showToast("Could not load initial skin.", "error");
                 document.body.style.opacity = '1';
             }
