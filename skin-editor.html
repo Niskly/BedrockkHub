@@ -222,9 +222,10 @@
                 <h3 class="panel-title">File</h3>
                 <div class="tools-grid">
                     <button class="tool-btn" id="reset-btn" title="New Skin"><i class="fa-solid fa-file"></i></button>
-                    <button class="tool-btn" id="upload-btn" title="Load Skin from PC"><i class="fa-solid fa-upload"></i></button>
+                    <label for="upload-skin-input" class="tool-btn" id="upload-btn" title="Load Skin from PC">
+                        <i class="fa-solid fa-upload"></i>
+                    </label>
                     <button class="tool-btn" id="download-btn" title="Download Skin"><i class="fa-solid fa-download"></i></button>
-                    <!-- NEW "Save to Profile" button -->
                     <button class="tool-btn" id="save-btn" title="Save to Profile"><i class="fa-solid fa-save"></i></button>
                     <input type="file" id="upload-skin-input" accept="image/png" style="display: none;">
                 </div>
@@ -667,7 +668,6 @@
 
         // --- MODIFIED FILE HANDLING ---
         const uploadInput = document.getElementById('upload-skin-input');
-        document.getElementById('upload-btn').addEventListener('click', () => uploadInput.click());
         uploadInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file && file.type === "image/png") {
@@ -764,3 +764,4 @@
     </script>
 </body>
 </html>
+
