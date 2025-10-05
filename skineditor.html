@@ -859,7 +859,7 @@
             document.querySelector('.editor-area').classList.toggle('solid-bg', !e.target.checked);
         });
 
-        // FIX: This function is the single source of truth for visibility.
+// FIX: This function is the single source of truth for visibility.
         // It syncs the 3D model's state to match the checkboxes and rebuilds the clickable mesh list.
         function syncVisibility() {
             raycastableMeshes = [];
@@ -893,6 +893,10 @@
                     }
                 }
             });
+            
+            // Force both viewers to re-render to show visibility changes
+            previewSkinViewer.render();
+            // editorSkinViewer renders in its own loop, no need to call here
         }
         
         function setupVisibilityControls() {
