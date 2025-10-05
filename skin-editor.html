@@ -56,6 +56,8 @@
         .btn.ghost { border-color: var(--border); background: rgba(28, 28, 28, 0.8); color: var(--text); }
         .btn.ghost:hover { background: var(--bg-1); border-color: var(--border-strong); }
         .btn.icon-btn { padding: 0; width: 38px; height: 38px; font-size: 1rem; }
+        .spinner-sm { width: 1.2em; height: 1.2em; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .toolbar-panel {
             grid-area: toolbar;
@@ -72,7 +74,7 @@
         .panel-section { display: flex; flex-direction: column; gap: 0.75rem; }
         .panel-title { font-weight: 700; color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 0.25rem; }
 
-        .tools-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .tools-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
         .tool-btn {
             background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px;
             height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -220,8 +222,10 @@
                 <h3 class="panel-title">File</h3>
                 <div class="tools-grid">
                     <button class="tool-btn" id="reset-btn" title="New Skin"><i class="fa-solid fa-file"></i></button>
-                    <button class="tool-btn" id="upload-btn" title="Upload Skin"><i class="fa-solid fa-upload"></i></button>
+                    <button class="tool-btn" id="upload-btn" title="Load Skin from PC"><i class="fa-solid fa-upload"></i></button>
                     <button class="tool-btn" id="download-btn" title="Download Skin"><i class="fa-solid fa-download"></i></button>
+                    <!-- NEW "Save to Profile" button -->
+                    <button class="tool-btn" id="save-btn" title="Save to Profile"><i class="fa-solid fa-save"></i></button>
                     <input type="file" id="upload-skin-input" accept="image/png" style="display: none;">
                 </div>
             </div>
@@ -292,6 +296,9 @@
     <script type="module" src="/theme.js"></script>
     <script type="module" src="/auth.js"></script>
     <script type="module">
+        // --- NEW: Import Supabase client ---
+        import { supabase } from '/supabase-client.js';
+
         // --- 3D Viewer Setup ---
         const skinViewer = new skinview3d.SkinViewer({
             canvas: document.getElementById("skin-viewer"),
@@ -576,7 +583,7 @@
         
         // --- UI Buttons ---
         document.querySelectorAll('.tool-btn').forEach(btn => {
-            if (['upload-btn', 'download-btn', 'reset-btn', 'undo-btn', 'redo-btn'].includes(btn.id)) return;
+            if (['upload-btn', 'download-btn', 'reset-btn', 'undo-btn', 'redo-btn', 'save-btn'].includes(btn.id)) return;
             btn.addEventListener('click', () => {
                 if (btn.disabled) return;
                 document.querySelector('.tool-btn.active')?.classList.remove('active');
@@ -658,6 +665,7 @@
             playPauseBtn.title = skinViewer.animation.paused ? 'Play Animation' : 'Pause Animation';
         });
 
+        // --- MODIFIED FILE HANDLING ---
         const uploadInput = document.getElementById('upload-skin-input');
         document.getElementById('upload-btn').addEventListener('click', () => uploadInput.click());
         uploadInput.addEventListener('change', (e) => {
@@ -669,6 +677,7 @@
                     img.onload = () => {
                         if ((img.width === 64 && img.height === 64) || (img.width === 64 && img.height === 32)) {
                             loadSkin(event.target.result);
+                             showToast("Skin loaded from file.", "success");
                         } else {
                             showToast("Invalid skin dimensions. Must be 64x64 or 64x32.", "error");
                         }
@@ -695,7 +704,63 @@
             }
         });
 
+        // --- NEW: SAVE TO PROFILE FUNCTIONALITY ---
+        const saveBtn = document.getElementById('save-btn');
+        saveBtn.addEventListener('click', async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (!user) {
+                showToast("You must be logged in to save a skin.", "error");
+                return;
+            }
+
+            const originalBtnContent = saveBtn.innerHTML;
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<div class="spinner-sm"></div>';
+
+            try {
+                // 1. Convert canvas to a file (blob)
+                const blob = await new Promise(resolve => editorCanvas.toBlob(resolve, 'image/png'));
+                
+                // 2. Define a unique path in Supabase Storage for this user's skin
+                const filePath = `user_skins/${user.id}/skin.png`;
+
+                // 3. Upload the file to Supabase Storage
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from('skins') // Make sure you have a "skins" bucket in your Supabase project
+                    .upload(filePath, blob, {
+                        cacheControl: '3600',
+                        upsert: true // This will overwrite the file if it already exists
+                    });
+
+                if (uploadError) throw uploadError;
+
+                // 4. Get the public URL of the uploaded file
+                const { data: { publicUrl } } = supabase.storage
+                    .from('skins')
+                    .getPublicUrl(filePath);
+
+                if (!publicUrl) throw new Error("Could not get public URL for skin.");
+
+                // 5. Update the user's profile with the new skin URL
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .update({ skin_url: publicUrl })
+                    .eq('id', user.id);
+                
+                if (profileError) throw profileError;
+
+                showToast("Skin saved to your profile!", "success");
+
+            } catch (error) {
+                console.error("Error saving skin:", error);
+                showToast(error.message || "Failed to save skin.", "error");
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fa-solid fa-save"></i>';
+            }
+        });
+
     </script>
 </body>
 </html>
-
