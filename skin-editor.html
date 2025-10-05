@@ -297,7 +297,6 @@
     <script type="module" src="/theme.js"></script>
     <script type="module" src="/auth.js"></script>
     <script type="module">
-        // --- NEW: Import Supabase client ---
         import { supabase } from '/supabase-client.js';
 
         // --- 3D Viewer Setup ---
@@ -353,13 +352,17 @@
 
         // --- Core Functions ---
         function loadSkin(url, clearHistory = true) {
+            // The 3D viewer can handle the data URL directly
             skinViewer.loadSkin(url);
+            
             const baseSkinImg = new Image();
             baseSkinImg.crossOrigin = "anonymous";
             baseSkinImg.src = url;
             baseSkinImg.onload = () => {
                 editorCtx.clearRect(0, 0, editorCanvas.width, editorCanvas.height);
-                editorCtx.drawImage(baseSkinImg, 0, 0);
+                // This scales the loaded image to fit the 64x64 editor canvas, handling HD skins.
+                editorCtx.drawImage(baseSkinImg, 0, 0, editorCanvas.width, editorCanvas.height);
+                
                 if (clearHistory) {
                     history = [];
                     historyIndex = -1;
@@ -368,7 +371,7 @@
                 updatePanAndZoom();
             };
              baseSkinImg.onerror = () => {
-                showToast("Failed to load skin image.", "error");
+                showToast("Failed to load skin image for 2D editor.", "error");
             }
         }
 
@@ -666,7 +669,7 @@
             playPauseBtn.title = skinViewer.animation.paused ? 'Play Animation' : 'Pause Animation';
         });
 
-        // --- MODIFIED FILE HANDLING ---
+        // --- FILE HANDLING ---
         const uploadInput = document.getElementById('upload-skin-input');
         uploadInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -675,11 +678,12 @@
                 reader.onload = (event) => {
                     const img = new Image();
                     img.onload = () => {
-                        if ((img.width === 64 && img.height === 64) || (img.width === 64 && img.height === 32)) {
+                        // More flexible check for valid skin aspect ratios
+                        if (img.width > 0 && (img.width === img.height || img.width === img.height * 2)) {
                             loadSkin(event.target.result);
-                             showToast("Skin loaded from file.", "success");
+                            showToast("Skin loaded from file.", "success");
                         } else {
-                            showToast("Invalid skin dimensions. Must be 64x64 or 64x32.", "error");
+                            showToast("Invalid skin file. Use a standard skin format (e.g., 64x64, 64x32, or HD).", "error");
                         }
                     };
                     img.src = event.target.result;
@@ -704,7 +708,7 @@
             }
         });
 
-        // --- NEW: SAVE TO PROFILE FUNCTIONALITY ---
+        // --- SAVE TO PROFILE FUNCTIONALITY ---
         const saveBtn = document.getElementById('save-btn');
         saveBtn.addEventListener('click', async () => {
             const { data: { user } } = await supabase.auth.getUser();
