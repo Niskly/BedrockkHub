@@ -297,6 +297,7 @@
     <script type="module" src="/theme.js"></script>
     <script type="module" src="/auth.js"></script>
     <script type="module">
+        // Using the shared supabase client to avoid multiple instances
         import { supabase } from '/supabase-client.js';
 
         // --- 3D Viewer Setup ---
@@ -304,9 +305,12 @@
             canvas: document.getElementById("skin-viewer"),
             skin: "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png"
         });
-        const control = skinview3d.createOrbitControls(skinViewer);
-        control.enableRotate = true;
-        control.enableZoom = false;
+        
+        // FIX: The skinview3d.createOrbitControls function doesn't exist in v3.
+        // Controls are enabled directly on the skinViewer object.
+        skinViewer.controls.enableRotate = true;
+        skinViewer.controls.enableZoom = true; // Enabled for better user experience
+
         skinViewer.animation = new skinview3d.RotatingAnimation(skinViewer.playerObject);
         skinViewer.animation.speed = 0.5;
         const viewerWrapper = document.querySelector('.skin-viewer-wrapper');
@@ -356,8 +360,12 @@
             baseSkinImg.crossOrigin = "anonymous";
             baseSkinImg.src = url;
             baseSkinImg.onload = () => {
+                // Update 2D Editor Canvas
                 editorCtx.clearRect(0, 0, editorCanvas.width, editorCanvas.height);
                 editorCtx.drawImage(baseSkinImg, 0, 0, editorCanvas.width, editorCanvas.height);
+                
+                // Update 3D Viewer
+                skinViewer.loadSkin(url); 
                 
                 if (clearHistory) {
                     history = [];
@@ -365,10 +373,9 @@
                     saveState();
                 }
                 updatePanAndZoom();
-                update3DViewer(); 
             };
              baseSkinImg.onerror = () => {
-                showToast("Failed to load skin image for 2D editor.", "error");
+                showToast("Failed to load skin image.", "error");
             }
         }
 
@@ -380,6 +387,11 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadSkin(skinViewer.skinUrl);
             document.body.style.opacity = '1';
+            
+            // Disable the "Save to Profile" button for now
+            const saveBtn = document.getElementById('save-btn');
+            saveBtn.disabled = true;
+            saveBtn.title = 'Save to Profile (Coming Soon)';
         });
 
         // --- History (Undo/Redo) ---
@@ -675,6 +687,7 @@
                 reader.onload = (event) => {
                     const img = new Image();
                     img.onload = () => {
+                        // More flexible check for valid skin aspect ratios
                         if (img.width > 0 && (img.width === img.height || img.width === img.height * 2)) {
                             loadSkin(event.target.result);
                             showToast("Skin loaded from file.", "success");
@@ -688,7 +701,7 @@
             } else if (file) {
                  showToast("Invalid file type. Please upload a .png file.", "error");
             }
-            e.target.value = '';
+            e.target.value = ''; // Reset input
         });
 
         document.getElementById('download-btn').addEventListener('click', () => {
@@ -701,57 +714,6 @@
         document.getElementById('reset-btn').addEventListener('click', () => {
              if (confirm('Are you sure you want to start a new skin? All unsaved changes will be lost.')) {
                 loadSkin('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAhdEVYdENyZWF0aW9uIFRpbWUAMjAyMy0wMS0yOFQxOTozNTo0MSswMDowMCl2pQAAAB1JREFUeF7t0AEBAAAAIqD/r25IQAEAAAAAAAAAAAAAAAAAALwfAEEAAE005QJSAAAAAElFTSuQmCC');
-            }
-        });
-
-        // --- SAVE TO PROFILE FUNCTIONALITY ---
-        const saveBtn = document.getElementById('save-btn');
-        saveBtn.addEventListener('click', async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-
-            if (!user) {
-                showToast("Please login to use the save feature.", "error");
-                return;
-            }
-
-            const originalBtnContent = saveBtn.innerHTML;
-            saveBtn.disabled = true;
-            saveBtn.innerHTML = '<div class="spinner-sm"></div>';
-
-            try {
-                const blob = await new Promise(resolve => editorCanvas.toBlob(resolve, 'image/png'));
-                const filePath = `user_skins/${user.id}/skin.png`;
-
-                const { data: uploadData, error: uploadError } = await supabase.storage
-                    .from('skins')
-                    .upload(filePath, blob, {
-                        cacheControl: '3600',
-                        upsert: true
-                    });
-
-                if (uploadError) throw uploadError;
-
-                const { data: { publicUrl } } = supabase.storage
-                    .from('skins')
-                    .getPublicUrl(filePath);
-
-                if (!publicUrl) throw new Error("Could not get public URL for skin.");
-
-                const { error: profileError } = await supabase
-                    .from('profiles')
-                    .update({ skin_url: publicUrl })
-                    .eq('id', user.id);
-                
-                if (profileError) throw profileError;
-
-                showToast("Skin saved to your profile!", "success");
-
-            } catch (error) {
-                console.error("Error saving skin:", error);
-                showToast(error.message || "Failed to save skin.", "error");
-            } finally {
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = '<i class="fa-solid fa-save"></i>';
             }
         });
 
