@@ -306,11 +306,12 @@
         
         skinViewer.controls.enableRotate = true;
         skinViewer.controls.enableZoom = true;
+        skinViewer.autoRotate = true; // Correct way to enable rotation in v3
+        skinViewer.autoRotateSpeed = 2; // Control speed
 
-        skinViewer.animation = new skinview3d.RotatingAnimation(skinViewer.playerObject);
-        skinViewer.animation.speed = 0.5;
         const viewerWrapper = document.querySelector('.skin-viewer-wrapper');
         const resizeObserver = new ResizeObserver(entries => {
+            if (!entries || entries.length === 0) return;
             const entry = entries[0];
             const { width, height } = entry.contentRect;
             skinViewer.setSize(width, height);
@@ -349,6 +350,7 @@
             }, 3000);
         }
 
+        // --- Core Functions ---
         function update3DViewer() {
             skinViewer.loadSkin(editorCanvas.toDataURL());
         }
@@ -629,9 +631,9 @@
         
         const playPauseBtn = document.getElementById('play-pause-btn');
         playPauseBtn.addEventListener('click', () => {
-            skinViewer.animation.paused = !skinViewer.animation.paused;
-            playPauseBtn.innerHTML = skinViewer.animation.paused ? '<i class="fa-solid fa-play"></i>' : '<i class="fa-solid fa-pause"></i>';
-            playPauseBtn.title = skinViewer.animation.paused ? 'Play Animation' : 'Pause Animation';
+            skinViewer.autoRotate = !skinViewer.autoRotate;
+            playPauseBtn.innerHTML = skinViewer.autoRotate ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-play"></i>';
+            playPauseBtn.title = skinViewer.autoRotate ? 'Pause Animation' : 'Play Animation';
         });
 
         // --- FILE HANDLING ---
@@ -726,3 +728,4 @@
     </script>
 </body>
 </html>
+
