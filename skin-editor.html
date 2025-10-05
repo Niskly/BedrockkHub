@@ -340,23 +340,23 @@
             </div>
             <div class="panel">
                  <h3 class="panel-title" style="margin-bottom: 1rem;">Editor Model Options</h3>
-                 <div class="panel-title-small">Body</div>
+                 <div class="panel-title-small">Inner Layer</div>
                  <div class="body-parts-grid">
-                    <button class="part-btn visible" data-part="head"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> Head</button>
-                    <button class="part-btn visible" data-part="body"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> Body</button>
-                    <button class="part-btn visible" data-part="leftArm"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> L. Arm</button>
-                    <button class="part-btn visible" data-part="rightArm"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> R. Arm</button>
-                    <button class="part-btn visible" data-part="leftLeg"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> L. Leg</button>
-                    <button class="part-btn visible" data-part="rightLeg"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> R. Leg</button>
+                    <button class="part-btn visible" data-layer="innerLayer" data-part="head"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> Head</button>
+                    <button class="part-btn visible" data-layer="innerLayer" data-part="body"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> Body</button>
+                    <button class="part-btn visible" data-layer="innerLayer" data-part="leftArm"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> L. Arm</button>
+                    <button class="part-btn visible" data-layer="innerLayer" data-part="rightArm"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> R. Arm</button>
+                    <button class="part-btn visible" data-layer="innerLayer" data-part="leftLeg"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> L. Leg</button>
+                    <button class="part-btn visible" data-layer="innerLayer" data-part="rightLeg"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> R. Leg</button>
                  </div>
-                 <div class="panel-title-small" style="margin-top: 1rem;">Overlay</div>
+                 <div class="panel-title-small" style="margin-top: 1rem;">Outer Layer</div>
                  <div class="body-parts-grid">
-                    <button class="part-btn visible" data-part="head2"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> Head</button>
-                    <button class="part-btn visible" data-part="body2"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> Body</button>
-                    <button class="part-btn visible" data-part="leftArm2"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> L. Arm</button>
-                    <button class="part-btn visible" data-part="rightArm2"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> R. Arm</button>
-                    <button class="part-btn visible" data-part="leftLeg2"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> L. Leg</button>
-                    <button class="part-btn visible" data-part="rightLeg2"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> R. Leg</button>
+                    <button class="part-btn visible" data-layer="outerLayer" data-part="head"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> Head</button>
+                    <button class="part-btn visible" data-layer="outerLayer" data-part="body"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> Body</button>
+                    <button class="part-btn visible" data-layer="outerLayer" data-part="leftArm"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> L. Arm</button>
+                    <button class="part-btn visible" data-layer="outerLayer" data-part="rightArm"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> R. Arm</button>
+                    <button class="part-btn visible" data-layer="outerLayer" data-part="leftLeg"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> L. Leg</button>
+                    <button class="part-btn visible" data-layer="outerLayer" data-part="rightLeg"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> R. Leg</button>
                  </div>
                  <div class="model-toggle">
                      <button class="part-btn visible" id="steve-model-btn" data-model="default">Classic</button>
@@ -470,43 +470,37 @@
         });
         
         // --- Core Functions ---
-        function applyViewerPartsVisibility() {
+        function applyViewerPartsVisibility(viewer) {
+             if (!viewer.playerObject) return;
             document.querySelectorAll('.panel .part-btn[data-part]').forEach(btn => {
+                const layerName = btn.dataset.layer;
                 const partName = btn.dataset.part;
                 const isVisible = btn.classList.contains('visible');
-                if (editorSkinViewer.playerObject?.skin[partName]) {
-                    editorSkinViewer.playerObject.skin[partName].visible = isVisible;
-                }
-                if (previewSkinViewer.playerObject?.skin[partName]) {
-                    previewSkinViewer.playerObject.skin[partName].visible = isVisible;
+                 if (viewer.playerObject.skin[layerName]?.[partName]) {
+                    viewer.playerObject.skin[layerName][partName].visible = isVisible;
                 }
             });
         }
 
-        async function update3DViewers(forceRedraw = false) {
+        async function update3DViewers(updatePreview = false) {
+            const dataUrl = masterCanvas.toDataURL();
             const currentModel = document.getElementById('alex-model-btn').classList.contains('visible') ? 'slim' : 'default';
-            const dataUrl = masterCanvas.toDataURL(); // Get current canvas state
+
+            const editorPromise = editorSkinViewer.loadSkin(dataUrl, { model: currentModel }).then(() => {
+                applyViewerPartsVisibility(editorSkinViewer);
+            });
+            
+            const previewPromise = updatePreview 
+                ? previewSkinViewer.loadSkin(dataUrl, { model: currentModel }).then(() => {
+                    applyViewerPartsVisibility(previewSkinViewer);
+                  })
+                : Promise.resolve();
 
             try {
-                const promises = [];
-                // The editor viewer should always be updated to reflect drawing.
-                if (editorSkinViewer.playerObject) {
-                    promises.push(editorSkinViewer.loadSkin(dataUrl, { model: currentModel }));
-                }
-
-                // The preview viewer is only updated on `forceRedraw` (i.e., on mouse up/load) for performance.
-                if (forceRedraw && previewSkinViewer.playerObject) {
-                    promises.push(previewSkinViewer.loadSkin(dataUrl, { model: currentModel }));
-                }
-                
-                await Promise.all(promises);
-                
-                // After loading, re-apply visibility state from buttons, as loadSkin resets it.
-                applyViewerPartsVisibility(); 
-
+                await Promise.all([editorPromise, previewPromise]);
             } catch (err) {
-                // console.error("Failed to load skin into viewers:", err);
-                // showToast("Error updating 3D preview.", "error");
+                // Silently fail on load errors during drawing to avoid spamming user
+                // console.error("Skin loading failed", err);
             }
         }
 
@@ -667,7 +661,7 @@
             }
             
             lastTexturePos = pos;
-            update3DViewers(); // Update editor view in real-time
+            update3DViewers(false); // Update editor view in real-time
         }
         
         function updateLoupe(event) {
@@ -804,19 +798,20 @@
         // --- Model Controls ---
         document.querySelectorAll('.panel .part-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                if (btn.dataset.part) { // Body part OR Overlay part toggle
+                 if (btn.dataset.layer && btn.dataset.part) { // Body part OR Overlay part toggle
                     btn.classList.toggle('visible');
                     btn.classList.toggle('hidden');
+                    const layerName = btn.dataset.layer;
                     const partName = btn.dataset.part;
                     const isVisible = btn.classList.contains('visible');
+                    
+                    if (editorSkinViewer.playerObject?.skin[layerName]?.[partName]) {
+                        editorSkinViewer.playerObject.skin[layerName][partName].visible = isVisible;
+                    }
+                     if (previewSkinViewer.playerObject?.skin[layerName]?.[partName]) {
+                        previewSkinViewer.playerObject.skin[layerName][partName].visible = isVisible;
+                    }
 
-                    // Apply change immediately to both viewers
-                    if (editorSkinViewer.playerObject?.skin[partName]) {
-                        editorSkinViewer.playerObject.skin[partName].visible = isVisible;
-                    }
-                    if (previewSkinViewer.playerObject?.skin[partName]) {
-                        previewSkinViewer.playerObject.skin[partName].visible = isVisible;
-                    }
                 } else if (btn.dataset.model) { // Model type toggle
                     document.querySelectorAll('.model-toggle .part-btn').forEach(b => b.classList.remove('visible'));
                     btn.classList.add('visible');
@@ -858,3 +853,4 @@
     </script>
 </body>
 </html>
+
