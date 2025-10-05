@@ -181,7 +181,6 @@
         .part-btn.hidden i.fa-eye { display: none; }
         .part-btn.hidden i.fa-eye-slash { display: inline-block; }
         .model-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 1rem; }
-        .panel-title-small { color: var(--muted); font-weight: 600; font-size: 0.8rem; margin-bottom: 0.5rem; }
         
         #toast-container { position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); z-index: 200; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;}
         .toast { padding: 12px 18px; border-radius: 10px; color: white; font-weight: 600; display: flex; align-items: center; gap: 10px; background: var(--bg-1); border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideUp 0.3s ease-out forwards; }
@@ -340,23 +339,13 @@
             </div>
             <div class="panel">
                  <h3 class="panel-title" style="margin-bottom: 1rem;">Editor Model Options</h3>
-                 <div class="panel-title-small">Inner Layer</div>
                  <div class="body-parts-grid">
-                    <button class="part-btn visible" data-layer="innerLayer" data-part="head"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> Head</button>
-                    <button class="part-btn visible" data-layer="innerLayer" data-part="body"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> Body</button>
-                    <button class="part-btn visible" data-layer="innerLayer" data-part="leftArm"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> L. Arm</button>
-                    <button class="part-btn visible" data-layer="innerLayer" data-part="rightArm"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> R. Arm</button>
-                    <button class="part-btn visible" data-layer="innerLayer" data-part="leftLeg"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> L. Leg</button>
-                    <button class="part-btn visible" data-layer="innerLayer" data-part="rightLeg"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> R. Leg</button>
-                 </div>
-                 <div class="panel-title-small" style="margin-top: 1rem;">Outer Layer</div>
-                 <div class="body-parts-grid">
-                    <button class="part-btn visible" data-layer="outerLayer" data-part="head"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> Head</button>
-                    <button class="part-btn visible" data-layer="outerLayer" data-part="body"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> Body</button>
-                    <button class="part-btn visible" data-layer="outerLayer" data-part="leftArm"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> L. Arm</button>
-                    <button class="part-btn visible" data-layer="outerLayer" data-part="rightArm"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> R. Arm</button>
-                    <button class="part-btn visible" data-layer="outerLayer" data-part="leftLeg"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> L. Leg</button>
-                    <button class="part-btn visible" data-layer="outerLayer" data-part="rightLeg"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> R. Leg</button>
+                    <button class="part-btn visible" data-part="head"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> Head</button>
+                    <button class="part-btn visible" data-part="body"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> Body</button>
+                    <button class="part-btn visible" data-part="leftArm"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> L. Arm</button>
+                    <button class="part-btn visible" data-part="rightArm"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> R. Arm</button>
+                    <button class="part-btn visible" data-part="leftLeg"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> L. Leg</button>
+                    <button class="part-btn visible" data-part="rightLeg"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> R. Leg</button>
                  </div>
                  <div class="model-toggle">
                      <button class="part-btn visible" id="steve-model-btn" data-model="default">Classic</button>
@@ -390,7 +379,8 @@
 
         // --- 3D Viewer Setup ---
         const previewSkinViewer = new skinview3d.SkinViewer({
-            canvas: document.getElementById("preview-skin-viewer")
+            canvas: document.getElementById("preview-skin-viewer"),
+            skin: "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png"
         });
         previewSkinViewer.controls.enableRotate = true;
         previewSkinViewer.controls.enableZoom = true;
@@ -399,7 +389,11 @@
         
         const editorSkinViewer = new skinview3d.SkinViewer({
             canvas: document.getElementById("editor-skin-viewer"),
-            renderer: { alpha: true, antialias: true }
+            skin: "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png",
+            renderer: {
+                alpha: true,
+                antialias: true
+            }
         });
         editorSkinViewer.renderer.setClearColor(0x000000, 0);
         editorSkinViewer.controls.enableRotate = true;
@@ -422,17 +416,6 @@
         const masterCtx = masterCanvas.getContext('2d');
         const loupeCanvas = document.getElementById('color-loupe');
         const loupeCtx = loupeCanvas.getContext('2d');
-        
-        // Create ONE shared texture that both viewers will use
-        const sharedTexture = new skinview3d.skinview3d.THREE.CanvasTexture(masterCanvas);
-        sharedTexture.magFilter = skinview3d.skinview3d.THREE.NearestFilter;
-        sharedTexture.minFilter = skinview3d.skinview3d.THREE.NearestFilter;
-        
-        // Apply the shared texture to both viewers
-        editorSkinViewer.playerObject.skin.map = sharedTexture;
-        previewSkinViewer.playerObject.skin.map = sharedTexture;
-        editorSkinViewer.playerObject.skin.visible = true;
-        previewSkinViewer.playerObject.skin.visible = true;
 
 
         // --- State Management ---
@@ -468,10 +451,35 @@
             confirmCallback = null;
         });
         document.getElementById('confirm-action-btn').addEventListener('click', () => {
-            if (confirmCallback) confirmCallback();
+            if (confirmCallback) {
+                confirmCallback();
+            }
             document.getElementById('confirmation-modal-backdrop').style.display = 'none';
             confirmCallback = null;
         });
+
+        // --- Core Functions ---
+        async function update3DViewers(forceRedraw = false) {
+            const currentModel = document.getElementById('alex-model-btn').classList.contains('visible') ? 'slim' : 'default';
+            if (forceRedraw) {
+                const dataUrl = masterCanvas.toDataURL();
+                try {
+                    const previewPromise = previewSkinViewer.loadSkin(dataUrl, { model: currentModel });
+                    const editorPromise = editorSkinViewer.loadSkin(dataUrl, { model: currentModel });
+                    await Promise.all([previewPromise, editorPromise]);
+                } catch (err) {
+                    console.error("Failed to load skin into viewers:", err);
+                    showToast("Error updating 3D preview.", "error");
+                }
+            } else {
+                 if (editorSkinViewer.playerObject) {
+                    editorSkinViewer.playerObject.skin.map.needsUpdate = true;
+                 }
+                 if (previewSkinViewer.playerObject) {
+                    previewSkinViewer.playerObject.skin.map.needsUpdate = true;
+                 }
+            }
+        }
 
         // --- History (Undo/Redo) ---
         const undoBtn = document.getElementById('undo-btn');
@@ -488,7 +496,7 @@
             if (historyIndex > 0) {
                 historyIndex--;
                 masterCtx.putImageData(history[historyIndex], 0, 0);
-                sharedTexture.needsUpdate = true;
+                update3DViewers(true);
                 updateHistoryButtons();
             }
         }
@@ -496,7 +504,7 @@
             if (historyIndex < history.length - 1) {
                 historyIndex++;
                 masterCtx.putImageData(history[historyIndex], 0, 0);
-                sharedTexture.needsUpdate = true;
+                update3DViewers(true);
                 updateHistoryButtons();
             }
         }
@@ -574,6 +582,7 @@
                     y: Math.floor(uv.y * masterCanvas.height) 
                 };
             } catch (err) {
+                // This can happen if the model isn't fully loaded, so we ignore it.
                 return null;
             }
         }
@@ -628,7 +637,7 @@
             }
             
             lastTexturePos = pos;
-            sharedTexture.needsUpdate = true; // Tell Three.js to re-upload the texture in the next frame
+            update3DViewers();
         }
         
         function updateLoupe(event) {
@@ -686,6 +695,7 @@
         });
         const stopDrawing = () => {
             if (isDrawingOn3D) {
+                update3DViewers(true); // Force full redraw on preview
                 saveState();
             }
             isDrawingOn3D = false;
@@ -699,13 +709,6 @@
         
 
         // --- FILE HANDLING ---
-        function setModelType(model) {
-            editorSkinViewer.playerObject.skin.modelType = model;
-            previewSkinViewer.playerObject.skin.modelType = model;
-            document.getElementById('steve-model-btn').classList.toggle('visible', model === 'default');
-            document.getElementById('alex-model-btn').classList.toggle('visible', model === 'slim');
-        }
-        
         const uploadInput = document.getElementById('upload-skin-input');
         uploadInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -728,9 +731,7 @@
                         masterCtx.clearRect(0, 0, masterCanvas.width, masterCanvas.height);
                         masterCtx.drawImage(img, 0, 0);
 
-                        sharedTexture.needsUpdate = true;
-                        setModelType(skinview3d.utils.inferModelType(masterCanvas));
-
+                        await update3DViewers(true);
                         history = [];
                         historyIndex = -1;
                         saveState();
@@ -754,40 +755,35 @@
         
         document.getElementById('reset-btn').addEventListener('click', () => {
             showConfirmation('All unsaved changes will be lost.', () => {
-                masterCanvas.width = 64;
-                masterCanvas.height = 64;
-                masterCtx.clearRect(0, 0, 64, 64);
-                sharedTexture.needsUpdate = true;
-                setModelType('default');
-
-                history = [];
-                historyIndex = -1;
-                saveState();
-                showToast("New skin created.", "success");
+                const blankSkin = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABGSURBVOgnsO0BAQAACILg/4chCRgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAsAb4IAAG9B2xGAAAAAElFTSuQmCC';
+                const img = new Image();
+                img.onload = async () => {
+                    masterCanvas.width = 64;
+                    masterCanvas.height = 64;
+                    masterCtx.clearRect(0, 0, 64, 64);
+                    await update3DViewers(true);
+                    history = [];
+                    historyIndex = -1;
+                    saveState();
+                    showToast("New skin created.", "success");
+                }
+                img.src = blankSkin;
             });
         });
 
         // --- Model Controls ---
         document.querySelectorAll('.panel .part-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                if (btn.dataset.layer && btn.dataset.part) {
+                if(btn.dataset.part) { // Body part toggle
                     btn.classList.toggle('visible');
                     btn.classList.toggle('hidden');
-                    const isVisible = btn.classList.contains('visible');
-                    const layerName = btn.dataset.layer;
                     const partName = btn.dataset.part;
-                    
-                    if (editorSkinViewer.playerObject?.skin[partName]?.[layerName]) {
-                        editorSkinViewer.playerObject.skin[partName][layerName].visible = isVisible;
-                    }
-                    if (previewSkinViewer.playerObject?.skin[partName]?.[layerName]) {
-                        previewSkinViewer.playerObject.skin[partName][layerName].visible = isVisible;
-                    }
-
-                } else if (btn.dataset.model) {
+                    editorSkinViewer.playerObject.skin[partName].visible = btn.classList.contains('visible');
+                    editorSkinViewer.playerObject.skin[`${partName}2`].visible = btn.classList.contains('visible');
+                } else if (btn.dataset.model) { // Model type toggle
                     document.querySelectorAll('.model-toggle .part-btn').forEach(b => b.classList.remove('visible'));
                     btn.classList.add('visible');
-                    setModelType(btn.dataset.model);
+                    update3DViewers(true); 
                 }
             });
         });
@@ -806,26 +802,20 @@
         
         // --- INITIAL LOAD ---
         document.addEventListener('DOMContentLoaded', () => {
-            const initialSkinUrl = "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png";
+            const initialSkinUrl = previewSkinViewer.skinUrl;
             const initialImg = new Image();
             initialImg.crossOrigin = "anonymous";
-            initialImg.onload = () => {
+            initialImg.onload = async () => {
                 masterCanvas.width = initialImg.width;
                 masterCanvas.height = initialImg.height;
                 masterCtx.imageSmoothingEnabled = false;
                 masterCtx.drawImage(initialImg, 0, 0);
-                
-                sharedTexture.needsUpdate = true;
-                setModelType(skinview3d.utils.inferModelType(masterCanvas));
-
+                await update3DViewers(true);
                 saveState();
-                document.body.style.opacity = '1';
             };
-            initialImg.onerror = () => {
-                 showToast("Failed to load initial skin.", "error");
-                 document.body.style.opacity = '1';
-            }
             initialImg.src = initialSkinUrl;
+
+            document.body.style.opacity = '1';
         });
 
     </script>
