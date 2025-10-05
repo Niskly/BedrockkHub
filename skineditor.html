@@ -879,34 +879,41 @@ function syncVisibility() {
     if (!editorSkinViewer.playerObject) return;
 
     const checkboxes = document.querySelectorAll('#layers-table input[type="checkbox"]');
+
     checkboxes.forEach(checkbox => {
         const isChecked = checkbox.checked;
         const partName = checkbox.dataset.part;
         const layerName = checkbox.dataset.layer;
 
         [previewSkinViewer, editorSkinViewer].forEach(viewer => {
-            const skinPart = viewer.playerObject?.skin?.[partName];
-            const layer = skinPart?.[layerName];
-            if (layer) {
-                layer.visible = isChecked;
+            const skinParts = viewer.playerObject?.skin;
 
-                // Traverse every mesh in that layer and force texture update
-                layer.traverse(child => {
-                    if (child.isMesh && child.material?.map) {
-                        child.material.map.image = masterCanvas;
-                        child.material.map.needsUpdate = true;
-                    }
-                });
+            if (!skinParts) return;
 
-                // Add meshes for raycasting if visible
-                if (isChecked) {
+            Object.values(skinParts).forEach(part => {
+                const layer = part[layerName];
+                if (layer) {
+                    layer.visible = isChecked;
+
                     layer.traverse(child => {
-                        if (child.isMesh) raycastableMeshes.push(child);
+                        if (child.isMesh) {
+                            child.material.map.image = masterCanvas;
+                            child.material.map.needsUpdate = true;
+                        }
                     });
+
+                    if (isChecked) {
+                        layer.traverse(child => {
+                            if (child.isMesh) raycastableMeshes.push(child);
+                        });
+                    }
                 }
-            }
+            });
         });
     });
+
+    // Force a redraw after toggling visibility
+    [editorSkinViewer, previewSkinViewer].forEach(viewer => viewer.render());
 }
 
 
