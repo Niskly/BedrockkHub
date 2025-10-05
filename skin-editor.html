@@ -111,7 +111,7 @@
         #editor-skin-viewer {
             width: 100%;
             height: 100%;
-            cursor: pointer;
+            cursor: crosshair;
         }
 
         .preview-area {
@@ -186,44 +186,15 @@
         .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
         .primary-mobile-link { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: white !important; box-shadow: var(--shadow-brand); }
         
-        .editor-modal-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(5px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 200;
+        .modal-backdrop {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px); display: none; align-items: center;
+            justify-content: center; z-index: 200;
         }
-        .editor-modal-content {
-            background: var(--bg-1);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        #editor-modal-title {
-            font-weight: 700;
-            text-align: center;
-        }
-        .pixel-editor-container {
-            position: relative;
-            background: #0a0a0a url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='8' height='8' fill='%232c2c2c'/%3E%3Crect x='8' y='8' width='8' height='8' fill='%232c2c2c'/%3E%3C/svg%3E");
-        }
-        #pixel-editor-canvas, #pixel-grid-canvas {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            image-rendering: pixelated;
-        }
-        #pixel-editor-canvas { cursor: crosshair; }
-        #pixel-grid-canvas { pointer-events: none; }
-        .editor-modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 0.5rem;
+        .modal-content {
+            background: var(--bg-1); border: 1px solid var(--border);
+            border-radius: 16px; padding: 1rem; display: flex;
+            flex-direction: column; gap: 1rem;
         }
 
 
@@ -240,11 +211,13 @@
                 height: auto;
                 overflow-y: auto;
             }
-            .editor-area {
-                min-height: 400px;
+            .editor-area, .skin-viewer-wrapper {
                 aspect-ratio: 1 / 1;
+                min-height: 300px; /* A fallback min-height */
             }
-            .skin-viewer-wrapper { min-height: 400px; }
+             .skin-viewer-wrapper {
+                min-height: 0; /* This allows aspect-ratio to take control in the grid layout */
+            }
             .preview-area {
                 grid-template-rows: auto auto; /* Let content define height */
                 min-height: 0;
@@ -305,7 +278,6 @@
                     <button class="tool-btn" id="bucket-tool" title="Fill Bucket"><i class="fa-solid fa-fill-drip"></i></button>
                 </div>
                  <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
-                    <button id="edit-full-skin-btn" class="btn ghost" style="width: 100%;"><i class="fa-solid fa-layer-group"></i> Edit Full Skin</button>
                     <label for="grid-bg-toggle" style="display:flex; align-items:center; gap: 0.5rem; font-size: 0.9rem; color: var(--muted); cursor: pointer;">
                         <input type="checkbox" id="grid-bg-toggle" checked> Use Grid Background
                     </label>
@@ -353,22 +325,9 @@
         </div>
     </main>
 
-    <div id="editor-modal" class="editor-modal-backdrop">
-        <div class="editor-modal-content">
-            <h3 id="editor-modal-title">Edit Part</h3>
-            <div class="pixel-editor-container">
-                <canvas id="pixel-editor-canvas"></canvas>
-                <canvas id="pixel-grid-canvas"></canvas>
-            </div>
-            <div class="editor-modal-actions">
-                <button id="save-pixel-editor" class="btn primary">Save & Close</button>
-            </div>
-        </div>
-    </div>
-    
     <!-- Confirmation Modal -->
-    <div id="confirmation-modal-backdrop" class="editor-modal-backdrop">
-        <div class="editor-modal-content" style="max-width: 400px; text-align: center;">
+    <div id="confirmation-modal-backdrop" class="modal-backdrop">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
             <h3 id="confirmation-modal-title">Are you sure?</h3>
             <p id="confirmation-modal-text" style="color: var(--muted); margin: 1rem 0;"></p>
             <div class="editor-modal-actions" style="justify-content: center;">
@@ -398,7 +357,6 @@
         previewSkinViewer.autoRotate = true;
         previewSkinViewer.autoRotateSpeed = 2;
         
-        // FIX: Set renderer to have a transparent background
         const editorSkinViewer = new skinview3d.SkinViewer({
             canvas: document.getElementById("editor-skin-viewer"),
             skin: "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png",
@@ -426,19 +384,14 @@
         // --- 2D Editor Setup ---
         const masterCanvas = document.getElementById('master-skin-canvas');
         const masterCtx = masterCanvas.getContext('2d');
-        const pixelEditorCanvas = document.getElementById('pixel-editor-canvas');
-        const pixelEditorCtx = pixelEditorCanvas.getContext('2d');
-        const pixelGridCanvas = document.getElementById('pixel-grid-canvas');
-        const pixelGridCtx = pixelGridCanvas.getContext('2d');
 
         // --- State Management ---
         let currentTool = 'pencil';
         let history = [];
         let historyIndex = -1;
         let recentColors = [];
-        let currentEditPart = null;
-        let lastPixelPos = null;
-        const PIXEL_EDITOR_SIZE = 320; 
+        let isDrawingOn3D = false;
+        let lastTexturePos = null;
         
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
@@ -453,13 +406,34 @@
             }, 3000);
         }
 
+        // --- Confirmation Modal ---
+        let confirmCallback = null;
+        function showConfirmation(text, onConfirm) {
+            document.getElementById('confirmation-modal-text').textContent = text;
+            confirmCallback = onConfirm;
+            document.getElementById('confirmation-modal-backdrop').style.display = 'flex';
+        }
+        document.getElementById('cancel-confirmation-btn').addEventListener('click', () => {
+            document.getElementById('confirmation-modal-backdrop').style.display = 'none';
+            confirmCallback = null;
+        });
+        document.getElementById('confirm-action-btn').addEventListener('click', () => {
+            if (confirmCallback) {
+                confirmCallback();
+            }
+            document.getElementById('confirmation-modal-backdrop').style.display = 'none';
+            confirmCallback = null;
+        });
+
         // --- Core Functions ---
         async function update3DViewers() {
             const dataUrl = masterCanvas.toDataURL();
             const currentModel = document.getElementById('alex-model-btn').classList.contains('visible') ? 'slim' : 'default';
             try {
-                await previewSkinViewer.loadSkin(dataUrl, { model: currentModel });
-                await editorSkinViewer.loadSkin(dataUrl, { model: currentModel });
+                // To prevent flickering, we update the preview viewer first, then the editor
+                const previewPromise = previewSkinViewer.loadSkin(dataUrl, { model: currentModel });
+                const editorPromise = editorSkinViewer.loadSkin(dataUrl, { model: currentModel });
+                await Promise.all([previewPromise, editorPromise]);
             } catch (err) {
                 console.error("Failed to load skin into viewers:", err);
                 showToast("Error updating 3D preview.", "error");
@@ -500,8 +474,6 @@
         undoBtn.addEventListener('click', undo);
         redoBtn.addEventListener('click', redo);
         document.addEventListener('keydown', (e) => {
-            // Do not trigger undo/redo if a modal is open
-            if (document.getElementById('editor-modal').style.display === 'flex') return;
             if (e.ctrlKey || e.metaKey) {
                 if (e.key === 'z') { e.preventDefault(); undo(); }
                 if (e.key === 'y') { e.preventDefault(); redo(); }
@@ -543,121 +515,44 @@
                 document.querySelector('.tool-btn.active')?.classList.remove('active');
                 btn.classList.add('active');
                 currentTool = btn.id.replace('-tool', '');
-                pixelEditorCanvas.style.cursor = currentTool === 'picker' ? 'copy' : (currentTool === 'bucket' ? 'cell' : 'crosshair');
+                editorSkinViewer.canvas.style.cursor = currentTool === 'picker' ? 'copy' : (currentTool === 'bucket' ? 'cell' : 'crosshair');
             });
         });
-
-        // --- 3D Editor Click Logic ---
-        const skinMap = {
-            head_layer1: { front: {x: 8, y: 8, w: 8, h: 8}, back: {x: 24, y: 8, w: 8, h: 8}, top: {x: 8, y: 0, w: 8, h: 8}, bottom: {x: 16, y: 0, w: 8, h: 8}, right: {x: 0, y: 8, w: 8, h: 8}, left: {x: 16, y: 8, w: 8, h: 8}},
-            head_layer2: { front: {x: 40, y: 8, w: 8, h: 8}, back: {x: 56, y: 8, w: 8, h: 8}, top: {x: 40, y: 0, w: 8, h: 8}, bottom: {x: 48, y: 0, w: 8, h: 8}, right: {x: 32, y: 8, w: 8, h: 8}, left: {x: 48, y: 8, w: 8, h: 8}},
-            body_layer1: { front: {x: 20, y: 20, w: 8, h: 12}, back: {x: 32, y: 20, w: 8, h: 12}, top: {x: 20, y: 16, w: 8, h: 4}, bottom: {x: 28, y: 16, w: 8, h: 4}, right: {x: 16, y: 20, w: 4, h: 12}, left: {x: 28, y: 20, w: 4, h: 12}},
-            body_layer2: { front: {x: 20, y: 36, w: 8, h: 12}, back: {x: 32, y: 36, w: 8, h: 12}, top: {x: 20, y: 32, w: 8, h: 4}, bottom: {x: 28, y: 32, w: 8, h: 4}, right: {x: 16, y: 36, w: 4, h: 12}, left: {x: 28, y: 36, w: 4, h: 12}},
-            rightArm_layer1: { front: {x: 44, y: 20, w: 4, h: 12}, back: {x: 52, y: 20, w: 4, h: 12}, top: {x: 44, y: 16, w: 4, h: 4}, bottom: {x: 48, y: 16, w: 4, h: 4}, right: {x: 40, y: 20, w: 4, h: 12}, left: {x: 48, y: 20, w: 4, h: 12}},
-            rightArm_layer2: { front: {x: 44, y: 36, w: 4, h: 12}, back: {x: 52, y: 36, w: 4, h: 12}, top: {x: 44, y: 32, w: 4, h: 4}, bottom: {x: 48, y: 32, w: 4, h: 4}, right: {x: 40, y: 36, w: 4, h: 12}, left: {x: 48, y: 36, w: 4, h: 12}},
-            leftArm_layer1: { front: {x: 36, y: 52, w: 4, h: 12}, back: {x: 44, y: 52, w: 4, h: 12}, top: {x: 36, y: 48, w: 4, h: 4}, bottom: {x: 40, y: 48, w: 4, h: 4}, right: {x: 32, y: 52, w: 4, h: 12}, left: {x: 40, y: 52, w: 4, h: 12}},
-            leftArm_layer2: { front: {x: 52, y: 52, w: 4, h: 12}, back: {x: 60, y: 52, w: 4, h: 12}, top: {x: 52, y: 48, w: 4, h: 4}, bottom: {x: 56, y: 48, w: 4, h: 4}, right: {x: 48, y: 52, w: 4, h: 12}, left: {x: 56, y: 52, w: 4, h: 12}},
-            rightLeg_layer1: { front: {x: 4, y: 20, w: 4, h: 12}, back: {x: 12, y: 20, w: 4, h: 12}, top: {x: 4, y: 16, w: 4, h: 4}, bottom: {x: 8, y: 16, w: 4, h: 4}, right: {x: 0, y: 20, w: 4, h: 12}, left: {x: 8, y: 20, w: 4, h: 12}},
-            rightLeg_layer2: { front: {x: 4, y: 36, w: 4, h: 12}, back: {x: 12, y: 36, w: 4, h: 12}, top: {x: 4, y: 32, w: 4, h: 4}, bottom: {x: 8, y: 32, w: 4, h: 4}, right: {x: 0, y: 36, w: 4, h: 12}, left: {x: 8, y: 36, w: 4, h: 12}},
-            leftLeg_layer1: { front: {x: 20, y: 52, w: 4, h: 12}, back: {x: 28, y: 52, w: 4, h: 12}, top: {x: 20, y: 48, w: 4, h: 4}, bottom: {x: 24, y: 48, w: 4, h: 4}, right: {x: 16, y: 52, w: 4, h: 12}, left: {x: 24, y: 52, w: 4, h: 12}},
-            leftLeg_layer2: { front: {x: 4, y: 52, w: 4, h: 12}, back: {x: 12, y: 52, w: 4, h: 12}, top: {x: 4, y: 48, w: 4, h: 4}, bottom: {x: 8, y: 48, w: 4, h: 4}, right: {x: 0, y: 52, w: 4, h: 12}, left: {x: 8, y: 52, w: 4, h: 12}},
-        };
         
-        // FIX: Reworked click handler for different tools
-        editorSkinViewer.canvas.addEventListener('click', (e) => {
+        // --- Direct 3D Drawing Logic ---
+        function get3DTexturePos(event) {
             try {
-                const result = editorSkinViewer.raycaster.cast(e);
-                if (!result) return;
-
-                if (currentTool === 'picker') {
-                    const { uv } = result;
-                    const skinImage = editorSkinViewer.skinImage;
-                    const texX = Math.floor(uv.x * skinImage.width);
-                    const texY = Math.floor(uv.y * skinImage.height);
-                    const pixelData = masterCtx.getImageData(texX, texY, 1, 1).data;
-                    
-                    if (pixelData[3] > 0) { // not transparent
-                        const hexColor = "#" + ((1 << 24) + (pixelData[0] << 16) + (pixelData[1] << 8) + pixelData[2]).toString(16).slice(1).toUpperCase();
-                        colorPicker.value = hexColor;
-                        addRecentColor(hexColor);
-                        showToast(`Color picked: ${hexColor}`, 'success');
-                    }
-                } else { // Open editor for other tools (pencil, eraser, bucket)
-                    const { bodyPart, face } = result;
-                    const partName = bodyPart.name.replace(/2$/, '');
-                    const layer = bodyPart.name.endsWith('2') ? 'layer2' : 'layer1';
-                    const partKey = `${partName}_${layer}`;
-                    const faceKey = face.toLowerCase();
-                    
-                    if (skinMap[partKey] && skinMap[partKey][faceKey]) {
-                        currentEditPart = {
-                            ...skinMap[partKey][faceKey],
-                            name: `${bodyPart.name} (${face})`
-                        };
-                        openPixelEditor();
-                    }
-                }
+                const result = editorSkinViewer.raycaster.cast(event);
+                if (!result) return null;
+                const { uv } = result;
+                return { 
+                    x: Math.floor(uv.x * masterCanvas.width), 
+                    y: Math.floor(uv.y * masterCanvas.height) 
+                };
             } catch (err) {
-                console.error("Error casting ray:", err);
-                showToast("Could not select part. Please try again.", "error");
+                console.error("Raycasting error:", err);
+                return null;
             }
-        });
-
-        // --- Pixel Editor Modal Logic ---
-        function openPixelEditor() {
-            if (!currentEditPart) return;
-            
-            document.getElementById('editor-modal-title').textContent = `Editing: ${currentEditPart.name}`;
-
-            const { x, y, w, h } = currentEditPart;
-            pixelEditorCanvas.width = w;
-            pixelEditorCanvas.height = h;
-            pixelEditorCtx.imageSmoothingEnabled = false;
-
-            const partImageData = masterCtx.getImageData(x, y, w, h);
-            pixelEditorCtx.putImageData(partImageData, 0, 0);
-
-            const container = document.querySelector('.pixel-editor-container');
-            const scale = PIXEL_EDITOR_SIZE / Math.max(w, h);
-            container.style.width = `${w * scale}px`;
-            container.style.height = `${h * scale}px`;
-
-            drawPixelGrid();
-            document.getElementById('editor-modal').style.display = 'flex';
         }
-        document.getElementById('save-pixel-editor').addEventListener('click', async () => {
-             if (!currentEditPart) return;
-            
-            const editedImageData = pixelEditorCtx.getImageData(0, 0, currentEditPart.w, currentEditPart.h);
-            masterCtx.putImageData(editedImageData, currentEditPart.x, currentEditPart.y);
-            
-            await update3DViewers();
-            saveState();
-            
-            document.getElementById('editor-modal').style.display = 'none';
-            currentEditPart = null;
-        });
 
-        // --- Drawing on Pixel Editor ---
-        let isPixelDrawing = false;
-        function getPixelEditorMousePos(e) {
-            const rect = pixelEditorCanvas.getBoundingClientRect();
-            // Adjust for canvas scaling
-            const scaleX = pixelEditorCanvas.width / rect.width;
-            const scaleY = pixelEditorCanvas.height / rect.height;
-            const x = (e.clientX - rect.left) * scaleX;
-            const y = (e.clientY - rect.top) * scaleY;
-            return { x: Math.floor(x), y: Math.floor(y) };
+        function drawOnMasterCanvas(pos) {
+             if (!pos) return;
+            if (currentTool === 'pencil') {
+                masterCtx.fillStyle = colorPicker.value;
+                masterCtx.fillRect(pos.x, pos.y, 1, 1);
+            } else if (currentTool === 'eraser') {
+                masterCtx.clearRect(pos.x, pos.y, 1, 1);
+            }
         }
         
-        function drawPixelLine(x0, y0, x1, y1) {
+        function drawTextureLineOnMaster(x0, y0, x1, y1) {
             const dx = Math.abs(x1 - x0);
             const dy = -Math.abs(y1 - y0);
             let sx = x0 < x1 ? 1 : -1;
             let sy = y0 < y1 ? 1 : -1;
             let err = dx + dy;
             while (true) {
-                drawOnPixelCanvas({ x: x0, y: y0 });
+                drawOnMasterCanvas({ x: x0, y: y0 });
                 if (x0 === x1 && y0 === y1) break;
                 let e2 = 2 * err;
                 if (e2 >= dy) { err += dy; x0 += sx; }
@@ -665,75 +560,13 @@
             }
         }
 
-        function drawOnPixelCanvas(pos) {
-            if (pos.x < 0 || pos.x >= pixelEditorCanvas.width || pos.y < 0 || pos.y >= pixelEditorCanvas.height) return;
-            if (currentTool === 'pencil') {
-                pixelEditorCtx.fillStyle = colorPicker.value;
-                pixelEditorCtx.fillRect(pos.x, pos.y, 1, 1);
-            } else if (currentTool === 'eraser') {
-                pixelEditorCtx.clearRect(pos.x, pos.y, 1, 1);
-            }
-        }
-        
-        // NEW: Flood fill algorithm for bucket tool
-        function fillPixelArea(startX, startY) {
-            const canvas = pixelEditorCanvas;
-            const ctx = pixelEditorCtx;
-            const { width, height } = canvas;
-            if (startX < 0 || startX >= width || startY < 0 || startY >= height) return;
-            
-            const imageData = ctx.getImageData(0, 0, width, height);
-            const data = imageData.data;
+        function handle3DDraw(event) {
+            const pos = get3DTexturePos(event);
+            if (!pos) return;
 
-            const startIdx = (startY * width + startX) * 4;
-            const startR = data[startIdx];
-            const startG = data[startIdx + 1];
-            const startB = data[startIdx + 2];
-            const startA = data[startIdx + 3];
-            
-            const hex = colorPicker.value;
-            const fillR = parseInt(hex.slice(1, 3), 16);
-            const fillG = parseInt(hex.slice(3, 5), 16);
-            const fillB = parseInt(hex.slice(5, 7), 16);
-            const fillA = 255;
-
-            if (startR === fillR && startG === fillG && startB === fillB && startA === fillA) {
-                return; // Already this color
-            }
-
-            const pixelStack = [[startX, startY]];
-
-            while (pixelStack.length > 0) {
-                const [x, y] = pixelStack.pop();
-                const currentIdx = (y * width + x) * 4;
-
-                if (data[currentIdx] === startR && data[currentIdx + 1] === startG && data[currentIdx + 2] === startB && data[currentIdx + 3] === startA) {
-                    data[currentIdx] = fillR;
-                    data[currentIdx + 1] = fillG;
-                    data[currentIdx + 2] = fillB;
-                    data[currentIdx + 3] = fillA;
-
-                    if (x > 0) pixelStack.push([x - 1, y]);
-                    if (x < width - 1) pixelStack.push([x + 1, y]);
-                    if (y > 0) pixelStack.push([x, y - 1]);
-                    if (y < height - 1) pixelStack.push([x, y + 1]);
-                }
-            }
-            ctx.putImageData(imageData, 0, 0);
-        }
-
-        // FIX: Reworked mousedown handler to include bucket and picker tools
-        pixelEditorCanvas.addEventListener('mousedown', (e) => {
-            const pos = getPixelEditorMousePos(e);
-            
-            if (currentTool === 'bucket') {
-                fillPixelArea(pos.x, pos.y);
-                return;
-            }
-            
             if (currentTool === 'picker') {
-                const pixelData = pixelEditorCtx.getImageData(pos.x, pos.y, 1, 1).data;
-                if (pixelData[3] > 0) {
+                 const pixelData = masterCtx.getImageData(pos.x, pos.y, 1, 1).data;
+                 if (pixelData[3] > 0) {
                     const hexColor = "#" + ((1 << 24) + (pixelData[0] << 16) + (pixelData[1] << 8) + pixelData[2]).toString(16).slice(1).toUpperCase();
                     colorPicker.value = hexColor;
                     addRecentColor(hexColor);
@@ -741,39 +574,39 @@
                 return;
             }
 
-            isPixelDrawing = true;
-            lastPixelPos = pos;
-            drawOnPixelCanvas(lastPixelPos);
-        });
-
-        pixelEditorCanvas.addEventListener('mousemove', (e) => {
-            if (isPixelDrawing) {
-                const currentPos = getPixelEditorMousePos(e);
-                if (currentPos.x !== lastPixelPos.x || currentPos.y !== lastPixelPos.y) {
-                    drawPixelLine(lastPixelPos.x, lastPixelPos.y, currentPos.x, currentPos.y);
-                    lastPixelPos = currentPos;
+            if (isDrawingOn3D) { // Drawing a line
+                if(lastTexturePos) {
+                    drawTextureLineOnMaster(lastTexturePos.x, lastTexturePos.y, pos.x, pos.y);
                 }
+            } else { // Drawing a single point
+                drawOnMasterCanvas(pos);
+            }
+            
+            lastTexturePos = pos;
+            update3DViewers();
+        }
+
+        const editorCanvas = editorSkinViewer.canvas;
+        editorCanvas.addEventListener('mousedown', (e) => {
+            if (e.button !== 0) return; // Only main click
+            isDrawingOn3D = true;
+            handle3DDraw(e);
+        });
+        editorCanvas.addEventListener('mousemove', (e) => {
+            if (isDrawingOn3D) {
+                handle3DDraw(e);
             }
         });
-        pixelEditorCanvas.addEventListener('mouseup', () => { isPixelDrawing = false; lastPixelPos = null; });
-        pixelEditorCanvas.addEventListener('mouseleave', () => { isPixelDrawing = false; lastPixelPos = null; });
-        
-        function drawPixelGrid() {
-            pixelGridCanvas.width = pixelEditorCanvas.clientWidth;
-            pixelGridCanvas.height = pixelEditorCanvas.clientHeight;
-            pixelGridCtx.clearRect(0,0,pixelGridCanvas.width, pixelGridCanvas.height);
-            const pixelSize = pixelGridCanvas.width / pixelEditorCanvas.width;
-            if (pixelSize < 5) return;
-            
-            pixelGridCtx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-            pixelGridCtx.lineWidth = 1;
-            for (let x = 0; x <= pixelGridCanvas.width; x += pixelSize) {
-                pixelGridCtx.beginPath(); pixelGridCtx.moveTo(x, 0); pixelGridCtx.lineTo(x, pixelGridCanvas.height); pixelGridCtx.stroke();
+        const stopDrawing = () => {
+            if (isDrawingOn3D) {
+                saveState();
             }
-             for (let y = 0; y <= pixelGridCanvas.height; y += pixelSize) {
-                pixelGridCtx.beginPath(); pixelGridCtx.moveTo(0, y); pixelGridCtx.lineTo(pixelGridCanvas.width, y); pixelGridCtx.stroke();
-            }
+            isDrawingOn3D = false;
+            lastTexturePos = null;
         }
+        editorCanvas.addEventListener('mouseup', stopDrawing);
+        editorCanvas.addEventListener('mouseleave', stopDrawing);
+        
 
         // --- FILE HANDLING ---
         const uploadInput = document.getElementById('upload-skin-input');
@@ -820,7 +653,6 @@
             link.click();
         });
         
-        // FIX: Replaced confirm() with custom modal
         document.getElementById('reset-btn').addEventListener('click', () => {
             showConfirmation('All unsaved changes will be lost.', () => {
                 const blankSkin = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABGSURBVOgnsO0BAQAACILg/4chCRgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAsAb4IAAG9B2xGAAAAAElFTSuQmCC';
@@ -868,17 +700,6 @@
             document.querySelector('.editor-area').classList.toggle('solid-bg', !gridBgToggle.checked);
         });
         
-        document.getElementById('edit-full-skin-btn').addEventListener('click', () => {
-            currentEditPart = {
-                x: 0,
-                y: 0,
-                w: masterCanvas.width,
-                h: masterCanvas.height,
-                name: 'Full Skin Texture'
-            };
-            openPixelEditor();
-        });
-
         // --- INITIAL LOAD ---
         document.addEventListener('DOMContentLoaded', () => {
             const initialSkinUrl = previewSkinViewer.skinUrl;
