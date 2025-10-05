@@ -89,8 +89,13 @@
         .tool-btn[disabled] i { color: var(--muted); }
         
         .color-palette { display: flex; flex-direction: column; gap: 0.75rem; }
-        .color-picker-wrapper { position: relative; width: 100%; height: 48px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+        .color-picker-container { display: flex; gap: 0.5rem; }
+        .color-picker-wrapper { position: relative; width: 48px; height: 48px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); flex-shrink: 0; }
         #color-picker { position: absolute; top: -10px; left: -10px; width: calc(100% + 20px); height: calc(100% + 20px); border: none; padding: 0; background: transparent; cursor: pointer; }
+        .hex-input-wrapper { display: flex; align-items: center; background: var(--bg-2); border-radius: 10px; border: 1px solid var(--border); padding: 0 .75rem; flex-grow: 1; }
+        .hex-input-wrapper span { color: var(--muted); font-weight: 700; }
+        #hex-input { background: transparent; border: none; outline: none; color: var(--text); font-weight: 600; width: 100%; text-transform: uppercase; padding: .5rem; }
+
         .color-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(28px, 1fr)); gap: 0.5rem; }
         .swatch { width: 100%; aspect-ratio: 1/1; border-radius: 8px; border: 2px solid var(--border); cursor: pointer; transition: transform 0.2s; }
         .swatch:hover { transform: scale(1.1); }
@@ -169,25 +174,18 @@
             background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(20px);
             border: 1px solid var(--border); border-radius: 16px; padding: 1rem;
         }
-
-        .body-parts-table {
-            width: 100%;
-            text-align: center;
-            border-collapse: collapse;
+        
+        #layer-controls { display: flex; flex-direction: column; gap: 1rem; }
+        .layer-group { display: grid; grid-template-columns: 50px 1fr; align-items: center; gap: .5rem; }
+        .layer-label { font-weight: 700; font-size: .8rem; color: var(--muted); text-align: right; }
+        .layer-btn-group { display: grid; grid-template-columns: repeat(6, 1fr); gap: .5rem; }
+        .layer-btn {
+            background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px;
+            padding: .4rem 0; font-weight: 600; cursor: pointer; transition: all .2s ease;
+            font-size: .75rem; color: var(--muted);
         }
-        .body-parts-table th, .body-parts-table td {
-            padding: 0.5rem;
-        }
-        .body-parts-table th {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            color: var(--muted);
-        }
-        .body-parts-table input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
+        .layer-btn:hover { background: var(--bg-1); }
+        .layer-btn.active { background: rgba(var(--brand-1-rgb), 0.2); color: white; border-color: var(--brand-1); }
         
         .model-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 1rem; }
         .part-btn {
@@ -325,7 +323,15 @@
              <div class="panel-section">
                 <h3 class="panel-title">Color</h3>
                 <div class="color-palette">
-                    <div class="color-picker-wrapper"><input type="color" id="color-picker" value="#de212a"></div>
+                    <div class="color-picker-container">
+                        <div class="color-picker-wrapper">
+                            <input type="color" id="color-picker" value="#de212a">
+                        </div>
+                        <div class="hex-input-wrapper">
+                            <span>#</span>
+                            <input type="text" id="hex-input" value="de212a" maxlength="6">
+                        </div>
+                    </div>
                     <div class="color-swatches" id="color-swatches"></div>
                 </div>
             </div>
@@ -355,39 +361,30 @@
             </div>
             <div class="panel">
                  <h3 class="panel-title" style="margin-bottom: 1rem;">Body Parts Visibility</h3>
-                 <table id="layers-table" class="body-parts-table">
-                       <thead>
-                           <tr>
-                               <th>Layer</th>
-                               <th>Head</th>
-                               <th>Body</th>
-                               <th>R. Arm</th>
-                               <th>L. Arm</th>
-                               <th>R. Leg</th>
-                               <th>L. Leg</th>
-                           </tr>
-                       </thead>
-                       <tbody>
-                           <tr>
-                               <th>Inner</th>
-                               <td><input type="checkbox" data-layer="innerLayer" data-part="head" checked></td>
-                               <td><input type="checkbox" data-layer="innerLayer" data-part="body" checked></td>
-                               <td><input type="checkbox" data-layer="innerLayer" data-part="rightArm" checked></td>
-                               <td><input type="checkbox" data-layer="innerLayer" data-part="leftArm" checked></td>
-                               <td><input type="checkbox" data-layer="innerLayer" data-part="rightLeg" checked></td>
-                               <td><input type="checkbox" data-layer="innerLayer" data-part="leftLeg" checked></td>
-                           </tr>
-                           <tr>
-                               <th>Outer</th>
-                               <td><input type="checkbox" data-layer="outerLayer" data-part="head" checked></td>
-                               <td><input type="checkbox" data-layer="outerLayer" data-part="body" checked></td>
-                               <td><input type="checkbox" data-layer="outerLayer" data-part="rightArm" checked></td>
-                               <td><input type="checkbox" data-layer="outerLayer" data-part="leftArm" checked></td>
-                               <td><input type="checkbox" data-layer="outerLayer" data-part="rightLeg" checked></td>
-                               <td><input type="checkbox" data-layer="outerLayer" data-part="leftLeg" checked></td>
-                           </tr>
-                       </tbody>
-                 </table>
+                 <div id="layer-controls">
+                    <div class="layer-group">
+                        <span class="layer-label">Inner</span>
+                        <div class="layer-btn-group">
+                            <button class="layer-btn active" data-layer="innerLayer" data-part="head" title="Inner Head">Head</button>
+                            <button class="layer-btn active" data-layer="innerLayer" data-part="body" title="Inner Body">Body</button>
+                            <button class="layer-btn active" data-layer="innerLayer" data-part="rightArm" title="Inner Right Arm">R. Arm</button>
+                            <button class="layer-btn active" data-layer="innerLayer" data-part="leftArm" title="Inner Left Arm">L. Arm</button>
+                            <button class="layer-btn active" data-layer="innerLayer" data-part="rightLeg" title="Inner Right Leg">R. Leg</button>
+                            <button class="layer-btn active" data-layer="innerLayer" data-part="leftLeg" title="Inner Left Leg">L. Leg</button>
+                        </div>
+                    </div>
+                     <div class="layer-group">
+                        <span class="layer-label">Outer</span>
+                        <div class="layer-btn-group">
+                            <button class="layer-btn active" data-layer="outerLayer" data-part="head" title="Outer Head">Head</button>
+                            <button class="layer-btn active" data-layer="outerLayer" data-part="body" title="Outer Body">Body</button>
+                            <button class="layer-btn active" data-layer="outerLayer" data-part="rightArm" title="Outer Right Arm">R. Arm</button>
+                            <button class="layer-btn active" data-layer="outerLayer" data-part="leftArm" title="Outer Left Arm">L. Arm</button>
+                            <button class="layer-btn active" data-layer="outerLayer" data-part="rightLeg" title="Outer Right Leg">R. Leg</button>
+                            <button class="layer-btn active" data-layer="outerLayer" data-part="leftLeg" title="Outer Left Leg">L. Leg</button>
+                        </div>
+                    </div>
+                 </div>
                  <div class="model-toggle">
                     <button class="part-btn active" id="steve-model-btn" data-model="default">Steve</button>
                     <button class="part-btn" id="alex-model-btn" data-model="slim">Alex</button>
@@ -412,6 +409,8 @@
     
     <canvas id="master-skin-canvas" style="display: none;"></canvas>
 
+    <script type="module" src="/theme.js"></script>
+    <script type="module" src="/auth.js"></script>
     <script type="module">
         // --- 3D Viewer Setup ---
         let pixelHighlighter;
@@ -493,31 +492,62 @@
             confirmCallback = null;
         });
 
-        // --- Core Functions ---
+        // --- Core Rendering Logic ---
         async function update3DViewers(forceRedraw = false) {
             const isSlim = document.getElementById('alex-model-btn').classList.contains('active');
             const currentModel = isSlim ? 'slim' : 'default';
-            
             const dataUrl = masterCanvas.toDataURL();
-            try {
-                if (forceRedraw) {
+
+            if (forceRedraw) {
+                try {
                     await Promise.all([
                         previewSkinViewer.loadSkin(dataUrl, { model: currentModel }),
                         editorSkinViewer.loadSkin(dataUrl, { model: currentModel })
                     ]);
+                } catch (err) {
+                    console.error("Failed to load skin into viewers:", err);
+                    showToast("Error updating 3D preview.", "error");
                 }
-                
+            } else {
                 if (editorSkinViewer.playerObject) editorSkinViewer.playerObject.skin.map.needsUpdate = true;
                 if (previewSkinViewer.playerObject) previewSkinViewer.playerObject.skin.map.needsUpdate = true;
-                
-                // CRITICAL FIX: Always sync visibility after any texture update
-                syncVisibility();
-                
-            } catch (err) {
-                console.error("Failed to load skin into viewers:", err);
-                showToast("Error updating 3D preview.", "error");
             }
+            syncVisibility();
         }
+        
+        function syncVisibility() {
+            raycastableMeshes = [];
+            if (!editorSkinViewer.playerObject) return;
+
+            const buttons = document.querySelectorAll('#layer-controls .layer-btn');
+            buttons.forEach(button => {
+                const isVisible = button.classList.contains('active');
+                const partName = button.dataset.part;
+                const layerName = button.dataset.layer;
+
+                [previewSkinViewer, editorSkinViewer].forEach(viewer => {
+                    if (viewer.playerObject?.skin) {
+                        const skinPart = viewer.playerObject.skin[partName];
+                        if (skinPart?.[layerName]) {
+                            skinPart[layerName].visible = isVisible;
+                        }
+                    }
+                });
+
+                if (isVisible) {
+                    const group = editorSkinViewer.playerObject.skin[partName]?.[layerName];
+                    if (group) {
+                        group.traverse(child => {
+                            if (child.isMesh) raycastableMeshes.push(child);
+                        });
+                    }
+                }
+            });
+            
+            previewSkinViewer.render();
+            editorSkinViewer.render();
+        }
+
 
         // --- History (Undo/Redo) ---
         const undoBtn = document.getElementById('undo-btn');
@@ -561,6 +591,39 @@
         
         // --- Color Management & Tools ---
         const colorPicker = document.getElementById('color-picker');
+        const hexInput = document.getElementById('hex-input');
+
+        function setupColorPicker() {
+            colorPicker.addEventListener('input', (e) => {
+                const hexValue = e.target.value.substring(1);
+                hexInput.value = hexValue;
+            });
+            colorPicker.addEventListener('change', (e) => addRecentColor(e.target.value));
+
+            hexInput.addEventListener('input', (e) => {
+                const hex = e.target.value;
+                 if (/^[0-9A-F]{6}$/i.test(hex)) {
+                    colorPicker.value = '#' + hex;
+                }
+            });
+            hexInput.addEventListener('change', (e) => {
+                 const hex = e.target.value;
+                 if (/^[0-9A-F]{6}$/i.test(hex)) {
+                    addRecentColor('#' + hex);
+                }
+            });
+
+            const swatches = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#000000', '#FFFFFF', '#808080', '#A52A2A', '#FFA500', '#C0C0C0'];
+            const swatchesContainer = document.getElementById('color-swatches');
+            swatchesContainer.innerHTML = swatches.map(color => `<div class="swatch" style="background-color: ${color}" data-color="${color}"></div>`).join('');
+            swatchesContainer.querySelectorAll('.swatch').forEach(sw => sw.onclick = () => {
+                colorPicker.value = sw.dataset.color;
+                hexInput.value = sw.dataset.color.substring(1);
+                addRecentColor(sw.dataset.color);
+            });
+            renderRecentColors();
+        }
+
         function addRecentColor(color) {
              const upperColor = color.toUpperCase();
             if (recentColors.includes(upperColor)) {
@@ -576,16 +639,10 @@
             container.innerHTML = recentColors.map(color => `<div class="swatch" style="background-color: ${color}" data-color="${color}"></div>`).join('');
             container.querySelectorAll('.swatch').forEach(sw => sw.onclick = () => {
                 colorPicker.value = sw.dataset.color;
+                hexInput.value = sw.dataset.color.substring(1);
             });
         }
-        const swatches = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#000000', '#FFFFFF', '#808080', '#A52A2A', '#FFA500', '#C0C0C0'];
-        const swatchesContainer = document.getElementById('color-swatches');
-        swatchesContainer.innerHTML = swatches.map(color => `<div class="swatch" style="background-color: ${color}" data-color="${color}"></div>`).join('');
-        swatchesContainer.querySelectorAll('.swatch').forEach(sw => sw.onclick = () => {
-            colorPicker.value = sw.dataset.color;
-        });
-        colorPicker.addEventListener('change', (e) => addRecentColor(e.target.value));
-
+        
         document.querySelectorAll('.tool-btn').forEach(btn => {
             if (btn.id.includes('upload') || btn.id.includes('download') || btn.id.includes('reset')) return;
             btn.addEventListener('click', () => {
@@ -638,24 +695,25 @@
             } else if (currentTool === 'eraser') {
                 masterCtx.clearRect(pos.x, pos.y, 1, 1);
             }
-            if (editorSkinViewer.playerObject) editorSkinViewer.playerObject.skin.map.needsUpdate = true;
-            if (previewSkinViewer.playerObject) previewSkinViewer.playerObject.skin.map.needsUpdate = true;
-            
-            // FIX: Sync visibility after each draw operation
-            syncVisibility();
+            update3DViewers();
         }
         
         function drawTextureLineOnMaster(x0, y0, x1, y1) {
             const dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
             const dy = -Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
             let err = dx + dy;
+            let pixelDrawn = false;
             while (true) {
-                drawOnMasterCanvas({ x: x0, y: y0 });
+                if(currentTool === 'pencil') { masterCtx.fillStyle = colorPicker.value; masterCtx.fillRect(x0, y0, 1, 1); } 
+                else if (currentTool === 'eraser') { masterCtx.clearRect(x0, y0, 1, 1); }
+                pixelDrawn = true;
+
                 if (x0 === x1 && y0 === y1) break;
                 let e2 = 2 * err;
                 if (e2 >= dy) { err += dy; x0 += sx; }
                 if (e2 <= dx) { err += dx; y0 += sy; }
             }
+            if (pixelDrawn) update3DViewers();
         }
 
         function hexToRgb(hex) {
@@ -663,7 +721,7 @@
             return result ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)] : null;
         }
 
-        function floodFill(startX, startY) {
+        async function floodFill(startX, startY) {
             const imageData = masterCtx.getImageData(0, 0, masterCanvas.width, masterCanvas.height);
             const { width, height, data } = imageData;
             
@@ -687,8 +745,8 @@
                 }
             }
             masterCtx.putImageData(imageData, 0, 0);
+            await update3DViewers(); 
         }
-
 
         function handle3DInteraction(intersection, isDrawing) {
             const pos = getTexturePosFromIntersection(intersection);
@@ -699,14 +757,13 @@
                 if (pixelData[3] > 0) {
                     const hexColor = "#" + ("000000" + ((pixelData[0] << 16) | (pixelData[1] << 8) | pixelData[2]).toString(16)).slice(-6);
                     colorPicker.value = hexColor;
+                    hexInput.value = hexColor.substring(1);
                 }
                 return;
             }
             
             if (currentTool === 'bucket' && !isDrawing) {
-                floodFill(pos.x, pos.y);
-                update3DViewers(); 
-                saveState();
+                floodFill(pos.x, pos.y).then(() => saveState());
                 return;
             }
 
@@ -862,51 +919,13 @@
         document.getElementById('grid-bg-toggle').addEventListener('change', (e) => {
             document.querySelector('.editor-area').classList.toggle('solid-bg', !e.target.checked);
         });
-
-        // FIX: This function is the single source of truth for visibility.
-        // It syncs the 3D model's state to match the checkboxes and rebuilds the clickable mesh list.
-        function syncVisibility() {
-            raycastableMeshes = [];
-            if (!editorSkinViewer.playerObject) return;
-
-            const checkboxes = document.querySelectorAll('#layers-table input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
-                const isChecked = checkbox.checked;
-                const partName = checkbox.dataset.part;
-                const layerName = checkbox.dataset.layer;
-
-                // Update visibility on both viewers' models
-                [previewSkinViewer, editorSkinViewer].forEach(viewer => {
-                    if (viewer.playerObject?.skin) {
-                        const skinPart = viewer.playerObject.skin[partName];
-                        if (skinPart?.[layerName]) {
-                            skinPart[layerName].visible = isChecked;
-                        }
-                    }
-                });
-
-                // If the checkbox is checked, add the corresponding meshes to the clickable list
-                if (isChecked) {
-                    const group = editorSkinViewer.playerObject.skin[partName]?.[layerName];
-                    if (group) {
-                        group.traverse(child => {
-                            if (child.isMesh) {
-                                raycastableMeshes.push(child);
-                            }
-                        });
-                    }
-                }
-            });
-            
-            // Force both viewers to re-render to show visibility changes
-            previewSkinViewer.render();
-            // editorSkinViewer renders in its own loop, no need to call here
-        }
         
         function setupVisibilityControls() {
-            document.querySelectorAll('#layers-table input[type="checkbox"]').forEach(checkbox => {
-                // When a checkbox changes, just re-run the sync logic
-                checkbox.addEventListener('change', syncVisibility);
+             document.querySelectorAll('#layer-controls .layer-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    button.classList.toggle('active');
+                    update3DViewers(); 
+                });
             });
         }
         
@@ -934,10 +953,10 @@
                 masterCtx.imageSmoothingEnabled = false; 
                 masterCtx.drawImage(initialImg, 0, 0);
                 
-                await update3DViewers(true); // This loads the skin and calls syncVisibility for the first time
+                await update3DViewers(true); 
                 createPixelHighlighter(); 
-                setupVisibilityControls(); // This attaches listeners for future clicks
-                renderRecentColors();
+                setupVisibilityControls();
+                setupColorPicker();
                 saveState();
 
                 editorRenderLoop();
