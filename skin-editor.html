@@ -352,15 +352,11 @@
 
         // --- Core Functions ---
         function loadSkin(url, clearHistory = true) {
-            // The 3D viewer can handle the data URL directly
-            skinViewer.loadSkin(url);
-            
             const baseSkinImg = new Image();
             baseSkinImg.crossOrigin = "anonymous";
             baseSkinImg.src = url;
             baseSkinImg.onload = () => {
                 editorCtx.clearRect(0, 0, editorCanvas.width, editorCanvas.height);
-                // This scales the loaded image to fit the 64x64 editor canvas, handling HD skins.
                 editorCtx.drawImage(baseSkinImg, 0, 0, editorCanvas.width, editorCanvas.height);
                 
                 if (clearHistory) {
@@ -369,6 +365,7 @@
                     saveState();
                 }
                 updatePanAndZoom();
+                update3DViewer(); 
             };
              baseSkinImg.onerror = () => {
                 showToast("Failed to load skin image for 2D editor.", "error");
@@ -678,7 +675,6 @@
                 reader.onload = (event) => {
                     const img = new Image();
                     img.onload = () => {
-                        // More flexible check for valid skin aspect ratios
                         if (img.width > 0 && (img.width === img.height || img.width === img.height * 2)) {
                             loadSkin(event.target.result);
                             showToast("Skin loaded from file.", "success");
@@ -692,7 +688,7 @@
             } else if (file) {
                  showToast("Invalid file type. Please upload a .png file.", "error");
             }
-            e.target.value = ''; // Reset input
+            e.target.value = '';
         });
 
         document.getElementById('download-btn').addEventListener('click', () => {
@@ -714,7 +710,7 @@
             const { data: { user } } = await supabase.auth.getUser();
 
             if (!user) {
-                showToast("You must be logged in to save a skin.", "error");
+                showToast("Please login to use the save feature.", "error");
                 return;
             }
 
@@ -723,30 +719,24 @@
             saveBtn.innerHTML = '<div class="spinner-sm"></div>';
 
             try {
-                // 1. Convert canvas to a file (blob)
                 const blob = await new Promise(resolve => editorCanvas.toBlob(resolve, 'image/png'));
-                
-                // 2. Define a unique path in Supabase Storage for this user's skin
                 const filePath = `user_skins/${user.id}/skin.png`;
 
-                // 3. Upload the file to Supabase Storage
                 const { data: uploadData, error: uploadError } = await supabase.storage
-                    .from('skins') // Make sure you have a "skins" bucket in your Supabase project
+                    .from('skins')
                     .upload(filePath, blob, {
                         cacheControl: '3600',
-                        upsert: true // This will overwrite the file if it already exists
+                        upsert: true
                     });
 
                 if (uploadError) throw uploadError;
 
-                // 4. Get the public URL of the uploaded file
                 const { data: { publicUrl } } = supabase.storage
                     .from('skins')
                     .getPublicUrl(filePath);
 
                 if (!publicUrl) throw new Error("Could not get public URL for skin.");
 
-                // 5. Update the user's profile with the new skin URL
                 const { error: profileError } = await supabase
                     .from('profiles')
                     .update({ skin_url: publicUrl })
@@ -768,4 +758,3 @@
     </script>
 </body>
 </html>
-
