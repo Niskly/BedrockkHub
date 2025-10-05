@@ -505,12 +505,13 @@
                         previewSkinViewer.loadSkin(dataUrl, { model: currentModel }),
                         editorSkinViewer.loadSkin(dataUrl, { model: currentModel })
                     ]);
-                    // After reloading the skin, its state is reset. We must re-apply our UI's visibility settings.
-                    syncVisibility();
                 }
                 
                 if (editorSkinViewer.playerObject) editorSkinViewer.playerObject.skin.map.needsUpdate = true;
                 if (previewSkinViewer.playerObject) previewSkinViewer.playerObject.skin.map.needsUpdate = true;
+                
+                // CRITICAL FIX: Always sync visibility after any texture update
+                syncVisibility();
                 
             } catch (err) {
                 console.error("Failed to load skin into viewers:", err);
@@ -639,6 +640,9 @@
             }
             if (editorSkinViewer.playerObject) editorSkinViewer.playerObject.skin.map.needsUpdate = true;
             if (previewSkinViewer.playerObject) previewSkinViewer.playerObject.skin.map.needsUpdate = true;
+            
+            // FIX: Sync visibility after each draw operation
+            syncVisibility();
         }
         
         function drawTextureLineOnMaster(x0, y0, x1, y1) {
@@ -859,7 +863,7 @@
             document.querySelector('.editor-area').classList.toggle('solid-bg', !e.target.checked);
         });
 
-// FIX: This function is the single source of truth for visibility.
+        // FIX: This function is the single source of truth for visibility.
         // It syncs the 3D model's state to match the checkboxes and rebuilds the clickable mesh list.
         function syncVisibility() {
             raycastableMeshes = [];
@@ -953,4 +957,3 @@
     </script>
 </body>
 </html>
-
