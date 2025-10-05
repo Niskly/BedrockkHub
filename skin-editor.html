@@ -220,13 +220,12 @@
         <aside class="toolbar-panel">
             <div class="panel-section">
                 <h3 class="panel-title">File</h3>
-                <div class="tools-grid">
+                <div class="tools-grid" style="grid-template-columns: repeat(3, 1fr);">
                     <button class="tool-btn" id="reset-btn" title="New Skin"><i class="fa-solid fa-file"></i></button>
                     <label for="upload-skin-input" class="tool-btn" id="upload-btn" title="Load Skin from PC">
                         <i class="fa-solid fa-upload"></i>
                     </label>
                     <button class="tool-btn" id="download-btn" title="Download Skin"><i class="fa-solid fa-download"></i></button>
-                    <button class="tool-btn" id="save-btn" title="Save to Profile"><i class="fa-solid fa-save"></i></button>
                     <input type="file" id="upload-skin-input" accept="image/png" style="display: none;">
                 </div>
             </div>
@@ -263,7 +262,7 @@
         </aside>
 
         <div class="editor-area">
-            <canvas id="editor-canvas" width="64" height="64"></canvas>
+            <canvas id="editor-canvas"></canvas>
             <canvas id="grid-canvas"></canvas>
         </div>
 
@@ -297,7 +296,6 @@
     <script type="module" src="/theme.js"></script>
     <script type="module" src="/auth.js"></script>
     <script type="module">
-        // Using the shared supabase client to avoid multiple instances
         import { supabase } from '/supabase-client.js';
 
         // --- 3D Viewer Setup ---
@@ -306,10 +304,8 @@
             skin: "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png"
         });
         
-        // FIX: The skinview3d.createOrbitControls function doesn't exist in v3.
-        // Controls are enabled directly on the skinViewer object.
         skinViewer.controls.enableRotate = true;
-        skinViewer.controls.enableZoom = true; // Enabled for better user experience
+        skinViewer.controls.enableZoom = true;
 
         skinViewer.animation = new skinview3d.RotatingAnimation(skinViewer.playerObject);
         skinViewer.animation.speed = 0.5;
@@ -325,7 +321,6 @@
         const editorArea = document.querySelector('.editor-area');
         const editorCanvas = document.getElementById('editor-canvas');
         const editorCtx = editorCanvas.getContext('2d');
-        editorCtx.imageSmoothingEnabled = false;
         const gridCanvas = document.getElementById('grid-canvas');
         const gridCtx = gridCanvas.getContext('2d');
 
@@ -341,7 +336,7 @@
         let recentColors = [];
         
         // --- Toast Notifications ---
-        function showToast(message, type = 'error') {
+        function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
@@ -354,45 +349,9 @@
             }, 3000);
         }
 
-        // --- Core Functions ---
-        function loadSkin(url, clearHistory = true) {
-            const baseSkinImg = new Image();
-            baseSkinImg.crossOrigin = "anonymous";
-            baseSkinImg.src = url;
-            baseSkinImg.onload = () => {
-                // Update 2D Editor Canvas
-                editorCtx.clearRect(0, 0, editorCanvas.width, editorCanvas.height);
-                editorCtx.drawImage(baseSkinImg, 0, 0, editorCanvas.width, editorCanvas.height);
-                
-                // Update 3D Viewer
-                skinViewer.loadSkin(url); 
-                
-                if (clearHistory) {
-                    history = [];
-                    historyIndex = -1;
-                    saveState();
-                }
-                updatePanAndZoom();
-            };
-             baseSkinImg.onerror = () => {
-                showToast("Failed to load skin image.", "error");
-            }
-        }
-
         function update3DViewer() {
             skinViewer.loadSkin(editorCanvas.toDataURL());
         }
-
-        // --- Event Listeners ---
-        document.addEventListener('DOMContentLoaded', () => {
-            loadSkin(skinViewer.skinUrl);
-            document.body.style.opacity = '1';
-            
-            // Disable the "Save to Profile" button for now
-            const saveBtn = document.getElementById('save-btn');
-            saveBtn.disabled = true;
-            saveBtn.title = 'Save to Profile (Coming Soon)';
-        });
 
         // --- History (Undo/Redo) ---
         const undoBtn = document.getElementById('undo-btn');
@@ -589,14 +548,12 @@
             panOffset.y = mouseY - (mouseY - panOffset.y) * (zoom / oldZoom);
             updatePanAndZoom();
         });
-        window.addEventListener('resize', () => {
-            drawGrid();
-        });
+        window.addEventListener('resize', drawGrid);
         document.getElementById('grid-toggle').addEventListener('change', drawGrid);
         
         // --- UI Buttons ---
         document.querySelectorAll('.tool-btn').forEach(btn => {
-            if (['upload-btn', 'download-btn', 'reset-btn', 'undo-btn', 'redo-btn', 'save-btn'].includes(btn.id)) return;
+            if (['upload-btn', 'download-btn', 'reset-btn', 'undo-btn', 'redo-btn'].includes(btn.id)) return;
             btn.addEventListener('click', () => {
                 if (btn.disabled) return;
                 document.querySelector('.tool-btn.active')?.classList.remove('active');
@@ -653,7 +610,6 @@
             swatchesContainer.appendChild(swatch);
         });
         colorPicker.addEventListener('input', (e) => addRecentColor(e.target.value));
-
         
         document.querySelectorAll('.part-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -682,39 +638,89 @@
         const uploadInput = document.getElementById('upload-skin-input');
         uploadInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (file && file.type === "image/png") {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        // More flexible check for valid skin aspect ratios
-                        if (img.width > 0 && (img.width === img.height || img.width === img.height * 2)) {
-                            loadSkin(event.target.result);
-                            showToast("Skin loaded from file.", "success");
-                        } else {
-                            showToast("Invalid skin file. Use a standard skin format (e.g., 64x64, 64x32, or HD).", "error");
-                        }
-                    };
-                    img.src = event.target.result;
-                };
-                reader.readAsDataURL(file);
-            } else if (file) {
-                 showToast("Invalid file type. Please upload a .png file.", "error");
+            if (!file || file.type !== "image/png") {
+                if(file) showToast("Invalid file type. Please upload a .png file.", "error");
+                e.target.value = '';
+                return;
             }
-            e.target.value = ''; // Reset input
+            
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const dataUrl = event.target.result;
+                const img = new Image();
+                img.onload = () => {
+                    const isPowerOfTwo = n => (n > 0) && ((n & (n - 1)) === 0);
+                    if (isPowerOfTwo(img.width) && (img.width === img.height || img.width === img.height * 2)) {
+                        editorCanvas.width = img.width;
+                        editorCanvas.height = img.height;
+                        editorCtx.imageSmoothingEnabled = false;
+                        editorCtx.clearRect(0, 0, editorCanvas.width, editorCanvas.height);
+                        editorCtx.drawImage(img, 0, 0);
+
+                        skinViewer.loadSkin(dataUrl, {
+                            model: document.getElementById('alex-model-btn').classList.contains('visible') ? 'slim' : 'default'
+                        });
+
+                        history = [];
+                        historyIndex = -1;
+                        saveState();
+                        updatePanAndZoom();
+                        showToast("Skin loaded successfully!", "success");
+                    } else {
+                        showToast(`Invalid skin dimensions (${img.width}x${img.height}). Must be a power of two and have a 1:1 or 2:1 aspect ratio.`, "error");
+                    }
+                };
+                img.onerror = () => showToast("Could not read the uploaded image file.", "error");
+                img.src = dataUrl;
+            };
+            reader.onerror = () => showToast("Failed to read the file.", "error");
+            reader.readAsDataURL(file);
+            e.target.value = '';
         });
+
 
         document.getElementById('download-btn').addEventListener('click', () => {
             const link = document.createElement('a');
-            link.download = 'skin.png';
-            link.href = editorCanvas.toDataURL();
+            link.download = `skin_${Date.now()}.png`;
+            link.href = editorCanvas.toDataURL("image/png");
             link.click();
         });
 
         document.getElementById('reset-btn').addEventListener('click', () => {
              if (confirm('Are you sure you want to start a new skin? All unsaved changes will be lost.')) {
-                loadSkin('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAhdEVYdENyZWF0aW9uIFRpbWUAMjAyMy0wMS0yOFQxOTozNTo0MSswMDowMCl2pQAAAB1JREFUeF7t0AEBAAAAIqD/r25IQAEAAAAAAAAAAAAAAAAAALwfAEEAAE005QJSAAAAAElFTSuQmCC');
+                // A transparent 64x64 PNG
+                const blankSkin = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABGSURBVOgnsO0BAQAACILg/4chCRgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAsAb4IAAG9B2xGAAAAAElFTkSuQmCC';
+                const img = new Image();
+                img.onload = () => {
+                    editorCanvas.width = 64;
+                    editorCanvas.height = 64;
+                    editorCtx.clearRect(0, 0, 64, 64);
+                    skinViewer.loadSkin(blankSkin);
+                    history = [];
+                    historyIndex = -1;
+                    saveState();
+                    updatePanAndZoom();
+                }
+                img.src = blankSkin;
             }
+        });
+
+        // --- INITIAL LOAD ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialSkinUrl = skinViewer.skinUrl;
+            const initialImg = new Image();
+            initialImg.crossOrigin = "anonymous";
+            initialImg.onload = () => {
+                editorCanvas.width = initialImg.width;
+                editorCanvas.height = initialImg.height;
+                editorCtx.imageSmoothingEnabled = false;
+                editorCtx.drawImage(initialImg, 0, 0);
+                saveState();
+                updatePanAndZoom();
+            };
+            initialImg.src = initialSkinUrl;
+
+            document.body.style.opacity = '1';
         });
 
     </script>
