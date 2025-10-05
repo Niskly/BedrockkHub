@@ -36,6 +36,7 @@
         .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-11px); }
         .brand-title { font-weight: 800; letter-spacing: .6px; font-size: 15px; }
         .tiny { font-size: 11px; color: var(--muted); }
+        .nav-actions { display: flex; align-items: center; gap: 0.6rem; }
 
         .editor-container {
             display: grid;
@@ -89,7 +90,8 @@
             gap: 4px; font-size: 1.2rem; cursor: pointer; transition: all 0.2s ease;
         }
         .tool-btn:hover { border-color: var(--border-strong); background: var(--bg-1); }
-        .tool-btn.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: white; }
+        .tool-btn.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: var(--brand-1); }
+        .tool-btn.active i { color: var(--brand-1); }
         .tool-btn[disabled] { opacity: 0.5; cursor: not-allowed; background: var(--bg-2); border-color: var(--border); }
         
         .color-palette { display: flex; flex-direction: column; gap: 0.75rem; }
@@ -144,7 +146,36 @@
         .toast { padding: 12px 18px; border-radius: 10px; color: white; font-weight: 600; display: flex; align-items: center; gap: 10px; background: var(--bg-1); border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideUp 0.3s ease-out forwards; }
         .toast.error { border-color: var(--danger); }
         .toast.error i { color: var(--danger); }
+        .toast.success { border-color: var(--success); }
+        .toast.success i { color: var(--success); }
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* NAV & RESPONSIVE STYLES */
+        .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
+        .user-dropdown .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
+        .user-dropdown .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+        .user-dropdown .dropdown-content { display: none; position: absolute; right: 0; top: 110%; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; }
+        .user-dropdown .dropdown-content.show { display: block; }
+        .user-dropdown .dropdown-content a { color: var(--muted); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 600; }
+        .user-dropdown .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
+
+        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
+        .mobile-nav-backdrop.show { display: block; opacity: 1; }
+        .mobile-nav-sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; background: var(--bg-1); z-index: 999; transform: translateX(-100%); transition: transform 0.3s ease; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
+        .mobile-nav-sidebar.show { transform: translateX(0); }
+        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
+        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
+        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+        .mobile-nav-user-info { display: flex; flex-direction: column; }
+        .mobile-nav-username { font-weight: 700; color: var(--text); }
+        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
+        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
+        .mobile-nav-main-links { flex-grow: 1; }
+        .mobile-nav-main-links a, .mobile-nav-footer-links a { padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem; font-weight: 600; color: var(--muted); transition: all 0.2s ease; }
+        .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
+        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
+        .primary-mobile-link { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: white !important; box-shadow: var(--shadow-brand); }
+
 
         @media (max-width: 1200px) {
             .editor-container {
@@ -162,6 +193,8 @@
         }
         @media (max-width: 768px) {
             body { overflow: auto; }
+            .nav-actions { display: none; }
+            .mobile-nav-toggle { display: block; }
             .editor-container {
                 grid-template-columns: 1fr; height: auto;
                 grid-template-areas: "header" "preview" "toolbar" "editor";
@@ -178,6 +211,8 @@
                 <div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div>
                 <div> <div class="brand-title">MCHUB</div> <div class="tiny">Skin Editor</div> </div>
             </a>
+            <div id="nav-actions" class="nav-actions"></div>
+            <button class="mobile-nav-toggle" aria-label="Open navigation"><i class="fa-solid fa-bars"></i></button>
         </nav>
     </header>
 
@@ -253,6 +288,7 @@
     <div id="toast-container"></div>
 
     <script type="module" src="/theme.js"></script>
+    <script type="module" src="/auth.js"></script>
     <script type="module">
         // --- 3D Viewer Setup ---
         const skinViewer = new skinview3d.SkinViewer({
@@ -295,7 +331,8 @@
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            toast.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${message}`;
+            const iconClass = type === 'success' ? 'fa-solid fa-check-circle' : 'fa-solid fa-circle-exclamation';
+            toast.innerHTML = `<i class="${iconClass}"></i> ${message}`;
             container.appendChild(toast);
             setTimeout(() => {
                 toast.style.animation = 'slideUp 0.3s ease-out forwards reverse';
@@ -319,6 +356,9 @@
                 }
                 updatePanAndZoom();
             };
+             baseSkinImg.onerror = () => {
+                showToast("Failed to load skin image.", "error");
+            }
         }
 
         function update3DViewer() {
@@ -518,7 +558,7 @@
         // --- UI Buttons ---
         document.querySelectorAll('.tool-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                if (btn.disabled) return;
+                if (btn.disabled || btn.id === '') return;
                 document.querySelector('.tool-btn.active').classList.remove('active');
                 btn.classList.add('active');
                 currentTool = btn.id.replace('-tool', '');
