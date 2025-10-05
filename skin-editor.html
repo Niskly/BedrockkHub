@@ -772,14 +772,14 @@
                     btn.classList.toggle('visible');
                     btn.classList.toggle('hidden');
                     const isVisible = btn.classList.contains('visible');
-                    const layer = btn.dataset.layer;
-                    const part = btn.dataset.part;
+                    const layerName = btn.dataset.layer;
+                    const partName = btn.dataset.part;
                     
-                    if (editorSkinViewer.playerObject?.skin[part]?.[layer]) {
-                        editorSkinViewer.playerObject.skin[part][layer].visible = isVisible;
+                    if (editorSkinViewer.playerObject?.skin[partName]?.[layerName]) {
+                        editorSkinViewer.playerObject.skin[partName][layerName].visible = isVisible;
                     }
-                    if (previewSkinViewer.playerObject?.skin[part]?.[layer]) {
-                        previewSkinViewer.playerObject.skin[part][layer].visible = isVisible;
+                    if (previewSkinViewer.playerObject?.skin[partName]?.[layerName]) {
+                        previewSkinViewer.playerObject.skin[partName][layerName].visible = isVisible;
                     }
 
                 } else if (btn.dataset.model) {
