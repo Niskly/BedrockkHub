@@ -497,22 +497,22 @@
 
         // ✅ THE FIX: This function correctly updates all materials in the 3D viewers.
 function refreshSkinTextures() {
-    const dataUrl = masterCanvas.toDataURL();
+    [editorSkinViewer, previewSkinViewer].forEach(viewer => {
+        if (!viewer.playerObject || !viewer.playerObject.skin) return;
 
-    [editorSkinViewer, previewSkinViewer].forEach(async viewer => {
-        if (!viewer.playerObject) return;
-
-        // reload the skin without changing model type
-        const currentModel = viewer.playerObject.model || 'default';
-        try {
-            await viewer.loadSkin(dataUrl, { model: currentModel, force: true });
-        } catch (err) {
-            console.error("Failed to refresh skin texture:", err);
-        }
+        Object.values(viewer.playerObject.skin).forEach(part => {
+            if (!part) return;
+            Object.values(part).forEach(layer => {
+                if (layer?.material?.map) {
+                    // Replace the texture’s image with the masterCanvas
+                    layer.material.map.image = masterCanvas;
+                    layer.material.map.needsUpdate = true;
+                }
+            });
+        });
     });
 }
 
-}
 
         
         async function update3DViewers(forceRedraw = false) {
