@@ -390,8 +390,7 @@
 
         // --- 3D Viewer Setup ---
         const previewSkinViewer = new skinview3d.SkinViewer({
-            canvas: document.getElementById("preview-skin-viewer"),
-            skin: "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png"
+            canvas: document.getElementById("preview-skin-viewer")
         });
         previewSkinViewer.controls.enableRotate = true;
         previewSkinViewer.controls.enableZoom = true;
@@ -400,11 +399,7 @@
         
         const editorSkinViewer = new skinview3d.SkinViewer({
             canvas: document.getElementById("editor-skin-viewer"),
-            skin: "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png",
-            renderer: {
-                alpha: true,
-                antialias: true
-            }
+            renderer: { alpha: true, antialias: true }
         });
         editorSkinViewer.renderer.setClearColor(0x000000, 0);
         editorSkinViewer.controls.enableRotate = true;
@@ -427,6 +422,15 @@
         const masterCtx = masterCanvas.getContext('2d');
         const loupeCanvas = document.getElementById('color-loupe');
         const loupeCtx = loupeCanvas.getContext('2d');
+        
+        // Create ONE shared texture that both viewers will use
+        const sharedTexture = new skinview3d.skinview3d.THREE.CanvasTexture(masterCanvas);
+        sharedTexture.magFilter = skinview3d.skinview3d.THREE.NearestFilter;
+        sharedTexture.minFilter = skinview3d.skinview3d.THREE.NearestFilter;
+        
+        // Apply the shared texture to both viewers
+        editorSkinViewer.playerObject.skin.map = sharedTexture;
+        previewSkinViewer.playerObject.skin.map = sharedTexture;
 
 
         // --- State Management ---
@@ -462,48 +466,10 @@
             confirmCallback = null;
         });
         document.getElementById('confirm-action-btn').addEventListener('click', () => {
-            if (confirmCallback) {
-                confirmCallback();
-            }
+            if (confirmCallback) confirmCallback();
             document.getElementById('confirmation-modal-backdrop').style.display = 'none';
             confirmCallback = null;
         });
-        
-        // --- Core Functions ---
-        function applyViewerPartsVisibility(viewer) {
-             if (!viewer.playerObject) return;
-            document.querySelectorAll('.panel .part-btn[data-part]').forEach(btn => {
-                const layerName = btn.dataset.layer;
-                const partName = btn.dataset.part;
-                const isVisible = btn.classList.contains('visible');
-                 if (viewer.playerObject.skin[layerName]?.[partName]) {
-                    viewer.playerObject.skin[layerName][partName].visible = isVisible;
-                }
-            });
-        }
-
-        async function update3DViewers(updatePreview = false) {
-            const dataUrl = masterCanvas.toDataURL();
-            const currentModel = document.getElementById('alex-model-btn').classList.contains('visible') ? 'slim' : 'default';
-
-            const editorPromise = editorSkinViewer.loadSkin(dataUrl, { model: currentModel }).then(() => {
-                applyViewerPartsVisibility(editorSkinViewer);
-            });
-            
-            const previewPromise = updatePreview 
-                ? previewSkinViewer.loadSkin(dataUrl, { model: currentModel }).then(() => {
-                    applyViewerPartsVisibility(previewSkinViewer);
-                  })
-                : Promise.resolve();
-
-            try {
-                await Promise.all([editorPromise, previewPromise]);
-            } catch (err) {
-                // Silently fail on load errors during drawing to avoid spamming user
-                // console.error("Skin loading failed", err);
-            }
-        }
-
 
         // --- History (Undo/Redo) ---
         const undoBtn = document.getElementById('undo-btn');
@@ -520,7 +486,7 @@
             if (historyIndex > 0) {
                 historyIndex--;
                 masterCtx.putImageData(history[historyIndex], 0, 0);
-                update3DViewers(true);
+                sharedTexture.needsUpdate = true;
                 updateHistoryButtons();
             }
         }
@@ -528,7 +494,7 @@
             if (historyIndex < history.length - 1) {
                 historyIndex++;
                 masterCtx.putImageData(history[historyIndex], 0, 0);
-                update3DViewers(true);
+                sharedTexture.needsUpdate = true;
                 updateHistoryButtons();
             }
         }
@@ -606,7 +572,6 @@
                     y: Math.floor(uv.y * masterCanvas.height) 
                 };
             } catch (err) {
-                // This can happen if the model isn't fully loaded, so we ignore it.
                 return null;
             }
         }
@@ -661,7 +626,7 @@
             }
             
             lastTexturePos = pos;
-            update3DViewers(false); // Update editor view in real-time
+            sharedTexture.needsUpdate = true; // Tell Three.js to re-upload the texture in the next frame
         }
         
         function updateLoupe(event) {
@@ -719,7 +684,6 @@
         });
         const stopDrawing = () => {
             if (isDrawingOn3D) {
-                update3DViewers(true); // Force full redraw on preview
                 saveState();
             }
             isDrawingOn3D = false;
@@ -733,6 +697,13 @@
         
 
         // --- FILE HANDLING ---
+        function setModelType(model) {
+            editorSkinViewer.playerObject.skin.modelType = model;
+            previewSkinViewer.playerObject.skin.modelType = model;
+            document.getElementById('steve-model-btn').classList.toggle('visible', model === 'default');
+            document.getElementById('alex-model-btn').classList.toggle('visible', model === 'slim');
+        }
+        
         const uploadInput = document.getElementById('upload-skin-input');
         uploadInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -755,7 +726,9 @@
                         masterCtx.clearRect(0, 0, masterCanvas.width, masterCanvas.height);
                         masterCtx.drawImage(img, 0, 0);
 
-                        await update3DViewers(true);
+                        sharedTexture.needsUpdate = true;
+                        setModelType(skinview3d.utils.inferModelType(masterCanvas));
+
                         history = [];
                         historyIndex = -1;
                         saveState();
@@ -779,43 +752,40 @@
         
         document.getElementById('reset-btn').addEventListener('click', () => {
             showConfirmation('All unsaved changes will be lost.', () => {
-                const blankSkin = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABGSURBVOgnsO0BAQAACILg/4chCRgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAsAb4IAAG9B2xGAAAAAElFTSuQmCC';
-                const img = new Image();
-                img.onload = async () => {
-                    masterCanvas.width = 64;
-                    masterCanvas.height = 64;
-                    masterCtx.clearRect(0, 0, 64, 64);
-                    await update3DViewers(true);
-                    history = [];
-                    historyIndex = -1;
-                    saveState();
-                    showToast("New skin created.", "success");
-                }
-                img.src = blankSkin;
+                masterCanvas.width = 64;
+                masterCanvas.height = 64;
+                masterCtx.clearRect(0, 0, 64, 64);
+                sharedTexture.needsUpdate = true;
+                setModelType('default');
+
+                history = [];
+                historyIndex = -1;
+                saveState();
+                showToast("New skin created.", "success");
             });
         });
 
         // --- Model Controls ---
         document.querySelectorAll('.panel .part-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                 if (btn.dataset.layer && btn.dataset.part) { // Body part OR Overlay part toggle
+                if (btn.dataset.layer && btn.dataset.part) {
                     btn.classList.toggle('visible');
                     btn.classList.toggle('hidden');
-                    const layerName = btn.dataset.layer;
-                    const partName = btn.dataset.part;
                     const isVisible = btn.classList.contains('visible');
+                    const layer = btn.dataset.layer;
+                    const part = btn.dataset.part;
                     
-                    if (editorSkinViewer.playerObject?.skin[layerName]?.[partName]) {
-                        editorSkinViewer.playerObject.skin[layerName][partName].visible = isVisible;
+                    if (editorSkinViewer.playerObject?.skin[part]?.[layer]) {
+                        editorSkinViewer.playerObject.skin[part][layer].visible = isVisible;
                     }
-                     if (previewSkinViewer.playerObject?.skin[layerName]?.[partName]) {
-                        previewSkinViewer.playerObject.skin[layerName][partName].visible = isVisible;
+                    if (previewSkinViewer.playerObject?.skin[part]?.[layer]) {
+                        previewSkinViewer.playerObject.skin[part][layer].visible = isVisible;
                     }
 
-                } else if (btn.dataset.model) { // Model type toggle
+                } else if (btn.dataset.model) {
                     document.querySelectorAll('.model-toggle .part-btn').forEach(b => b.classList.remove('visible'));
                     btn.classList.add('visible');
-                    update3DViewers(true); 
+                    setModelType(btn.dataset.model);
                 }
             });
         });
@@ -834,20 +804,26 @@
         
         // --- INITIAL LOAD ---
         document.addEventListener('DOMContentLoaded', () => {
-            const initialSkinUrl = previewSkinViewer.skinUrl;
+            const initialSkinUrl = "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png";
             const initialImg = new Image();
             initialImg.crossOrigin = "anonymous";
-            initialImg.onload = async () => {
+            initialImg.onload = () => {
                 masterCanvas.width = initialImg.width;
                 masterCanvas.height = initialImg.height;
                 masterCtx.imageSmoothingEnabled = false;
                 masterCtx.drawImage(initialImg, 0, 0);
-                await update3DViewers(true);
-                saveState();
-            };
-            initialImg.src = initialSkinUrl;
+                
+                sharedTexture.needsUpdate = true;
+                setModelType(skinview3d.utils.inferModelType(masterCanvas));
 
-            document.body.style.opacity = '1';
+                saveState();
+                document.body.style.opacity = '1';
+            };
+            initialImg.onerror = () => {
+                 showToast("Failed to load initial skin.", "error");
+                 document.body.style.opacity = '1';
+            }
+            initialImg.src = initialSkinUrl;
         });
 
     </script>
