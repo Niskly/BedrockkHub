@@ -496,21 +496,23 @@
         // --- Core Functions ---
 
         // ✅ THE FIX: This function correctly updates all materials in the 3D viewers.
-        function refreshSkinTextures() {
-            [editorSkinViewer, previewSkinViewer].forEach(viewer => {
-                if (!viewer.playerObject || !viewer.playerObject.skin) return;
+function refreshSkinTextures() {
+    [editorSkinViewer, previewSkinViewer].forEach(viewer => {
+        if (!viewer.playerObject || !viewer.playerObject.skin) return;
 
-                Object.values(viewer.playerObject.skin).forEach(part => {
-                    if (!part) return;
-                    Object.values(part).forEach(layer => {
-                        // skinview3d attaches material property directly to the layer group
-                        if (layer?.material?.map) {
-                            layer.material.map.needsUpdate = true;
-                        }
-                    });
-                });
+        Object.values(viewer.playerObject.skin).forEach(part => {
+            if (!part) return;
+            Object.values(part).forEach(layer => {
+                // Even if layer is invisible, update texture
+                if (layer?.material?.map) {
+                    layer.material.map.image = masterCanvas; // reassign canvas as texture
+                    layer.material.map.needsUpdate = true;
+                }
             });
-        }
+        });
+    });
+}
+
         
         async function update3DViewers(forceRedraw = false) {
             const isSlim = document.getElementById('alex-model-btn').classList.contains('active');
