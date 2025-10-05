@@ -113,6 +113,36 @@
             height: 100%;
             cursor: crosshair;
         }
+        
+        .editor-overlay-controls {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(18, 18, 18, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 0.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        .editor-overlay-controls .btn.ghost {
+             width: 40px; height: 40px; font-size: 1rem; padding: 0;
+        }
+
+        #color-loupe {
+            position: fixed;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            pointer-events: none;
+            display: none;
+            image-rendering: pixelated;
+            z-index: 9999;
+            background: var(--bg-1);
+        }
 
         .preview-area {
             grid-area: preview;
@@ -262,13 +292,6 @@
                     <input type="file" id="upload-skin-input" accept="image/png" style="display: none;">
                 </div>
             </div>
-             <div class="panel-section">
-                <h3 class="panel-title">History</h3>
-                <div class="tools-grid" style="grid-template-columns: 1fr 1fr;">
-                    <button id="undo-btn" class="tool-btn" title="Undo (Ctrl+Z)" disabled><i class="fa-solid fa-undo"></i></button>
-                    <button id="redo-btn" class="tool-btn" title="Redo (Ctrl+Y)" disabled><i class="fa-solid fa-redo"></i></button>
-                </div>
-            </div>
             <div class="panel-section">
                 <h3 class="panel-title">Tools</h3>
                 <div class="tools-grid">
@@ -298,6 +321,13 @@
 
         <div class="editor-area">
             <canvas id="editor-skin-viewer"></canvas>
+            <div class="editor-overlay-controls">
+                 <button id="undo-btn" class="btn ghost" title="Undo (Ctrl+Z)" disabled><i class="fa-solid fa-undo"></i></button>
+                 <button id="redo-btn" class="btn ghost" title="Redo (Ctrl+Y)" disabled><i class="fa-solid fa-redo"></i></button>
+                 <button id="zoom-out-btn" class="btn ghost" title="Zoom Out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                 <button id="zoom-in-btn" class="btn ghost" title="Zoom In"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+            </div>
+            <canvas id="color-loupe"></canvas>
         </div>
 
         <div class="preview-area">
@@ -384,6 +414,9 @@
         // --- 2D Editor Setup ---
         const masterCanvas = document.getElementById('master-skin-canvas');
         const masterCtx = masterCanvas.getContext('2d');
+        const loupeCanvas = document.getElementById('color-loupe');
+        const loupeCtx = loupeCanvas.getContext('2d');
+
 
         // --- State Management ---
         let currentTool = 'pencil';
@@ -426,17 +459,25 @@
         });
 
         // --- Core Functions ---
-        async function update3DViewers() {
-            const dataUrl = masterCanvas.toDataURL();
+        async function update3DViewers(forceRedraw = false) {
             const currentModel = document.getElementById('alex-model-btn').classList.contains('visible') ? 'slim' : 'default';
-            try {
-                // To prevent flickering, we update the preview viewer first, then the editor
-                const previewPromise = previewSkinViewer.loadSkin(dataUrl, { model: currentModel });
-                const editorPromise = editorSkinViewer.loadSkin(dataUrl, { model: currentModel });
-                await Promise.all([previewPromise, editorPromise]);
-            } catch (err) {
-                console.error("Failed to load skin into viewers:", err);
-                showToast("Error updating 3D preview.", "error");
+            if (forceRedraw) {
+                const dataUrl = masterCanvas.toDataURL();
+                try {
+                    const previewPromise = previewSkinViewer.loadSkin(dataUrl, { model: currentModel });
+                    const editorPromise = editorSkinViewer.loadSkin(dataUrl, { model: currentModel });
+                    await Promise.all([previewPromise, editorPromise]);
+                } catch (err) {
+                    console.error("Failed to load skin into viewers:", err);
+                    showToast("Error updating 3D preview.", "error");
+                }
+            } else {
+                 if (editorSkinViewer.playerObject) {
+                    editorSkinViewer.playerObject.skin.map.needsUpdate = true;
+                 }
+                 if (previewSkinViewer.playerObject) {
+                    previewSkinViewer.playerObject.skin.map.needsUpdate = true;
+                 }
             }
         }
 
@@ -455,7 +496,7 @@
             if (historyIndex > 0) {
                 historyIndex--;
                 masterCtx.putImageData(history[historyIndex], 0, 0);
-                update3DViewers();
+                update3DViewers(true);
                 updateHistoryButtons();
             }
         }
@@ -463,7 +504,7 @@
             if (historyIndex < history.length - 1) {
                 historyIndex++;
                 masterCtx.putImageData(history[historyIndex], 0, 0);
-                update3DViewers();
+                update3DViewers(true);
                 updateHistoryButtons();
             }
         }
@@ -515,9 +556,20 @@
                 document.querySelector('.tool-btn.active')?.classList.remove('active');
                 btn.classList.add('active');
                 currentTool = btn.id.replace('-tool', '');
-                editorSkinViewer.canvas.style.cursor = currentTool === 'picker' ? 'copy' : (currentTool === 'bucket' ? 'cell' : 'crosshair');
+                editorSkinViewer.canvas.style.cursor = currentTool === 'picker' ? 'copy' : 'crosshair';
             });
         });
+
+        // --- Viewport Controls ---
+        document.getElementById('zoom-in-btn').addEventListener('click', () => {
+            editorSkinViewer.camera.fov = Math.max(10, editorSkinViewer.camera.fov - 5);
+            editorSkinViewer.camera.updateProjectionMatrix();
+        });
+        document.getElementById('zoom-out-btn').addEventListener('click', () => {
+            editorSkinViewer.camera.fov = Math.min(100, editorSkinViewer.camera.fov + 5);
+            editorSkinViewer.camera.updateProjectionMatrix();
+        });
+
         
         // --- Direct 3D Drawing Logic ---
         function get3DTexturePos(event) {
@@ -530,7 +582,7 @@
                     y: Math.floor(uv.y * masterCanvas.height) 
                 };
             } catch (err) {
-                console.error("Raycasting error:", err);
+                // This can happen if the model isn't fully loaded, so we ignore it.
                 return null;
             }
         }
@@ -560,7 +612,7 @@
             }
         }
 
-        function handle3DDraw(event) {
+        function handle3DInteraction(event, isDrawing) {
             const pos = get3DTexturePos(event);
             if (!pos) return;
 
@@ -574,38 +626,86 @@
                 return;
             }
 
-            if (isDrawingOn3D) { // Drawing a line
+            if (isDrawing) {
                 if(lastTexturePos) {
                     drawTextureLineOnMaster(lastTexturePos.x, lastTexturePos.y, pos.x, pos.y);
+                } else {
+                     drawOnMasterCanvas(pos);
                 }
-            } else { // Drawing a single point
+            } else { // Just a single click
                 drawOnMasterCanvas(pos);
             }
             
             lastTexturePos = pos;
             update3DViewers();
         }
+        
+        function updateLoupe(event) {
+            if (currentTool !== 'picker') {
+                loupeCanvas.style.display = 'none';
+                return;
+            }
+            loupeCanvas.style.display = 'block';
+            loupeCanvas.style.left = `${event.clientX - 60}px`;
+            loupeCanvas.style.top = `${event.clientY - 60}px`;
+
+            const pos = get3DTexturePos(event);
+            if (!pos) return;
+
+            const zoomFactor = 7; // show 7x7 pixels
+            const pixelSize = loupeCanvas.width / zoomFactor;
+            loupeCtx.clearRect(0,0, loupeCanvas.width, loupeCanvas.height);
+            loupeCtx.fillStyle = '#0a0a0a';
+            loupeCtx.fillRect(0,0, loupeCanvas.width, loupeCanvas.height);
+
+            const sourceData = masterCtx.getImageData(pos.x - Math.floor(zoomFactor/2), pos.y - Math.floor(zoomFactor/2), zoomFactor, zoomFactor).data;
+            
+            for(let y = 0; y < zoomFactor; y++) {
+                for (let x = 0; x < zoomFactor; x++) {
+                    const i = (y * zoomFactor + x) * 4;
+                    const r = sourceData[i];
+                    const g = sourceData[i+1];
+                    const b = sourceData[i+2];
+                    const a = sourceData[i+3] / 255;
+                    loupeCtx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
+                    loupeCtx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+                }
+            }
+
+            // Draw crosshair
+            const center = Math.floor(zoomFactor/2) * pixelSize + pixelSize/2;
+            loupeCtx.strokeStyle = 'rgba(255,255,255,0.7)';
+            loupeCtx.lineWidth = 2;
+            loupeCtx.strokeRect(center - pixelSize/2, center - pixelSize/2, pixelSize, pixelSize);
+        }
 
         const editorCanvas = editorSkinViewer.canvas;
         editorCanvas.addEventListener('mousedown', (e) => {
             if (e.button !== 0) return; // Only main click
             isDrawingOn3D = true;
-            handle3DDraw(e);
+            handle3DInteraction(e, false); // Single point draw on mousedown
         });
         editorCanvas.addEventListener('mousemove', (e) => {
+            if (currentTool === 'picker') {
+                updateLoupe(e);
+            }
             if (isDrawingOn3D) {
-                handle3DDraw(e);
+                handle3DInteraction(e, true);
             }
         });
         const stopDrawing = () => {
             if (isDrawingOn3D) {
+                update3DViewers(true); // Force full redraw on preview
                 saveState();
             }
             isDrawingOn3D = false;
             lastTexturePos = null;
         }
         editorCanvas.addEventListener('mouseup', stopDrawing);
-        editorCanvas.addEventListener('mouseleave', stopDrawing);
+        editorCanvas.addEventListener('mouseleave', () => {
+             stopDrawing();
+             loupeCanvas.style.display = 'none';
+        });
         
 
         // --- FILE HANDLING ---
@@ -631,7 +731,7 @@
                         masterCtx.clearRect(0, 0, masterCanvas.width, masterCanvas.height);
                         masterCtx.drawImage(img, 0, 0);
 
-                        await update3DViewers();
+                        await update3DViewers(true);
                         history = [];
                         historyIndex = -1;
                         saveState();
@@ -661,7 +761,7 @@
                     masterCanvas.width = 64;
                     masterCanvas.height = 64;
                     masterCtx.clearRect(0, 0, 64, 64);
-                    await update3DViewers();
+                    await update3DViewers(true);
                     history = [];
                     historyIndex = -1;
                     saveState();
@@ -679,11 +779,11 @@
                     btn.classList.toggle('hidden');
                     const partName = btn.dataset.part;
                     editorSkinViewer.playerObject.skin[partName].visible = btn.classList.contains('visible');
-                    editorSkinViewer.playerObject.skin[partName+'2'].visible = btn.classList.contains('visible');
+                    editorSkinViewer.playerObject.skin[`${partName}2`].visible = btn.classList.contains('visible');
                 } else if (btn.dataset.model) { // Model type toggle
                     document.querySelectorAll('.model-toggle .part-btn').forEach(b => b.classList.remove('visible'));
                     btn.classList.add('visible');
-                    update3DViewers(); 
+                    update3DViewers(true); 
                 }
             });
         });
@@ -710,7 +810,7 @@
                 masterCanvas.height = initialImg.height;
                 masterCtx.imageSmoothingEnabled = false;
                 masterCtx.drawImage(initialImg, 0, 0);
-                await update3DViewers();
+                await update3DViewers(true);
                 saveState();
             };
             initialImg.src = initialSkinUrl;
