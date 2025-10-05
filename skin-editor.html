@@ -277,9 +277,8 @@
     </main>
 
     <script type="module" src="/theme.js"></script>
-    <!-- We will use auth.js later if we add saving skins to profiles -->
-    <!-- <script type="module" src="/auth.js"></script> -->
     <script type="module">
+        // 3D Viewer Setup
         const skinViewer = new skinview3d.SkinViewer({
             canvas: document.getElementById("skin-viewer"),
             width: 300,
@@ -287,16 +286,12 @@
             skin: "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png"
         });
 
-        // Control the camera by dragging
-        let control = skinview3d.createOrbitControls(skinViewer);
+        const control = skinview3d.createOrbitControls(skinViewer);
         control.enableRotate = true;
-        control.enableZoom = false; // Zoom can feel a bit weird, let's disable for now
-        
-        // Auto-rotate
+        control.enableZoom = false;
         skinViewer.animation = new skinview3d.RotatingAnimation(skinViewer.playerObject);
         skinViewer.animation.speed = 0.5;
-        
-        // Handle resizing
+
         const viewerWrapper = document.querySelector('.skin-viewer-wrapper');
         const resizeObserver = new ResizeObserver(entries => {
             const entry = entries[0];
@@ -305,19 +300,89 @@
         });
         resizeObserver.observe(viewerWrapper);
 
-        // 2D Canvas setup
+        // 2D Editor Setup
         const editorCanvas = document.getElementById('editor-canvas');
         const editorCtx = editorCanvas.getContext('2d');
         editorCtx.imageSmoothingEnabled = false;
 
-        const baseSkinImg = new Image();
-        baseSkinImg.crossOrigin = "anonymous";
-        baseSkinImg.src = skinViewer.skinUrl;
-        baseSkinImg.onload = () => {
-            editorCtx.drawImage(baseSkinImg, 0, 0);
-        };
+        let isDrawing = false;
+        let currentTool = 'pencil';
         
-        // Basic swatch colors
+        // --- Core Functions ---
+        
+        function loadSkin(url) {
+            skinViewer.loadSkin(url);
+            const baseSkinImg = new Image();
+            baseSkinImg.crossOrigin = "anonymous";
+            baseSkinImg.src = url;
+            baseSkinImg.onload = () => {
+                editorCtx.clearRect(0, 0, editorCanvas.width, editorCanvas.height);
+                editorCtx.drawImage(baseSkinImg, 0, 0);
+            };
+        }
+        
+        function update3DViewer() {
+            const dataUrl = editorCanvas.toDataURL();
+            skinViewer.loadSkin(dataUrl);
+        }
+
+        function drawPixel(e) {
+            if (!isDrawing) return;
+            const rect = editorCanvas.getBoundingClientRect();
+            const scaleX = editorCanvas.width / rect.width;
+            const scaleY = editorCanvas.height / rect.height;
+            const x = Math.floor((e.clientX - rect.left) * scaleX);
+            const y = Math.floor((e.clientY - rect.top) * scaleY);
+            
+            const colorPicker = document.getElementById('color-picker');
+
+            if (currentTool === 'pencil') {
+                editorCtx.fillStyle = colorPicker.value;
+                editorCtx.fillRect(x, y, 1, 1);
+            } else if (currentTool === 'eraser') {
+                editorCtx.clearRect(x, y, 1, 1);
+            } else if (currentTool === 'picker') {
+                const pixel = editorCtx.getImageData(x, y, 1, 1).data;
+                const hex = "#" + ("000000" + ((pixel[0] << 16) | (pixel[1] << 8) | pixel[2]).toString(16)).slice(-6);
+                colorPicker.value = hex;
+            }
+        }
+        
+        // Initial skin load
+        loadSkin(skinViewer.skinUrl);
+
+        // --- Event Listeners ---
+
+        // Tool Selection
+        document.querySelectorAll('.tool-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelector('.tool-btn.active').classList.remove('active');
+                btn.classList.add('active');
+                currentTool = btn.id.replace('-tool', '');
+                editorCanvas.style.cursor = currentTool === 'picker' ? 'copy' : 'crosshair';
+            });
+        });
+
+        // 2D Canvas Drawing
+        editorCanvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            drawPixel(e);
+        });
+        editorCanvas.addEventListener('mousemove', drawPixel);
+        editorCanvas.addEventListener('mouseup', () => {
+            if (isDrawing) {
+                update3DViewer();
+                isDrawing = false;
+            }
+        });
+        editorCanvas.addEventListener('mouseleave', () => { isDrawing = false; });
+        
+        // Color Palette
+        const colorPicker = document.getElementById('color-picker');
+        colorPicker.addEventListener('input', () => {
+            document.querySelector('.swatch.active')?.classList.remove('active');
+        });
+
         const swatches = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#000000', '#FFFFFF', '#808080', '#A52A2A', '#FFA500', '#C0C0C0'];
         const swatchesContainer = document.getElementById('color-swatches');
         swatches.forEach(color => {
@@ -326,11 +391,68 @@
             swatch.style.backgroundColor = color;
             swatch.dataset.color = color;
             swatch.addEventListener('click', () => {
-                document.getElementById('color-picker').value = color;
+                colorPicker.value = color;
                 document.querySelector('.swatch.active')?.classList.remove('active');
                 swatch.classList.add('active');
             });
             swatchesContainer.appendChild(swatch);
+        });
+        
+        // Body Part Toggles
+        document.querySelectorAll('.body-part-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('visible');
+                btn.classList.toggle('hidden');
+                const part = btn.dataset.part;
+                const isVisible = btn.classList.contains('visible');
+                
+                const playerObject = skinViewer.playerObject;
+                switch(part) {
+                    case 'head':
+                        playerObject.skin.head.visible = isVisible;
+                        break;
+                    case 'body':
+                        playerObject.skin.body.visible = isVisible;
+                        break;
+                    case 'leftArm':
+                        playerObject.skin.leftArm.visible = isVisible;
+                        break;
+                    case 'rightArm':
+                        playerObject.skin.rightArm.visible = isVisible;
+                        break;
+                    case 'leftLeg':
+                        playerObject.skin.leftLeg.visible = isVisible;
+                        break;
+                    case 'rightLeg':
+                        playerObject.skin.rightLeg.visible = isVisible;
+                        break;
+                }
+            });
+        });
+
+        // File Upload
+        const uploadInput = document.getElementById('upload-skin-input');
+        const uploadBtn = document.getElementById('upload-btn');
+        uploadBtn.addEventListener('click', () => uploadInput.click());
+        uploadInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file && file.type === "image/png") {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        if ((img.width === 64 && img.height === 64) || (img.width === 64 && img.height === 32)) {
+                            loadSkin(event.target.result);
+                        } else {
+                            alert("Invalid skin dimensions. Please use a 64x64 or 64x32 PNG.");
+                        }
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else if (file) {
+                alert("Please upload a .png file.");
+            }
         });
         
         // Make the body visible after setup
@@ -338,3 +460,4 @@
     </script>
 </body>
 </html>
+
