@@ -169,33 +169,18 @@
             border: 1px solid var(--border); border-radius: 16px; padding: 1rem;
         }
 
-        .layer-controls { display: flex; flex-direction: column; gap: 0.5rem; }
-        .layer-row { display: flex; justify-content: space-between; align-items: center; background: var(--bg-2); padding: 0.5rem 1rem; border-radius: 10px; border: 1px solid var(--border); }
-        .layer-label { display: flex; align-items: center; gap: 0.75rem; font-weight: 600; cursor: pointer; }
-        .layer-label input[type="radio"] {
-            appearance: none;
-            width: 20px; height: 20px;
-            border-radius: 50%;
-            border: 2px solid var(--border-strong);
-            background: var(--bg-1);
-            position: relative;
-            cursor: pointer;
+        .body-parts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .part-btn {
+            background: var(--bg-2); border: 1px solid var(--border); color: var(--muted);
+            border-radius: 10px; padding: 0.75rem 0.5rem; display: flex; align-items: center; justify-content: center;
+            gap: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s ease;
         }
-        .layer-label input[type="radio"]:checked {
-            border-color: var(--brand-1);
-        }
-        .layer-label input[type="radio"]:checked::after {
-            content: '';
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 10px; height: 10px;
-            border-radius: 50%;
-            background: var(--brand-1);
-        }
-        .visibility-toggle i.fa-eye-slash { display: none; }
-        .visibility-toggle.hidden i.fa-eye { display: none; }
-        .visibility-toggle.hidden i.fa-eye-slash { display: inline-block; }
+        .part-btn.visible { color: var(--text); background: var(--bg-1); }
+        .part-btn:hover { border-color: var(--border-strong); }
+        .part-btn i.fa-eye-slash { display: none; }
+        .part-btn.hidden i.fa-eye { display: none; }
+        .part-btn.hidden i.fa-eye-slash { display: inline-block; }
+        .model-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 1rem; }
         
         #toast-container { position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); z-index: 200; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;}
         .toast { padding: 12px 18px; border-radius: 10px; color: white; font-weight: 600; display: flex; align-items: center; gap: 10px; background: var(--bg-1); border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideUp 0.3s ease-out forwards; }
@@ -353,27 +338,19 @@
                 <canvas id="preview-skin-viewer"></canvas>
             </div>
             <div class="panel">
-                 <h3 class="panel-title" style="margin-bottom: 1rem;">Layers</h3>
-                 <div class="layer-controls">
-                    <div class="layer-row">
-                        <label for="body-radio" class="layer-label">
-                            <input type="radio" name="layer" id="body-radio" value="body" checked>
-                            <span>Body</span>
-                        </label>
-                        <button class="btn ghost icon-btn visibility-toggle" data-layer="body" title="Toggle Body Visibility">
-                            <i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i>
-                        </button>
-                    </div>
-                    <div class="layer-row">
-                        <label for="overlay-radio" class="layer-label">
-                            <input type="radio" name="layer" id="overlay-radio" value="overlay">
-                            <span>Overlay</span>
-                        </label>
-                        <button class="btn ghost icon-btn visibility-toggle" data-layer="overlay" title="Toggle Overlay Visibility">
-                            <i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i>
-                        </button>
-                    </div>
-                </div>
+                 <h3 class="panel-title" style="margin-bottom: 1rem;">Editor Model Options</h3>
+                 <div class="body-parts-grid">
+                    <button class="part-btn visible" data-part="head"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> Head</button>
+                    <button class="part-btn visible" data-part="body"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> Body</button>
+                    <button class="part-btn visible" data-part="leftArm"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> L. Arm</button>
+                    <button class="part-btn visible" data-part="rightArm"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> R. Arm</button>
+                    <button class="part-btn visible" data-part="leftLeg"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> L. Leg</button>
+                    <button class="part-btn visible" data-part="rightLeg"><i class="fa-solid fa-eye"></i><i class="fa-solid fa-eye-slash"></i> R. Leg</button>
+                 </div>
+                 <div class="model-toggle">
+                     <button class="part-btn visible" id="steve-model-btn" data-model="default">Classic</button>
+                     <button class="part-btn" id="alex-model-btn" data-model="slim">Slim</button>
+                 </div>
             </div>
         </div>
     </main>
@@ -443,7 +420,6 @@
 
         // --- State Management ---
         let currentTool = 'pencil';
-        let editTarget = 'body';
         let history = [];
         let historyIndex = -1;
         let recentColors = [];
@@ -600,12 +576,6 @@
             try {
                 const result = editorSkinViewer.raycaster.cast(event);
                 if (!result) return null;
-
-                const layer = result.bodyPart.name.endsWith('2') ? 'overlay' : 'body';
-                if (currentTool !== 'picker' && layer !== editTarget) {
-                    return null; // Don't draw if not on the target layer
-                }
-
                 const { uv } = result;
                 return { 
                     x: Math.floor(uv.x * masterCanvas.width), 
@@ -801,28 +771,20 @@
             });
         });
 
-        // --- Layer Controls ---
-        document.querySelectorAll('input[name="layer"]').forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                editTarget = e.target.value;
-            });
-        });
-
-        document.querySelectorAll('.visibility-toggle').forEach(btn => {
+        // --- Model Controls ---
+        document.querySelectorAll('.panel .part-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                const layer = btn.dataset.layer;
-                const isHidden = btn.classList.toggle('hidden');
-                
-                const parts = ["head", "body", "leftArm", "rightArm", "leftLeg", "rightLeg"];
-                parts.forEach(part => {
-                    const bodyPartName = layer === 'overlay' ? `${part}2` : part;
-                    if (editorSkinViewer.playerObject.skin[bodyPartName]) {
-                        editorSkinViewer.playerObject.skin[bodyPartName].visible = !isHidden;
-                    }
-                    if (previewSkinViewer.playerObject.skin[bodyPartName]) {
-                        previewSkinViewer.playerObject.skin[bodyPartName].visible = !isHidden;
-                    }
-                });
+                if(btn.dataset.part) { // Body part toggle
+                    btn.classList.toggle('visible');
+                    btn.classList.toggle('hidden');
+                    const partName = btn.dataset.part;
+                    editorSkinViewer.playerObject.skin[partName].visible = btn.classList.contains('visible');
+                    editorSkinViewer.playerObject.skin[`${partName}2`].visible = btn.classList.contains('visible');
+                } else if (btn.dataset.model) { // Model type toggle
+                    document.querySelectorAll('.model-toggle .part-btn').forEach(b => b.classList.remove('visible'));
+                    btn.classList.add('visible');
+                    update3DViewers(true); 
+                }
             });
         });
         
@@ -859,4 +821,3 @@
     </script>
 </body>
 </html>
-
