@@ -495,29 +495,23 @@
 
         // --- Core Functions ---
 
-        // ✅ NEW: This function correctly updates all materials in the 3D viewers.
+        // ✅ THE FIX: This function correctly updates all materials in the 3D viewers.
         function refreshSkinTextures() {
             [editorSkinViewer, previewSkinViewer].forEach(viewer => {
-                if (!viewer.playerObject?.skin) return;
+                if (!viewer.playerObject || !viewer.playerObject.skin) return;
 
-                // playerObject.skin contains body parts like 'head', 'body', etc.
-                for (const part of Object.values(viewer.playerObject.skin)) {
-                    // Each part can have 'innerLayer' and 'outerLayer' which are THREE.Group
-                    if (part) {
-                        for (const layer of Object.values(part)) {
-                            if (layer && layer.isGroup) {
-                                layer.traverse(child => {
-                                    if (child.isMesh && child.material && child.material.map) {
-                                        child.material.map.needsUpdate = true;
-                                    }
-                                });
-                            }
+                Object.values(viewer.playerObject.skin).forEach(part => {
+                    if (!part) return;
+                    Object.values(part).forEach(layer => {
+                        // skinview3d attaches material property directly to the layer group
+                        if (layer?.material?.map) {
+                            layer.material.map.needsUpdate = true;
                         }
-                    }
-                }
+                    });
+                });
             });
         }
-
+        
         async function update3DViewers(forceRedraw = false) {
             const isSlim = document.getElementById('alex-model-btn').classList.contains('active');
             const currentModel = isSlim ? 'slim' : 'default';
@@ -529,13 +523,8 @@
                         previewSkinViewer.loadSkin(dataUrl, { model: currentModel }),
                         editorSkinViewer.loadSkin(dataUrl, { model: currentModel })
                     ]);
-                    // After reloading the skin, its state is reset. We must re-apply our UI's visibility settings.
                     syncVisibility();
                 }
-                
-                // The old incorrect lines are removed from here.
-                // We now call refreshSkinTextures() directly after a draw operation.
-                
             } catch (err) {
                 console.error("Failed to load skin into viewers:", err);
                 showToast("Error updating 3D preview.", "error");
@@ -553,19 +542,19 @@
             historyIndex++;
             updateHistoryButtons();
         }
-        async function undo() {
+        function undo() {
             if (historyIndex > 0) {
                 historyIndex--;
                 masterCtx.putImageData(history[historyIndex], 0, 0);
-                await update3DViewers(true);
+                refreshSkinTextures(); // More efficient!
                 updateHistoryButtons();
             }
         }
-        async function redo() {
+        function redo() {
             if (historyIndex < history.length - 1) {
                 historyIndex++;
                 masterCtx.putImageData(history[historyIndex], 0, 0);
-                await update3DViewers(true);
+                refreshSkinTextures(); // More efficient!
                 updateHistoryButtons();
             }
         }
@@ -661,7 +650,7 @@
             } else if (currentTool === 'eraser') {
                 masterCtx.clearRect(pos.x, pos.y, 1, 1);
             }
-            refreshSkinTextures(); // ✅ Forces both viewers to update live
+            refreshSkinTextures();
         }
         
         function drawTextureLineOnMaster(x0, y0, x1, y1) {
@@ -706,7 +695,7 @@
                 }
             }
             masterCtx.putImageData(imageData, 0, 0);
-            refreshSkinTextures(); // ✅ Call refresh after filling
+            refreshSkinTextures();
         }
 
 
@@ -882,8 +871,6 @@
             document.querySelector('.editor-area').classList.toggle('solid-bg', !e.target.checked);
         });
 
-        // FIX: This function is the single source of truth for visibility.
-        // It syncs the 3D model's state to match the checkboxes and rebuilds the clickable mesh list.
         function syncVisibility() {
             raycastableMeshes = [];
             if (!editorSkinViewer.playerObject) return;
@@ -894,7 +881,6 @@
                 const partName = checkbox.dataset.part;
                 const layerName = checkbox.dataset.layer;
 
-                // Update visibility on both viewers' models
                 [previewSkinViewer, editorSkinViewer].forEach(viewer => {
                     if (viewer.playerObject?.skin) {
                         const skinPart = viewer.playerObject.skin[partName];
@@ -904,7 +890,6 @@
                     }
                 });
 
-                // If the checkbox is checked, add the corresponding meshes to the clickable list
                 if (isChecked) {
                     const group = editorSkinViewer.playerObject.skin[partName]?.[layerName];
                     if (group) {
@@ -920,7 +905,6 @@
         
         function setupVisibilityControls() {
             document.querySelectorAll('#layers-table input[type="checkbox"]').forEach(checkbox => {
-                // When a checkbox changes, just re-run the sync logic
                 checkbox.addEventListener('change', syncVisibility);
             });
         }
@@ -949,9 +933,9 @@
                 masterCtx.imageSmoothingEnabled = false; 
                 masterCtx.drawImage(initialImg, 0, 0);
                 
-                await update3DViewers(true); // This loads the skin and calls syncVisibility for the first time
+                await update3DViewers(true);
                 createPixelHighlighter(); 
-                setupVisibilityControls(); // This attaches listeners for future clicks
+                setupVisibilityControls();
                 renderRecentColors();
                 saveState();
 
@@ -972,3 +956,4 @@
     </script>
 </body>
 </html>
+
