@@ -153,14 +153,14 @@
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         /* NAV & RESPONSIVE STYLES */
-        .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
-        .user-dropdown .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
+        .user-dropdown { position: relative; display: inline-block; }
+        .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
         .user-dropdown .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
         .user-dropdown .dropdown-content { display: none; position: absolute; right: 0; top: 110%; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; }
         .user-dropdown .dropdown-content.show { display: block; }
         .user-dropdown .dropdown-content a { color: var(--muted); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 600; }
         .user-dropdown .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
-
+        .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
         .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
         .mobile-nav-backdrop.show { display: block; opacity: 1; }
         .mobile-nav-sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; background: var(--bg-1); z-index: 999; transform: translateX(-100%); transition: transform 0.3s ease; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
@@ -200,9 +200,13 @@
             .editor-container {
                 grid-template-columns: 1fr; height: auto;
                 grid-template-areas: "header" "preview" "toolbar" "editor";
+                gap: 0.75rem;
+                padding: 0.75rem;
             }
-            .editor-header { justify-content: flex-end; }
-            .toolbar-panel { overflow-y: visible; }
+            .editor-header { display: none; }
+            .toolbar-panel, .panel { overflow-y: visible; padding: 0.75rem; }
+            .tools-grid { grid-template-columns: repeat(4, 1fr); }
+            .panel-title { margin-bottom: 0.75rem; }
         }
     </style>
 </head>
@@ -417,9 +421,10 @@
 
         // --- Tool Implementation ---
         function getMousePos(e) {
+            const event = e.touches ? e.touches[0] : e;
             const rect = editorCanvas.getBoundingClientRect();
-            const x = (e.clientX - rect.left - panOffset.x) / zoom;
-            const y = (e.clientY - rect.top - panOffset.y) / zoom;
+            const x = (event.clientX - rect.left - panOffset.x) / zoom;
+            const y = (event.clientY - rect.top - panOffset.y) / zoom;
             return { x: Math.floor(x), y: Math.floor(y) };
         }
 
@@ -474,10 +479,12 @@
             editorCtx.putImageData(imageData, 0, 0);
         }
 
-        editorArea.addEventListener('mousedown', (e) => {
-            if (e.button === 1 || e.ctrlKey) { // Middle mouse or Ctrl+Click for panning
+        function handleDrawStart(e) {
+            e.preventDefault();
+             if (e.button === 1 || e.ctrlKey) {
                 isPanning = true;
-                panStart = { x: e.clientX - panOffset.x, y: e.clientY - panOffset.y };
+                const event = e.touches ? e.touches[0] : e;
+                panStart = { x: event.clientX - panOffset.x, y: event.clientY - panOffset.y };
                 editorCanvas.style.cursor = 'grabbing';
                 return;
             }
@@ -494,18 +501,20 @@
                 isDrawing = true;
                 drawPixel(pos);
             }
-        });
-        editorArea.addEventListener('mousemove', (e) => {
-            if (isPanning) {
-                panOffset = { x: e.clientX - panStart.x, y: e.clientY - panStart.y };
+        }
+        function handleDrawMove(e) {
+             e.preventDefault();
+            const event = e.touches ? e.touches[0] : e;
+             if (isPanning) {
+                panOffset = { x: event.clientX - panStart.x, y: event.clientY - panStart.y };
                 updatePanAndZoom();
                 return;
             }
             if (isDrawing) {
                 drawPixel(getMousePos(e));
             }
-        });
-        editorArea.addEventListener('mouseup', () => {
+        }
+        function handleDrawEnd() {
             if (isDrawing) {
                 update3DViewer();
                 saveState();
@@ -513,9 +522,16 @@
             isDrawing = false;
             isPanning = false;
             editorCanvas.style.cursor = currentTool === 'picker' ? 'copy' : 'crosshair';
-        });
-        editorArea.addEventListener('mouseleave', () => { isDrawing = false; isPanning = false; });
+        }
         
+        editorArea.addEventListener('mousedown', handleDrawStart);
+        editorArea.addEventListener('mousemove', handleDrawMove);
+        editorArea.addEventListener('mouseup', handleDrawEnd);
+        editorArea.addEventListener('mouseleave', handleDrawEnd);
+        editorArea.addEventListener('touchstart', handleDrawStart, { passive: false });
+        editorArea.addEventListener('touchmove', handleDrawMove, { passive: false });
+        editorArea.addEventListener('touchend', handleDrawEnd);
+
         // --- Zoom & Grid ---
         function updatePanAndZoom() {
             editorCanvas.style.transform = `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`;
@@ -562,13 +578,11 @@
             btn.addEventListener('click', () => {
                 if (btn.disabled || btn.id === '') return;
                 
-                // Handle file operations separately
-                if (btn.id === 'upload-btn' || btn.id === 'download-btn' || btn.id === 'reset-btn') {
-                    // We don't want to change active tool for file ops
-                    return;
+                if (['upload-btn', 'download-btn', 'reset-btn'].includes(btn.id)) {
+                    return; 
                 }
                 
-                document.querySelector('.tool-btn.active').classList.remove('active');
+                document.querySelector('.tool-btn.active')?.classList.remove('active');
                 btn.classList.add('active');
                 currentTool = btn.id.replace('-tool', '');
                 editorCanvas.style.cursor = currentTool === 'picker' ? 'copy' : (currentTool === 'bucket' ? 'cell' : 'crosshair');
