@@ -874,37 +874,42 @@ function refreshSkinTextures() {
             document.querySelector('.editor-area').classList.toggle('solid-bg', !e.target.checked);
         });
 
-        function syncVisibility() {
-            raycastableMeshes = [];
-            if (!editorSkinViewer.playerObject) return;
+function syncVisibility() {
+    raycastableMeshes = [];
+    if (!editorSkinViewer.playerObject) return;
 
-            const checkboxes = document.querySelectorAll('#layers-table input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
-                const isChecked = checkbox.checked;
-                const partName = checkbox.dataset.part;
-                const layerName = checkbox.dataset.layer;
+    const checkboxes = document.querySelectorAll('#layers-table input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        const isChecked = checkbox.checked;
+        const partName = checkbox.dataset.part;
+        const layerName = checkbox.dataset.layer;
 
-                [previewSkinViewer, editorSkinViewer].forEach(viewer => {
-                    if (viewer.playerObject?.skin) {
-                        const skinPart = viewer.playerObject.skin[partName];
-                        if (skinPart?.[layerName]) {
-                            skinPart[layerName].visible = isChecked;
-                        }
-                    }
-                });
+        [previewSkinViewer, editorSkinViewer].forEach(viewer => {
+            if (viewer.playerObject?.skin) {
+                const skinPart = viewer.playerObject.skin[partName];
+                if (skinPart?.[layerName]) {
+                    skinPart[layerName].visible = isChecked;
 
-                if (isChecked) {
-                    const group = editorSkinViewer.playerObject.skin[partName]?.[layerName];
-                    if (group) {
-                        group.traverse(child => {
-                            if (child.isMesh) {
-                                raycastableMeshes.push(child);
-                            }
-                        });
+                    // ✅ Also force the texture to update from masterCanvas
+                    if (skinPart[layerName].material?.map) {
+                        skinPart[layerName].material.map.image = masterCanvas;
+                        skinPart[layerName].material.map.needsUpdate = true;
                     }
                 }
-            });
+            }
+        });
+
+        if (isChecked) {
+            const group = editorSkinViewer.playerObject.skin[partName]?.[layerName];
+            if (group) {
+                group.traverse(child => {
+                    if (child.isMesh) raycastableMeshes.push(child);
+                });
+            }
         }
+    });
+}
+
         
         function setupVisibilityControls() {
             document.querySelectorAll('#layers-table input[type="checkbox"]').forEach(checkbox => {
