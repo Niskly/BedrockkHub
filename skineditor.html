@@ -479,6 +479,7 @@
         let isDrawingOn3D = false;
         let lastTexturePos = null;
         let isSkinDirty = false;
+        let isUpdatingSkin = false;
         
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
@@ -516,11 +517,12 @@
             const currentModel = isSlim ? 'slim' : 'default';
             const dataUrl = masterCanvas.toDataURL();
             try {
+                // Re-loading the skin is the most reliable way to force an update
                 await Promise.all([
                     previewSkinViewer.loadSkin(dataUrl, { model: currentModel }),
                     editorSkinViewer.loadSkin(dataUrl, { model: currentModel })
                 ]);
-                syncVisibility(); 
+                syncVisibility(); // After reloading, re-apply visibility rules
             } catch (err) {
                 console.error("Failed to force update skin viewers:", err);
             }
@@ -944,9 +946,12 @@
         }
 
         function continuousRenderLoop() {
-            if (isSkinDirty) {
-                forceViewerUpdate();
-                isSkinDirty = false;
+            if (isSkinDirty && !isUpdatingSkin) {
+                isUpdatingSkin = true;
+                forceViewerUpdate().then(() => {
+                    isSkinDirty = false; 
+                    isUpdatingSkin = false; 
+                });
             }
             previewSkinViewer.render();
             editorSkinViewer.render();
