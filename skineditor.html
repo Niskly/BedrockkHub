@@ -83,8 +83,8 @@
         }
         .tool-btn i { color: var(--brand-1); transition: color 0.2s; }
         .tool-btn:hover { border-color: var(--border-strong); background: var(--bg-1); }
-        .tool-btn.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: white; }
-        .tool-btn.active i { color: var(--brand-1); }
+        .tool-btn.active { background: var(--brand-1); color: white; border-color: var(--brand-2); }
+        .tool-btn.active i { color: white; }
         .tool-btn[disabled] { opacity: 0.5; cursor: not-allowed; background: var(--bg-2); border-color: var(--border); }
         .tool-btn[disabled] i { color: var(--muted); }
         
@@ -175,17 +175,25 @@
             border: 1px solid var(--border); border-radius: 16px; padding: 1rem;
         }
         
-        #layer-controls { display: flex; flex-direction: column; gap: 1rem; }
-        .layer-group { display: grid; grid-template-columns: 50px 1fr; align-items: center; gap: .5rem; }
-        .layer-label { font-weight: 700; font-size: .8rem; color: var(--muted); text-align: right; }
-        .layer-btn-group { display: grid; grid-template-columns: repeat(6, 1fr); gap: .5rem; }
-        .layer-btn {
-            background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px;
-            padding: .4rem 0; font-weight: 600; cursor: pointer; transition: all .2s ease;
-            font-size: .75rem; color: var(--muted);
+        .body-parts-table {
+            width: 100%;
+            text-align: center;
+            border-collapse: collapse;
         }
-        .layer-btn:hover { background: var(--bg-1); }
-        .layer-btn.active { background: rgba(var(--brand-1-rgb), 0.2); color: white; border-color: var(--brand-1); }
+        .body-parts-table th, .body-parts-table td {
+            padding: 0.5rem;
+        }
+        .body-parts-table th {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+        .body-parts-table input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--brand-1);
+        }
         
         .model-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 1rem; }
         .part-btn {
@@ -361,30 +369,39 @@
             </div>
             <div class="panel">
                  <h3 class="panel-title" style="margin-bottom: 1rem;">Body Parts Visibility</h3>
-                 <div id="layer-controls">
-                    <div class="layer-group">
-                        <span class="layer-label">Inner</span>
-                        <div class="layer-btn-group">
-                            <button class="layer-btn active" data-layer="innerLayer" data-part="head" title="Inner Head">Head</button>
-                            <button class="layer-btn active" data-layer="innerLayer" data-part="body" title="Inner Body">Body</button>
-                            <button class="layer-btn active" data-layer="innerLayer" data-part="rightArm" title="Inner Right Arm">R. Arm</button>
-                            <button class="layer-btn active" data-layer="innerLayer" data-part="leftArm" title="Inner Left Arm">L. Arm</button>
-                            <button class="layer-btn active" data-layer="innerLayer" data-part="rightLeg" title="Inner Right Leg">R. Leg</button>
-                            <button class="layer-btn active" data-layer="innerLayer" data-part="leftLeg" title="Inner Left Leg">L. Leg</button>
-                        </div>
-                    </div>
-                     <div class="layer-group">
-                        <span class="layer-label">Outer</span>
-                        <div class="layer-btn-group">
-                            <button class="layer-btn active" data-layer="outerLayer" data-part="head" title="Outer Head">Head</button>
-                            <button class="layer-btn active" data-layer="outerLayer" data-part="body" title="Outer Body">Body</button>
-                            <button class="layer-btn active" data-layer="outerLayer" data-part="rightArm" title="Outer Right Arm">R. Arm</button>
-                            <button class="layer-btn active" data-layer="outerLayer" data-part="leftArm" title="Outer Left Arm">L. Arm</button>
-                            <button class="layer-btn active" data-layer="outerLayer" data-part="rightLeg" title="Outer Right Leg">R. Leg</button>
-                            <button class="layer-btn active" data-layer="outerLayer" data-part="leftLeg" title="Outer Left Leg">L. Leg</button>
-                        </div>
-                    </div>
-                 </div>
+                 <table id="layers-table" class="body-parts-table">
+                       <thead>
+                           <tr>
+                               <th>Layer</th>
+                               <th>Head</th>
+                               <th>Body</th>
+                               <th>R. Arm</th>
+                               <th>L. Arm</th>
+                               <th>R. Leg</th>
+                               <th>L. Leg</th>
+                           </tr>
+                       </thead>
+                       <tbody>
+                           <tr>
+                               <th>Inner</th>
+                               <td><input type="checkbox" data-layer="innerLayer" data-part="head" checked></td>
+                               <td><input type="checkbox" data-layer="innerLayer" data-part="body" checked></td>
+                               <td><input type="checkbox" data-layer="innerLayer" data-part="rightArm" checked></td>
+                               <td><input type="checkbox" data-layer="innerLayer" data-part="leftArm" checked></td>
+                               <td><input type="checkbox" data-layer="innerLayer" data-part="rightLeg" checked></td>
+                               <td><input type="checkbox" data-layer="innerLayer" data-part="leftLeg" checked></td>
+                           </tr>
+                           <tr>
+                               <th>Outer</th>
+                               <td><input type="checkbox" data-layer="outerLayer" data-part="head" checked></td>
+                               <td><input type="checkbox" data-layer="outerLayer" data-part="body" checked></td>
+                               <td><input type="checkbox" data-layer="outerLayer" data-part="rightArm" checked></td>
+                               <td><input type="checkbox" data-layer="outerLayer" data-part="leftArm" checked></td>
+                               <td><input type="checkbox" data-layer="outerLayer" data-part="rightLeg" checked></td>
+                               <td><input type="checkbox" data-layer="outerLayer" data-part="leftLeg" checked></td>
+                           </tr>
+                       </tbody>
+                 </table>
                  <div class="model-toggle">
                     <button class="part-btn active" id="steve-model-btn" data-model="default">Steve</button>
                     <button class="part-btn" id="alex-model-btn" data-model="slim">Alex</button>
@@ -519,33 +536,32 @@
             raycastableMeshes = [];
             if (!editorSkinViewer.playerObject) return;
 
-            const buttons = document.querySelectorAll('#layer-controls .layer-btn');
-            buttons.forEach(button => {
-                const isVisible = button.classList.contains('active');
-                const partName = button.dataset.part;
-                const layerName = button.dataset.layer;
+            const checkboxes = document.querySelectorAll('#layers-table input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                const isChecked = checkbox.checked;
+                const partName = checkbox.dataset.part;
+                const layerName = checkbox.dataset.layer;
 
                 [previewSkinViewer, editorSkinViewer].forEach(viewer => {
                     if (viewer.playerObject?.skin) {
                         const skinPart = viewer.playerObject.skin[partName];
                         if (skinPart?.[layerName]) {
-                            skinPart[layerName].visible = isVisible;
+                            skinPart[layerName].visible = isChecked;
                         }
                     }
                 });
 
-                if (isVisible) {
+                if (isChecked) {
                     const group = editorSkinViewer.playerObject.skin[partName]?.[layerName];
                     if (group) {
                         group.traverse(child => {
-                            if (child.isMesh) raycastableMeshes.push(child);
+                            if (child.isMesh) {
+                                raycastableMeshes.push(child);
+                            }
                         });
                     }
                 }
             });
-            
-            previewSkinViewer.render();
-            editorSkinViewer.render();
         }
 
 
@@ -921,11 +937,8 @@
         });
         
         function setupVisibilityControls() {
-             document.querySelectorAll('#layer-controls .layer-btn').forEach(button => {
-                button.addEventListener('click', () => {
-                    button.classList.toggle('active');
-                    update3DViewers(); 
-                });
+            document.querySelectorAll('#layers-table input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', syncVisibility);
             });
         }
         
@@ -938,9 +951,10 @@
             editorSkinViewer.scene.add(pixelHighlighter);
         }
 
-        function editorRenderLoop() {
-            requestAnimationFrame(editorRenderLoop);
+        function continuousRenderLoop() {
+            previewSkinViewer.render();
             editorSkinViewer.render();
+            requestAnimationFrame(continuousRenderLoop);
         }
 
         async function initializeEditor() {
@@ -959,7 +973,7 @@
                 setupColorPicker();
                 saveState();
 
-                editorRenderLoop();
+                continuousRenderLoop();
 
                 document.body.style.opacity = '1';
             };
@@ -976,3 +990,4 @@
     </script>
 </body>
 </html>
+
