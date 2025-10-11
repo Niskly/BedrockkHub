@@ -19,7 +19,6 @@ function setupMobileNav(profile, user) {
     const navContainer = header.querySelector('.nav');
     if (!navContainer) return;
 
-    // Clean up any old menu elements
     document.querySelector('.mobile-nav-sidebar')?.remove();
     document.querySelector('.mobile-nav-backdrop')?.remove();
 
@@ -44,8 +43,11 @@ function setupMobileNav(profile, user) {
 
     let mainLinks = '';
     let footerLinks = '';
-    const currentPath = window.location.pathname.endsWith('/') ? window.location.pathname.slice(0, -1) : window.location.pathname;
-    const isHome = currentPath === '' || currentPath === '/index.html';
+    const currentPath = window.location.pathname.endsWith('/') || window.location.pathname.endsWith('/index.html') 
+        ? '/' 
+        : window.location.pathname;
+
+    const isHome = currentPath === '/';
     const isTexturePacks = currentPath === '/texturepacks.html';
     const isProfile = profile && currentPath === `/profile.html` && new URLSearchParams(window.location.search).get('user') === profile.username;
 
@@ -56,7 +58,7 @@ function setupMobileNav(profile, user) {
             <a href="/profile.html?user=${profile.username}" class="${isProfile ? 'active-mobile-link' : ''}"><i class="fa-solid fa-user"></i><span>My Profile</span></a>`;
         footerLinks = `
             <a href="/settings.html"><i class="fa-solid fa-cog"></i><span>Settings</span></a>
-            <a href="#" id="mobile-logout-btn"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>`;
+            <a href="#" id="mobile-logout-btn" class="logout-link"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>`;
     } else {
         mainLinks = `
             <a href="/" class="${isHome ? 'active-mobile-link' : ''}"><i class="fa-solid fa-house"></i><span>Home</span></a>
@@ -102,29 +104,33 @@ function setupMobileNav(profile, user) {
 }
 
 function renderUserDropdown(profile, user) {
-    const avatarContent = profile.avatar_url ?
-        `<img src="${profile.avatar_url}" alt="User Avatar" class="nav-avatar-img">` :
-        `<img src="https://placehold.co/28x28/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}" class="nav-avatar-img">`;
+    const avatarSrc = profile.avatar_url ? profile.avatar_url : `https://placehold.co/28x28/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}`;
+    const dropdownAvatarSrc = profile.avatar_url ? profile.avatar_url : `https://placehold.co/40x40/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}`;
 
     if (navActions) {
-        // This populates the hidden container that the desktop script pulls from
         navActions.innerHTML = `
-            <a class="btn ghost" href="/"><i class="fa-solid fa-house"></i>Home</a>
-            <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-palette"></i>Texture Packs</a>
+            <a class="btn ghost nav-link-item" href="/"><i class="fa-solid fa-house"></i>Home</a>
+            <a class="btn ghost nav-link-item" href="/texturepacks.html"><i class="fa-solid fa-palette"></i>Texture Packs</a>
             <div class="user-dropdown">
                 <button class="user-menu-btn" aria-haspopup="true" aria-expanded="false">
-                    ${avatarContent}
+                    <img src="${avatarSrc}" alt="User Avatar" class="nav-avatar-img">
                     <span>${profile.username}</span>
                     <i class="fa-solid fa-chevron-down"></i>
                 </button>
                 <div class="dropdown-content">
+                    <div class="dropdown-header">
+                       <img src="${dropdownAvatarSrc}" alt="User Avatar" class="dropdown-avatar">
+                       <div class="dropdown-user-info">
+                           <span class="dropdown-username">${profile.username}</span>
+                           <span class="dropdown-email">${user.email}</span>
+                       </div>
+                    </div>
                     <a href="/profile.html?user=${profile.username}"><i class="fa-solid fa-user"></i> My Profile</a>
                     <a href="/settings.html"><i class="fa-solid fa-cog"></i> Settings</a>
-                    <a href="#" id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+                    <a href="#" id="logout-btn" class="logout-link"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
                 </div>
             </div>`;
 
-        // The desktop script will move the .user-dropdown. We only need to handle its click logic here.
         const userDropdown = navActions.querySelector('.user-dropdown');
         if(userDropdown) {
             const btn = userDropdown.querySelector('.user-menu-btn');
@@ -149,9 +155,10 @@ function renderUserDropdown(profile, user) {
 function renderLoginButtons() {
     if (navActions) {
         navActions.innerHTML = `
-            <a class="btn ghost" href="/"><i class="fa-solid fa-house"></i>Home</a>
-            <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-palette"></i>Texture Packs</a>
-            <a class="btn primary" href="/login.html">Login</a>`;
+            <a class="btn ghost nav-link-item" href="/"><i class="fa-solid fa-house"></i>Home</a>
+            <a class="btn ghost nav-link-item" href="/texturepacks.html"><i class="fa-solid fa-palette"></i>Texture Packs</a>
+            <a class="login-btn-item" href="/login.html"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+            <a class="signup-btn-item" href="/signup.html"><i class="fa-solid fa-user-plus"></i> Sign Up</a>`;
     }
     setupMobileNav(null, null);
 }
@@ -244,8 +251,9 @@ window.addEventListener('click', (event) => {
         const content = userDropdown.querySelector('.dropdown-content.show');
         if (content) {
             content.classList.remove('show');
-            const btn = userDropdown.querySelector('.user-menu-btn')
+            const btn = userDropdown.querySelector('.user-menu-btn');
             if (btn) btn.setAttribute('aria-expanded', 'false');
         }
     }
 });
+
