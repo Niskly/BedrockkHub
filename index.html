@@ -23,7 +23,7 @@
     <style>
     body { opacity: 0; transition: opacity 0.2s ease-in; }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family/Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -47,60 +47,28 @@
             transition: background-image 0.5s ease-in-out;
         }
         a { color: inherit; text-decoration: none; }
-        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
 
-        /* ====== NAVBAR ====== */
+        /* ====== NAVBAR - MATCHING OTHER PAGES ====== */
         header { position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(1.2) blur(10px); background: rgba(12, 12, 12, 0.75); border-bottom: 1px solid var(--border); }
         .nav { max-width: 1200px; margin: 0 auto; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; }
-        .brand { display: flex; align-items: center; gap: .8rem; flex-shrink: 0; }
+        .brand { display: flex; align-items: center; gap: .8rem; }
         .brand-badge { height: 40px; width: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--gradient-brand); box-shadow: var(--shadow-brand); }
         .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-11px); }
         .brand-title { font-weight: 800; letter-spacing: .6px; font-size: 15px; }
-        .tiny { font-size: 12px; color: var(--muted); }
-
-        #nav-actions { display: contents; } /* Allow items to be flex items of .nav */
-        
-        .nav-links { display: flex; align-items: center; gap: 0.5rem; }
-        .nav-links a { padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; color: var(--muted); display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease; }
-        .nav-links a:hover { color: var(--text); background: var(--bg-2); }
-        .nav-links a.active { color: var(--text); background: var(--bg-1); box-shadow: inset 0 1px 2px rgba(0,0,0,0.2); }
-
-        .nav-right-actions { display: flex; align-items: center; gap: 0.75rem; }
-        .btn { padding: .6rem 1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; line-height: 1.2; }
-        .btn.btn-login { background-color: var(--bg-2); color: var(--text); border: 1px solid var(--border); }
-        .btn.btn-login:hover { background-color: var(--bg-1); }
-        .btn.btn-signup { background: var(--gradient-brand); box-shadow: var(--shadow-brand); color: white; }
-        
-        .btn.icon-btn { width: 40px; height: 40px; padding: 0; font-size: 1rem; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--border); color: var(--muted); }
-        .btn.icon-btn:hover { background: var(--bg-1); color: var(--text); }
-        
+        .nav-actions { display: flex; align-items: center; gap: 0.6rem; }
+        .btn { padding: .5rem 1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
+        .ghost { border-color: var(--border); background: transparent; color: var(--text); }
+        .primary { background: var(--gradient-brand); box-shadow: var(--shadow-brand); color: white; }
         .user-dropdown { position: relative; display: inline-block; }
-        .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 10px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
+        .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
         .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
         .user-menu-btn:hover { border-color: var(--border-strong); }
-        .dropdown-content { display: none; position: absolute; right: 0; top: calc(100% + 8px); background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; }
+        .dropdown-content { display: none; position: absolute; right: 0; top: 110%; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; }
         .dropdown-content.show { display: block; }
         .dropdown-content a { color: var(--muted); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 600; }
         .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
-
-        /* ====== MOBILE NAV STYLES ====== */
-        .mobile-nav-toggle { display: none; }
-        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
-        .mobile-nav-backdrop.show { display: block; opacity: 1; }
-        .mobile-nav-sidebar { position: fixed; top: 0; left: -280px; bottom: 0; width: 280px; background: #0A0A0A; z-index: 999; transition: left 0.3s ease; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
-        .mobile-nav-sidebar.show { left: 0; }
+        .tiny { font-size: 12px; color: var(--muted); }
         
-        .mobile-nav-top { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
-        .mobile-nav-close { background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
-        
-        .mobile-nav-links { flex-grow: 1; padding: 1rem; }
-        .mobile-nav-links a { padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem; font-weight: 600; color: var(--muted); transition: all 0.2s ease; font-size: 1rem; }
-        .mobile-nav-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
-        .mobile-nav-links a.active { color: var(--text); background: var(--brand-1); box-shadow: var(--shadow-brand); }
-        .mobile-nav-links a:not(.active):hover { background: var(--bg-2); color: var(--text); }
-
-        .mobile-nav-footer { padding: 1rem; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.75rem; }
-
         /* ====== MAIN CONTENT & HERO ====== */
         .container { max-width: 1200px; margin: 0 auto; padding: 28px 18px; }
         .hero { padding: 40px 0; }
@@ -109,18 +77,22 @@
         .title .grad { background: var(--gradient-brand); -webkit-background-clip: text; background-clip: text; color: transparent; animation: glow-pulse 2s ease-in-out infinite alternate; }
         @keyframes glow-pulse { from { filter: brightness(1); } to { filter: brightness(1.2) drop-shadow(0 0 20px var(--primary)); } }
         .muted { color: var(--muted); font-size: 1.2rem; line-height: 1.6; margin-bottom: 32px; max-width: 600px; margin-left: auto; margin-right: auto; }
-        .hero-actions { display: flex; justify-content: center; gap: 1rem; margin-top: 2rem; }
         
-        /* ====== SEARCH MODAL ====== */
-        #search-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 100; display: none; padding: 1rem; animation: fadeIn 0.3s ease; }
-        #search-modal-overlay.visible { display: block; }
-        #search-modal-content { position: relative; max-width: 600px; margin: 4rem auto 0; background: var(--bg-1); border-radius: 16px; border: 1px solid var(--border); animation: slideDown 0.4s ease; overflow: hidden; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        .search-input-wrapper-modal { display: flex; align-items: center; padding-left: 1.5rem; border-bottom: 1px solid var(--border); }
-        .search-input-wrapper-modal i { color: var(--muted); }
-        #modal-universal-search { width: 100%; padding: 1.2rem 1rem; font-size: 1.1rem; background: transparent; border: none; color: var(--text); outline: none; }
-        #modal-search-results { max-height: 400px; overflow-y: auto; }
+        /* ====== SEARCH BAR ====== */
+        .search-hub-container { max-width: 700px; margin: 2.5rem auto 0; position: relative; }
+        .search-input-wrapper { display: flex; position: relative; background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); transition: border-color 0.2s, box-shadow 0.2s; }
+        .search-input-wrapper:focus-within { border-color: var(--brand-1); box-shadow: 0 15px 40px rgba(0,0,0,0.3), 0 0 0 3px rgba(222, 33, 42, .3); }
+        .search-type-dropdown { position: relative; }
+        #search-type-btn { display: flex; align-items: center; gap: 0.5rem; height: 100%; padding: 0 1.2rem; background: var(--bg-2); border: none; color: var(--text); font-weight: 600; border-radius: 15px 0 0 15px; cursor: pointer; border-right: 1px solid var(--border); }
+        #search-type-btn .fa-chevron-down { font-size: 0.7em; transition: transform 0.2s; }
+        .search-type-dropdown.open #search-type-btn .fa-chevron-down { transform: rotate(180deg); }
+        #search-type-menu { display: none; position: absolute; top: 110%; left: 0; z-index: 12; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 100%; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+        .search-type-dropdown.open #search-type-menu { display: block; }
+        .search-type-option { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; }
+        .search-type-option:hover { background: var(--bg-2); }
+        .search-type-option i { width: 16px; color: var(--muted); }
+        #universal-search { width: 100%; padding: 1.25rem 1.5rem; font-size: 1.1rem; background: transparent; border: none; color: var(--text); outline: none; }
+        #search-results { display: none; position: absolute; top: calc(100% + 8px); left: 0; right: 0; background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; max-height: 350px; overflow-y: auto; z-index: 10; }
         .search-result-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; transition: background-color 0.2s; }
         .search-result-item:not(:last-child) { border-bottom: 1px solid var(--border); }
         .search-result-item:hover { background: var(--bg-2); }
@@ -129,19 +101,82 @@
         .search-result-info { text-align: left; }
         .search-result-name { font-weight: 600; color: var(--text); }
         .search-result-sub { font-size: 0.8rem; color: var(--muted); }
+
+        .hero-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
         
         /* ====== LATEST UPLOADS ====== */
-        .latest-packs-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
-        .latest-pack-card { background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; display: flex; flex-direction: column; transition: all 0.2s ease; text-decoration: none; color: var(--text); }
-        .latest-pack-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: 0 10px 30px -10px rgba(0,0,0, .2); }
-        .pack-main-info { padding: 1rem; flex-grow: 1; display: flex; flex-direction: column; }
-        .pack-top-section { display: flex; align-items: center; gap: 1rem; }
-        .pack-icon { width: 80px; height: 80px; border-radius: 12px; object-fit: cover; flex-shrink: 0; }
-        .pack-details { flex-grow: 1; min-width: 0; }
-        .pack-name { font-size: 1.1rem; font-weight: 700; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 0.5rem; }
-        .pack-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem; font-size: 0.8rem; color: var(--muted); }
-        .pack-meta span { display: flex; align-items: center; gap: 0.5rem; }
-        .pack-action-footer { margin-top: 1rem; }
+        .latest-packs-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+        .latest-pack-card {
+            background: var(--bg-1);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: var(--text);
+        }
+        .latest-pack-card:hover { 
+            transform: translateY(-4px); 
+            border-color: var(--border-strong); 
+            box-shadow: 0 10px 30px -10px rgba(0,0,0, .2); 
+        }
+        .pack-main-info { 
+            padding: 1rem; 
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .pack-top-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .pack-icon { 
+            width: 80px;
+            height: 80px;
+            border-radius: 12px; 
+            object-fit: cover; 
+            flex-shrink: 0; 
+        }
+        .pack-details { 
+            flex-grow: 1; 
+            min-width: 0;
+        }
+        .pack-name { 
+            font-size: 1.1rem; 
+            font-weight: 700; 
+            line-height: 1.3; 
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.5rem;
+        }
+        .pack-meta { 
+            display: flex; 
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.25rem; 
+            font-size: 0.8rem; 
+            color: var(--muted); 
+        }
+        .pack-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .pack-action-footer {
+            margin-top: 1rem;
+        }
         
         .loading { display: flex; align-items: center; justify-content: center; padding: 2rem; color: var(--muted); width: 100%; grid-column: 1 / -1; }
         .loading::after { content: ''; width: 20px; height: 20px; border: 2px solid var(--border); border-top: 2px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-left: 10px; }
@@ -152,17 +187,57 @@
         .glowing-title { font-size: 2.5rem; font-weight: 900; margin-bottom: 1rem; }
         footer { margin-top: 6rem; padding: 3rem 0; border-top: 1px solid var(--border); background: var(--bg-1); text-align: center; }
         
-        /* ====== RESPONSIVENESS ====== */
+        /* ====== MOBILE NAV & RESPONSIVENESS ====== */
+        .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
+        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
+        .mobile-nav-backdrop.show { display: block; opacity: 1; }
+        .mobile-nav-sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; background: var(--bg-1); z-index: 999; transform: translateX(-100%); transition: transform 0.3s ease; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
+        .mobile-nav-sidebar.show { transform: translateX(0); }
+        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
+        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
+        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+        .mobile-nav-user-info { display: flex; flex-direction: column; }
+        .mobile-nav-username { font-weight: 700; color: var(--text); }
+        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
+        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
+        .mobile-nav-main-links { flex-grow: 1; }
+        .mobile-nav-main-links a, .mobile-nav-footer-links a { padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem; font-weight: 600; color: var(--muted); transition: all 0.2s ease; }
+        .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
+        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
+        .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
+        
         @media (max-width: 1024px) {
-            .nav-links { display: none; }
-            .latest-packs-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+             .latest-packs-grid {
+                grid-template-columns: 1fr;
+                display: flex;
+                overflow-x: auto;
+                scroll-snap-type: x mandatory;
+                padding-bottom: 1rem;
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+             .latest-packs-grid::-webkit-scrollbar {
+                height: 6px;
+            }
+            .latest-packs-grid::-webkit-scrollbar-track {
+                background: var(--bg-2);
+                border-radius: 3px;
+            }
+            .latest-packs-grid::-webkit-scrollbar-thumb {
+                background: var(--border-strong);
+                border-radius: 3px;
+            }
+            .latest-pack-card {
+                width: 300px;
+                flex-shrink: 0;
+                scroll-snap-align: start;
+            }
         }
         @media (max-width: 768px) { 
-            .nav-right-actions { display: none; }
-            .mobile-nav-toggle { display: inline-flex; }
+            .nav-actions { display: none; }
+            .mobile-nav-toggle { display: block; }
             .title { font-size: 2.2rem; }
             .muted { font-size: 1.1rem; }
-            .latest-packs-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -176,24 +251,13 @@
                 </div>
                 <div>
                     <div class="brand-title">MCHUB</div>
+                    <div class="tiny">Minecraft • Community Hub</div>
                 </div>
             </a>
-            <!-- This div will be populated by auth.js -->
-            <div id="nav-actions"></div>
+            <div class="nav-actions" id="nav-actions"></div>
+            <button class="mobile-nav-toggle"><i class="fa-solid fa-bars"></i></button>
         </div>
     </header>
-
-     <!-- Search Modal -->
-    <div id="search-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="search-modal-title">
-        <div id="search-modal-content">
-            <h2 id="search-modal-title" class="sr-only">Search Modal</h2>
-            <div class="search-input-wrapper-modal">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="modal-universal-search" placeholder="Search for packs, users, or gamertags..." autocomplete="off">
-            </div>
-            <div id="modal-search-results"></div>
-        </div>
-    </div>
 
     <main>
         <section class="container">
@@ -207,6 +271,24 @@
                        The ultimate home for Minecraft packs and creators.
                        Find your next adventure.
                     </p>
+                    
+                    <div class="search-hub-container">
+                        <div class="search-input-wrapper">
+                            <div class="search-type-dropdown">
+                                <button id="search-type-btn">
+                                    <span id="search-type-label">Packs</span>
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </button>
+                                <div id="search-type-menu">
+                                    <div class="search-type-option" data-type="packs"><i class="fa-solid fa-palette"></i> Packs</div>
+                                    <div class="search-type-option" data-type="users"><i class="fa-solid fa-user"></i> Users</div>
+                                    <div class="search-type-option" data-type="gamertags"><i class="fa-brands fa-xbox"></i> Gamertags</div>
+                                </div>
+                            </div>
+                            <input type="text" id="universal-search" placeholder="Search for packs..." autocomplete="off">
+                        </div>
+                        <div id="search-results"></div>
+                    </div>
                      <div class="hero-actions">
                         <a href="#latest-uploads" class="btn ghost" id="scroll-to-latest"><i class="fa-solid fa-sparkles"></i> Latest Uploads</a>
                         <a href="/texturepacks.html" class="btn primary"><i class="fa-solid fa-compass"></i> Explore Packs</a>
@@ -253,14 +335,13 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
+        let searchType = 'packs';
         let debounceTimer;
 
-        // --- UTILITY FUNCTIONS ---
         function escapeHtml(str) { return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); }
         function formatDate(isoString) { if (!isoString) return ''; const date = new Date(isoString); return `${date.getDate()}/${date.getMonth() + 1}/${String(date.getFullYear()).slice(-2)}`; }
         function formatDownloads(count) { const num = count || 0; if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K'; return num.toLocaleString(); }
         
-        // --- LATEST PACKS ---
         async function loadLatestPacks() {
             const container = document.getElementById('latest-packs-grid');
             if (!container) return;
@@ -296,40 +377,43 @@
             }
         }
         
-        // --- UNIVERSAL SEARCH ---
         async function performSearch() {
-            const query = document.getElementById('modal-universal-search').value.trim();
-            const resultsContainer = document.getElementById('modal-search-results');
+            const query = document.getElementById('universal-search').value.trim();
+            const resultsContainer = document.getElementById('search-results');
             if (query.length < 2) {
-                resultsContainer.innerHTML = '';
+                resultsContainer.style.display = 'none';
                 return;
             }
 
-            resultsContainer.innerHTML = '<div class="loading" style="padding: 1rem;">Searching...</div>';
-
-            try {
-                const [{data: packs}, {data: users}, {data: gamertags}] = await Promise.all([
-                    supabase.from('packs').select('id, name, icon_url').not('tags', 'ilike', '%user-upload%').ilike('name', `%${query}%`).limit(3),
-                    supabase.from('profiles').select('username, avatar_url').ilike('username', `%${query}%`).limit(3),
-                    supabase.from('profiles').select('username, bedrock_gamertag, xuid').ilike('bedrock_gamertag', `%${query}%`).limit(3)
-                ]);
-
-                const results = [
-                    ...(packs || []).map(item => ({ type: 'pack', name: item.name, icon: item.icon_url, link: `/packs.html?id=${item.id}` })),
-                    ...(users || []).map(item => ({ type: 'user', name: item.username, icon: item.avatar_url, link: `/profile.html?user=${item.username}` })),
-                    ...(gamertags || []).map(item => ({ type: 'gamertag', name: item.bedrock_gamertag, sub: item.username, xuid: item.xuid, link: `/profile.html?user=${item.username}` }))
-                ];
-                renderSearchResults(results);
-
-            } catch(error) {
-                resultsContainer.innerHTML = `<div class="search-result-item"><div class="search-result-info"><div class="search-result-name">Error searching.</div></div></div>`;
+            let results = [];
+            if (searchType === 'packs') {
+                const { data } = await supabase
+                    .from('packs')
+                    .select('id, name, icon_url')
+                    .not('tags', 'ilike', '%user-upload%')
+                    .ilike('name', `%${query}%`)
+                    .limit(5);
+                results = (data || []).map(item => ({
+                    type: 'pack', name: item.name, icon: item.icon_url, link: `/packs.html?id=${item.id}`
+                }));
+            } else if (searchType === 'users') {
+                const { data } = await supabase.from('profiles').select('username, avatar_url').ilike('username', `%${query}%`).limit(5);
+                results = (data || []).map(item => ({
+                    type: 'user', name: item.username, icon: item.avatar_url, link: `/profile.html?user=${item.username}`
+                }));
+            } else if (searchType === 'gamertags') {
+                const { data } = await supabase.from('profiles').select('username, bedrock_gamertag, xuid').ilike('bedrock_gamertag', `%${query}%`).limit(5);
+                 results = (data || []).map(item => ({
+                    type: 'gamertag', name: item.bedrock_gamertag, sub: item.username, xuid: item.xuid, link: `/profile.html?user=${item.username}`
+                }));
             }
+            renderSearchResults(results);
         }
 
         function renderSearchResults(results) {
-            const container = document.getElementById('modal-search-results');
+            const container = document.getElementById('search-results');
             if (results.length === 0) {
-                container.innerHTML = `<div class="search-result-item" style="justify-content:center; padding: 1.5rem;"><div class="search-result-info" style="text-align:center;"><div class="search-result-name">No results found</div></div></div>`;
+                container.innerHTML = `<div class="search-result-item"><div class="search-result-info"><div class="search-result-name">No results found</div></div></div>`;
             } else {
                 container.innerHTML = results.map(item => {
                     let iconHtml = '';
@@ -354,53 +438,46 @@
                         </a>`;
                 }).join('');
             }
+            container.style.display = 'block';
         }
         
-        // --- SEARCH MODAL LOGIC ---
-        function setupSearch() {
-            const searchModalOverlay = document.getElementById('search-modal-overlay');
-            const searchInput = document.getElementById('modal-universal-search');
-            
-            const openSearch = () => {
-                searchModalOverlay.classList.add('visible');
-                setTimeout(() => searchInput.focus(), 100);
-                document.body.style.overflow = 'hidden';
-            };
+        const dropdown = document.querySelector('.search-type-dropdown');
+        const searchTypeBtn = document.getElementById('search-type-btn');
+        const searchTypeMenu = document.getElementById('search-type-menu');
+        const searchTypeLabel = document.getElementById('search-type-label');
+        const searchInput = document.getElementById('universal-search');
 
-            const closeSearch = () => {
-                searchModalOverlay.classList.remove('visible');
-                searchInput.value = '';
-                document.getElementById('modal-search-results').innerHTML = '';
-                document.body.style.overflow = '';
-            };
-            
-            // This event is dispatched from auth.js when the nav is rendered
-            document.addEventListener('nav-ready', () => {
-                document.querySelectorAll('.open-search-btn').forEach(btn => {
-                    btn.addEventListener('click', openSearch);
-                });
+        searchTypeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('open');
+        });
+
+        document.querySelectorAll('.search-type-option').forEach(option => {
+            option.addEventListener('click', () => {
+                searchType = option.dataset.type;
+                searchTypeLabel.textContent = option.textContent.trim();
+                searchInput.placeholder = `Search for ${searchType}...`;
+                dropdown.classList.remove('open');
+                performSearch();
             });
+        });
 
-            searchModalOverlay.addEventListener('click', (e) => {
-                if (e.target === searchModalOverlay) closeSearch();
-            });
+        searchInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(performSearch, 300);
+        });
 
-            searchInput.addEventListener('input', () => {
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(performSearch, 300);
-            });
-            
-            document.addEventListener('keydown', (e) => {
-                if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
-                if (e.key === 'Escape' && searchModalOverlay.classList.contains('visible')) { closeSearch(); }
-            });
-        }
+        window.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-hub-container')) {
+                document.getElementById('search-results').style.display = 'none';
+            }
+            if (!e.target.closest('.search-type-dropdown')) {
+                dropdown.classList.remove('open');
+            }
+        });
 
-
-        // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
             loadLatestPacks();
-            setupSearch();
 
             const scrollToLatestBtn = document.getElementById('scroll-to-latest');
             if (scrollToLatestBtn) {
@@ -411,7 +488,11 @@
                         const headerOffset = document.querySelector('header')?.offsetHeight || 70;
                         const elementPosition = targetElement.getBoundingClientRect().top;
                         const offsetPosition = elementPosition + window.pageYOffset - headerOffset - 28;
-                        window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: 'smooth'
+                        });
                     }
                 });
             }
