@@ -20,14 +20,8 @@ function setupMobileNav(profile, user) {
     if (!navContainer) return;
 
     // Clean up any old menu elements
-    navContainer.querySelector('.mobile-nav-toggle')?.remove();
     document.querySelector('.mobile-nav-sidebar')?.remove();
     document.querySelector('.mobile-nav-backdrop')?.remove();
-
-    const hamburgerBtn = document.createElement('button');
-    hamburgerBtn.className = 'mobile-nav-toggle';
-    hamburgerBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
-    hamburgerBtn.setAttribute('aria-label', 'Open navigation menu');
 
     const sidebar = document.createElement('div');
     sidebar.className = 'mobile-nav-sidebar';
@@ -35,59 +29,53 @@ function setupMobileNav(profile, user) {
     const backdrop = document.createElement('div');
     backdrop.className = 'mobile-nav-backdrop';
 
-    let userHeader = '';
+    const brandHeader = `
+        <div class="mobile-nav-header">
+             <a class="brand" href="/">
+                <div class="brand-badge">
+                    <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
+                </div>
+                <div>
+                    <div class="brand-title">MCHUB</div>
+                    <div class="tiny">Minecraft • Community Hub</div>
+                </div>
+            </a>
+        </div>`;
+
     let mainLinks = '';
     let footerLinks = '';
+    const currentPath = window.location.pathname.endsWith('/') ? window.location.pathname.slice(0, -1) : window.location.pathname;
+    const isHome = currentPath === '' || currentPath === '/index.html';
+    const isTexturePacks = currentPath === '/texturepacks.html';
+    const isProfile = profile && currentPath === `/profile.html` && new URLSearchParams(window.location.search).get('user') === profile.username;
 
     if (profile && user) {
-        const avatarSrc = profile.avatar_url ?
-            profile.avatar_url :
-            `https://placehold.co/60x60/1c1c1c/de212a?text=${profile.username.charAt(0).toUpperCase()}`;
-
-        userHeader = `
-            <div class="mobile-nav-header">
-                <img src="${avatarSrc}" alt="Avatar" class="mobile-nav-avatar">
-                <div class="mobile-nav-user-info">
-                    <span class="mobile-nav-username">${profile.username}</span>
-                    <span class="mobile-nav-email">${user.email}</span>
-                </div>
-            </div>`;
         mainLinks = `
-            <a href="/"><i class="fa-solid fa-house"></i><span>Home</span></a>
-            <a href="/texturepacks.html"><i class="fa-solid fa-palette"></i><span>Texture Packs</span></a>
-            <a href="/profile.html?user=${profile.username}"><i class="fa-solid fa-user"></i><span>My Profile</span></a>`;
+            <a href="/" class="${isHome ? 'active-mobile-link' : ''}"><i class="fa-solid fa-house"></i><span>Home</span></a>
+            <a href="/texturepacks.html" class="${isTexturePacks ? 'active-mobile-link' : ''}"><i class="fa-solid fa-palette"></i><span>Texture Packs</span></a>
+            <a href="/profile.html?user=${profile.username}" class="${isProfile ? 'active-mobile-link' : ''}"><i class="fa-solid fa-user"></i><span>My Profile</span></a>`;
         footerLinks = `
             <a href="/settings.html"><i class="fa-solid fa-cog"></i><span>Settings</span></a>
             <a href="#" id="mobile-logout-btn"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>`;
     } else {
-        userHeader = `
-            <div class="mobile-nav-header">
-                 <div class="mobile-nav-avatar" style="background: var(--brand-1); display: grid; place-items:center;">
-                    <i class="fa-solid fa-question"></i>
-                </div>
-                <div class="mobile-nav-user-info">
-                    <span class="mobile-nav-username">Guest</span>
-                    <span class="mobile-nav-email">Not logged in</span>
-                </div>
-            </div>`;
         mainLinks = `
-            <a href="/"><i class="fa-solid fa-house"></i><span>Home</span></a>
-            <a href="/texturepacks.html"><i class="fa-solid fa-palette"></i><span>Texture Packs</span></a>`;
+            <a href="/" class="${isHome ? 'active-mobile-link' : ''}"><i class="fa-solid fa-house"></i><span>Home</span></a>
+            <a href="/texturepacks.html" class="${isTexturePacks ? 'active-mobile-link' : ''}"><i class="fa-solid fa-palette"></i><span>Texture Packs</span></a>`;
         footerLinks = `
-            <a href="/login.html"><i class="fa-solid fa-right-to-bracket"></i><span>Login</span></a>
+            <a href="/login.html" class="login-mobile-link"><i class="fa-solid fa-right-to-bracket"></i><span>Login</span></a>
             <a href="/signup.html" class="primary-mobile-link"><i class="fa-solid fa-user-plus"></i><span>Sign Up</span></a>`;
     }
 
     sidebar.innerHTML = `
         <button class="mobile-nav-close" aria-label="Close navigation menu"><i class="fa-solid fa-xmark"></i></button>
-        ${userHeader}
+        ${brandHeader}
         <nav class="mobile-nav-main-links">${mainLinks}</nav>
         <nav class="mobile-nav-footer-links">${footerLinks}</nav>
     `;
 
-    navContainer.appendChild(hamburgerBtn);
     document.body.appendChild(sidebar);
     document.body.appendChild(backdrop);
+    const hamburgerBtn = navContainer.querySelector('.mobile-nav-toggle');
 
     const openMenu = () => {
         sidebar.classList.add('show');
@@ -100,7 +88,7 @@ function setupMobileNav(profile, user) {
         document.body.style.overflow = '';
     };
 
-    hamburgerBtn.addEventListener('click', openMenu);
+    if (hamburgerBtn) hamburgerBtn.addEventListener('click', openMenu);
     sidebar.querySelector('.mobile-nav-close').addEventListener('click', closeMenu);
     backdrop.addEventListener('click', closeMenu);
 
@@ -119,9 +107,10 @@ function renderUserDropdown(profile, user) {
         `<img src="https://placehold.co/28x28/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}" class="nav-avatar-img">`;
 
     if (navActions) {
+        // This populates the hidden container that the desktop script pulls from
         navActions.innerHTML = `
-            <a class="btn ghost" href="/">Home</a>
-            <a class="btn ghost" href="/texturepacks.html">Texture Packs</a>
+            <a class="btn ghost" href="/"><i class="fa-solid fa-house"></i>Home</a>
+            <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-palette"></i>Texture Packs</a>
             <div class="user-dropdown">
                 <button class="user-menu-btn" aria-haspopup="true" aria-expanded="false">
                     ${avatarContent}
@@ -135,19 +124,23 @@ function renderUserDropdown(profile, user) {
                 </div>
             </div>`;
 
-        const btn = navActions.querySelector('.user-menu-btn');
-        const content = navActions.querySelector('.dropdown-content');
+        // The desktop script will move the .user-dropdown. We only need to handle its click logic here.
+        const userDropdown = navActions.querySelector('.user-dropdown');
+        if(userDropdown) {
+            const btn = userDropdown.querySelector('.user-menu-btn');
+            const content = userDropdown.querySelector('.dropdown-content');
 
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isExpanded = content.classList.toggle('show');
-            btn.setAttribute('aria-expanded', isExpanded);
-        });
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isExpanded = content.classList.toggle('show');
+                btn.setAttribute('aria-expanded', isExpanded);
+            });
 
-        navActions.querySelector('#logout-btn').addEventListener('click', async (e) => {
-            e.preventDefault();
-            await supabase.auth.signOut();
-        });
+            userDropdown.querySelector('#logout-btn').addEventListener('click', async (e) => {
+                e.preventDefault();
+                await supabase.auth.signOut();
+            });
+        }
     }
 
     setupMobileNav(profile, user);
@@ -156,8 +149,8 @@ function renderUserDropdown(profile, user) {
 function renderLoginButtons() {
     if (navActions) {
         navActions.innerHTML = `
-            <a class="btn ghost" href="/">Home</a>
-            <a class="btn ghost" href="/texturepacks.html">Texture Packs</a>
+            <a class="btn ghost" href="/"><i class="fa-solid fa-house"></i>Home</a>
+            <a class="btn ghost" href="/texturepacks.html"><i class="fa-solid fa-palette"></i>Texture Packs</a>
             <a class="btn primary" href="/login.html">Login</a>`;
     }
     setupMobileNav(null, null);
@@ -194,9 +187,8 @@ async function handleAuthStateChange() {
                 const dbTheme = profile.theme || 'red';
                 const cachedTheme = localStorage.getItem('mchub-theme');
                 
-                // Sync theme from DB to cache if they differ
                 if (dbTheme !== cachedTheme) {
-                    window.setMCHubTheme(dbTheme, true); // true caches it
+                    if (window.setMCHubTheme) window.setMCHubTheme(dbTheme, true);
                 }
                 
                 renderUserDropdown(profile, user);
@@ -238,7 +230,6 @@ supabase.auth.onAuthStateChange((event, session) => {
     const newUserId = session?.user?.id || null;
     if (newUserId !== currentUserId) {
         if (event === 'SIGNED_OUT') {
-            // Clear the theme cache on logout so the next user gets the default.
             try { localStorage.removeItem('mchub-theme'); } catch(e) {}
             window.location.href = '/login.html';
         } else {
@@ -248,11 +239,12 @@ supabase.auth.onAuthStateChange((event, session) => {
 });
 
 window.addEventListener('click', (event) => {
-    if (navActions && !event.target.closest('.user-dropdown')) {
-        const content = navActions.querySelector('.dropdown-content.show');
+    const userDropdown = document.querySelector('.user-dropdown');
+    if (userDropdown && !event.target.closest('.user-dropdown')) {
+        const content = userDropdown.querySelector('.dropdown-content.show');
         if (content) {
             content.classList.remove('show');
-            const btn = navActions.querySelector('.user-menu-btn');
+            const btn = userDropdown.querySelector('.user-menu-btn')
             if (btn) btn.setAttribute('aria-expanded', 'false');
         }
     }
