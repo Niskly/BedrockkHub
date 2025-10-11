@@ -4,11 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MCHub - Minecraft Community Hub</title>
+    <!-- Favicon Configuration -->
     <link rel="apple-touch-icon" sizes="180x180" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-16x16.png">
     <link rel="manifest" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/site.webmanifest">
     <link rel="shortcut icon" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon.ico">
+    <!-- End Favicon Configuration -->
     <meta name="description" content="Your central hub for Minecraft creations. Discover and download texture packs, explore user profiles, and connect with the community." />
     <meta name="author" content="MCHub" />
     <meta name="keywords" content="minecraft, bedrock, java, texture packs, resource packs, profiles, community" />
@@ -21,7 +23,7 @@
     <style>
     body { opacity: 0; transition: opacity 0.2s ease-in; }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family/Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -45,106 +47,59 @@
             transition: background-image 0.5s ease-in-out;
         }
         a { color: inherit; text-decoration: none; }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
 
-        /* ====== NEW NAVBAR STYLES ====== */
-        header { 
-            position: sticky; top: 0; z-index: 50; 
-            backdrop-filter: saturate(1.2) blur(10px); 
-            background: rgba(12, 12, 12, 0.75); 
-            border-bottom: 1px solid var(--border); 
-        }
-        .nav { 
-            max-width: 1200px; margin: 0 auto; padding: 12px 18px; 
-            display: flex; align-items: center; justify-content: space-between; 
-            gap: 1rem;
-        }
-        .brand { display: flex; align-items: center; gap: .8rem; }
+        /* ====== NAVBAR ====== */
+        header { position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(1.2) blur(10px); background: rgba(12, 12, 12, 0.75); border-bottom: 1px solid var(--border); }
+        .nav { max-width: 1200px; margin: 0 auto; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; }
+        .brand { display: flex; align-items: center; gap: .8rem; flex-shrink: 0; }
         .brand-badge { height: 40px; width: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--gradient-brand); box-shadow: var(--shadow-brand); }
         .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-11px); }
         .brand-title { font-weight: 800; letter-spacing: .6px; font-size: 15px; }
         .tiny { font-size: 12px; color: var(--muted); }
 
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-        .nav-links a {
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-weight: 600;
-            color: var(--muted);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s ease;
-        }
-        .nav-links a:hover {
-            color: var(--text);
-            background: var(--bg-2);
-        }
-        .nav-links a.active {
-            color: var(--text);
-            background: var(--bg-1);
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
-        }
-
-        .nav-main-actions { display: flex; align-items: center; gap: 0.6rem; }
-        .btn { padding: .5rem 1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
-        .ghost { border-color: var(--border); background: transparent; color: var(--text); }
-        .primary { background: var(--gradient-brand); box-shadow: var(--shadow-brand); color: white; }
-        .btn.icon-btn {
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            font-size: 1rem;
-            border-radius: 10px;
-        }
-        .btn.icon-btn:hover { background: var(--bg-2); }
+        #nav-actions { display: contents; } /* Allow items to be flex items of .nav */
         
-        .nav-search-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.6rem 1rem;
-            border-radius: 10px;
-            background: var(--bg-2);
-            border: 1px solid var(--border);
-            color: var(--muted);
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .nav-search-btn:hover {
-            border-color: var(--border-strong);
-            color: var(--text);
-        }
-        .nav-search-btn kbd {
-            font-family: inherit;
-            background: var(--bg-1);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.8em;
-            border: 1px solid var(--border);
-        }
+        .nav-links { display: flex; align-items: center; gap: 0.5rem; }
+        .nav-links a { padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; color: var(--muted); display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease; }
+        .nav-links a:hover { color: var(--text); background: var(--bg-2); }
+        .nav-links a.active { color: var(--text); background: var(--bg-1); box-shadow: inset 0 1px 2px rgba(0,0,0,0.2); }
 
+        .nav-right-actions { display: flex; align-items: center; gap: 0.75rem; }
+        .btn { padding: .6rem 1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; line-height: 1.2; }
+        .btn.btn-login { background-color: var(--bg-2); color: var(--text); border: 1px solid var(--border); }
+        .btn.btn-login:hover { background-color: var(--bg-1); }
+        .btn.btn-signup { background: var(--gradient-brand); box-shadow: var(--shadow-brand); color: white; }
+        
+        .btn.icon-btn { width: 40px; height: 40px; padding: 0; font-size: 1rem; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--border); color: var(--muted); }
+        .btn.icon-btn:hover { background: var(--bg-1); color: var(--text); }
+        
         .user-dropdown { position: relative; display: inline-block; }
         .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 10px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
         .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
         .user-menu-btn:hover { border-color: var(--border-strong); }
-        .dropdown-content { display: none; position: absolute; right: 0; top: 110%; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; }
+        .dropdown-content { display: none; position: absolute; right: 0; top: calc(100% + 8px); background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; }
         .dropdown-content.show { display: block; }
         .dropdown-content a { color: var(--muted); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 600; }
         .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
 
-        .mobile-header-actions {
-            display: none;
-            align-items: center;
-            gap: 0.5rem;
-        }
+        /* ====== MOBILE NAV STYLES ====== */
+        .mobile-nav-toggle { display: none; }
+        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
+        .mobile-nav-backdrop.show { display: block; opacity: 1; }
+        .mobile-nav-sidebar { position: fixed; top: 0; left: -280px; bottom: 0; width: 280px; background: #0A0A0A; z-index: 999; transition: left 0.3s ease; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
+        .mobile-nav-sidebar.show { left: 0; }
+        
+        .mobile-nav-top { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
+        .mobile-nav-close { background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
+        
+        .mobile-nav-links { flex-grow: 1; padding: 1rem; }
+        .mobile-nav-links a { padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem; font-weight: 600; color: var(--muted); transition: all 0.2s ease; font-size: 1rem; }
+        .mobile-nav-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
+        .mobile-nav-links a.active { color: var(--text); background: var(--brand-1); box-shadow: var(--shadow-brand); }
+        .mobile-nav-links a:not(.active):hover { background: var(--bg-2); color: var(--text); }
+
+        .mobile-nav-footer { padding: 1rem; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.75rem; }
 
         /* ====== MAIN CONTENT & HERO ====== */
         .container { max-width: 1200px; margin: 0 auto; padding: 28px 18px; }
@@ -154,48 +109,18 @@
         .title .grad { background: var(--gradient-brand); -webkit-background-clip: text; background-clip: text; color: transparent; animation: glow-pulse 2s ease-in-out infinite alternate; }
         @keyframes glow-pulse { from { filter: brightness(1); } to { filter: brightness(1.2) drop-shadow(0 0 20px var(--primary)); } }
         .muted { color: var(--muted); font-size: 1.2rem; line-height: 1.6; margin-bottom: 32px; max-width: 600px; margin-left: auto; margin-right: auto; }
-        
         .hero-actions { display: flex; justify-content: center; gap: 1rem; margin-top: 2rem; }
         
         /* ====== SEARCH MODAL ====== */
-        #search-modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(8px);
-            z-index: 100;
-            display: none;
-            padding: 1rem;
-            animation: fadeIn 0.3s ease;
-        }
+        #search-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 100; display: none; padding: 1rem; animation: fadeIn 0.3s ease; }
         #search-modal-overlay.visible { display: block; }
-        #search-modal-content {
-            position: relative;
-            max-width: 600px;
-            margin: 4rem auto 0;
-            background: var(--bg-1);
-            border-radius: 16px;
-            border: 1px solid var(--border);
-            animation: slideDown 0.4s ease;
-        }
+        #search-modal-content { position: relative; max-width: 600px; margin: 4rem auto 0; background: var(--bg-1); border-radius: 16px; border: 1px solid var(--border); animation: slideDown 0.4s ease; overflow: hidden; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-
-        .search-input-wrapper-modal { display: flex; }
-        #modal-universal-search {
-            width: 100%;
-            padding: 1.2rem 1.5rem;
-            font-size: 1.1rem;
-            background: transparent;
-            border: none;
-            color: var(--text);
-            outline: none;
-            border-bottom: 1px solid var(--border);
-        }
-        #modal-search-results {
-            max-height: 400px;
-            overflow-y: auto;
-        }
+        .search-input-wrapper-modal { display: flex; align-items: center; padding-left: 1.5rem; border-bottom: 1px solid var(--border); }
+        .search-input-wrapper-modal i { color: var(--muted); }
+        #modal-universal-search { width: 100%; padding: 1.2rem 1rem; font-size: 1.1rem; background: transparent; border: none; color: var(--text); outline: none; }
+        #modal-search-results { max-height: 400px; overflow-y: auto; }
         .search-result-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; transition: background-color 0.2s; }
         .search-result-item:not(:last-child) { border-bottom: 1px solid var(--border); }
         .search-result-item:hover { background: var(--bg-2); }
@@ -227,33 +152,14 @@
         .glowing-title { font-size: 2.5rem; font-weight: 900; margin-bottom: 1rem; }
         footer { margin-top: 6rem; padding: 3rem 0; border-top: 1px solid var(--border); background: var(--bg-1); text-align: center; }
         
-        /* ====== MOBILE NAV & RESPONSIVENESS ====== */
-        .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
-        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
-        .mobile-nav-backdrop.show { display: block; opacity: 1; }
-        .mobile-nav-sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; background: var(--bg-1); z-index: 999; transform: translateX(-100%); transition: transform 0.3s ease; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
-        .mobile-nav-sidebar.show { transform: translateX(0); }
-        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
-        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
-        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
-        .mobile-nav-user-info { display: flex; flex-direction: column; }
-        .mobile-nav-username { font-weight: 700; color: var(--text); }
-        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
-        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
-        .mobile-nav-main-links { flex-grow: 1; }
-        .mobile-nav-main-links a, .mobile-nav-footer-links a { padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem; font-weight: 600; color: var(--muted); transition: all 0.2s ease; }
-        .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
-        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
-        .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
-        
+        /* ====== RESPONSIVENESS ====== */
         @media (max-width: 1024px) {
-             .latest-packs-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
-             .nav-links { display: none; }
+            .nav-links { display: none; }
+            .latest-packs-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
         }
         @media (max-width: 768px) { 
-            .nav-main-actions { display: none; }
-            .mobile-header-actions { display: flex; }
-            .nav { justify-content: space-between; }
+            .nav-right-actions { display: none; }
+            .mobile-nav-toggle { display: inline-flex; }
             .title { font-size: 2.2rem; }
             .muted { font-size: 1.1rem; }
             .latest-packs-grid { grid-template-columns: 1fr; }
@@ -270,35 +176,19 @@
                 </div>
                 <div>
                     <div class="brand-title">MCHUB</div>
-                    <div class="tiny">Minecraft • Community Hub</div>
                 </div>
             </a>
-            <nav class="nav-links">
-                <a href="/" class="active"><i class="fa-solid fa-house"></i> Home</a>
-                <a href="/texturepacks.html"><i class="fa-solid fa-palette"></i> Texture Packs</a>
-            </nav>
-            <div class="nav-main-actions">
-                <button class="nav-search-btn" id="nav-search-btn" aria-haspopup="dialog" aria-expanded="false" aria-controls="search-modal-overlay">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <span>Search...</span>
-                    <kbd>Ctrl+K</kbd>
-                </button>
-                <button class="btn ghost icon-btn" id="theme-toggle-btn" title="Change Theme">
-                    <i class="fa-solid fa-sun"></i>
-                </button>
-                <div id="nav-actions"></div>
-            </div>
-            <div class="mobile-header-actions">
-                <button class="btn ghost icon-btn" id="mobile-search-btn" aria-label="Open search" aria-haspopup="dialog" aria-expanded="false" aria-controls="search-modal-overlay">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </button>
-                </div>
+            <!-- This div will be populated by auth.js -->
+            <div id="nav-actions"></div>
         </div>
     </header>
 
-     <div id="search-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="search-modal-title">
+     <!-- Search Modal -->
+    <div id="search-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="search-modal-title">
         <div id="search-modal-content">
-            <h2 id="search-modal-title" class="sr-only">Search Modal</h2> <div class="search-input-wrapper-modal">
+            <h2 id="search-modal-title" class="sr-only">Search Modal</h2>
+            <div class="search-input-wrapper-modal">
+                <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="text" id="modal-universal-search" placeholder="Search for packs, users, or gamertags..." autocomplete="off">
             </div>
             <div id="modal-search-results"></div>
@@ -415,7 +305,6 @@
                 return;
             }
 
-            // Show a loading state
             resultsContainer.innerHTML = '<div class="loading" style="padding: 1rem;">Searching...</div>';
 
             try {
@@ -440,7 +329,7 @@
         function renderSearchResults(results) {
             const container = document.getElementById('modal-search-results');
             if (results.length === 0) {
-                container.innerHTML = `<div class="search-result-item"><div class="search-result-info"><div class="search-result-name">No results found</div></div></div>`;
+                container.innerHTML = `<div class="search-result-item" style="justify-content:center; padding: 1.5rem;"><div class="search-result-info" style="text-align:center;"><div class="search-result-name">No results found</div></div></div>`;
             } else {
                 container.innerHTML = results.map(item => {
                     let iconHtml = '';
@@ -468,96 +357,50 @@
         }
         
         // --- SEARCH MODAL LOGIC ---
-        const searchModalOverlay = document.getElementById('search-modal-overlay');
-        const searchInput = document.getElementById('modal-universal-search');
-        const openSearchButtons = [document.getElementById('nav-search-btn'), document.getElementById('mobile-search-btn')];
-
-        const openSearch = () => {
-            searchModalOverlay.classList.add('visible');
-            openSearchButtons.forEach(btn => btn.setAttribute('aria-expanded', 'true'));
-            setTimeout(() => searchInput.focus(), 100);
-            document.body.style.overflow = 'hidden';
-        };
-
-        const closeSearch = () => {
-            searchModalOverlay.classList.remove('visible');
-            openSearchButtons.forEach(btn => btn.setAttribute('aria-expanded', 'false'));
-            searchInput.value = '';
-            document.getElementById('modal-search-results').innerHTML = '';
-            document.body.style.overflow = '';
-        };
-
-        openSearchButtons.forEach(btn => btn.addEventListener('click', openSearch));
-        searchModalOverlay.addEventListener('click', (e) => {
-            if (e.target === searchModalOverlay) closeSearch();
-        });
-        searchInput.addEventListener('input', () => {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(performSearch, 300);
-        });
-        
-        // Keyboard shortcut for search
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-                e.preventDefault();
-                openSearch();
-            }
-            if (e.key === 'Escape' && searchModalOverlay.classList.contains('visible')) {
-                closeSearch();
-            }
-        });
-
-        // --- THEME TOGGLE LOGIC ---
-        const themeToggleBtn = document.getElementById('theme-toggle-btn');
-        const themes = ['red', 'purple', 'green', 'blue', 'black'];
-        
-        function updateThemeIcon(themeName) {
-            const icon = themeToggleBtn.querySelector('i');
-            if (themeName === 'black') {
-                icon.className = 'fa-solid fa-moon';
-            } else {
-                icon.className = 'fa-solid fa-sun';
-            }
-        }
-        
-        themeToggleBtn.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'red';
-            const currentIndex = themes.indexOf(currentTheme);
-            const nextIndex = (currentIndex + 1) % themes.length;
-            const newTheme = themes[nextIndex];
+        function setupSearch() {
+            const searchModalOverlay = document.getElementById('search-modal-overlay');
+            const searchInput = document.getElementById('modal-universal-search');
             
-            if (window.setMCHubTheme) {
-                window.setMCHubTheme(newTheme, true); // From theme.js, caches it
-                updateThemeIcon(newTheme);
-            }
-        });
+            const openSearch = () => {
+                searchModalOverlay.classList.add('visible');
+                setTimeout(() => searchInput.focus(), 100);
+                document.body.style.overflow = 'hidden';
+            };
 
-        // --- AUTH.JS INTEGRATION for MOBILE TOGGLE ---
-        const mobileActionsContainer = document.querySelector('.mobile-header-actions');
-        // This observer waits for auth.js to add the hamburger button to the DOM.
-        const observer = new MutationObserver((mutationsList, obs) => {
-            for (const mutation of mutationsList) {
-                if (mutation.type === 'childList') {
-                    const hamburger = document.querySelector('.mobile-nav-toggle');
-                    if (hamburger && hamburger.parentElement !== mobileActionsContainer) {
-                        // Once found, move it to our container and stop observing.
-                        mobileActionsContainer.appendChild(hamburger);
-                        obs.disconnect();
-                        return;
-                    }
-                }
-            }
-        });
-        observer.observe(document.querySelector('.nav'), { childList: true, subtree: true });
+            const closeSearch = () => {
+                searchModalOverlay.classList.remove('visible');
+                searchInput.value = '';
+                document.getElementById('modal-search-results').innerHTML = '';
+                document.body.style.overflow = '';
+            };
+            
+            // This event is dispatched from auth.js when the nav is rendered
+            document.addEventListener('nav-ready', () => {
+                document.querySelectorAll('.open-search-btn').forEach(btn => {
+                    btn.addEventListener('click', openSearch);
+                });
+            });
+
+            searchModalOverlay.addEventListener('click', (e) => {
+                if (e.target === searchModalOverlay) closeSearch();
+            });
+
+            searchInput.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(performSearch, 300);
+            });
+            
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
+                if (e.key === 'Escape' && searchModalOverlay.classList.contains('visible')) { closeSearch(); }
+            });
+        }
 
 
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
             loadLatestPacks();
-
-            // Set initial theme icon
-            const initialTheme = localStorage.getItem('mchub-theme') || 'red';
-            updateThemeIcon(initialTheme);
+            setupSearch();
 
             const scrollToLatestBtn = document.getElementById('scroll-to-latest');
             if (scrollToLatestBtn) {
