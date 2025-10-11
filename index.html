@@ -87,10 +87,16 @@
         .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
         .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
         .user-menu-btn:hover { border-color: var(--border-strong); }
-        .dropdown-content { display: none; position: absolute; right: 0; top: 110%; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; }
+        .dropdown-content { display: none; position: absolute; right: 0; top: calc(100% + .5rem); background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 220px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; }
         .dropdown-content.show { display: block; }
+        .dropdown-header { padding: 1rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
+        .dropdown-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .dropdown-username { font-weight: 700; }
+        .dropdown-email { font-size: 0.8rem; color: var(--muted); }
         .dropdown-content a { color: var(--muted); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 600; }
         .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
+        .logout-link { color: var(--brand-1) !important; }
+        .logout-link:hover { background: rgba(222, 33, 42, .15) !important; color: #ff525a !important; }
        
         /* ====== MAIN CONTENT & HERO ====== */
         .container { max-width: 1200px; margin: 0 auto; padding: 28px 18px; }
@@ -162,6 +168,7 @@
         .mobile-nav-header { padding: 1.5rem; border-bottom: 1px solid var(--border); }
         .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
         .mobile-nav-main-links { flex-grow: 1; }
+        .mobile-nav-footer-links { gap: 0.5rem; }
         .mobile-nav-main-links a, .mobile-nav-footer-links a { padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem; font-weight: 600; color: var(--muted); transition: all 0.2s ease; }
         .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
         .mobile-nav-main-links a.active-mobile-link { background: var(--bg-2); color: var(--brand-1); font-weight: 800; }
@@ -171,9 +178,7 @@
         
         /* ====== DESKTOP NAVBAR & RESPONSIVENESS ====== */
         .desktop-nav-links, .desktop-nav-right { display: none; }
-        .nav-left-desktop {
-            display: contents;
-        }
+        .nav-left-desktop { display: contents; }
 
         @media (min-width: 1024px) {
             .mobile-nav-controls { display: none !important; }
@@ -243,26 +248,25 @@
                 align-items: center;
                 gap: 0.5rem;
             }
-            #desktop-auth-actions .login-btn {
+            .login-btn, .signup-btn {
                 font-weight: 700;
                 padding: 0.6rem 1rem;
-                color: var(--muted);
                 transition: all 0.2s ease;
-            }
-            #desktop-auth-actions .login-btn:hover {
-                color: var(--text);
-                background-color: rgba(255, 255, 255, 0.05);
                 border-radius: 10px;
             }
-            #desktop-auth-actions .signup-btn {
+            .login-btn {
+                 color: var(--muted);
+            }
+            .login-btn:hover {
+                color: var(--text);
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+            .signup-btn {
                 background: var(--brand-1);
                 box-shadow: var(--shadow-brand);
                 color: white;
-                border-radius: 10px;
-                padding: 0.6rem 1rem;
-                font-weight: 700;
             }
-            #desktop-auth-actions .signup-btn:hover {
+            .signup-btn:hover {
                 filter: brightness(1.1);
             }
         }
@@ -727,10 +731,9 @@
             const desktopNavLinks = document.getElementById('desktop-nav-links');
             const desktopAuth = document.getElementById('desktop-auth-actions');
 
-            const homeLink = navActions.querySelector('a[href="/"]');
-            const packsLink = navActions.querySelector('a[href="/texturepacks.html"]');
-            if (homeLink) desktopNavLinks.appendChild(homeLink);
-            if (packsLink) desktopNavLinks.appendChild(packsLink);
+            navActions.querySelectorAll('.nav-link-item').forEach(link => {
+                desktopNavLinks.appendChild(link);
+            });
 
             desktopNavLinks.querySelectorAll('a').forEach(link => {
                 link.className = 'nav-link';
@@ -741,18 +744,21 @@
                 }
             });
 
-            const loginBtn = navActions.querySelector('a[href="/login.html"]');
+            const loginBtn = navActions.querySelector('.login-btn-item');
+            const signupBtn = navActions.querySelector('.signup-btn-item');
             const userDropdown = navActions.querySelector('.user-dropdown');
+
             if (userDropdown) {
                 desktopAuth.appendChild(userDropdown);
-            } else if (loginBtn) {
-                loginBtn.className = 'login-btn';
-                desktopAuth.appendChild(loginBtn);
-                const signUpBtn = document.createElement('a');
-                signUpBtn.href = '/signup.html';
-                signUpBtn.className = 'signup-btn';
-                signUpBtn.textContent = 'Sign Up';
-                desktopAuth.appendChild(signUpBtn);
+            } else {
+                if (loginBtn) {
+                    loginBtn.className = 'login-btn';
+                    desktopAuth.appendChild(loginBtn);
+                }
+                if (signupBtn) {
+                    signupBtn.className = 'signup-btn';
+                    desktopAuth.appendChild(signupBtn);
+                }
             }
         });
 
