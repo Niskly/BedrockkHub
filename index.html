@@ -48,9 +48,32 @@
         }
         a { color: inherit; text-decoration: none; }
 
-        /* ====== Original Mobile Navbar Styles ====== */
-        header { position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(1.2) blur(10px); background: rgba(12, 12, 12, 0.75); border-bottom: 1px solid var(--border); }
-        .nav { max-width: 1200px; margin: 0 auto; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; }
+        /* ====== Default Header Styles (Mobile First) ====== */
+        header { 
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            right: 1rem;
+            z-index: 50; 
+            background: none;
+            border: none;
+        }
+        body {
+            padding-top: 80px; /* Space for the fixed header */
+        }
+        .nav { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 12px 18px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            background: rgba(28, 28, 28, 0.7);
+            backdrop-filter: blur(20px) saturate(1.2);
+            border: 1px solid var(--border);
+            border-radius: 1.25rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
         .brand { display: flex; align-items: center; gap: .8rem; }
         .brand-badge { height: 40px; width: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--gradient-brand); box-shadow: var(--shadow-brand); }
         .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-11px); }
@@ -83,15 +106,15 @@
         .search-input-wrapper { display: flex; position: relative; background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); transition: border-color 0.2s, box-shadow 0.2s; }
         .search-input-wrapper:focus-within { border-color: var(--brand-1); box-shadow: 0 15px 40px rgba(0,0,0,0.3), 0 0 0 3px rgba(222, 33, 42, .3); }
         .search-type-dropdown { position: relative; }
-        #search-type-btn { display: flex; align-items: center; gap: 0.5rem; height: 100%; padding: 0 1.2rem; background: var(--bg-2); border: none; color: var(--text); font-weight: 600; border-radius: 15px 0 0 15px; cursor: pointer; border-right: 1px solid var(--border); }
-        #search-type-btn .fa-chevron-down { font-size: 0.7em; transition: transform 0.2s; }
-        .search-type-dropdown.open #search-type-btn .fa-chevron-down { transform: rotate(180deg); }
-        #search-type-menu { display: none; position: absolute; top: 110%; left: 0; z-index: 12; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 100%; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
-        .search-type-dropdown.open #search-type-menu { display: block; }
+        #search-type-btn, #modal-search-type-btn { display: flex; align-items: center; gap: 0.5rem; height: 100%; padding: 0 1.2rem; background: var(--bg-2); border: none; color: var(--text); font-weight: 600; border-radius: 15px 0 0 15px; cursor: pointer; border-right: 1px solid var(--border); }
+        #search-type-btn .fa-chevron-down, #modal-search-type-btn .fa-chevron-down { font-size: 0.7em; transition: transform 0.2s; }
+        .search-type-dropdown.open #search-type-btn .fa-chevron-down, .search-type-dropdown.open #modal-search-type-btn .fa-chevron-down { transform: rotate(180deg); }
+        #search-type-menu, #modal-search-type-menu { display: none; position: absolute; top: 110%; left: 0; z-index: 12; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 100%; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+        .search-type-dropdown.open #search-type-menu, .search-type-dropdown.open #modal-search-type-menu { display: block; }
         .search-type-option { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; }
         .search-type-option:hover { background: var(--bg-2); }
         .search-type-option i { width: 16px; color: var(--muted); }
-        #universal-search { width: 100%; padding: 1.25rem 1.5rem; font-size: 1.1rem; background: transparent; border: none; color: var(--text); outline: none; }
+        #universal-search, #modal-universal-search { width: 100%; padding: 1.25rem 1.5rem; font-size: 1.1rem; background: transparent; border: none; color: var(--text); outline: none; }
         #search-results { display: none; position: absolute; top: calc(100% + 8px); left: 0; right: 0; background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; max-height: 350px; overflow-y: auto; z-index: 10; }
         .search-result-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; transition: background-color 0.2s; }
         .search-result-item:not(:last-child) { border-bottom: 1px solid var(--border); }
@@ -127,60 +150,39 @@
         footer { margin-top: 6rem; padding: 3rem 0; border-top: 1px solid var(--border); background: var(--bg-1); text-align: center; }
         
         /* ====== MOBILE NAV ====== */
-        .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
+        .nav-actions { display: none; }
+        .mobile-nav-controls { display: flex; align-items: center; gap: 0.5rem; }
+        .mobile-nav-btn { background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; padding: 0.5rem; }
+
         .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
         .mobile-nav-backdrop.show { display: block; opacity: 1; }
         .mobile-nav-sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; background: var(--bg-1); z-index: 999; transform: translateX(-100%); transition: transform 0.3s ease; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
         .mobile-nav-sidebar.show { transform: translateX(0); }
         .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
-        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
-        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
-        .mobile-nav-user-info { display: flex; flex-direction: column; }
-        .mobile-nav-username { font-weight: 700; color: var(--text); }
-        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
+        .mobile-nav-header { padding: 1.5rem; border-bottom: 1px solid var(--border); }
         .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
         .mobile-nav-main-links { flex-grow: 1; }
         .mobile-nav-main-links a, .mobile-nav-footer-links a { padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem; font-weight: 600; color: var(--muted); transition: all 0.2s ease; }
         .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
+        .mobile-nav-main-links a.active-mobile-link { background: var(--bg-2); color: var(--brand-1); font-weight: 800; }
         .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
+        .mobile-nav-footer-links .login-mobile-link { background-color: var(--bg-2); color: var(--text); }
         .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
         
-        /* ====== NEW DESKTOP NAVBAR STYLES ====== */
+        /* ====== DESKTOP NAVBAR & RESPONSIVENESS ====== */
         .desktop-nav-links, .desktop-nav-right { display: none; }
         .nav-left-desktop {
-            /* On mobile, this will make the wrapper have no layout effect */
             display: contents;
         }
 
         @media (min-width: 1024px) {
+            .mobile-nav-controls { display: none !important; }
+            header { padding: 0 1.5rem; }
             .nav-left-desktop {
                 display: flex;
                 align-items: center;
                 gap: 1.5rem;
             }
-            body {
-                padding-top: 100px; /* Space for the fixed header */
-            }
-            header {
-                position: fixed;
-                top: 1.5rem;
-                left: 0;
-                right: 0;
-                background: none;
-                border: none;
-                backdrop-filter: none;
-                padding: 0 1.5rem;
-            }
-            .nav {
-                background: rgba(28, 28, 28, 0.7);
-                backdrop-filter: blur(20px) saturate(1.2);
-                border: 1px solid var(--border);
-                border-radius: 1.25rem;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            }
-            .nav-actions { display: none !important; }
-            .mobile-nav-toggle { display: none !important; }
-
             .desktop-nav-links, .desktop-nav-right {
                 display: flex;
                 align-items: center;
@@ -195,6 +197,9 @@
                 color: var(--muted);
                 transition: all 0.2s ease;
                 border-bottom: 3px solid transparent;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
             }
             .nav-link:hover {
                 background-color: rgba(255, 255, 255, 0.05);
@@ -220,6 +225,7 @@
                 width: 180px;
                 color: var(--text);
                 transition: all 0.2s ease;
+                cursor: pointer;
             }
             .desktop-search-container input:focus {
                 outline: none;
@@ -280,14 +286,126 @@
                 scroll-snap-align: start;
             }
         }
-        @media (max-width: 1023px) {
-            .mobile-nav-toggle { display: block !important; }
-            .nav-actions { display: none !important; }
-        }
+        
         @media (max-width: 768px) { 
             .title { font-size: 2.2rem; }
             .muted { font-size: 1.1rem; }
         }
+
+        /* ====== DESKTOP SEARCH MODAL ====== */
+        .desktop-search-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: none; /* Hidden by default */
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 10vh;
+            animation: fadeIn 0.3s ease;
+        }
+        .desktop-search-modal-backdrop.show {
+            display: flex;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .desktop-search-modal-content {
+            background: var(--bg-1);
+            border-radius: 1rem;
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 700px;
+            padding: 1rem;
+            padding-top: 3rem;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            animation: slideDown 0.4s ease;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .close-search-modal-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: var(--bg-2);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            z-index: 15;
+        }
+        .close-search-modal-btn:hover {
+            background: var(--bg-1);
+            color: var(--text);
+        }
+
+        #modal-search-results {
+            position: static;
+            display: none;
+            margin-top: 0.5rem;
+            background: transparent;
+            border: none;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        #modal-search-results .search-result-item {
+            background: var(--bg-2);
+            border-radius: 8px;
+            margin-bottom: 4px;
+            border: none;
+        }
+        #modal-search-results .search-result-item:hover {
+            background: var(--bg-1);
+        }
+
+        .modal-suggestions {
+            margin-top: 1.5rem;
+            padding: 0 0.5rem;
+        }
+        .suggestions-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .modal-suggestions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        .suggestion-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: var(--bg-2);
+            padding: 0.75rem;
+            border-radius: 12px;
+            transition: background 0.2s;
+        }
+        .suggestion-card:hover {
+            background: var(--bg-1);
+        }
+        .suggestion-card .pack-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+        }
+
     </style>
 </head>
 
@@ -302,6 +420,7 @@
                     </div>
                     <div>
                         <div class="brand-title">MCHUB</div>
+                        <div class="tiny">Minecraft • Community Hub</div>
                     </div>
                 </a>
 
@@ -313,7 +432,7 @@
             <div class="desktop-nav-right">
                 <div class="desktop-search-container">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" placeholder="Search...">
+                    <input type="text" placeholder="Search..." readonly>
                 </div>
                 <div id="desktop-auth-actions"></div>
             </div>
@@ -321,8 +440,11 @@
             <!-- This is populated by auth.js but will be hidden on desktop -->
             <div class="nav-actions" id="nav-actions"></div>
             
-            <!-- MOBILE TOGGLE -->
-            <button class="mobile-nav-toggle"><i class="fa-solid fa-bars"></i></button>
+            <!-- MOBILE CONTROLS -->
+            <div class="mobile-nav-controls">
+                <button id="mobile-search-toggle" class="mobile-nav-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+                <button class="mobile-nav-btn mobile-nav-toggle"><i class="fa-solid fa-bars"></i></button>
+            </div>
         </div>
     </header>
 
@@ -392,6 +514,37 @@
             <p class="tiny">Made with ❤️ for the Minecraft community</p>
         </div>
     </footer>
+
+    <div id="desktop-search-modal" class="desktop-search-modal-backdrop">
+        <div class="desktop-search-modal-content">
+            <button id="close-search-modal-btn" class="close-search-modal-btn"><i class="fa-solid fa-xmark"></i></button>
+            
+            <div class="search-hub-container" style="margin: 0; max-width: 100%;">
+                <div class="search-input-wrapper">
+                    <div class="search-type-dropdown" id="modal-search-type-dropdown">
+                        <button id="modal-search-type-btn">
+                            <span id="modal-search-type-label">Packs</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <div id="modal-search-type-menu">
+                            <div class="search-type-option" data-type="packs"><i class="fa-solid fa-palette"></i> Packs</div>
+                            <div class="search-type-option" data-type="users"><i class="fa-solid fa-user"></i> Users</div>
+                            <div class="search-type-option" data-type="gamertags"><i class="fa-brands fa-xbox"></i> Gamertags</div>
+                        </div>
+                    </div>
+                    <input type="text" id="modal-universal-search" placeholder="Search for packs..." autocomplete="off">
+                </div>
+                <div id="modal-search-results"></div>
+            </div>
+
+            <div class="modal-suggestions">
+                <h3 class="suggestions-title">Newest Packs</h3>
+                <div id="modal-pack-suggestions" class="modal-suggestions-grid">
+                    <!-- Suggestions will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
     
     <script type="module" src="/theme.js"></script>
     <script type="module" src="/auth.js"></script>
@@ -567,7 +720,6 @@
 
         // NEW SCRIPT FOR DESKTOP NAVBAR
         document.addEventListener('auth-ready', () => {
-            // Only run this logic on desktop screens
             const isDesktop = window.innerWidth >= 1024;
             if (!isDesktop) return;
 
@@ -575,39 +727,164 @@
             const desktopNavLinks = document.getElementById('desktop-nav-links');
             const desktopAuth = document.getElementById('desktop-auth-actions');
 
-            // Move Home and Texture Packs links
             const homeLink = navActions.querySelector('a[href="/"]');
             const packsLink = navActions.querySelector('a[href="/texturepacks.html"]');
             if (homeLink) desktopNavLinks.appendChild(homeLink);
             if (packsLink) desktopNavLinks.appendChild(packsLink);
 
-            // Style the moved links and set active state
             desktopNavLinks.querySelectorAll('a').forEach(link => {
-                link.className = 'nav-link'; // Replace all existing classes like 'btn', 'ghost'
+                link.className = 'nav-link';
                 const linkPath = link.getAttribute('href');
                 const currentPath = window.location.pathname;
-
                 if (linkPath === currentPath || (currentPath === '/index.html' && linkPath === '/')) {
                     link.classList.add('active');
                 }
             });
 
-            // Move auth buttons/dropdown
             const loginBtn = navActions.querySelector('a[href="/login.html"]');
             const userDropdown = navActions.querySelector('.user-dropdown');
-
             if (userDropdown) {
                 desktopAuth.appendChild(userDropdown);
             } else if (loginBtn) {
-                loginBtn.className = 'login-btn'; // Replace classes for custom styling
+                loginBtn.className = 'login-btn';
                 desktopAuth.appendChild(loginBtn);
-                
-                // Create and add the red Sign Up button
                 const signUpBtn = document.createElement('a');
                 signUpBtn.href = '/signup.html';
                 signUpBtn.className = 'signup-btn';
                 signUpBtn.textContent = 'Sign Up';
                 desktopAuth.appendChild(signUpBtn);
+            }
+        });
+
+        // NEW SCRIPT FOR SEARCH MODAL (DESKTOP & MOBILE)
+        const desktopSearchInput = document.querySelector('.desktop-search-container input');
+        const mobileSearchToggle = document.getElementById('mobile-search-toggle');
+        const searchModal = document.getElementById('desktop-search-modal');
+        const closeModalBtn = document.getElementById('close-search-modal-btn');
+        let modalSearchType = 'packs';
+
+        async function loadNewPackSuggestions() {
+            const container = document.getElementById('modal-pack-suggestions');
+            if (!container) return;
+            container.innerHTML = '<div class="loading" style="grid-column: 1 / -1; padding: 1rem 0;"></div>';
+            try {
+                const { data, error } = await supabase.from('packs').select('id, name, icon_url').order('created_at', { ascending: false }).limit(4);
+                if (error) throw error;
+                if (data && data.length > 0) {
+                    container.innerHTML = data.map(pack => {
+                        const iconContent = pack.icon_url 
+                            ? `<img class="pack-icon" src="${pack.icon_url}" alt="${escapeHtml(pack.name)} Icon">`
+                            : `<div class="pack-icon" style="background:var(--bg-2); display:grid; place-items:center;"><i class="fa-solid fa-cube"></i></div>`;
+                        return `<a href="/packs.html?id=${pack.id}" class="suggestion-card">${iconContent}<div><div class="search-result-name">${escapeHtml(pack.name)}</div></div></a>`;
+                    }).join('');
+                } else {
+                    container.innerHTML = '<p class="tiny">No new packs to suggest.</p>';
+                }
+            } catch (err) {
+                container.innerHTML = '<p class="tiny">Could not load suggestions.</p>';
+            }
+        }
+
+        function openSearchModal() {
+            if (searchModal) {
+                searchModal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+                loadNewPackSuggestions();
+                document.getElementById('modal-universal-search').focus();
+            }
+        }
+
+        function closeSearchModal() {
+            if (searchModal) {
+                searchModal.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+        }
+
+        if (desktopSearchInput) desktopSearchInput.addEventListener('click', (e) => { e.preventDefault(); openSearchModal(); });
+        if (mobileSearchToggle) mobileSearchToggle.addEventListener('click', openSearchModal);
+        if(closeModalBtn) closeModalBtn.addEventListener('click', closeSearchModal);
+        if(searchModal) searchModal.addEventListener('click', (e) => { if (e.target === searchModal) closeSearchModal(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && searchModal.classList.contains('show')) closeSearchModal(); });
+
+        async function performModalSearch() {
+            const query = document.getElementById('modal-universal-search').value.trim();
+            const resultsContainer = document.getElementById('modal-search-results');
+            if (query.length < 2) {
+                resultsContainer.style.display = 'none';
+                return;
+            }
+            let results = [];
+            if (modalSearchType === 'packs') {
+                const { data } = await supabase.from('packs').select('id, name, icon_url').ilike('name', `%${query}%`).limit(5);
+                results = (data || []).map(item => ({ type: 'pack', name: item.name, icon: item.icon_url, link: `/packs.html?id=${item.id}` }));
+            } else if (modalSearchType === 'users') {
+                const { data } = await supabase.from('profiles').select('username, avatar_url').ilike('username', `%${query}%`).limit(5);
+                results = (data || []).map(item => ({ type: 'user', name: item.username, icon: item.avatar_url, link: `/profile.html?user=${item.username}` }));
+            } else if (modalSearchType === 'gamertags') {
+                const { data } = await supabase.from('profiles').select('username, bedrock_gamertag, xuid').ilike('bedrock_gamertag', `%${query}%`).limit(5);
+                results = (data || []).map(item => ({ type: 'gamertag', name: item.bedrock_gamertag, sub: item.username, xuid: item.xuid, link: `/profile.html?user=${item.username}` }));
+            }
+            renderModalSearchResults(results);
+        }
+
+        function renderModalSearchResults(results) {
+            const container = document.getElementById('modal-search-results');
+            if (results.length === 0) {
+                container.innerHTML = `<div class="search-result-item"><div class="search-result-info"><div class="search-result-name">No results found</div></div></div>`;
+            } else {
+                container.innerHTML = results.map(item => {
+                    let iconHtml = '';
+                    if (item.type === 'pack') {
+                        iconHtml = item.icon 
+                            ? `<img src="${item.icon}" class="search-result-icon">`
+                            : `<div class="search-result-icon" style="background:var(--bg-2); display:grid; place-items:center;"><i class="fa-solid fa-cube"></i></div>`;
+                    } else if (item.type === 'gamertag' && item.xuid) {
+                        iconHtml = `<img src="/api/bedrock-skin?xuid=${item.xuid}&render_type=head" class="search-result-avatar is-mc-skin">`;
+                    } else {
+                        const initial = (item.name || '?').charAt(0).toUpperCase();
+                        iconHtml = `<img src="${item.icon || `https://placehold.co/40x40/1c1c1c/de212a?text=${initial}`}" class="search-result-avatar">`;
+                    }
+                    return `<a href="${item.link}" class="search-result-item">${iconHtml}<div class="search-result-info"><div class="search-result-name">${escapeHtml(item.name)}</div>${item.sub ? `<div class="search-result-sub">MCHub User: ${escapeHtml(item.sub)}</div>` : ''}</div></a>`;
+                }).join('');
+            }
+            container.style.display = 'block';
+        }
+
+        const modalDropdown = document.getElementById('modal-search-type-dropdown');
+        const modalSearchTypeBtn = document.getElementById('modal-search-type-btn');
+        const modalSearchTypeMenu = document.getElementById('modal-search-type-menu');
+        const modalSearchTypeLabel = document.getElementById('modal-search-type-label');
+        const modalSearchInput = document.getElementById('modal-universal-search');
+        let modalDebounceTimer;
+
+        if(modalSearchTypeBtn) {
+            modalSearchTypeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                modalDropdown.classList.toggle('open');
+            });
+        }
+        if(modalSearchTypeMenu) {
+            modalSearchTypeMenu.querySelectorAll('.search-type-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    modalSearchType = option.dataset.type;
+                    modalSearchTypeLabel.textContent = option.textContent.trim();
+                    modalSearchInput.placeholder = `Search for ${modalSearchType}...`;
+                    modalDropdown.classList.remove('open');
+                    performModalSearch();
+                });
+            });
+        }
+
+        if(modalSearchInput) {
+            modalSearchInput.addEventListener('input', () => {
+                clearTimeout(modalDebounceTimer);
+                modalDebounceTimer = setTimeout(performModalSearch, 300);
+            });
+        }
+        window.addEventListener('click', (e) => {
+            if (modalDropdown && !e.target.closest('#modal-search-type-dropdown')) {
+                modalDropdown.classList.remove('open');
             }
         });
     </script>
