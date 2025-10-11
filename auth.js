@@ -1,260 +1,421 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MCHub - Minecraft Community Hub</title>
+    <!-- Favicon Configuration -->
+    <link rel="apple-touch-icon" sizes="180x180" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-16x16.png">
+    <link rel="manifest" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/site.webmanifest">
+    <link rel="shortcut icon" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon.ico">
+    <!-- End Favicon Configuration -->
+    <meta name="description" content="Your central hub for Minecraft creations. Discover and download texture packs, explore user profiles, and connect with the community." />
+    <meta name="author" content="MCHub" />
+    <meta name="keywords" content="minecraft, bedrock, java, texture packs, resource packs, profiles, community" />
 
-const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <meta property="og:title" content="MCHub - Minecraft Community Hub" />
+    <meta property="og:description" content="Your central hub for Minecraft creations. Discover texture packs, explore user profiles, and connect with the community." />
+    <meta property="og:type" content="website" />
 
-const navActions = document.getElementById('nav-actions');
-const header = document.querySelector('header');
-let authInitialized = false;
-let currentUserId = null;
-
-/**
- * Creates and manages the mobile navigation menu sidebar.
- * @param {object|null} profile - The user's profile data.
- * @param {object|null} user - The user's auth data.
- */
-function setupMobileNav(profile, user) {
-    if (!header) return;
-    const navContainer = header.querySelector('.nav');
-    if (!navContainer) return;
-
-    // Clean up any old menu elements
-    navContainer.querySelector('.mobile-nav-toggle')?.remove();
-    document.querySelector('.mobile-nav-sidebar')?.remove();
-    document.querySelector('.mobile-nav-backdrop')?.remove();
-
-    const hamburgerBtn = document.createElement('button');
-    hamburgerBtn.className = 'mobile-nav-toggle';
-    hamburgerBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
-    hamburgerBtn.setAttribute('aria-label', 'Open navigation menu');
-
-    const sidebar = document.createElement('div');
-    sidebar.className = 'mobile-nav-sidebar';
-
-    const backdrop = document.createElement('div');
-    backdrop.className = 'mobile-nav-backdrop';
-
-    let userHeader = '';
-    let mainLinks = '';
-    let footerLinks = '';
-
-    if (profile && user) {
-        const avatarSrc = profile.avatar_url ?
-            profile.avatar_url :
-            `https://placehold.co/60x60/1c1c1c/de212a?text=${profile.username.charAt(0).toUpperCase()}`;
-
-        userHeader = `
-            <div class="mobile-nav-header">
-                <img src="${avatarSrc}" alt="Avatar" class="mobile-nav-avatar">
-                <div class="mobile-nav-user-info">
-                    <span class="mobile-nav-username">${profile.username}</span>
-                    <span class="mobile-nav-email">${user.email}</span>
-                </div>
-            </div>`;
-        mainLinks = `
-            <a href="/"><i class="fa-solid fa-house"></i><span>Home</span></a>
-            <a href="/texturepacks.html"><i class="fa-solid fa-palette"></i><span>Texture Packs</span></a>
-            <a href="/profile.html?user=${profile.username}"><i class="fa-solid fa-user"></i><span>My Profile</span></a>`;
-        footerLinks = `
-            <a href="/settings.html"><i class="fa-solid fa-cog"></i><span>Settings</span></a>
-            <a href="#" id="mobile-logout-btn"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>`;
-    } else {
-        userHeader = `
-            <div class="mobile-nav-header">
-                 <div class="mobile-nav-avatar" style="background: var(--brand-1); display: grid; place-items:center;">
-                    <i class="fa-solid fa-question"></i>
-                </div>
-                <div class="mobile-nav-user-info">
-                    <span class="mobile-nav-username">Guest</span>
-                    <span class="mobile-nav-email">Not logged in</span>
-                </div>
-            </div>`;
-        mainLinks = `
-            <a href="/"><i class="fa-solid fa-house"></i><span>Home</span></a>
-            <a href="/texturepacks.html"><i class="fa-solid fa-palette"></i><span>Texture Packs</span></a>`;
-        footerLinks = `
-            <a href="/login.html"><i class="fa-solid fa-right-to-bracket"></i><span>Login</span></a>
-            <a href="/signup.html" class="primary-mobile-link"><i class="fa-solid fa-user-plus"></i><span>Sign Up</span></a>`;
-    }
-
-    sidebar.innerHTML = `
-        <button class="mobile-nav-close" aria-label="Close navigation menu"><i class="fa-solid fa-xmark"></i></button>
-        ${userHeader}
-        <nav class="mobile-nav-main-links">${mainLinks}</nav>
-        <nav class="mobile-nav-footer-links">${footerLinks}</nav>
-    `;
-
-    navContainer.appendChild(hamburgerBtn);
-    document.body.appendChild(sidebar);
-    document.body.appendChild(backdrop);
-
-    const openMenu = () => {
-        sidebar.classList.add('show');
-        backdrop.classList.add('show');
-        document.body.style.overflow = 'hidden';
-    };
-    const closeMenu = () => {
-        sidebar.classList.remove('show');
-        backdrop.classList.remove('show');
-        document.body.style.overflow = '';
-    };
-
-    hamburgerBtn.addEventListener('click', openMenu);
-    sidebar.querySelector('.mobile-nav-close').addEventListener('click', closeMenu);
-    backdrop.addEventListener('click', closeMenu);
-
-    if (profile) {
-        sidebar.querySelector('#mobile-logout-btn')?.addEventListener('click', async (e) => {
-            e.preventDefault();
-            closeMenu();
-            await supabase.auth.signOut();
-        });
-    }
-}
-
-function renderUserDropdown(profile, user) {
-    const avatarContent = profile.avatar_url ?
-        `<img src="${profile.avatar_url}" alt="User Avatar" class="nav-avatar-img">` :
-        `<img src="https://placehold.co/28x28/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}" class="nav-avatar-img">`;
-
-    if (navActions) {
-        navActions.innerHTML = `
-            <a class="btn ghost" href="/">Home</a>
-            <a class="btn ghost" href="/texturepacks.html">Texture Packs</a>
-            <div class="user-dropdown">
-                <button class="user-menu-btn" aria-haspopup="true" aria-expanded="false">
-                    ${avatarContent}
-                    <span>${profile.username}</span>
-                    <i class="fa-solid fa-chevron-down"></i>
-                </button>
-                <div class="dropdown-content">
-                    <a href="/profile.html?user=${profile.username}"><i class="fa-solid fa-user"></i> My Profile</a>
-                    <a href="/settings.html"><i class="fa-solid fa-cog"></i> Settings</a>
-                    <a href="#" id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
-                </div>
-            </div>`;
-
-        const btn = navActions.querySelector('.user-menu-btn');
-        const content = navActions.querySelector('.dropdown-content');
-
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isExpanded = content.classList.toggle('show');
-            btn.setAttribute('aria-expanded', isExpanded);
-        });
-
-        navActions.querySelector('#logout-btn').addEventListener('click', async (e) => {
-            e.preventDefault();
-            await supabase.auth.signOut();
-        });
-    }
-
-    setupMobileNav(profile, user);
-}
-
-function renderLoginButtons() {
-    if (navActions) {
-        navActions.innerHTML = `
-            <a class="btn ghost" href="/">Home</a>
-            <a class="btn ghost" href="/texturepacks.html">Texture Packs</a>
-            <a class="btn primary" href="/login.html">Login</a>`;
-    }
-    setupMobileNav(null, null);
-}
-
-/**
- * Central function to handle auth state changes.
- */
-async function handleAuthStateChange() {
-    let user = null;
-    let profile = null;
-    let authError = null;
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+    body { opacity: 0; transition: opacity 0.2s ease-in; }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family/Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
-    authInitialized = false;
+    <style>
+        :root {
+            --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c;
+            --muted: #a8b3cf; --text: #e8eefc; --border: rgba(255, 255, 255, .12);
+            --brand-1: #de212a; --brand-2: #b21a22; --primary: var(--brand-1);
+            --border-strong: rgba(255, 255, 255, .2);
+            --gradient-brand: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+            --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { height: 100%; scroll-behavior: smooth; }
+        body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 15px/1.6 Inter, sans-serif; }
+        body::-webkit-scrollbar { display: none; }
+        body { -ms-overflow-style: none; scrollbar-width: none; }
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: var(--bg-image, url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg'));
+            background-size: cover; background-position: center; background-attachment: fixed;
+            filter: blur(8px); opacity: 0.25; z-index: -1;
+            transition: background-image 0.5s ease-in-out;
+        }
+        a { color: inherit; text-decoration: none; }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
 
-    try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
+        /* ====== NAVBAR ====== */
+        header { position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(1.2) blur(10px); background: rgba(12, 12, 12, 0.75); border-bottom: 1px solid var(--border); }
+        .nav { max-width: 1200px; margin: 0 auto; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; }
+        .brand { display: flex; align-items: center; gap: .8rem; flex-shrink: 0; }
+        .brand-badge { height: 40px; width: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--gradient-brand); box-shadow: var(--shadow-brand); }
+        .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-11px); }
+        .brand-title { font-weight: 800; letter-spacing: .6px; font-size: 15px; }
+        .tiny { font-size: 12px; color: var(--muted); }
 
-        if (session?.user) {
-            user = session.user;
-            currentUserId = user.id;
+        #nav-actions { display: contents; } /* Allow items to be flex items of .nav */
+        
+        .nav-links { display: flex; align-items: center; gap: 0.5rem; }
+        .nav-links a { padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; color: var(--muted); display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease; }
+        .nav-links a:hover { color: var(--text); background: var(--bg-2); }
+        .nav-links a.active { color: var(--text); background: var(--bg-1); box-shadow: inset 0 1px 2px rgba(0,0,0,0.2); }
 
-            const { data: profileData, error: profileError } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', user.id)
-                .single();
+        .nav-right-actions { display: flex; align-items: center; gap: 0.75rem; }
+        .btn { padding: .6rem 1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; line-height: 1.2; }
+        .btn.btn-login { background-color: var(--bg-2); color: var(--text); border: 1px solid var(--border); }
+        .btn.btn-login:hover { background-color: var(--bg-1); }
+        .btn.btn-signup { background: var(--gradient-brand); box-shadow: var(--shadow-brand); color: white; }
+        
+        .btn.icon-btn { width: 40px; height: 40px; padding: 0; font-size: 1rem; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--border); color: var(--muted); }
+        .btn.icon-btn:hover { background: var(--bg-1); color: var(--text); }
+        
+        .user-dropdown { position: relative; display: inline-block; }
+        .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 10px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
+        .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+        .user-menu-btn:hover { border-color: var(--border-strong); }
+        .dropdown-content { display: none; position: absolute; right: 0; top: calc(100% + 8px); background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; }
+        .dropdown-content.show { display: block; }
+        .dropdown-content a { color: var(--muted); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 600; }
+        .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
 
-            if (profileError && profileError.code !== 'PGRST116') throw profileError;
-            
-            if (profileData?.username) {
-                profile = profileData;
-                const dbTheme = profile.theme || 'red';
-                const cachedTheme = localStorage.getItem('mchub-theme');
-                
-                // Sync theme from DB to cache if they differ
-                if (dbTheme !== cachedTheme) {
-                    window.setMCHubTheme(dbTheme, true); // true caches it
-                }
-                
-                renderUserDropdown(profile, user);
-            } else {
-                const allowedPaths = ['/complete-profile.html', '/verify.html'];
-                if (!allowedPaths.includes(window.location.pathname)) {
-                    window.location.replace('/complete-profile.html');
-                    return;
-                }
-                 renderLoginButtons();
+        /* ====== MOBILE NAV STYLES ====== */
+        .mobile-nav-toggle { display: none; }
+        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
+        .mobile-nav-backdrop.show { display: block; opacity: 1; }
+        .mobile-nav-sidebar { position: fixed; top: 0; left: -280px; bottom: 0; width: 280px; background: #0A0A0A; z-index: 999; transition: left 0.3s ease; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
+        .mobile-nav-sidebar.show { left: 0; }
+        
+        .mobile-nav-top { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
+        .mobile-nav-close { background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
+        
+        .mobile-nav-links { flex-grow: 1; padding: 1rem; }
+        .mobile-nav-links a { padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem; font-weight: 600; color: var(--muted); transition: all 0.2s ease; font-size: 1rem; }
+        .mobile-nav-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
+        .mobile-nav-links a.active { color: var(--text); background: var(--brand-1); box-shadow: var(--shadow-brand); }
+        .mobile-nav-links a:not(.active):hover { background: var(--bg-2); color: var(--text); }
+
+        .mobile-nav-footer { padding: 1rem; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.75rem; }
+
+        /* ====== MAIN CONTENT & HERO ====== */
+        .container { max-width: 1200px; margin: 0 auto; padding: 28px 18px; }
+        .hero { padding: 40px 0; }
+        .hero-content { padding: 50px 20px; text-align: center; max-width: 900px; margin: 0 auto; }
+        .title { font-size: 3.5rem; line-height: 1.05; font-weight: 900; margin: 0 0 24px 0; background: linear-gradient(135deg, var(--text), var(--muted)); background-clip: text; -webkit-background-clip: text; color: transparent; }
+        .title .grad { background: var(--gradient-brand); -webkit-background-clip: text; background-clip: text; color: transparent; animation: glow-pulse 2s ease-in-out infinite alternate; }
+        @keyframes glow-pulse { from { filter: brightness(1); } to { filter: brightness(1.2) drop-shadow(0 0 20px var(--primary)); } }
+        .muted { color: var(--muted); font-size: 1.2rem; line-height: 1.6; margin-bottom: 32px; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .hero-actions { display: flex; justify-content: center; gap: 1rem; margin-top: 2rem; }
+        
+        /* ====== SEARCH MODAL ====== */
+        #search-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 100; display: none; padding: 1rem; animation: fadeIn 0.3s ease; }
+        #search-modal-overlay.visible { display: block; }
+        #search-modal-content { position: relative; max-width: 600px; margin: 4rem auto 0; background: var(--bg-1); border-radius: 16px; border: 1px solid var(--border); animation: slideDown 0.4s ease; overflow: hidden; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .search-input-wrapper-modal { display: flex; align-items: center; padding-left: 1.5rem; border-bottom: 1px solid var(--border); }
+        .search-input-wrapper-modal i { color: var(--muted); }
+        #modal-universal-search { width: 100%; padding: 1.2rem 1rem; font-size: 1.1rem; background: transparent; border: none; color: var(--text); outline: none; }
+        #modal-search-results { max-height: 400px; overflow-y: auto; }
+        .search-result-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; transition: background-color 0.2s; }
+        .search-result-item:not(:last-child) { border-bottom: 1px solid var(--border); }
+        .search-result-item:hover { background: var(--bg-2); }
+        .search-result-icon, .search-result-avatar { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+        .search-result-avatar.is-mc-skin { border-radius: 4px; image-rendering: pixelated; border: 1px solid var(--border); background: var(--bg-2); }
+        .search-result-info { text-align: left; }
+        .search-result-name { font-weight: 600; color: var(--text); }
+        .search-result-sub { font-size: 0.8rem; color: var(--muted); }
+        
+        /* ====== LATEST UPLOADS ====== */
+        .latest-packs-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+        .latest-pack-card { background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; display: flex; flex-direction: column; transition: all 0.2s ease; text-decoration: none; color: var(--text); }
+        .latest-pack-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: 0 10px 30px -10px rgba(0,0,0, .2); }
+        .pack-main-info { padding: 1rem; flex-grow: 1; display: flex; flex-direction: column; }
+        .pack-top-section { display: flex; align-items: center; gap: 1rem; }
+        .pack-icon { width: 80px; height: 80px; border-radius: 12px; object-fit: cover; flex-shrink: 0; }
+        .pack-details { flex-grow: 1; min-width: 0; }
+        .pack-name { font-size: 1.1rem; font-weight: 700; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 0.5rem; }
+        .pack-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem; font-size: 0.8rem; color: var(--muted); }
+        .pack-meta span { display: flex; align-items: center; gap: 0.5rem; }
+        .pack-action-footer { margin-top: 1rem; }
+        
+        .loading { display: flex; align-items: center; justify-content: center; padding: 2rem; color: var(--muted); width: 100%; grid-column: 1 / -1; }
+        .loading::after { content: ''; width: 20px; height: 20px; border: 2px solid var(--border); border-top: 2px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-left: 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* ====== COMMUNITY & FOOTER ====== */
+        .community { margin-top: 4rem; text-align: center; }
+        .glowing-title { font-size: 2.5rem; font-weight: 900; margin-bottom: 1rem; }
+        footer { margin-top: 6rem; padding: 3rem 0; border-top: 1px solid var(--border); background: var(--bg-1); text-align: center; }
+        
+        /* ====== RESPONSIVENESS ====== */
+        @media (max-width: 1024px) {
+            .nav-links { display: none; }
+            .latest-packs-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+        }
+        @media (max-width: 768px) { 
+            .nav-right-actions { display: none; }
+            .mobile-nav-toggle { display: inline-flex; }
+            .title { font-size: 2.2rem; }
+            .muted { font-size: 1.1rem; }
+            .latest-packs-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="nav">
+            <a class="brand" href="/">
+                <div class="brand-badge">
+                    <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
+                </div>
+                <div>
+                    <div class="brand-title">MCHUB</div>
+                </div>
+            </a>
+            <!-- This div will be populated by auth.js -->
+            <div id="nav-actions"></div>
+        </div>
+    </header>
+
+     <!-- Search Modal -->
+    <div id="search-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="search-modal-title">
+        <div id="search-modal-content">
+            <h2 id="search-modal-title" class="sr-only">Search Modal</h2>
+            <div class="search-input-wrapper-modal">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="modal-universal-search" placeholder="Search for packs, users, or gamertags..." autocomplete="off">
+            </div>
+            <div id="modal-search-results"></div>
+        </div>
+    </div>
+
+    <main>
+        <section class="container">
+            <div class="hero">
+                <div class="hero-content">
+                    <h1 class="title">
+                        Discover & Download<br>
+                        <span class="grad">Minecraft Creations</span>
+                    </h1>
+                    <p class="muted">
+                       The ultimate home for Minecraft packs and creators.
+                       Find your next adventure.
+                    </p>
+                     <div class="hero-actions">
+                        <a href="#latest-uploads" class="btn ghost" id="scroll-to-latest"><i class="fa-solid fa-sparkles"></i> Latest Uploads</a>
+                        <a href="/texturepacks.html" class="btn primary"><i class="fa-solid fa-compass"></i> Explore Packs</a>
+                    </div>
+                </div>
+
+                <aside class="preview" id="latest-uploads" style="margin-top: 4rem;">
+                    <div class="preview-head" style="margin-bottom: 1.5rem; text-align: left;">
+                        <strong style="font-size: 1.3rem;"><i class="fa-solid fa-sparkles"></i> Latest Uploads</strong>
+                    </div>
+                    <div class="latest-packs-grid" id="latest-packs-grid">
+                        <div class="loading">Loading latest packs...</div>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+        <section class="container community" style="margin-top: 2rem;">
+           <div style="padding: 3rem 0;">
+                <h2 class="glowing-title">
+                    <span class="grad">Join the MCHub Community</span>
+                </h2>
+                <p class="muted" style="margin-bottom: 2rem;">Connect with players, discover amazing texturepacks, and be part of the largest Minecraft community.</p>
+                <a href="https://discord.gg/KtafawJZxM" target="_blank" class="btn primary" style="padding: 0.8rem 1.5rem; border-radius: 14px; font-size: 1rem;">
+                    <i class="fa-brands fa-discord"></i> Join our Discord
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer style="margin-top: 2rem;">
+        <div class="footer-content" style="padding: 3rem 2rem;">
+            <p class="muted">© 2024 MCHub. All rights reserved.</p>
+            <p class="tiny">Made with ❤️ for the Minecraft community</p>
+        </div>
+    </footer>
+    
+    <script type="module" src="/theme.js"></script>
+    <script type="module" src="/auth.js"></script>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let debounceTimer;
+
+        // --- UTILITY FUNCTIONS ---
+        function escapeHtml(str) { return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); }
+        function formatDate(isoString) { if (!isoString) return ''; const date = new Date(isoString); return `${date.getDate()}/${date.getMonth() + 1}/${String(date.getFullYear()).slice(-2)}`; }
+        function formatDownloads(count) { const num = count || 0; if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K'; return num.toLocaleString(); }
+        
+        // --- LATEST PACKS ---
+        async function loadLatestPacks() {
+            const container = document.getElementById('latest-packs-grid');
+            if (!container) return;
+            try {
+                const { data, error } = await supabase.from('packs').select('*').not('tags', 'ilike', '%user-upload%').order('created_at', { ascending: false }).limit(4);
+                if (error) throw error;
+                container.innerHTML = data && data.length > 0 ? data.map(pack => {
+                    const iconContent = pack.icon_url 
+                        ? `<img class="pack-icon" src="${pack.icon_url}" alt="${escapeHtml(pack.name)} Icon">`
+                        : `<div class="pack-icon" style="background:var(--bg-2); display:grid; place-items:center;"><i class="fa-solid fa-cube" style="color:var(--muted); font-size:2.2em;"></i></div>`;
+
+                    return `
+                        <a href="/packs.html?id=${pack.id}" class="latest-pack-card">
+                            <div class="pack-main-info">
+                                <div class="pack-top-section">
+                                    ${iconContent}
+                                    <div class="pack-details">
+                                        <h4 class="pack-name" title="${escapeHtml(pack.name)}">${escapeHtml(pack.name)}</h4>
+                                        <div class="pack-meta">
+                                            <span><i class="fa-solid fa-download fa-fw"></i> ${formatDownloads(pack.download_count)}</span>
+                                            <span><i class="fa-solid fa-calendar-day fa-fw"></i> ${formatDate(pack.created_at)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="pack-action-footer">
+                                    <div class="btn ghost" style="padding: 0.5rem 1rem; width: 100%;">View</div>
+                                </div>
+                            </div>
+                        </a>`;
+                }).join('') : '<p class="tiny" style="text-align: center; width: 100%; grid-column: 1 / -1;">No official packs have been uploaded yet.</p>';
+            } catch (err) {
+                 container.innerHTML = '<p class="tiny" style="text-align: center; width: 100%; grid-column: 1 / -1;">Could not load packs. Please try again later.</p>';
             }
-        } else {
-            currentUserId = null;
-            renderLoginButtons();
         }
-    } catch (error) {
-        console.error("Authentication state error:", error);
-        authError = error.message;
-        currentUserId = null;
-        renderLoginButtons();
-    } finally {
-        if (!authInitialized) {
-            document.dispatchEvent(new CustomEvent('auth-ready', {
-                detail: { user, profile, error: authError }
-            }));
-            authInitialized = true;
+        
+        // --- UNIVERSAL SEARCH ---
+        async function performSearch() {
+            const query = document.getElementById('modal-universal-search').value.trim();
+            const resultsContainer = document.getElementById('modal-search-results');
+            if (query.length < 2) {
+                resultsContainer.innerHTML = '';
+                return;
+            }
+
+            resultsContainer.innerHTML = '<div class="loading" style="padding: 1rem;">Searching...</div>';
+
+            try {
+                const [{data: packs}, {data: users}, {data: gamertags}] = await Promise.all([
+                    supabase.from('packs').select('id, name, icon_url').not('tags', 'ilike', '%user-upload%').ilike('name', `%${query}%`).limit(3),
+                    supabase.from('profiles').select('username, avatar_url').ilike('username', `%${query}%`).limit(3),
+                    supabase.from('profiles').select('username, bedrock_gamertag, xuid').ilike('bedrock_gamertag', `%${query}%`).limit(3)
+                ]);
+
+                const results = [
+                    ...(packs || []).map(item => ({ type: 'pack', name: item.name, icon: item.icon_url, link: `/packs.html?id=${item.id}` })),
+                    ...(users || []).map(item => ({ type: 'user', name: item.username, icon: item.avatar_url, link: `/profile.html?user=${item.username}` })),
+                    ...(gamertags || []).map(item => ({ type: 'gamertag', name: item.bedrock_gamertag, sub: item.username, xuid: item.xuid, link: `/profile.html?user=${item.username}` }))
+                ];
+                renderSearchResults(results);
+
+            } catch(error) {
+                resultsContainer.innerHTML = `<div class="search-result-item"><div class="search-result-info"><div class="search-result-name">Error searching.</div></div></div>`;
+            }
         }
-    }
-}
 
-// --- Event Listeners ---
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', handleAuthStateChange);
-} else {
-    handleAuthStateChange();
-}
+        function renderSearchResults(results) {
+            const container = document.getElementById('modal-search-results');
+            if (results.length === 0) {
+                container.innerHTML = `<div class="search-result-item" style="justify-content:center; padding: 1.5rem;"><div class="search-result-info" style="text-align:center;"><div class="search-result-name">No results found</div></div></div>`;
+            } else {
+                container.innerHTML = results.map(item => {
+                    let iconHtml = '';
+                    if (item.type === 'pack') {
+                        iconHtml = item.icon 
+                            ? `<img src="${item.icon}" class="search-result-icon">`
+                            : `<div class="search-result-icon" style="background:var(--bg-2); display:grid; place-items:center;"><i class="fa-solid fa-cube"></i></div>`;
+                    } else if (item.type === 'gamertag' && item.xuid) {
+                        iconHtml = `<img src="/api/bedrock-skin?xuid=${item.xuid}&render_type=head" class="search-result-avatar is-mc-skin">`;
+                    } else { // user
+                        const initial = (item.name || '?').charAt(0).toUpperCase();
+                        iconHtml = `<img src="${item.icon || `https://placehold.co/40x40/1c1c1c/de212a?text=${initial}`}" class="search-result-avatar">`;
+                    }
 
-supabase.auth.onAuthStateChange((event, session) => {
-    const newUserId = session?.user?.id || null;
-    if (newUserId !== currentUserId) {
-        if (event === 'SIGNED_OUT') {
-            // Clear the theme cache on logout so the next user gets the default.
-            try { localStorage.removeItem('mchub-theme'); } catch(e) {}
-            window.location.href = '/login.html';
-        } else {
-            handleAuthStateChange();
+                    return `
+                        <a href="${item.link}" class="search-result-item">
+                            ${iconHtml}
+                            <div class="search-result-info">
+                                <div class="search-result-name">${escapeHtml(item.name)}</div>
+                                ${item.sub ? `<div class="search-result-sub">MCHub User: ${escapeHtml(item.sub)}</div>` : ''}
+                            </div>
+                        </a>`;
+                }).join('');
+            }
         }
-    }
-});
+        
+        // --- SEARCH MODAL LOGIC ---
+        function setupSearch() {
+            const searchModalOverlay = document.getElementById('search-modal-overlay');
+            const searchInput = document.getElementById('modal-universal-search');
+            
+            const openSearch = () => {
+                searchModalOverlay.classList.add('visible');
+                setTimeout(() => searchInput.focus(), 100);
+                document.body.style.overflow = 'hidden';
+            };
 
-window.addEventListener('click', (event) => {
-    if (navActions && !event.target.closest('.user-dropdown')) {
-        const content = navActions.querySelector('.dropdown-content.show');
-        if (content) {
-            content.classList.remove('show');
-            const btn = navActions.querySelector('.user-menu-btn');
-            if (btn) btn.setAttribute('aria-expanded', 'false');
+            const closeSearch = () => {
+                searchModalOverlay.classList.remove('visible');
+                searchInput.value = '';
+                document.getElementById('modal-search-results').innerHTML = '';
+                document.body.style.overflow = '';
+            };
+            
+            // This event is dispatched from auth.js when the nav is rendered
+            document.addEventListener('nav-ready', () => {
+                document.querySelectorAll('.open-search-btn').forEach(btn => {
+                    btn.addEventListener('click', openSearch);
+                });
+            });
+
+            searchModalOverlay.addEventListener('click', (e) => {
+                if (e.target === searchModalOverlay) closeSearch();
+            });
+
+            searchInput.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(performSearch, 300);
+            });
+            
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
+                if (e.key === 'Escape' && searchModalOverlay.classList.contains('visible')) { closeSearch(); }
+            });
         }
-    }
-});
 
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadLatestPacks();
+            setupSearch();
+
+            const scrollToLatestBtn = document.getElementById('scroll-to-latest');
+            if (scrollToLatestBtn) {
+                scrollToLatestBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetElement = document.getElementById('latest-uploads');
+                    if (targetElement) {
+                        const headerOffset = document.querySelector('header')?.offsetHeight || 70;
+                        const elementPosition = targetElement.getBoundingClientRect().top;
+                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset - 28;
+                        window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
