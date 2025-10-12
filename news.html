@@ -816,6 +816,31 @@
             });
         }
         
+        async function deletePost(postId) {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) throw new Error("Authentication session not found.");
+
+                const response = await fetch('/api/delete-news', {
+                    method: 'DELETE',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${session.access_token}` 
+                    },
+                    body: JSON.stringify({ postId: postId })
+                });
+                
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.details || 'Failed to delete post.');
+                
+                showToast('Post deleted successfully!', 'success');
+                await loadNews();
+            } catch (err) {
+                console.error('Error deleting post:', err);
+                showToast(err.message || 'Failed to delete post. Please try again.', 'error');
+            }
+        }
+        
         async function loadNews() {
             feedContainer.innerHTML = `<div class="empty-state"><div style="font-size: 2rem; color: var(--brand-1);">⏳</div><h3>Loading News...</h3></div>`;
             try {
