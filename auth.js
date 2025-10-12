@@ -56,7 +56,10 @@ function setupMobileNav(profile, user) {
     const toolsDropdownHTML = `
         <div class="mobile-nav-collapsible">
             <a href="#" class="collapsible-trigger">
-                <span><i class="fa-solid fa-wrench"></i> <span>Tools</span></span>
+                <span style="display: flex; align-items: center; gap: 1rem;">
+                    <i class="fa-solid fa-wrench" style="width: 24px; text-align: center; font-size: 1.1rem;"></i>
+                    <span>Tools</span>
+                </span>
                 <i class="fa-solid fa-chevron-down arrow"></i>
             </a>
             <div class="collapsible-content">
