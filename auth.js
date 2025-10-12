@@ -1,3 +1,4 @@
+
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
@@ -56,15 +57,15 @@ function setupMobileNav(profile, user) {
     const toolsDropdownHTML = `
         <div class="mobile-nav-collapsible">
             <a href="#" class="collapsible-trigger">
-                <span class="collapsible-trigger-content">
-                    <i class="fa-solid fa-wrench"></i>
+                <span style="display: flex; align-items: center; gap: 1rem;">
+                    <i class="fa-solid fa-wrench" style="width: 24px; text-align: center; font-size: 1.1rem;"></i>
                     <span>Tools</span>
                 </span>
                 <i class="fa-solid fa-chevron-down arrow"></i>
             </a>
             <div class="collapsible-content">
-                <a href="/skineditor.html" class="sub-link">
-                    <i class="fa-solid fa-paint-brush"></i>
+                <a href="/skineditor.html" class="sub-link" style="background-color: var(--bg-2); margin: 0.25rem; display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; border-radius: 8px;">
+                    <i class="fa-solid fa-paint-brush" style="width: 24px; text-align: center; font-size: 1.1rem;"></i>
                     <span>Skin Editor</span>
                 </a>
             </div>
@@ -129,6 +130,7 @@ function setupMobileNav(profile, user) {
     sidebar.querySelector('.mobile-nav-close').addEventListener('click', closeMenu);
     backdrop.addEventListener('click', closeMenu);
     
+    // Add event listener for the new collapsible tools menu
     const toolsCollapsible = sidebar.querySelector('.mobile-nav-collapsible');
     if (toolsCollapsible) {
         toolsCollapsible.querySelector('.collapsible-trigger').addEventListener('click', (e) => {
@@ -253,7 +255,7 @@ function renderLoginButtons() {
             <a class="btn ghost nav-link-item" href="/news.html"><i class="fa-solid fa-newspaper"></i>News</a>
             <a class="login-btn-item" href="/login.html"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
             <a class="signup-btn-item" href="/signup.html"><i class="fa-solid fa-user-plus"></i> Sign Up</a>`;
-             
+        
         const toolsDropdown = navActions.querySelector('.tools-dropdown-container');
         if(toolsDropdown) {
              const btn = toolsDropdown.querySelector('#tools-btn');
@@ -265,7 +267,6 @@ function renderLoginButtons() {
     }
     setupMobileNav(null, null);
 }
-
 
 /**
  * Central function to handle auth state changes.
@@ -356,7 +357,7 @@ window.addEventListener('click', (event) => {
         if (content) {
             content.classList.remove('show');
             const btn = userDropdown.querySelector('.user-menu-btn');
-            if (btn) btn.setAttribute('aria-expanded', 'false.');
+            if (btn) btn.setAttribute('aria-expanded', 'false');
         }
     }
     
@@ -365,4 +366,3 @@ window.addEventListener('click', (event) => {
         toolsDropdown.classList.remove('open');
     }
 });
-
