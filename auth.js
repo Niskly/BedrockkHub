@@ -128,18 +128,19 @@ function renderUserDropdown(profile, user) {
         navActions.innerHTML = `
             <a class="btn ghost nav-link-item" href="/"><i class="fa-solid fa-house"></i>Home</a>
             <a class="btn ghost nav-link-item" href="/texturepacks.html"><i class="fa-solid fa-palette"></i>Texture Packs</a>
-            <a class="btn ghost nav-link-item" href="/news.html"><i class="fa-solid fa-newspaper"></i>News</a>
             
-            <div class="tools-dropdown-container">
-                <button id="tools-btn" class="btn ghost">
-                    <i class="fa-solid fa-wrench"></i> Tools <i class="fa-solid fa-chevron-down" style="font-size: 0.8em;"></i>
+            <div class="tools-dropdown-container nav-link-item">
+                <button id="tools-btn" class="nav-link">
+                    <i class="fa-solid fa-wrench"></i> Tools <i class="fa-solid fa-chevron-down" style="font-size: 0.8em; margin-left: 4px;"></i>
                 </button>
                 <div id="tools-menu">
                     <a href="/skineditor.html"><i class="fa-solid fa-paint-brush"></i> Skin Editor</a>
                 </div>
             </div>
-
-            <button id="notification-btn" class="notification-toggle-btn">
+            
+            <a class="btn ghost nav-link-item" href="/news.html"><i class="fa-solid fa-newspaper"></i>News</a>
+            
+            <button id="notification-btn" class="notification-btn-desktop notification-toggle-btn">
                 &#128276;
                 <span id="notification-badge" class="notification-badge" style="display:none;"></span>
             </button>
@@ -190,11 +191,14 @@ function renderUserDropdown(profile, user) {
              });
         }
         
-        // Move notification button to mobile auth actions on smaller screens
         const mobileAuthActions = document.getElementById('mobile-auth-actions');
-        if (mobileAuthActions && window.innerWidth < 1024) {
-            const notificationBtn = navActions.querySelector('#notification-btn');
-            if(notificationBtn) mobileAuthActions.appendChild(notificationBtn);
+        if(mobileAuthActions){
+            mobileAuthActions.innerHTML = `
+                <button class="mobile-nav-btn notification-toggle-btn">
+                    <i class="fa-solid fa-bell"></i>
+                    <span id="notification-badge-mobile" class="notification-badge" style="display:none;"></span>
+                </button>
+            `;
         }
     }
 
@@ -311,3 +315,4 @@ window.addEventListener('click', (event) => {
         toolsDropdown.classList.remove('open');
     }
 });
+
