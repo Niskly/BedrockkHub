@@ -129,7 +129,6 @@ function setupMobileNav(profile, user) {
     sidebar.querySelector('.mobile-nav-close').addEventListener('click', closeMenu);
     backdrop.addEventListener('click', closeMenu);
     
-    // Add event listener for the new collapsible tools menu
     const toolsCollapsible = sidebar.querySelector('.mobile-nav-collapsible');
     if (toolsCollapsible) {
         toolsCollapsible.querySelector('.collapsible-trigger').addEventListener('click', (e) => {
@@ -357,7 +356,7 @@ window.addEventListener('click', (event) => {
         if (content) {
             content.classList.remove('show');
             const btn = userDropdown.querySelector('.user-menu-btn');
-            if (btn) btn.setAttribute('aria-expanded', 'false');
+            if (btn) btn.setAttribute('aria-expanded', 'false.');
         }
     }
     
