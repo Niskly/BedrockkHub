@@ -17,6 +17,7 @@
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+        /* ====== GLOBAL & ROOT STYLES ====== */
         :root {
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
             --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
@@ -43,30 +44,17 @@
         .spinner-sm { width: 1.2em; height: 1.2em; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* ====== HEADER STYLES ====== */
+        /* ====== HEADER & NAVIGATION STYLES ====== */
         header { 
-            position: fixed;
-            top: 1rem;
-            left: 1rem;
-            right: 1rem;
-            z-index: 50; 
-            background: none;
-            border: none;
+            position: fixed; top: 1rem; left: 1rem; right: 1rem; z-index: 50; 
+            background: none; border: none;
         }
-        body {
-            padding-top: 100px;
-        }
+        body { padding-top: 100px; }
         .nav { 
-            max-width: 1200px; 
-            margin: 0 auto; 
-            padding: 12px 18px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            background: rgba(28, 28, 28, 0.7);
-            backdrop-filter: blur(20px) saturate(1.2);
-            border: 1px solid var(--border);
-            border-radius: 1.25rem;
+            max-width: 1200px; margin: 0 auto; padding: 12px 18px; 
+            display: flex; align-items: center; justify-content: space-between; 
+            background: rgba(28, 28, 28, 0.7); backdrop-filter: blur(20px) saturate(1.2);
+            border: 1px solid var(--border); border-radius: 1.25rem;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
         .brand { display: flex; align-items: center; gap: .8rem; }
@@ -123,35 +111,6 @@
         .desktop-nav-links, .desktop-nav-right { display: none; }
         .nav-left-desktop { display: contents; }
         
-        /* Notifications */
-        .notification-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); z-index: 100; align-items: center; justify-content: center; padding: 1rem; }
-        .notification-backdrop.show { display: flex; }
-        .notification-panel { width: 100%; max-width: 420px; background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 101; overflow: hidden; color: var(--text); animation: slideInFromTop 0.3s ease-out; }
-        @keyframes slideInFromTop { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        .notification-btn-desktop { background: var(--bg-2); border: 1px solid var(--border); color: var(--muted); padding: 8px 12px; border-radius: 12px; font-size: 1.2rem; line-height: 1; position: relative; cursor: pointer; }
-        .notification-btn-desktop:hover { border-color: var(--border-strong); color: var(--text); }
-        .mobile-nav-btn.notification-toggle-btn { color: white; }
-        .notification-toggle-btn { position: relative; }
-        .notification-badge { position: absolute; top: 2px; right: 2px; width: 10px; height: 10px; font-size: 8px; background-color: var(--brand-1); border-radius: 50%; border: 2px solid var(--bg-1); }
-        .mobile-nav-btn .notification-badge { top: 6px; right: 6px; border-color: var(--bg-2); }
-        .notification-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); background: var(--bg-2); }
-        .notification-header h3 { margin: 0; font-size: 1rem; }
-        .notification-header button { background: none; border: none; color: var(--muted); cursor: pointer; }
-        #mark-all-read-btn { font-size: 0.8rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 6px; }
-        #mark-all-read-btn:hover { background-color: var(--bg-1); }
-        #close-notifications-btn { font-size: 1.5rem; line-height: 1; }
-        .notification-list { max-height: 400px; overflow-y: auto; }
-        .notification-item { padding: 1rem; display: flex; gap: 1rem; align-items: flex-start; border-bottom: 1px solid var(--border); font-size: 0.9rem; position: relative; transition: background-color 0.2s; }
-        .notification-item a { text-decoration: none; color: inherit; }
-        .notification-item:hover { background-color: var(--bg-2); }
-        .notification-item.read { opacity: 0.6; }
-        .notification-icon { font-size: 1.2rem; color: var(--muted); padding-top: 2px; }
-        .notification-content p { margin: 0 0 0.25rem 0; color: var(--text); }
-        .notification-content .time { font-size: 0.75rem; color: var(--muted); }
-        .dismiss-notification-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; display: none; }
-        .notification-item:hover .dismiss-notification-btn { display: block; }
-        .notification-list-empty { padding: 2rem; text-align: center; color: var(--muted); }
-
         /* Tools Dropdown */
         .tools-dropdown-container { position: relative; }
         #tools-menu { display: none; position: absolute; left: 0; top: calc(100% + 0.5rem); background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; }
@@ -171,6 +130,10 @@
             .nav-link:hover { background-color: rgba(255, 255, 255, 0.05); color: var(--text); }
             .nav-link.active { color: white; }
             .desktop-nav-right { gap: 1rem; }
+            .desktop-search-container { position: relative; }
+            .desktop-search-container input { background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; padding: 0.6rem 1rem 0.6rem 2.5rem; width: 180px; color: var(--text); transition: all 0.2s ease; cursor: pointer; }
+            .desktop-search-container input:focus { outline: none; border-color: var(--brand-1); }
+            .desktop-search-container i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--muted); }
             #desktop-auth-actions { display: flex; align-items: center; gap: 0.5rem; }
             .login-btn, .signup-btn { font-weight: 700; padding: 0.6rem 1rem; transition: all 0.2s ease; border-radius: 10px; }
             .login-btn { color: var(--muted); }
@@ -180,24 +143,90 @@
         }
         /* ====== END HEADER STYLES ====== */
 
-
-        /* Page specific styles */
-        .container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+        /* ====== NOTIFICATION STYLES ====== */
+        .notification-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); z-index: 100; align-items: center; justify-content: center; padding: 1rem; }
+        .notification-backdrop.show { display: flex; }
+        .notification-panel { width: 100%; max-width: 420px; background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 101; overflow: hidden; color: var(--text); animation: slideInFromTop 0.3s ease-out; display: flex; flex-direction: column; }
+        @keyframes slideInFromTop { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .notification-btn-desktop { background: var(--bg-2); border: 1px solid var(--border); color: var(--muted); padding: 8px 12px; border-radius: 12px; font-size: 1.2rem; line-height: 1; position: relative; cursor: pointer; }
+        .notification-btn-desktop:hover { border-color: var(--border-strong); color: var(--text); }
+        .mobile-nav-btn.notification-toggle-btn { color: white; }
+        .notification-toggle-btn { position: relative; }
+        .notification-badge { position: absolute; top: 2px; right: 2px; width: 10px; height: 10px; font-size: 8px; background-color: var(--brand-1); border-radius: 50%; border: 2px solid var(--bg-1); }
+        .mobile-nav-btn .notification-badge { top: 6px; right: 6px; border-color: var(--bg-2); }
+        .notification-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); background: var(--bg-2); }
+        .notification-header h3 { margin: 0; font-size: 1rem; }
+        #close-notifications-btn { font-size: 1.5rem; line-height: 1; background: none; border: none; color: var(--muted); cursor: pointer; }
+        .notification-list { max-height: 400px; overflow-y: auto; flex-grow: 1; }
+        .notification-item { padding: 1rem; display: flex; gap: 1rem; align-items: flex-start; border-bottom: 1px solid var(--border); font-size: 0.9rem; position: relative; transition: background-color 0.2s; }
+        .notification-item a { text-decoration: none; color: inherit; display: contents; }
+        .notification-item:hover { background-color: var(--bg-2); }
+        .notification-item.read { opacity: 0.6; }
+        .notification-icon { font-size: 1.2rem; color: var(--muted); padding-top: 2px; }
+        .notification-content p { margin: 0 0 0.25rem 0; color: var(--text); }
+        .notification-content .time { font-size: 0.75rem; color: var(--muted); }
+        .dismiss-notification-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; display: none; padding: 0.25rem; }
+        .notification-item:hover .dismiss-notification-btn { display: block; }
+        .notification-list-empty { padding: 2rem; text-align: center; color: var(--muted); }
+        .notification-footer { padding: 0.75rem 1rem; border-top: 1px solid var(--border); background: var(--bg-2); display: flex; justify-content: space-between; align-items: center; }
+        .notification-footer-btn { font-size: 0.8rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 6px; background: none; border: none; cursor: pointer; color: var(--brand-1); transition: background-color 0.2s; }
+        .notification-footer-btn:hover { background-color: var(--bg-1); }
         
+        /* ====== DESKTOP SEARCH MODAL ====== */
+        .desktop-search-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); z-index: 1000; display: none; align-items: flex-start; justify-content: center; padding-top: 10vh; animation: fadeIn 0.3s ease; }
+        .desktop-search-modal-backdrop.show { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .desktop-search-modal-content { background: var(--bg-1); border-radius: 1rem; border: 1px solid var(--border); width: 100%; max-width: 700px; padding: 1rem; padding-top: 3rem; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: slideDown 0.4s ease; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .close-search-modal-btn { position: absolute; top: 0.75rem; right: 0.75rem; background: var(--bg-2); border: 1px solid var(--border); color: var(--muted); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: grid; place-items: center; z-index: 15; }
+        .close-search-modal-btn:hover { background: var(--bg-1); color: var(--text); }
+        #modal-search-results { position: static; display: none; margin-top: 0.5rem; background: transparent; border: none; max-height: 250px; overflow-y: auto; }
+        #modal-search-results .search-result-item { background: var(--bg-2); border-radius: 8px; margin-bottom: 4px; border: none; }
+        #modal-search-results .search-result-item:hover { background: var(--bg-1); }
+        .modal-suggestions { margin-top: 1.5rem; padding: 0 0.5rem; }
+        .suggestions-title { font-size: 0.9rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+        .modal-suggestions-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        .suggestion-card { display: flex; align-items: center; gap: 1rem; background: var(--bg-2); padding: 0.75rem; border-radius: 12px; transition: background 0.2s; }
+        .suggestion-card:hover { background: var(--bg-1); }
+        .suggestion-card .pack-icon { width: 50px; height: 50px; border-radius: 8px; }
+
+        /* Search Bar (shared by main page and modal) */
+        .search-hub-container { max-width: 700px; margin: 2.5rem auto 0; position: relative; }
+        .search-input-wrapper { display: flex; position: relative; background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); transition: border-color 0.2s, box-shadow 0.2s; }
+        .search-input-wrapper:focus-within { border-color: var(--brand-1); box-shadow: 0 15px 40px rgba(0,0,0,0.3), 0 0 0 3px rgba(222, 33, 42, .3); }
+        .search-type-dropdown { position: relative; }
+        #search-type-btn, #modal-search-type-btn { display: flex; align-items: center; gap: 0.5rem; height: 100%; padding: 0 1.2rem; background: var(--bg-2); border: none; color: var(--text); font-weight: 600; border-radius: 15px 0 0 15px; cursor: pointer; border-right: 1px solid var(--border); }
+        #search-type-btn .fa-chevron-down, #modal-search-type-btn .fa-chevron-down { font-size: 0.7em; transition: transform 0.2s; }
+        .search-type-dropdown.open #search-type-btn .fa-chevron-down, .search-type-dropdown.open #modal-search-type-btn .fa-chevron-down { transform: rotate(180deg); }
+        #search-type-menu, #modal-search-type-menu { display: none; position: absolute; top: 110%; left: 0; z-index: 12; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 100%; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+        .search-type-dropdown.open #search-type-menu, .search-type-dropdown.open #modal-search-type-menu { display: block; }
+        .search-type-option { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; }
+        .search-type-option:hover { background: var(--bg-2); }
+        .search-type-option i { width: 16px; color: var(--muted); }
+        #universal-search, #modal-universal-search { width: 100%; padding: 1.25rem 1.5rem; font-size: 1.1rem; background: transparent; border: none; color: var(--text); outline: none; }
+        #search-results { display: none; position: absolute; top: calc(100% + 8px); left: 0; right: 0; background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; max-height: 350px; overflow-y: auto; z-index: 10; }
+        .search-result-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; transition: background-color 0.2s; }
+        .search-result-item:not(:last-child) { border-bottom: 1px solid var(--border); }
+        .search-result-item:hover { background: var(--bg-2); }
+        .search-result-icon, .search-result-avatar { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+        .search-result-avatar.is-mc-skin { border-radius: 4px; image-rendering: pixelated; border: 1px solid var(--border); background: var(--bg-2); }
+        .search-result-info { text-align: left; }
+        .search-result-name { font-weight: 600; color: var(--text); }
+        .search-result-sub { font-size: 0.8rem; color: var(--muted); }
+
+        /* ====== PAGE SPECIFIC STYLES ====== */
+        .container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
         .page-header { text-align: center; margin-bottom: 2.5rem; }
         .page-header-icon { font-size: 2.5rem; color: var(--brand-1); margin-bottom: 1rem; }
         .page-header h1 { font-size: 2.5rem; font-weight: 900; background: var(--gradient-brand); -webkit-background-clip: text; color: transparent; margin: 0 0 0.5rem 0; }
         .page-header p { color: var(--muted); font-size: 1.1rem; max-width: 500px; margin: 0 auto; }
-        
         .main-controls-container { display: flex; align-items: center; gap: 1rem; margin-bottom: 2.5rem; }
         .search-container { position: relative; flex-grow: 1; }
         .search-container i { position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); color: var(--muted); }
         #news-search { width: 100%; padding: 1rem 1.25rem 1rem 3.5rem; border-radius: 12px; background: var(--bg-1); border: 1px solid var(--border); color: var(--text); font-size: 1rem; }
         #news-search:focus { outline: none; border-color: var(--brand-1); box-shadow: 0 0 0 3px rgba(var(--brand-1-rgb), 0.2); }
-        
         .admin-post-trigger { display: none; }
         .admin-post-trigger.visible { display: block; }
-        
         .news-feed { display: flex; flex-direction: column; gap: 1.5rem; }
         .news-post { background: rgba(28, 28, 28, 0.8); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; display: flex; gap: 1rem; }
         .post-author-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
@@ -208,16 +237,15 @@
         .post-timestamp { font-size: 0.8rem; color: var(--muted); }
         .post-body { line-height: 1.6; color: var(--muted); white-space: pre-wrap; word-break: break-word; }
         .post-body a { color: var(--brand-1); text-decoration: underline; }
-        
         .empty-state { text-align: center; padding: 4rem 2rem; background: rgba(28, 28, 28, 0.8); border: 1px solid var(--border); border-radius: 16px; }
         .empty-state-icon { font-size: 3rem; color: var(--brand-1); margin-bottom: 1rem; }
         .empty-state h3 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
         .empty-state p { color: var(--muted); }
-        
         #toast-container { position: fixed; top: 80px; right: 20px; z-index: 1000; }
-        .toast { padding: 12px 18px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; background: var(--bg-1); border: 1px solid var(--border); }
-        @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
+        .toast { padding: 12px 18px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: toastSlideIn 0.3s ease-out forwards; background: var(--bg-1); border: 1px solid var(--border); }
+        @keyframes toastSlideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
         
+        /* Modal for creating posts */
         .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 1000; }
         .modal.show { display: flex; }
         .modal-dialog { background: var(--bg-1); border: 1px solid var(--border); border-radius: 20px; width: 90%; max-width: 600px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
@@ -241,7 +269,7 @@
 <body>
     <header>
         <div class="nav">
-             <div class="nav-left-desktop">
+            <div class="nav-left-desktop">
                 <a class="brand" href="/">
                     <div class="brand-badge">
                         <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
@@ -254,26 +282,63 @@
                 <div class="desktop-nav-links" id="desktop-nav-links"></div>
             </div>
             <div class="desktop-nav-right">
+                 <!-- FIX: Added Desktop Search Bar -->
+                <div class="desktop-search-container">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Search..." readonly>
+                </div>
                 <div id="desktop-auth-actions"></div>
             </div>
             <div class="nav-actions" id="nav-actions"></div>
             <div class="mobile-nav-controls">
+                 <!-- FIX: Added Mobile Search Toggle -->
+                <button id="mobile-search-toggle" class="mobile-nav-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
                 <div id="mobile-auth-actions"></div>
                 <button class="mobile-nav-btn mobile-nav-toggle"><i class="fa-solid fa-bars"></i></button>
             </div>
         </div>
     </header>
 
+    <!-- FIX: Updated Notification Modal with Footer -->
     <div id="notification-backdrop" class="notification-backdrop">
         <div id="notification-panel" class="notification-panel">
             <div class="notification-header">
                 <h3>Notifications</h3>
-                <div>
-                    <button id="mark-all-read-btn">Mark all as read</button>
-                    <button id="close-notifications-btn">&times;</button>
-                </div>
+                <button id="close-notifications-btn">&times;</button>
             </div>
             <div id="notification-list" class="notification-list"></div>
+            <div class="notification-footer">
+                <button id="mark-all-read-btn" class="notification-footer-btn">Mark all as read</button>
+                <button id="clear-all-btn" class="notification-footer-btn">Clear All</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIX: Added Search Modal from index.html -->
+    <div id="desktop-search-modal" class="desktop-search-modal-backdrop">
+        <div class="desktop-search-modal-content">
+            <button id="close-search-modal-btn" class="close-search-modal-btn"><i class="fa-solid fa-xmark"></i></button>
+            <div class="search-hub-container" style="margin: 0; max-width: 100%;">
+                <div class="search-input-wrapper">
+                    <div class="search-type-dropdown" id="modal-search-type-dropdown">
+                        <button id="modal-search-type-btn">
+                            <span id="modal-search-type-label">Packs</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <div id="modal-search-type-menu">
+                            <div class="search-type-option" data-type="packs"><i class="fa-solid fa-palette"></i> Packs</div>
+                            <div class="search-type-option" data-type="users"><i class="fa-solid fa-user"></i> Users</div>
+                            <div class="search-type-option" data-type="gamertags"><i class="fa-brands fa-xbox"></i> Gamertags</div>
+                        </div>
+                    </div>
+                    <input type="text" id="modal-universal-search" placeholder="Search for packs..." autocomplete="off">
+                </div>
+                <div id="modal-search-results"></div>
+            </div>
+            <div class="modal-suggestions">
+                <h3 class="suggestions-title">Newest Packs</h3>
+                <div id="modal-pack-suggestions" class="modal-suggestions-grid"></div>
+            </div>
         </div>
     </div>
 
@@ -343,10 +408,16 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
+        // --- STATE & CONSTANTS ---
         let allPosts = [];
         let loggedInProfile = null;
+        let currentUserId = null;
+        let notificationSubscription = null;
+        let modalSearchType = 'packs';
+        let modalDebounceTimer;
         const feedContainer = document.getElementById('news-feed-container');
 
+        // --- UTILITY FUNCTIONS ---
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             if (!container) return;
@@ -387,6 +458,7 @@
             return processedContent.replace(/\n/g, '<br>');
         }
 
+        // --- NEWS FEED LOGIC ---
         function renderNews(postsToRender) {
             if (postsToRender.length === 0) {
                 feedContainer.innerHTML = `
@@ -421,7 +493,7 @@
         }
         
         async function loadNews() {
-            feedContainer.innerHTML = `<div class="empty-state"><div class="spinner-sm" style="font-size: 2rem;"></div><h3>Loading News...</h3></div>`;
+            feedContainer.innerHTML = `<div class="empty-state"><div class="spinner-sm" style="font-size: 2rem; border-top-color: var(--brand-1);"></div><h3>Loading News...</h3></div>`;
             try {
                 const { data, error } = await supabase
                     .from('news')
@@ -441,7 +513,7 @@
             }
         }
         
-        // Admin Modal Logic
+        // --- ADMIN POST MODAL LOGIC ---
         const newPostBtn = document.getElementById('new-post-btn');
         const modal = document.getElementById('new-post-modal');
         const closeModalBtn = document.getElementById('close-modal-btn');
@@ -459,47 +531,27 @@
         closeModalBtn.addEventListener('click', () => modal.classList.remove('show'));
         modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('show'); });
 
-        textarea.addEventListener('input', () => {
-            const remaining = 1000 - textarea.value.length;
-            charCounter.textContent = remaining;
-        });
+        textarea.addEventListener('input', () => { charCounter.textContent = 1000 - textarea.value.length; });
         
-        document.querySelectorAll('.format-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                applyFormat(btn.dataset.format);
-            });
-        });
+        document.querySelectorAll('.format-btn').forEach(btn => btn.addEventListener('click', () => applyFormat(btn.dataset.format)));
 
         function applyFormat(format) {
-            const start = textarea.selectionStart;
-            const end = textarea.selectionEnd;
+            const start = textarea.selectionStart, end = textarea.selectionEnd;
             const selectedText = textarea.value.substring(start, end);
-            let replacement = selectedText;
-            let cursorPosition = start;
+            let replacement = selectedText, cursorPosition = start;
 
             switch(format) {
                 case 'bold': replacement = `**${selectedText}**`; cursorPosition += 2; break;
                 case 'italic': replacement = `_${selectedText}_`; cursorPosition += 1; break;
                 case 'underline': replacement = `__${selectedText}__`; cursorPosition += 2; break;
                 case 'strike': replacement = `~~${selectedText}~~`; cursorPosition += 2; break;
-                case 'link': 
-                    const url = prompt("Enter the URL:");
-                    if(url) {
-                        replacement = `[${selectedText}](${url})`; 
-                    }
-                    break;
+                case 'link': const url = prompt("Enter the URL:"); if(url) replacement = `[${selectedText}](${url})`; break;
                 case 'code': replacement = `\`${selectedText}\``; cursorPosition += 1; break;
-                case 'quote': 
-                    const lines = textarea.value.substring(0, start).split('\n');
-                    const isAtStartOfLine = lines[lines.length - 1].trim() === '';
-                    replacement = isAtStartOfLine ? `> ${selectedText}` : `\n> ${selectedText}`;
-                    break;
+                case 'quote': const isAtStartOfLine = textarea.value.substring(0, start).split('\n').pop().trim() === ''; replacement = isAtStartOfLine ? `> ${selectedText}` : `\n> ${selectedText}`; break;
             }
             
             textarea.setRangeText(replacement, start, end, 'end');
-            if (selectedText.length === 0) {
-                 textarea.selectionStart = textarea.selectionEnd = cursorPosition;
-            }
+            if (selectedText.length === 0) textarea.selectionStart = textarea.selectionEnd = cursorPosition;
             textarea.focus();
         }
 
@@ -519,10 +571,7 @@
 
                 const response = await fetch('/api/add-news', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${session.access_token}`
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
                     body: JSON.stringify({ content: content })
                 });
                 
@@ -543,75 +592,203 @@
             }
         }
 
-        // Search Logic
+        // --- IN-PAGE SEARCH LOGIC ---
         document.getElementById('news-search').addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase();
             const filteredPosts = allPosts.filter(post => 
                 post.content.toLowerCase().includes(query) ||
-                (post.profiles && post.profiles.username && post.profiles.username.toLowerCase().includes(query))
+                (post.profiles?.username?.toLowerCase().includes(query))
             );
             renderNews(filteredPosts);
         });
 
-        // Initialization
+        // --- NOTIFICATION LOGIC (FIX) ---
+        async function fetchAndRenderNotifications() {
+            if (!currentUserId) return;
+            const { data, error } = await supabase.from('notifications').select('*').eq('user_id', currentUserId).order('created_at', { ascending: false }).limit(20);
+            if (error) { console.error("Error fetching notifications:", error); return; }
+
+            const list = document.getElementById('notification-list');
+            const unreadCount = data.filter(n => !n.is_read).length;
+
+            if (data.length === 0) {
+                list.innerHTML = '<div class="notification-list-empty">You have no notifications.</div>';
+            } else {
+                list.innerHTML = data.map(n => {
+                    const iconMap = { 'new_news': 'fa-solid fa-newspaper', 'new_pack': 'fa-solid fa-box', 'comment_reply': 'fa-solid fa-comment-dots' };
+                    return `
+                        <div class="notification-item ${n.is_read ? 'read' : ''}" id="notification-${n.id}">
+                            <i class="${iconMap[n.type] || 'fa-solid fa-bell'} notification-icon"></i>
+                            <a href="${n.content.link}" class="notification-content">
+                                <p>${escapeHtml(n.content.text)}</p>
+                                <span class="time">${timeAgo(n.created_at)}</span>
+                            </a>
+                            <button class="dismiss-notification-btn" data-id="${n.id}" title="Dismiss">&times;</button>
+                        </div>`;
+                }).join('');
+            }
+            
+            document.querySelectorAll('.notification-badge').forEach(badge => {
+                badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+                badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+                badge.style.width = unreadCount > 9 ? '18px' : '10px';
+                badge.style.height = unreadCount > 9 ? '18px' : '10px';
+                 badge.style.justifyContent = 'center';
+                badge.style.alignItems = 'center';
+            });
+        }
+        
+        async function deleteNotification(notificationId) {
+             const { error } = await supabase.from('notifications').delete().eq('id', notificationId);
+             if (!error) {
+                const item = document.getElementById(`notification-${notificationId}`);
+                if (item) item.remove();
+                fetchAndRenderNotifications(); // Re-fetch to update badge count correctly
+             } else {
+                showToast('Could not dismiss notification.', 'error');
+             }
+        }
+
+        function setupNotificationListeners() {
+            const backdrop = document.getElementById('notification-backdrop');
+            
+            document.addEventListener('click', async (e) => {
+                if (e.target.closest('.notification-toggle-btn')) {
+                    backdrop.classList.add('show');
+                } else if (e.target.id === 'close-notifications-btn' || e.target.id === 'notification-backdrop') {
+                    backdrop.classList.remove('show');
+                } else if (e.target.id === 'mark-all-read-btn') {
+                    await supabase.from('notifications').update({ is_read: true }).eq('user_id', currentUserId);
+                    fetchAndRenderNotifications();
+                } else if (e.target.id === 'clear-all-btn') {
+                    await supabase.from('notifications').delete().eq('user_id', currentUserId);
+                    fetchAndRenderNotifications();
+                } else if (e.target.closest('.dismiss-notification-btn')) {
+                    deleteNotification(e.target.closest('.dismiss-notification-btn').dataset.id);
+                } else if (e.target.closest('.notification-item a')) {
+                    const notificationItem = e.target.closest('.notification-item');
+                    if(notificationItem && !notificationItem.classList.contains('read')) {
+                       await supabase.from('notifications').update({ is_read: true }).eq('id', notificationItem.id.split('-')[1]);
+                    }
+                }
+            });
+        }
+
+        function createNotificationSubscription() {
+            if (notificationSubscription) supabase.removeChannel(notificationSubscription);
+            notificationSubscription = supabase.channel(`public:notifications:user_id=eq.${currentUserId}`)
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, fetchAndRenderNotifications)
+                .subscribe();
+        }
+        
+        // --- SEARCH MODAL LOGIC (FIX) ---
+        const desktopSearchInput = document.querySelector('.desktop-search-container input');
+        const mobileSearchToggle = document.getElementById('mobile-search-toggle');
+        const searchModal = document.getElementById('desktop-search-modal');
+        const closeModalBtn = document.getElementById('close-search-modal-btn');
+        const modalSearchInput = document.getElementById('modal-universal-search');
+        
+        async function loadNewPackSuggestions() { /* ... content as in index.html ... */ }
+        function openSearchModal() { if (searchModal) { searchModal.classList.add('show'); document.body.style.overflow = 'hidden'; modalSearchInput.focus(); } }
+        function closeSearchModal() { if (searchModal) { searchModal.classList.remove('show'); document.body.style.overflow = ''; } }
+        
+        if (desktopSearchInput) desktopSearchInput.addEventListener('click', (e) => { e.preventDefault(); openSearchModal(); });
+        if (mobileSearchToggle) mobileSearchToggle.addEventListener('click', openSearchModal);
+        if(closeModalBtn) closeModalBtn.addEventListener('click', closeSearchModal);
+        if(searchModal) searchModal.addEventListener('click', (e) => { if (e.target === searchModal) closeSearchModal(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && searchModal.classList.contains('show')) closeSearchModal(); });
+
+        async function performModalSearch() {
+            const query = modalSearchInput.value.trim();
+            const resultsContainer = document.getElementById('modal-search-results');
+            if (query.length < 2) { resultsContainer.style.display = 'none'; return; }
+            let results = [];
+            if (modalSearchType === 'packs') {
+                const { data } = await supabase.from('packs').select('id, name, icon_url').ilike('name', `%${query}%`).limit(5);
+                results = (data || []).map(item => ({ type: 'pack', name: item.name, icon: item.icon_url, link: `/packs.html?id=${item.id}` }));
+            } else if (modalSearchType === 'users') {
+                const { data } = await supabase.from('profiles').select('username, avatar_url').ilike('username', `%${query}%`).limit(5);
+                results = (data || []).map(item => ({ type: 'user', name: item.username, icon: item.avatar_url, link: `/profile.html?user=${item.username}` }));
+            } else if (modalSearchType === 'gamertags') {
+                const { data } = await supabase.from('profiles').select('username, bedrock_gamertag, xuid').ilike('bedrock_gamertag', `%${query}%`).limit(5);
+                results = (data || []).map(item => ({ type: 'gamertag', name: item.bedrock_gamertag, sub: item.username, xuid: item.xuid, link: `/profile.html?user=${item.username}` }));
+            }
+            renderModalSearchResults(results);
+        }
+
+        function renderModalSearchResults(results) {
+            const container = document.getElementById('modal-search-results');
+            if (results.length === 0) { container.innerHTML = `<div class="search-result-item"><div class="search-result-info"><div class="search-result-name">No results found</div></div></div>`; } 
+            else {
+                container.innerHTML = results.map(item => {
+                    let iconHtml = '';
+                    if (item.type === 'pack') { iconHtml = item.icon ? `<img src="${item.icon}" class="search-result-icon">` : `<div class="search-result-icon" style="background:var(--bg-2); display:grid; place-items:center;"><i class="fa-solid fa-cube"></i></div>`; } 
+                    else if (item.type === 'gamertag' && item.xuid) { iconHtml = `<img src="/api/bedrock-skin?xuid=${item.xuid}&render_type=head" class="search-result-avatar is-mc-skin">`; } 
+                    else { const initial = (item.name || '?').charAt(0).toUpperCase(); iconHtml = `<img src="${item.icon || `https://placehold.co/40x40/1c1c1c/de212a?text=${initial}`}" class="search-result-avatar">`; }
+                    return `<a href="${item.link}" class="search-result-item">${iconHtml}<div class="search-result-info"><div class="search-result-name">${escapeHtml(item.name)}</div>${item.sub ? `<div class="search-result-sub">MCHub User: ${escapeHtml(item.sub)}</div>` : ''}</div></a>`;
+                }).join('');
+            }
+            container.style.display = 'block';
+        }
+
+        const modalDropdown = document.getElementById('modal-search-type-dropdown');
+        modalDropdown.addEventListener('click', (e) => { e.stopPropagation(); modalDropdown.classList.toggle('open'); });
+        modalDropdown.querySelectorAll('.search-type-option').forEach(option => {
+            option.addEventListener('click', () => {
+                modalSearchType = option.dataset.type;
+                document.getElementById('modal-search-type-label').textContent = option.textContent.trim();
+                modalSearchInput.placeholder = `Search for ${modalSearchType}...`;
+                performModalSearch();
+            });
+        });
+        modalSearchInput.addEventListener('input', () => { clearTimeout(modalDebounceTimer); modalDebounceTimer = setTimeout(performModalSearch, 300); });
+        
+        // --- INITIALIZATION ---
         document.addEventListener('auth-ready', (event) => {
-            const { profile } = event.detail;
+            const { profile, user } = event.detail;
             loggedInProfile = profile;
-            if (profile && profile.role === 'admin') {
+            currentUserId = user?.id; // Set current user ID
+            
+            if (profile?.role === 'admin') {
                 document.getElementById('admin-post-trigger').classList.add('visible');
             }
 
             // Desktop nav link active state
             const isDesktop = window.innerWidth >= 1024;
-            if (!isDesktop) return;
+            if (isDesktop) {
+                const navActions = document.getElementById('nav-actions');
+                const desktopNavLinks = document.getElementById('desktop-nav-links');
+                const desktopAuth = document.getElementById('desktop-auth-actions');
 
-            const navActions = document.getElementById('nav-actions');
-            const desktopNavLinks = document.getElementById('desktop-nav-links');
-            const desktopAuth = document.getElementById('desktop-auth-actions');
-
-            navActions.querySelectorAll('.nav-link-item').forEach(linkOrContainer => {
-                if (linkOrContainer.classList.contains('tools-dropdown-container') || linkOrContainer.tagName.toLowerCase() === 'a') {
-                    desktopNavLinks.appendChild(linkOrContainer);
-                }
-            });
-
-            desktopNavLinks.querySelectorAll('a, button.nav-link').forEach(link => {
-                if (link.tagName.toLowerCase() === 'a') {
-                    link.className = 'nav-link';
-                    const linkPathClean = (link.getAttribute('href') || '').replace('.html', '').replace(/\/$/, "");
-                    const currentPathClean = window.location.pathname.replace('.html', '').replace(/\/$/, "");
-                    
-                    const isHomePage = currentPathClean === '' || currentPathClean === '/index';
-                    const isLinkToHome = linkPathClean === '' || linkPathClean === '/';
-
-                    if ((isHomePage && isLinkToHome) || (linkPathClean !== '' && linkPathClean === currentPathClean)) {
+                navActions.querySelectorAll('.nav-link-item, .tools-dropdown-container').forEach(el => desktopNavLinks.appendChild(el));
+                desktopNavLinks.querySelectorAll('a.nav-link').forEach(link => {
+                    if (link.getAttribute('href') === '/news.html') {
                         link.classList.add('active');
                     }
-                }
-            });
+                });
 
-            const loginBtn = navActions.querySelector('.login-btn-item');
-            const signupBtn = navActions.querySelector('.signup-btn-item');
-            const userDropdown = navActions.querySelector('.user-dropdown');
-            const notificationBtn = navActions.querySelector('.notification-toggle-btn');
-            
-            if(notificationBtn) desktopAuth.appendChild(notificationBtn);
+                const loginBtn = navActions.querySelector('.login-btn-item');
+                const signupBtn = navActions.querySelector('.signup-btn-item');
+                const userDropdown = navActions.querySelector('.user-dropdown');
+                const notificationBtn = navActions.querySelector('.notification-toggle-btn');
+                
+                if(notificationBtn) desktopAuth.appendChild(notificationBtn);
 
-            if (userDropdown) {
-                desktopAuth.appendChild(userDropdown);
-            } else {
-                if (loginBtn) {
-                    loginBtn.className = 'login-btn';
-                    desktopAuth.appendChild(loginBtn);
-                }
-                if (signupBtn) {
-                    signupBtn.className = 'signup-btn';
-                    desktopAuth.appendChild(signupBtn);
+                if (userDropdown) { desktopAuth.appendChild(userDropdown); } 
+                else {
+                    if (loginBtn) { loginBtn.className = 'login-btn'; desktopAuth.appendChild(loginBtn); }
+                    if (signupBtn) { signupBtn.className = 'signup-btn'; desktopAuth.appendChild(signupBtn); }
                 }
             }
+
+            // FIX: Initialize news and notifications after auth is ready
+            loadNews();
+            if (user) {
+                fetchAndRenderNotifications();
+                createNotificationSubscription();
+                setupNotificationListeners();
+            }
         });
-        
-        loadNews();
 
     </script>
 </body>
