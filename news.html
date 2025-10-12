@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>News Feed - MCHub</title>
+    <title>MCHub - News Feed</title>
     <!-- Favicon Configuration -->
     <link rel="apple-touch-icon" sizes="180x180" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-32x32.png">
@@ -43,14 +43,13 @@
         .spinner-sm { width: 1.2em; height: 1.2em; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Header is managed by auth.js */
         header { position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(1.2) blur(10px); background: rgba(12, 12, 12, 0.75); border-bottom: 1px solid var(--border); }
         .nav { max-width: 1100px; margin: 0 auto; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; }
         .brand { display: flex; align-items: center; gap: .8rem; }
         .brand-badge { height: 40px; width: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--gradient-brand); box-shadow: var(--shadow-brand); }
         .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-11px); }
         .brand-title { font-weight: 800; letter-spacing: .6px; font-size: 15px; }
-        .nav-actions, .desktop-nav-right { display: flex; align-items: center; gap: 0.6rem; }
+        .nav-actions { display: flex; align-items: center; gap: 0.6rem; }
 
         .container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
         
@@ -95,14 +94,34 @@
         .modal-content { padding: 1.5rem; }
         #new-post-form { display: flex; gap: 1rem; }
         #new-post-form .post-author-avatar { width: 40px; height: 40px; }
-        #post-textarea { width: 100%; min-height: 120px; resize: vertical; padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text); font-size: 1rem; font-family: inherit; }
-        #post-textarea:focus { outline: none; border-color: var(--brand-1); }
+        .textarea-container { flex-grow: 1; background: var(--bg-2); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; }
+        .textarea-container:focus-within { border-color: var(--brand-1); }
+        #post-textarea { width: 100%; min-height: 120px; resize: vertical; padding: 0.75rem 1rem; border: none; background: transparent; color: var(--text); font-size: 1rem; font-family: inherit; flex-grow: 1; }
+        #post-textarea:focus { outline: none; }
+        .formatting-toolbar { display: flex; gap: 0.5rem; padding: 0.5rem 1rem; border-top: 1px solid var(--border); background: var(--bg-1); }
+        .format-btn { background: none; border: none; color: var(--muted); font-size: 1rem; cursor: pointer; width: 32px; height: 32px; border-radius: 6px; }
+        .format-btn:hover { background: var(--bg-2); color: var(--text); }
         #post-form-actions { display: flex; justify-content: flex-end; align-items: center; gap: 1rem; margin-top: 1rem; }
         #char-counter { font-size: 0.8rem; color: var(--muted); }
     </style>
 </head>
 <body>
-    <header></header> <!-- auth.js will populate this -->
+    <header id="main-header">
+        <div class="nav">
+            <a class="brand" href="/">
+                <div class="brand-badge">
+                    <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
+                </div>
+                <div>
+                    <div class="brand-title">MCHUB</div>
+                    <div class="tiny">Minecraft Bedrock • community</div>
+                </div>
+            </a>
+            <div id="nav-actions" class="nav-actions">
+                <!-- Auth.js will populate this -->
+            </div>
+        </div>
+    </header>
 
     <main class="container">
         <div class="page-header">
@@ -132,10 +151,16 @@
                 <button class="btn ghost" style="padding: 0.5rem; width: 40px; height: 40px;" id="close-modal-btn"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-content">
-                <form id="new-post-form">
+                <form id="new-post-form" onsubmit="handlePostSubmit(event)">
                     <img id="modal-user-avatar" class="post-author-avatar" src="https://placehold.co/40x40/1c1c1c/e8eefc?text=A">
                     <div style="flex-grow: 1;">
-                        <textarea id="post-textarea" placeholder="What's happening?" maxlength="1000" required></textarea>
+                        <div class="textarea-container">
+                            <textarea id="post-textarea" placeholder="What's happening?" maxlength="1000" required></textarea>
+                            <div class="formatting-toolbar">
+                                <button type="button" class="format-btn" title="Bold" onclick="applyFormat('bold')"><i class="fa-solid fa-bold"></i></button>
+                                <button type="button" class="format-btn" title="Italic" onclick="applyFormat('italic')"><i class="fa-solid fa-italic"></i></button>
+                            </div>
+                        </div>
                         <div id="post-form-actions">
                             <span id="char-counter">1000</span>
                             <button type="submit" id="tweet-btn" class="btn primary"><i class="fa-solid fa-paper-plane"></i> Tweet</button>
@@ -187,6 +212,17 @@
         
         function escapeHtml(str) { return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); }
 
+        function parseContent(content) {
+            let processedContent = escapeHtml(content);
+            // Bold
+            processedContent = processedContent.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+            // Italic
+            processedContent = processedContent.replace(/_(.*?)_/g, '<i>$1</i>');
+            // URLs
+            processedContent = processedContent.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+            return processedContent;
+        }
+
         function renderNews(postsToRender) {
             if (postsToRender.length === 0) {
                 feedContainer.innerHTML = `
@@ -202,11 +238,7 @@
                 const avatar = author?.avatar_url || `https://placehold.co/48x48/1c1c1c/de212a?text=${(author?.username || '?').charAt(0).toUpperCase()}`;
                 const username = author?.username || 'Unknown Author';
                 
-                // Regex to find URLs and wrap them in <a> tags
-                const linkedContent = escapeHtml(post.content).replace(
-                    /(https?:\/\/[^\s]+)/g,
-                    '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
-                );
+                const formattedContent = parseContent(post.content);
 
                 return `
                     <div class="news-post">
@@ -218,7 +250,7 @@
                                 <a href="/profile.html?user=${escapeHtml(username)}" class="post-author-name">${escapeHtml(username)}</a>
                                 <span class="post-timestamp">${timeAgo(post.created_at)}</span>
                             </div>
-                            <div class="post-body">${linkedContent}</div>
+                            <div class="post-body">${formattedContent}</div>
                         </div>
                     </div>`;
             }).join('');
@@ -249,7 +281,6 @@
         const newPostBtn = document.getElementById('new-post-btn');
         const modal = document.getElementById('new-post-modal');
         const closeModalBtn = document.getElementById('close-modal-btn');
-        const postForm = document.getElementById('new-post-form');
         const textarea = document.getElementById('post-textarea');
         const charCounter = document.getElementById('char-counter');
 
@@ -268,8 +299,25 @@
             const remaining = 1000 - textarea.value.length;
             charCounter.textContent = remaining;
         });
+        
+        window.applyFormat = function(format) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            let markup = '';
 
-        postForm.addEventListener('submit', async (e) => {
+            if (format === 'bold') {
+                markup = '**';
+            } else if (format === 'italic') {
+                markup = '_';
+            }
+
+            const newText = `${markup}${selectedText}${markup}`;
+            textarea.setRangeText(newText, start, end, 'end');
+            textarea.focus();
+        }
+
+        window.handlePostSubmit = async function(e) {
             e.preventDefault();
             const content = textarea.value.trim();
             if (!content) return;
@@ -297,7 +345,7 @@
                 
                 showToast('News post created successfully!', 'success');
                 modal.classList.remove('show');
-                postForm.reset();
+                e.target.reset();
                 charCounter.textContent = '1000';
                 await loadNews(); // Reload all news to see the new post
 
@@ -307,7 +355,7 @@
                 tweetBtn.disabled = false;
                 tweetBtn.innerHTML = originalBtnContent;
             }
-        });
+        }
 
         // Search Logic
         document.getElementById('news-search').addEventListener('input', (e) => {
