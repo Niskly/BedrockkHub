@@ -127,6 +127,7 @@
         .notification-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); z-index: 100; align-items: center; justify-content: center; padding: 1rem; }
         .notification-backdrop.show { display: flex; }
         .notification-panel { width: 100%; max-width: 420px; background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 101; overflow: hidden; color: var(--text); animation: slideInFromTop 0.3s ease-out; }
+        @keyframes slideInFromTop { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         .notification-btn-desktop { background: var(--bg-2); border: 1px solid var(--border); color: var(--muted); padding: 8px 12px; border-radius: 12px; font-size: 1.2rem; line-height: 1; position: relative; cursor: pointer; }
         .notification-btn-desktop:hover { border-color: var(--border-strong); color: var(--text); }
         .mobile-nav-btn.notification-toggle-btn { color: white; }
@@ -339,7 +340,7 @@
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIJzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         let allPosts = [];
@@ -374,23 +375,16 @@
         function escapeHtml(str) { return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); }
 
         function parseContent(content) {
-            let processedContent = escapeHtml(content);
-            // Bold, Italic, Underline, Strikethrough
-            processedContent = processedContent.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-            processedContent = processedContent.replace(/_(.*?)_/g, '<i>$1</i>');
-            processedContent = processedContent.replace(/__(.*?)__/g, '<u>$1</u>');
-            processedContent = processedContent.replace(/~~(.*?)~~/g, '<s>$1</s>');
-            // Blockquote
-            processedContent = processedContent.replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>');
-            // Code block
-            processedContent = processedContent.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
-            // Inline code
-            processedContent = processedContent.replace(/`(.*?)`/g, '<code>$1</code>');
-            // Links
-            processedContent = processedContent.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-             // Simple URLs
-            processedContent = processedContent.replace(/(?<!href=")(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
-            return processedContent;
+            let processedContent = escapeHtml(content)
+                .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+                .replace(/__(.*?)__/g, '<u>$1</u>')
+                .replace(/~~(.*?)~~/g, '<s>$1</s>')
+                .replace(/_(.*?)_/g, '<i>$1</i>')
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+                .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>')
+                .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+            return processedContent.replace(/\n/g, '<br>');
         }
 
         function renderNews(postsToRender) {
@@ -481,18 +475,31 @@
             const end = textarea.selectionEnd;
             const selectedText = textarea.value.substring(start, end);
             let replacement = selectedText;
+            let cursorPosition = start;
 
             switch(format) {
-                case 'bold': replacement = `**${selectedText}**`; break;
-                case 'italic': replacement = `_${selectedText}_`; break;
-                case 'underline': replacement = `__${selectedText}__`; break;
-                case 'strike': replacement = `~~${selectedText}~~`; break;
-                case 'link': replacement = `[${selectedText}](url)`; break;
-                case 'code': replacement = `\`${selectedText}\``; break;
-                case 'quote': replacement = `> ${selectedText}`; break;
+                case 'bold': replacement = `**${selectedText}**`; cursorPosition += 2; break;
+                case 'italic': replacement = `_${selectedText}_`; cursorPosition += 1; break;
+                case 'underline': replacement = `__${selectedText}__`; cursorPosition += 2; break;
+                case 'strike': replacement = `~~${selectedText}~~`; cursorPosition += 2; break;
+                case 'link': 
+                    const url = prompt("Enter the URL:");
+                    if(url) {
+                        replacement = `[${selectedText}](${url})`; 
+                    }
+                    break;
+                case 'code': replacement = `\`${selectedText}\``; cursorPosition += 1; break;
+                case 'quote': 
+                    const lines = textarea.value.substring(0, start).split('\n');
+                    const isAtStartOfLine = lines[lines.length - 1].trim() === '';
+                    replacement = isAtStartOfLine ? `> ${selectedText}` : `\n> ${selectedText}`;
+                    break;
             }
             
             textarea.setRangeText(replacement, start, end, 'end');
+            if (selectedText.length === 0) {
+                 textarea.selectionStart = textarea.selectionEnd = cursorPosition;
+            }
             textarea.focus();
         }
 
@@ -541,7 +548,7 @@
             const query = e.target.value.toLowerCase();
             const filteredPosts = allPosts.filter(post => 
                 post.content.toLowerCase().includes(query) ||
-                post.profiles?.username?.toLowerCase().includes(query)
+                (post.profiles && post.profiles.username && post.profiles.username.toLowerCase().includes(query))
             );
             renderNews(filteredPosts);
         });
@@ -553,6 +560,16 @@
             if (profile && profile.role === 'admin') {
                 document.getElementById('admin-post-trigger').classList.add('visible');
             }
+
+            // Desktop nav link active state
+            const isDesktop = window.innerWidth >= 1024;
+             if (isDesktop) {
+                 document.querySelectorAll('.desktop-nav-links .nav-link').forEach(link => {
+                     if (link.getAttribute('href') === '/news.html') {
+                         link.classList.add('active');
+                     }
+                 });
+             }
         });
         
         loadNews();
