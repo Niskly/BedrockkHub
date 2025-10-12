@@ -177,28 +177,6 @@
             .login-btn:hover { color: var(--text); background-color: rgba(255, 255, 255, 0.05); }
             .signup-btn { background: var(--brand-1); box-shadow: var(--shadow-brand); color: white; }
             .signup-btn:hover { filter: brightness(1.1); }
-            .desktop-search-container { position: relative; }
-            .desktop-search-container input {
-                background: var(--bg-2);
-                border: 1px solid var(--border);
-                border-radius: 10px;
-                padding: 0.6rem 1rem 0.6rem 2.5rem;
-                width: 180px;
-                color: var(--text);
-                transition: all 0.2s ease;
-                cursor: pointer;
-            }
-            .desktop-search-container input:focus {
-                outline: none;
-                border-color: var(--brand-1);
-            }
-            .desktop-search-container i {
-                position: absolute;
-                left: 1rem;
-                top: 50%;
-                transform: translateY(-50%);
-                color: var(--muted);
-            }
         }
         /* ====== END HEADER STYLES ====== */
 
@@ -258,47 +236,6 @@
         .format-divider { width: 1px; background: var(--border); margin: 4px 8px; }
         #post-form-actions { display: flex; justify-content: flex-end; align-items: center; gap: 1rem; margin-top: 1rem; }
         #char-counter { font-size: 0.8rem; color: var(--muted); }
-
-        /* Search Modal Styles */
-        .search-hub-container { max-width: 700px; margin: 2.5rem auto 0; position: relative; }
-        .search-input-wrapper { display: flex; position: relative; background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); transition: border-color 0.2s, box-shadow 0.2s; }
-        .search-input-wrapper:focus-within { border-color: var(--brand-1); box-shadow: 0 15px 40px rgba(0,0,0,0.3), 0 0 0 3px rgba(222, 33, 42, .3); }
-        .search-type-dropdown { position: relative; }
-        #modal-search-type-btn { display: flex; align-items: center; gap: 0.5rem; height: 100%; padding: 0 1.2rem; background: var(--bg-2); border: none; color: var(--text); font-weight: 600; border-radius: 15px 0 0 15px; cursor: pointer; border-right: 1px solid var(--border); }
-        #modal-search-type-btn .fa-chevron-down { font-size: 0.7em; transition: transform 0.2s; }
-        .search-type-dropdown.open #modal-search-type-btn .fa-chevron-down { transform: rotate(180deg); }
-        #modal-search-type-menu { display: none; position: absolute; top: 110%; left: 0; z-index: 12; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 100%; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
-        .search-type-dropdown.open #modal-search-type-menu { display: block; }
-        .search-type-option { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; }
-        .search-type-option:hover { background: var(--bg-2); }
-        .search-type-option i { width: 16px; color: var(--muted); }
-        #modal-universal-search { width: 100%; padding: 1.25rem 1.5rem; font-size: 1.1rem; background: transparent; border: none; color: var(--text); outline: none; }
-        .search-result-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; transition: background-color 0.2s; }
-        .search-result-item:not(:last-child) { border-bottom: 1px solid var(--border); }
-        .search-result-item:hover { background: var(--bg-2); }
-        .search-result-icon, .search-result-avatar { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
-        .search-result-avatar.is-mc-skin { border-radius: 4px; image-rendering: pixelated; border: 1px solid var(--border); background: var(--bg-2); }
-        .search-result-info { text-align: left; }
-        .search-result-name { font-weight: 600; color: var(--text); }
-        .search-result-sub { font-size: 0.8rem; color: var(--muted); }
-        .loading { display: flex; align-items: center; justify-content: center; padding: 2rem; color: var(--muted); width: 100%; grid-column: 1 / -1; }
-        .loading::after { content: ''; width: 20px; height: 20px; border: 2px solid var(--border); border-top: 2px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-left: 10px; }
-        .desktop-search-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); z-index: 1000; display: none; align-items: flex-start; justify-content: center; padding-top: 10vh; animation: fadeIn 0.3s ease; }
-        .desktop-search-modal-backdrop.show { display: flex; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .desktop-search-modal-content { background: var(--bg-1); border-radius: 1rem; border: 1px solid var(--border); width: 100%; max-width: 700px; padding: 1rem; padding-top: 3rem; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: slideDown 0.4s ease; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        .close-search-modal-btn { position: absolute; top: 0.75rem; right: 0.75rem; background: var(--bg-2); border: 1px solid var(--border); color: var(--muted); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: grid; place-items: center; z-index: 15; }
-        .close-search-modal-btn:hover { background: var(--bg-1); color: var(--text); }
-        #modal-search-results { position: static; display: none; margin-top: 0.5rem; background: transparent; border: none; max-height: 250px; overflow-y: auto; }
-        #modal-search-results .search-result-item { background: var(--bg-2); border-radius: 8px; margin-bottom: 4px; border: none; }
-        #modal-search-results .search-result-item:hover { background: var(--bg-1); }
-        .modal-suggestions { margin-top: 1.5rem; padding: 0 0.5rem; }
-        .suggestions-title { font-size: 0.9rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
-        .modal-suggestions-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-        .suggestion-card { display: flex; align-items: center; gap: 1rem; background: var(--bg-2); padding: 0.75rem; border-radius: 12px; transition: background 0.2s; }
-        .suggestion-card:hover { background: var(--bg-1); }
-        .suggestion-card .pack-icon { width: 50px; height: 50px; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -317,15 +254,10 @@
                 <div class="desktop-nav-links" id="desktop-nav-links"></div>
             </div>
             <div class="desktop-nav-right">
-                <div class="desktop-search-container">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" placeholder="Search..." readonly>
-                </div>
                 <div id="desktop-auth-actions"></div>
             </div>
             <div class="nav-actions" id="nav-actions"></div>
             <div class="mobile-nav-controls">
-                <button id="mobile-search-toggle" class="mobile-nav-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
                 <div id="mobile-auth-actions"></div>
                 <button class="mobile-nav-btn mobile-nav-toggle"><i class="fa-solid fa-bars"></i></button>
             </div>
@@ -367,37 +299,6 @@
             <!-- News posts will be loaded here by JavaScript -->
         </div>
     </main>
-    
-    <div id="desktop-search-modal" class="desktop-search-modal-backdrop">
-        <div class="desktop-search-modal-content">
-            <button id="close-search-modal-btn" class="close-search-modal-btn"><i class="fa-solid fa-xmark"></i></button>
-            
-            <div class="search-hub-container" style="margin: 0; max-width: 100%;">
-                <div class="search-input-wrapper">
-                    <div class="search-type-dropdown" id="modal-search-type-dropdown">
-                        <button id="modal-search-type-btn">
-                            <span id="modal-search-type-label">Packs</span>
-                            <i class="fa-solid fa-chevron-down"></i>
-                        </button>
-                        <div id="modal-search-type-menu">
-                            <div class="search-type-option" data-type="packs"><i class="fa-solid fa-palette"></i> Packs</div>
-                            <div class="search-type-option" data-type="users"><i class="fa-solid fa-user"></i> Users</div>
-                            <div class="search-type-option" data-type="gamertags"><i class="fa-brands fa-xbox"></i> Gamertags</div>
-                        </div>
-                    </div>
-                    <input type="text" id="modal-universal-search" placeholder="Search for packs..." autocomplete="off">
-                </div>
-                <div id="modal-search-results"></div>
-            </div>
-
-            <div class="modal-suggestions">
-                <h3 class="suggestions-title">Newest Packs</h3>
-                <div id="modal-pack-suggestions" class="modal-suggestions-grid">
-                    <!-- Suggestions will be loaded here -->
-                </div>
-            </div>
-        </div>
-    </div>
 
     <div id="new-post-modal" class="modal">
         <div class="modal-dialog">
@@ -652,264 +553,10 @@
             renderNews(filteredPosts);
         });
 
-        function formatDate(isoString) { if (!isoString) return ''; const date = new Date(isoString); return `${date.getDate()}/${date.getMonth() + 1}/${String(date.getFullYear()).slice(-2)}`; }
-        function formatDownloads(count) { const num = count || 0; if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K'; return num.toLocaleString(); }
-
-        const desktopSearchInput = document.querySelector('.desktop-search-container input');
-        const mobileSearchToggle = document.getElementById('mobile-search-toggle');
-        const searchModal = document.getElementById('desktop-search-modal');
-        const closeModalBtn = document.getElementById('close-search-modal-btn');
-        let modalSearchType = 'packs';
-
-        async function loadNewPackSuggestions() {
-            const container = document.getElementById('modal-pack-suggestions');
-            if (!container) return;
-            container.innerHTML = '<div class="loading" style="grid-column: 1 / -1; padding: 1rem 0;"></div>';
-            try {
-                const { data, error } = await supabase.from('packs').select('id, name, icon_url').order('created_at', { ascending: false }).limit(4);
-                if (error) throw error;
-                if (data && data.length > 0) {
-                    container.innerHTML = data.map(pack => {
-                        const iconContent = pack.icon_url 
-                            ? `<img class="pack-icon" src="${pack.icon_url}" alt="${escapeHtml(pack.name)} Icon">`
-                            : `<div class="pack-icon" style="background:var(--bg-2); display:grid; place-items:center;"><i class="fa-solid fa-cube"></i></div>`;
-                        return `<a href="/packs.html?id=${pack.id}" class="suggestion-card">${iconContent}<div><div class="search-result-name">${escapeHtml(pack.name)}</div></div></a>`;
-                    }).join('');
-                } else {
-                    container.innerHTML = '<p class="tiny">No new packs to suggest.</p>';
-                }
-            } catch (err) {
-                container.innerHTML = '<p class="tiny">Could not load suggestions.</p>';
-            }
-        }
-
-        function openSearchModal() {
-            if (searchModal) {
-                searchModal.classList.add('show');
-                document.body.style.overflow = 'hidden';
-                loadNewPackSuggestions();
-                document.getElementById('modal-universal-search').focus();
-            }
-        }
-
-        function closeSearchModal() {
-            if (searchModal) {
-                searchModal.classList.remove('show');
-                document.body.style.overflow = '';
-            }
-        }
-
-        if (desktopSearchInput) desktopSearchInput.addEventListener('click', (e) => { e.preventDefault(); openSearchModal(); });
-        if (mobileSearchToggle) mobileSearchToggle.addEventListener('click', openSearchModal);
-        if(closeModalBtn) closeModalBtn.addEventListener('click', closeSearchModal);
-        if(searchModal) searchModal.addEventListener('click', (e) => { if (e.target === searchModal) closeSearchModal(); });
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && searchModal.classList.contains('show')) closeSearchModal(); });
-
-        async function performModalSearch() {
-            const query = document.getElementById('modal-universal-search').value.trim();
-            const resultsContainer = document.getElementById('modal-search-results');
-            if (query.length < 2) {
-                resultsContainer.style.display = 'none';
-                return;
-            }
-            let results = [];
-            if (modalSearchType === 'packs') {
-                const { data } = await supabase.from('packs').select('id, name, icon_url').ilike('name', `%${query}%`).limit(5);
-                results = (data || []).map(item => ({ type: 'pack', name: item.name, icon: item.icon_url, link: `/packs.html?id=${item.id}` }));
-            } else if (modalSearchType === 'users') {
-                const { data } = await supabase.from('profiles').select('username, avatar_url').ilike('username', `%${query}%`).limit(5);
-                results = (data || []).map(item => ({ type: 'user', name: item.username, icon: item.avatar_url, link: `/profile.html?user=${item.username}` }));
-            } else if (modalSearchType === 'gamertags') {
-                const { data } = await supabase.from('profiles').select('username, bedrock_gamertag, xuid').ilike('bedrock_gamertag', `%${query}%`).limit(5);
-                results = (data || []).map(item => ({ type: 'gamertag', name: item.bedrock_gamertag, sub: item.username, xuid: item.xuid, link: `/profile.html?user=${item.username}` }));
-            }
-            renderModalSearchResults(results);
-        }
-
-        function renderModalSearchResults(results) {
-            const container = document.getElementById('modal-search-results');
-            if (results.length === 0) {
-                container.innerHTML = `<div class="search-result-item"><div class="search-result-info"><div class="search-result-name">No results found</div></div></div>`;
-            } else {
-                container.innerHTML = results.map(item => {
-                    let iconHtml = '';
-                    if (item.type === 'pack') {
-                        iconHtml = item.icon 
-                            ? `<img src="${item.icon}" class="search-result-icon">`
-                            : `<div class="search-result-icon" style="background:var(--bg-2); display:grid; place-items:center;"><i class="fa-solid fa-cube"></i></div>`;
-                    } else if (item.type === 'gamertag' && item.xuid) {
-                        iconHtml = `<img src="/api/bedrock-skin?xuid=${item.xuid}&render_type=head" class="search-result-avatar is-mc-skin">`;
-                    } else {
-                        const initial = (item.name || '?').charAt(0).toUpperCase();
-                        iconHtml = `<img src="${item.icon || `https://placehold.co/40x40/1c1c1c/de212a?text=${initial}`}" class="search-result-avatar">`;
-                    }
-                    return `<a href="${item.link}" class="search-result-item">${iconHtml}<div class="search-result-info"><div class="search-result-name">${escapeHtml(item.name)}</div>${item.sub ? `<div class="search-result-sub">MCHub User: ${escapeHtml(item.sub)}</div>` : ''}</div></a>`;
-                }).join('');
-            }
-            container.style.display = 'block';
-        }
-
-        const modalDropdown = document.getElementById('modal-search-type-dropdown');
-        const modalSearchTypeBtn = document.getElementById('modal-search-type-btn');
-        const modalSearchTypeMenu = document.getElementById('modal-search-type-menu');
-        const modalSearchTypeLabel = document.getElementById('modal-search-type-label');
-        const modalSearchInput = document.getElementById('modal-universal-search');
-        let modalDebounceTimer;
-
-        if(modalSearchTypeBtn) {
-            modalSearchTypeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                modalDropdown.classList.toggle('open');
-            });
-        }
-        if(modalSearchTypeMenu) {
-            modalSearchTypeMenu.querySelectorAll('.search-type-option').forEach(option => {
-                option.addEventListener('click', () => {
-                    modalSearchType = option.dataset.type;
-                    modalSearchTypeLabel.textContent = option.textContent.trim();
-                    modalSearchInput.placeholder = `Search for ${modalSearchType}...`;
-                    modalDropdown.classList.remove('open');
-                    performModalSearch();
-                });
-            });
-        }
-
-        if(modalSearchInput) {
-            modalSearchInput.addEventListener('input', () => {
-                clearTimeout(modalDebounceTimer);
-                modalDebounceTimer = setTimeout(performModalSearch, 300);
-            });
-        }
-        window.addEventListener('click', (e) => {
-            if (modalDropdown && !e.target.closest('#modal-search-type-dropdown')) {
-                modalDropdown.classList.remove('open');
-            }
-        });
-        
-        // NOTIFICATION SCRIPT
-        let currentUserId = null;
-        let notificationSubscription = null;
-
-        async function fetchAndRenderNotifications() {
-            if (!currentUserId) return;
-            
-            const { data, error } = await supabase
-                .from('notifications')
-                .select('*')
-                .eq('user_id', currentUserId)
-                .order('created_at', { ascending: false })
-                .limit(20);
-
-            if (error) {
-                console.error("Error fetching notifications:", error);
-                return;
-            }
-
-            const list = document.getElementById('notification-list');
-            const badgeDesktop = document.getElementById('notification-badge');
-            const badgeMobile = document.getElementById('notification-badge-mobile');
-            let unreadCount = 0;
-
-            if (data.length === 0) {
-                list.innerHTML = '<div class="notification-list-empty">You have no notifications.</div>';
-            } else {
-                list.innerHTML = data.map(n => {
-                    if (!n.is_read) unreadCount++;
-                    const iconMap = {
-                        'new_news': 'fa-solid fa-newspaper',
-                        'new_pack': 'fa-solid fa-box',
-                        'comment_reply': 'fa-solid fa-comment-dots'
-                    };
-                    return `
-                        <div class="notification-item ${n.is_read ? 'read' : ''}" id="notification-${n.id}">
-                            <i class="${iconMap[n.type] || 'fa-solid fa-bell'} notification-icon"></i>
-                            <a href="${n.content.link}" class="notification-content">
-                                <p>${escapeHtml(n.content.text)}</p>
-                                <span class="time">${timeAgo(n.created_at)}</span>
-                            </a>
-                            <button class="dismiss-notification-btn" data-id="${n.id}">&times;</button>
-                        </div>`;
-                }).join('');
-            }
-            
-            const badges = [badgeDesktop, badgeMobile];
-            badges.forEach(badge => {
-                if (badge) {
-                    badge.style.display = unreadCount > 0 ? 'block' : 'none';
-                }
-            });
-        }
-
-        async function markOneAsRead(notificationId) {
-            const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', notificationId);
-            if (!error) {
-                // No re-fetch needed, just update UI locally for speed
-                const item = document.getElementById(`notification-${notificationId}`);
-                if (item && !item.classList.contains('read')) {
-                    item.classList.add('read');
-                    const badges = document.querySelectorAll('.notification-badge');
-                    let currentCount = parseInt(badges[0].textContent) || 0;
-                    if (currentCount > 0) {
-                        badges.forEach(b => {
-                            if (currentCount - 1 <= 0) b.style.display = 'none';
-                        });
-                    }
-                }
-            }
-        }
-
-        function setupNotificationListeners() {
-            const backdrop = document.getElementById('notification-backdrop');
-            
-            document.addEventListener('click', (e) => {
-                if (e.target.closest('.notification-toggle-btn')) {
-                    backdrop.classList.add('show');
-                } 
-                else if (e.target.id === 'close-notifications-btn' || e.target.id === 'notification-backdrop') {
-                    backdrop.classList.remove('show');
-                }
-                else if (e.target.id === 'mark-all-read-btn') {
-                    supabase.from('notifications').update({ is_read: true }).eq('user_id', currentUserId).then(fetchAndRenderNotifications);
-                }
-                else if (e.target.classList.contains('dismiss-notification-btn')) {
-                    markOneAsRead(e.target.dataset.id);
-                }
-                else if (e.target.closest('.notification-content a')) {
-                    const notificationItem = e.target.closest('.notification-item');
-                    const notificationId = notificationItem.id.split('-')[1];
-                    if (!notificationItem.classList.contains('read')) {
-                        markOneAsRead(notificationId);
-                    }
-                    backdrop.classList.remove('show');
-                }
-            });
-        }
-
-        function createNotificationSubscription() {
-            if (notificationSubscription) supabase.removeChannel(notificationSubscription);
-
-            notificationSubscription = supabase.channel(`public:notifications:user_id=eq.${currentUserId}`)
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, payload => {
-                    fetchAndRenderNotifications();
-                }).subscribe();
-        }
-
-
         // Initialization
         document.addEventListener('auth-ready', (event) => {
-            const { user, profile } = event.detail;
+            const { profile } = event.detail;
             loggedInProfile = profile;
-
-            if (user) {
-                currentUserId = user.id;
-                fetchAndRenderNotifications();
-                createNotificationSubscription();
-                setupNotificationListeners();
-            } else {
-                currentUserId = null;
-                if (notificationSubscription) supabase.removeChannel(notificationSubscription);
-            }
-
             if (profile && profile.role === 'admin') {
                 document.getElementById('admin-post-trigger').classList.add('visible');
             }
@@ -931,12 +578,13 @@
             desktopNavLinks.querySelectorAll('a, button.nav-link').forEach(link => {
                 if (link.tagName.toLowerCase() === 'a') {
                     link.className = 'nav-link';
-                    const linkPath = (link.getAttribute('href') || '');
-                    const currentPath = window.location.pathname;
+                    const linkPathClean = (link.getAttribute('href') || '').replace('.html', '').replace(/\/$/, "");
+                    const currentPathClean = window.location.pathname.replace('.html', '').replace(/\/$/, "");
                     
-                    if (linkPath === currentPath || (currentPath.endsWith('/') && linkPath.endsWith('/index.html'))) {
-                        link.classList.add('active');
-                    } else if (linkPath.includes('news.html') && currentPath.includes('news.html')) {
+                    const isHomePage = currentPathClean === '' || currentPathClean === '/index';
+                    const isLinkToHome = linkPathClean === '' || linkPathClean === '/';
+
+                    if ((isHomePage && isLinkToHome) || (linkPathClean !== '' && linkPathClean === currentPathClean)) {
                         link.classList.add('active');
                     }
                 }
@@ -968,4 +616,3 @@
     </script>
 </body>
 </html>
-
