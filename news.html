@@ -563,13 +563,52 @@
 
             // Desktop nav link active state
             const isDesktop = window.innerWidth >= 1024;
-             if (isDesktop) {
-                 document.querySelectorAll('.desktop-nav-links .nav-link').forEach(link => {
-                     if (link.getAttribute('href') === '/news.html') {
-                         link.classList.add('active');
-                     }
-                 });
-             }
+            if (!isDesktop) return;
+
+            const navActions = document.getElementById('nav-actions');
+            const desktopNavLinks = document.getElementById('desktop-nav-links');
+            const desktopAuth = document.getElementById('desktop-auth-actions');
+
+            navActions.querySelectorAll('.nav-link-item').forEach(linkOrContainer => {
+                if (linkOrContainer.classList.contains('tools-dropdown-container') || linkOrContainer.tagName.toLowerCase() === 'a') {
+                    desktopNavLinks.appendChild(linkOrContainer);
+                }
+            });
+
+            desktopNavLinks.querySelectorAll('a, button.nav-link').forEach(link => {
+                if (link.tagName.toLowerCase() === 'a') {
+                    link.className = 'nav-link';
+                    const linkPathClean = (link.getAttribute('href') || '').replace('.html', '').replace(/\/$/, "");
+                    const currentPathClean = window.location.pathname.replace('.html', '').replace(/\/$/, "");
+                    
+                    const isHomePage = currentPathClean === '' || currentPathClean === '/index';
+                    const isLinkToHome = linkPathClean === '' || linkPathClean === '/';
+
+                    if ((isHomePage && isLinkToHome) || (linkPathClean !== '' && linkPathClean === currentPathClean)) {
+                        link.classList.add('active');
+                    }
+                }
+            });
+
+            const loginBtn = navActions.querySelector('.login-btn-item');
+            const signupBtn = navActions.querySelector('.signup-btn-item');
+            const userDropdown = navActions.querySelector('.user-dropdown');
+            const notificationBtn = navActions.querySelector('.notification-toggle-btn');
+            
+            if(notificationBtn) desktopAuth.appendChild(notificationBtn);
+
+            if (userDropdown) {
+                desktopAuth.appendChild(userDropdown);
+            } else {
+                if (loginBtn) {
+                    loginBtn.className = 'login-btn';
+                    desktopAuth.appendChild(loginBtn);
+                }
+                if (signupBtn) {
+                    signupBtn.className = 'signup-btn';
+                    desktopAuth.appendChild(signupBtn);
+                }
+            }
         });
         
         loadNews();
@@ -577,4 +616,3 @@
     </script>
 </body>
 </html>
-
