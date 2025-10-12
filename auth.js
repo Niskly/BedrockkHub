@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
@@ -42,6 +41,7 @@ function setupMobileNav(profile, user) {
             </a>
         </div>`;
 
+    let userHeader = '';
     let mainLinks = '';
     let footerLinks = '';
     const currentPath = window.location.pathname.endsWith('/') || window.location.pathname.endsWith('/index.html') 
@@ -50,20 +50,35 @@ function setupMobileNav(profile, user) {
 
     const isHome = currentPath === '/';
     const isTexturePacks = currentPath === '/texturepacks.html';
+    const isNews = currentPath === '/news.html';
     const isProfile = profile && currentPath === `/profile.html` && new URLSearchParams(window.location.search).get('user') === profile.username;
 
+    const sharedLinks = `
+        <a href="/" class="${isHome ? 'active-mobile-link' : ''}"><i class="fa-solid fa-house"></i><span>Home</span></a>
+        <a href="/texturepacks.html" class="${isTexturePacks ? 'active-mobile-link' : ''}"><i class="fa-solid fa-palette"></i><span>Texture Packs</span></a>
+        <a href="/news.html" class="${isNews ? 'active-mobile-link' : ''}"><i class="fa-solid fa-newspaper"></i><span>News</span></a>
+        <a href="/skineditor.html"><i class="fa-solid fa-wrench"></i><span>Tools</span></a>
+    `;
+
     if (profile && user) {
+        const avatarSrc = profile.avatar_url ? profile.avatar_url : `https://placehold.co/50x50/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}`;
+        userHeader = `
+        <div class="mobile-nav-user-header">
+            <img src="${avatarSrc}" alt="Avatar" class="mobile-nav-avatar">
+            <div class="mobile-nav-user-info">
+                <span class="mobile-nav-username">${profile.username}</span>
+                <span class="mobile-nav-email">${user.email}</span>
+            </div>
+        </div>`;
+
         mainLinks = `
-            <a href="/" class="${isHome ? 'active-mobile-link' : ''}"><i class="fa-solid fa-house"></i><span>Home</span></a>
-            <a href="/texturepacks.html" class="${isTexturePacks ? 'active-mobile-link' : ''}"><i class="fa-solid fa-palette"></i><span>Texture Packs</span></a>
+            ${sharedLinks}
             <a href="/profile.html?user=${profile.username}" class="${isProfile ? 'active-mobile-link' : ''}"><i class="fa-solid fa-user"></i><span>My Profile</span></a>`;
         footerLinks = `
             <a href="/settings.html"><i class="fa-solid fa-cog"></i><span>Settings</span></a>
             <a href="#" id="mobile-logout-btn" class="logout-link"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>`;
     } else {
-        mainLinks = `
-            <a href="/" class="${isHome ? 'active-mobile-link' : ''}"><i class="fa-solid fa-house"></i><span>Home</span></a>
-            <a href="/texturepacks.html" class="${isTexturePacks ? 'active-mobile-link' : ''}"><i class="fa-solid fa-palette"></i><span>Texture Packs</span></a>`;
+        mainLinks = sharedLinks;
         footerLinks = `
             <a href="/login.html" class="login-mobile-link"><i class="fa-solid fa-right-to-bracket"></i><span>Login</span></a>
             <a href="/signup.html" class="primary-mobile-link"><i class="fa-solid fa-user-plus"></i><span>Sign Up</span></a>`;
@@ -72,6 +87,7 @@ function setupMobileNav(profile, user) {
     sidebar.innerHTML = `
         <button class="mobile-nav-close" aria-label="Close navigation menu"><i class="fa-solid fa-xmark"></i></button>
         ${brandHeader}
+        ${userHeader}
         <nav class="mobile-nav-main-links">${mainLinks}</nav>
         <nav class="mobile-nav-footer-links">${footerLinks}</nav>
     `;
@@ -112,6 +128,22 @@ function renderUserDropdown(profile, user) {
         navActions.innerHTML = `
             <a class="btn ghost nav-link-item" href="/"><i class="fa-solid fa-house"></i>Home</a>
             <a class="btn ghost nav-link-item" href="/texturepacks.html"><i class="fa-solid fa-palette"></i>Texture Packs</a>
+            <a class="btn ghost nav-link-item" href="/news.html"><i class="fa-solid fa-newspaper"></i>News</a>
+            
+            <div class="tools-dropdown-container">
+                <button id="tools-btn" class="btn ghost">
+                    <i class="fa-solid fa-wrench"></i> Tools <i class="fa-solid fa-chevron-down" style="font-size: 0.8em;"></i>
+                </button>
+                <div id="tools-menu">
+                    <a href="/skineditor.html"><i class="fa-solid fa-paint-brush"></i> Skin Editor</a>
+                </div>
+            </div>
+
+            <button id="notification-btn" class="notification-toggle-btn">
+                &#128276;
+                <span id="notification-badge" class="notification-badge" style="display:none;"></span>
+            </button>
+
             <div class="user-dropdown">
                 <button class="user-menu-btn" aria-haspopup="true" aria-expanded="false">
                     <img src="${avatarSrc}" alt="User Avatar" class="nav-avatar-img">
@@ -148,6 +180,22 @@ function renderUserDropdown(profile, user) {
                 await supabase.auth.signOut();
             });
         }
+        
+        const toolsDropdown = navActions.querySelector('.tools-dropdown-container');
+        if(toolsDropdown) {
+             const btn = toolsDropdown.querySelector('#tools-btn');
+             btn.addEventListener('click', (e) => {
+                 e.stopPropagation();
+                 toolsDropdown.classList.toggle('open');
+             });
+        }
+        
+        // Move notification button to mobile auth actions on smaller screens
+        const mobileAuthActions = document.getElementById('mobile-auth-actions');
+        if (mobileAuthActions && window.innerWidth < 1024) {
+            const notificationBtn = navActions.querySelector('#notification-btn');
+            if(notificationBtn) mobileAuthActions.appendChild(notificationBtn);
+        }
     }
 
     setupMobileNav(profile, user);
@@ -158,6 +206,7 @@ function renderLoginButtons() {
         navActions.innerHTML = `
             <a class="btn ghost nav-link-item" href="/"><i class="fa-solid fa-house"></i>Home</a>
             <a class="btn ghost nav-link-item" href="/texturepacks.html"><i class="fa-solid fa-palette"></i>Texture Packs</a>
+            <a class="btn ghost nav-link-item" href="/news.html"><i class="fa-solid fa-newspaper"></i>News</a>
             <a class="login-btn-item" href="/login.html"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
             <a class="signup-btn-item" href="/signup.html"><i class="fa-solid fa-user-plus"></i> Sign Up</a>`;
     }
@@ -255,5 +304,10 @@ window.addEventListener('click', (event) => {
             const btn = userDropdown.querySelector('.user-menu-btn');
             if (btn) btn.setAttribute('aria-expanded', 'false');
         }
+    }
+    
+    const toolsDropdown = document.querySelector('.tools-dropdown-container');
+    if (toolsDropdown && !event.target.closest('.tools-dropdown-container')) {
+        toolsDropdown.classList.remove('open');
     }
 });
