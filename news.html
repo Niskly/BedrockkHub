@@ -757,25 +757,21 @@
             }).join('');
         }
         
-        async function loadNews() {
-            feedContainer.innerHTML = `<div class="empty-state"><div style="font-size: 2rem; color: var(--brand-1);">⏳</div><h3>Loading News...</h3></div>`;
-            try {
-                const { data, error } = await supabase
-                    .from('news')
-                    .select(`*, profiles(username, avatar_url)`)
-                    .order('created_at', { ascending: false });
-                if (error) throw error;
-                allPosts = data;
-                renderNews(allPosts);
-            } catch (err) {
-                console.error("Error loading news:", err);
-                feedContainer.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon" style="color:var(--brand-1)"><i class="fa-solid fa-circle-exclamation"></i></div>
-                        <h3>Failed to load news</h3>
-                        <p>There was an error connecting to the server. Please try again later.</p>
-                    </div>`;
-            }
+async function loadNews() {
+    feedContainer.innerHTML = `<div class="empty-state"><div style="font-size: 2rem; color: var(--brand-1);">⏳</div><h3>Loading News...</h3></div>`;
+    try {
+        const { data, error } = await supabase
+            .from('news')
+            .select(`*, profiles(username, avatar_url)`)
+            .order('created_at', { ascending: false });
+        
+        console.log('News data:', data);
+        console.log('News error:', error);
+        
+        if (error) throw error;
+        allPosts = data;
+        renderNews(allPosts);
+    } catch (err) {
         }
         
         const newPostBtn = document.getElementById('new-post-btn');
