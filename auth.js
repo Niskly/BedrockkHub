@@ -61,7 +61,7 @@ function setupMobileNav(profile, user) {
             </a>
             <div class="collapsible-content">
                 <a href="/skineditor.html" class="sub-link" style="background-color: var(--bg-2); margin: 0.25rem; display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; border-radius: 8px;">
-                    <i style="font-size: 1rem; width: 24px; text-align: center;">🎨</i>
+                    <i class="fa-solid fa-paint-brush" style="width: 24px; text-align: center; font-size: 1.1rem;"></i>
                     <span>Skin Editor</span>
                 </a>
             </div>
@@ -362,3 +362,4 @@ window.addEventListener('click', (event) => {
         toolsDropdown.classList.remove('open');
     }
 });
+
