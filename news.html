@@ -31,6 +31,31 @@
         body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 15px/1.6 Inter, sans-serif; }
         body::-webkit-scrollbar { display: none; }
         body { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Custom Scrollbar */
+        .notification-list::-webkit-scrollbar,
+        #modal-search-results::-webkit-scrollbar,
+        .news-feed::-webkit-scrollbar {
+            width: 8px;
+        }
+        .notification-list::-webkit-scrollbar-track,
+        #modal-search-results::-webkit-scrollbar-track,
+        .news-feed::-webkit-scrollbar-track {
+            background: var(--bg-2);
+            border-radius: 4px;
+        }
+        .notification-list::-webkit-scrollbar-thumb,
+        #modal-search-results::-webkit-scrollbar-thumb,
+        .news-feed::-webkit-scrollbar-thumb {
+            background: var(--border-strong);
+            border-radius: 4px;
+        }
+        .notification-list::-webkit-scrollbar-thumb:hover,
+        #modal-search-results::-webkit-scrollbar-thumb:hover,
+        .news-feed::-webkit-scrollbar-thumb:hover {
+            background: var(--muted);
+        }
+        
         body::before {
             content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background-image: var(--bg-image, url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg'));
@@ -522,6 +547,17 @@
         .empty-state-icon { font-size: 3rem; color: var(--brand-1); margin-bottom: 1rem; }
         .empty-state h3 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
         .empty-state p { color: var(--muted); }
+        
+        /* Loading skeleton */
+        .skeleton-post { background: rgba(28, 28, 28, 0.8); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; display: flex; gap: 1rem; margin-bottom: 1.5rem; }
+        .skeleton-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(90deg, var(--bg-2) 25%, var(--border) 50%, var(--bg-2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        .skeleton-content { flex-grow: 1; }
+        .skeleton-line { height: 12px; background: linear-gradient(90deg, var(--bg-2) 25%, var(--border) 50%, var(--bg-2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; margin-bottom: 8px; }
+        .skeleton-line.short { width: 30%; }
+        .skeleton-line.medium { width: 60%; }
+        .skeleton-line.long { width: 100%; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        
         #toast-container { position: fixed; top: 80px; right: 20px; z-index: 1000; }
         .toast { padding: 12px 18px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: toastSlideIn 0.3s ease-out forwards; background: var(--bg-1); border: 1px solid var(--border); }
         @keyframes toastSlideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
