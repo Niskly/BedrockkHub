@@ -509,6 +509,15 @@
         .post-timestamp { font-size: 0.8rem; color: var(--muted); }
         .post-body { line-height: 1.6; color: var(--muted); white-space: pre-wrap; word-break: break-word; }
         .post-body a { color: var(--brand-1); text-decoration: underline; }
+        .post-actions { position: relative; }
+        .post-menu-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 0.5rem; border-radius: 8px; font-size: 1.2rem; transition: all 0.2s; }
+        .post-menu-btn:hover { background: var(--bg-2); color: var(--text); }
+        .post-dropdown { display: none; position: absolute; right: 0; top: calc(100% + 0.25rem); background: var(--bg-1); border: 1px solid var(--border); border-radius: 8px; min-width: 150px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; }
+        .post-dropdown.show { display: block; }
+        .post-dropdown button { width: 100%; background: none; border: none; color: var(--muted); padding: 0.75rem 1rem; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; font-weight: 600; transition: all 0.2s; }
+        .post-dropdown button:hover { background: var(--bg-2); color: var(--text); }
+        .post-dropdown .delete-post-btn { color: var(--brand-1); }
+        .post-dropdown .delete-post-btn:hover { background: rgba(222, 33, 42, 0.15); }
         .empty-state { text-align: center; padding: 4rem 2rem; background: rgba(28, 28, 28, 0.8); border: 1px solid var(--border); border-radius: 16px; }
         .empty-state-icon { font-size: 3rem; color: var(--brand-1); margin-bottom: 1rem; }
         .empty-state h3 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
@@ -741,6 +750,21 @@
                 
                 const formattedContent = parseContent(post.content);
 
+                // Check if current user can delete this post (owner or admin)
+                const canDelete = loggedInProfile && (post.author_id === currentUserId || loggedInProfile.role === 'admin');
+                const actionsMenu = canDelete ? `
+                    <div class="post-actions">
+                        <button class="post-menu-btn" data-post-id="${post.id}">
+                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                        </button>
+                        <div class="post-dropdown" id="post-dropdown-${post.id}">
+                            <button class="delete-post-btn" data-post-id="${post.id}">
+                                <i class="fa-solid fa-trash"></i> Delete Post
+                            </button>
+                        </div>
+                    </div>
+                ` : '';
+
                 return `
                     <div class="news-post">
                         <a href="/profile.html?user=${escapeHtml(username)}">
@@ -750,37 +774,68 @@
                             <div class="post-header">
                                 <a href="/profile.html?user=${escapeHtml(username)}" class="post-author-name">${escapeHtml(username)}</a>
                                 <span class="post-timestamp">${timeAgo(post.created_at)}</span>
+                                <div style="margin-left: auto;">${actionsMenu}</div>
                             </div>
                             <div class="post-body">${formattedContent}</div>
                         </div>
                     </div>`;
             }).join('');
+
+            // Add event listeners for the menu buttons
+            document.querySelectorAll('.post-menu-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const postId = btn.dataset.postId;
+                    const dropdown = document.getElementById(`post-dropdown-${postId}`);
+                    
+                    // Close all other dropdowns
+                    document.querySelectorAll('.post-dropdown').forEach(d => {
+                        if (d.id !== `post-dropdown-${postId}`) d.classList.remove('show');
+                    });
+                    
+                    dropdown.classList.toggle('show');
+                });
+            });
+
+            // Add event listeners for delete buttons
+            document.querySelectorAll('.delete-post-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const postId = btn.dataset.postId;
+                    if (confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+                        await deletePost(postId);
+                    }
+                });
+            });
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.post-actions')) {
+                    document.querySelectorAll('.post-dropdown').forEach(d => d.classList.remove('show'));
+                }
+            });
         }
         
-async function loadNews() {
-    feedContainer.innerHTML = `<div class="empty-state"><div style="font-size: 2rem; color: var(--brand-1);">⏳</div><h3>Loading News...</h3></div>`;
-    try {
-        const { data, error } = await supabase
-            .from('news')
-            .select(`*, profiles(username, avatar_url)`)
-            .order('created_at', { ascending: false });
-        
-        console.log('News data:', data);
-        console.log('News error:', error);
-        
-        if (error) throw error;
-        allPosts = data;
-        renderNews(allPosts);
-    } catch (err) {
-        console.error("Error loading news:", err);
-        feedContainer.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon" style="color:var(--brand-1)"><i class="fa-solid fa-circle-exclamation"></i></div>
-                <h3>Failed to load news</h3>
-                <p>There was an error connecting to the server. Please try again later.</p>
-            </div>`;
-    }
-}
+        async function loadNews() {
+            feedContainer.innerHTML = `<div class="empty-state"><div style="font-size: 2rem; color: var(--brand-1);">⏳</div><h3>Loading News...</h3></div>`;
+            try {
+                const { data, error } = await supabase
+                    .from('news')
+                    .select(`*, profiles(username, avatar_url)`)
+                    .order('created_at', { ascending: false });
+                if (error) throw error;
+                allPosts = data;
+                renderNews(allPosts);
+            } catch (err) {
+                console.error("Error loading news:", err);
+                feedContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon" style="color:var(--brand-1)"><i class="fa-solid fa-circle-exclamation"></i></div>
+                        <h3>Failed to load news</h3>
+                        <p>There was an error connecting to the server. Please try again later.</p>
+                    </div>`;
+            }
+        }
         
         const newPostBtn = document.getElementById('new-post-btn');
         const modal = document.getElementById('new-post-modal');
