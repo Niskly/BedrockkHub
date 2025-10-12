@@ -221,6 +221,7 @@
             border-color: var(--border-strong);
             color: var(--text);
         }
+        .mobile-nav-btn.notification-toggle-btn { color: white; }
         .notification-toggle-btn { position: relative; }
         .notification-badge {
             position: absolute;
@@ -233,6 +234,7 @@
             border-radius: 50%;
             border: 2px solid var(--bg-1);
         }
+        .mobile-nav-btn .notification-badge { top: 6px; right: 6px; border-color: var(--bg-2); }
         .notification-header {
             display: flex;
             justify-content: space-between;
@@ -293,6 +295,21 @@
         .mobile-nav-username { font-weight: 700; color: var(--text); }
         .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
 
+        /* ====== MOBILE TOOLS COLLAPSIBLE ====== */
+        .mobile-nav-collapsible .collapsible-trigger {
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .mobile-nav-collapsible .arrow {
+            font-size: 0.8em; transition: transform 0.3s ease;
+        }
+        .mobile-nav-collapsible.open .arrow { transform: rotate(180deg); }
+        .collapsible-content {
+            max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out;
+            padding-left: 1rem;
+        }
+        .collapsible-content .sub-link { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+
+
         @media (min-width: 1024px) {
             .mobile-nav-controls { display: none !important; }
             header { padding: 0 1.5rem; }
@@ -318,6 +335,10 @@
                 display: flex;
                 align-items: center;
                 gap: 0.5rem;
+                background: transparent;
+                border: none;
+                font-family: inherit;
+                font-size: inherit;
             }
             .nav-link:hover {
                 background-color: rgba(255, 255, 255, 0.05);
@@ -870,11 +891,16 @@
             const desktopNavLinks = document.getElementById('desktop-nav-links');
             const desktopAuth = document.getElementById('desktop-auth-actions');
 
-            navActions.querySelectorAll('.nav-link-item').forEach(link => {
-                desktopNavLinks.appendChild(link);
+            navActions.querySelectorAll('.nav-link-item').forEach(linkOrContainer => {
+                // Check if it's the tools dropdown container or a regular link
+                if (linkOrContainer.classList.contains('tools-dropdown-container')) {
+                     desktopNavLinks.appendChild(linkOrContainer);
+                } else if (linkOrContainer.tagName.toLowerCase() === 'a') {
+                    desktopNavLinks.appendChild(linkOrContainer);
+                }
             });
 
-            desktopNavLinks.querySelectorAll('a, .tools-dropdown-container button').forEach(link => {
+            desktopNavLinks.querySelectorAll('a, button.nav-link').forEach(link => {
                 if(link.tagName.toLowerCase() === 'a') {
                     link.className = 'nav-link';
                     const linkPath = link.getAttribute('href');
@@ -888,7 +914,6 @@
             const loginBtn = navActions.querySelector('.login-btn-item');
             const signupBtn = navActions.querySelector('.signup-btn-item');
             const userDropdown = navActions.querySelector('.user-dropdown');
-            const toolsDropdown = navActions.querySelector('.tools-dropdown-container');
             const notificationBtn = navActions.querySelector('.notification-toggle-btn');
             
             if(notificationBtn) desktopAuth.appendChild(notificationBtn);
@@ -1039,7 +1064,7 @@
             }
         });
 
-        // NEW: NOTIFICATION SCRIPT
+        // NOTIFICATION SCRIPT
         let currentUserId = null;
         let notificationSubscription = null;
 
@@ -1098,7 +1123,6 @@
             badges.forEach(badge => {
                 if (badge) {
                     badge.style.display = unreadCount > 0 ? 'block' : 'none';
-                    badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
                 }
             });
         }
@@ -1106,7 +1130,18 @@
         async function markOneAsRead(notificationId) {
             const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', notificationId);
             if (!error) {
-                fetchAndRenderNotifications();
+                // No re-fetch needed, just update UI locally for speed
+                const item = document.getElementById(`notification-${notificationId}`);
+                if (item && !item.classList.contains('read')) {
+                    item.classList.add('read');
+                    const badges = document.querySelectorAll('.notification-badge');
+                    let currentCount = parseInt(badges[0].textContent) || 0;
+                    if (currentCount > 0) {
+                        badges.forEach(b => {
+                            if (currentCount - 1 <= 0) b.style.display = 'none';
+                        });
+                    }
+                }
             }
         }
 
