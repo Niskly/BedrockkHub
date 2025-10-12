@@ -277,6 +277,7 @@
                 border: none;
                 font-family: inherit;
                 font-size: inherit;
+                cursor: pointer;
             }
             .nav-link:hover {
                 background-color: rgba(255, 255, 255, 0.05);
@@ -358,7 +359,7 @@
             background: rgba(0,0,0,0.7);
             backdrop-filter: blur(10px);
             z-index: 1000;
-            display: none; /* Hidden by default */
+            display: none;
             align-items: flex-start;
             justify-content: center;
             padding-top: 10vh;
@@ -489,7 +490,7 @@
         .container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
         .page-header { text-align: center; margin-bottom: 2.5rem; }
         .page-header-icon { font-size: 2.5rem; color: var(--brand-1); margin-bottom: 1rem; }
-        .page-header h1 { font-size: 2.5rem; font-weight: 900; background: var(--gradient-brand); -webkit-background-clip: text; color: transparent; margin: 0 0 0.5rem 0; }
+        .page-header h1 { font-size: 2.5rem; font-weight: 900; background: var(--gradient-brand); -webkit-background-clip: text; background-clip: text; color: transparent; margin: 0 0 0.5rem 0; }
         .page-header p { color: var(--muted); font-size: 1.1rem; max-width: 500px; margin: 0 auto; }
         .main-controls-container { display: flex; align-items: center; gap: 1rem; margin-bottom: 2.5rem; }
         .search-container { position: relative; flex-grow: 1; }
@@ -675,7 +676,6 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        // --- STATE & CONSTANTS ---
         let allPosts = [];
         let loggedInProfile = null;
         let currentUserId = null;
@@ -684,14 +684,13 @@
         let modalDebounceTimer;
         const feedContainer = document.getElementById('news-feed-container');
 
-        // --- UTILITY FUNCTIONS ---
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             if (!container) return;
             const toast = document.createElement('div');
             toast.className = `toast`;
-            toast.style.borderColor = type === 'success' ? 'var(--success)' : 'var(--danger)';
-            toast.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'circle-check' : 'circle-exclamation'}" style="color: ${type === 'success' ? 'var(--success)' : 'var(--danger)'};"></i> <span>${message}</span>`;
+            toast.style.borderColor = type === 'success' ? '#4ade80' : 'var(--brand-1)';
+            toast.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'circle-check' : 'circle-exclamation'}" style="color: ${type === 'success' ? '#4ade80' : 'var(--brand-1)'};"></i> <span>${message}</span>`;
             container.appendChild(toast);
             setTimeout(() => {
                 if(toast) {
@@ -725,7 +724,6 @@
             return processedContent.replace(/\n/g, '<br>');
         }
 
-        // --- NEWS FEED LOGIC ---
         function renderNews(postsToRender) {
             if (postsToRender.length === 0) {
                 feedContainer.innerHTML = `
@@ -760,7 +758,7 @@
         }
         
         async function loadNews() {
-            feedContainer.innerHTML = `<div class="empty-state"><div class="spinner-sm" style="font-size: 2rem; border-top-color: var(--brand-1);"></div><h3>Loading News...</h3></div>`;
+            feedContainer.innerHTML = `<div class="empty-state"><div style="font-size: 2rem; color: var(--brand-1);">⏳</div><h3>Loading News...</h3></div>`;
             try {
                 const { data, error } = await supabase
                     .from('news')
@@ -773,14 +771,13 @@
                 console.error("Error loading news:", err);
                 feedContainer.innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-state-icon" style="color:var(--danger)"><i class="fa-solid fa-circle-exclamation"></i></div>
+                        <div class="empty-state-icon" style="color:var(--brand-1)"><i class="fa-solid fa-circle-exclamation"></i></div>
                         <h3>Failed to load news</h3>
                         <p>There was an error connecting to the server. Please try again later.</p>
                     </div>`;
             }
         }
         
-        // --- ADMIN POST MODAL LOGIC ---
         const newPostBtn = document.getElementById('new-post-btn');
         const modal = document.getElementById('new-post-modal');
         const closeModalBtn = document.getElementById('close-modal-btn');
@@ -830,7 +827,7 @@
             const tweetBtn = document.getElementById('tweet-btn');
             const originalBtnContent = tweetBtn.innerHTML;
             tweetBtn.disabled = true;
-            tweetBtn.innerHTML = '<div class="spinner-sm"></div>';
+            tweetBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
 
             try {
                 const { data: { session } } = await supabase.auth.getSession();
@@ -859,7 +856,6 @@
             }
         }
 
-        // --- IN-PAGE SEARCH LOGIC ---
         document.getElementById('news-search').addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase();
             const filteredPosts = allPosts.filter(post => 
@@ -869,7 +865,6 @@
             renderNews(filteredPosts);
         });
 
-        // --- NOTIFICATION LOGIC ---
         async function fetchAndRenderNotifications() {
             if (!currentUserId) return;
             const { data, error } = await supabase
@@ -959,11 +954,10 @@
                 .subscribe();
         }
         
-        // --- SEARCH MODAL LOGIC ---
         const desktopSearchInput = document.querySelector('.desktop-search-container input');
         const mobileSearchToggle = document.getElementById('mobile-search-toggle');
         const searchModal = document.getElementById('desktop-search-modal');
-        const closeModalBtn = document.getElementById('close-search-modal-btn');
+        const closeSearchBtn = document.getElementById('close-search-modal-btn');
         const modalSearchInput = document.getElementById('modal-universal-search');
         
         function openSearchModal() { if (searchModal) { searchModal.classList.add('show'); document.body.style.overflow = 'hidden'; modalSearchInput.focus(); } }
@@ -971,7 +965,7 @@
         
         if (desktopSearchInput) desktopSearchInput.addEventListener('click', (e) => { e.preventDefault(); openSearchModal(); });
         if (mobileSearchToggle) mobileSearchToggle.addEventListener('click', openSearchModal);
-        if(closeModalBtn) closeModalBtn.addEventListener('click', closeSearchModal);
+        if(closeSearchBtn) closeSearchBtn.addEventListener('click', closeSearchModal);
         if(searchModal) searchModal.addEventListener('click', (e) => { if (e.target === searchModal) closeSearchModal(); });
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && searchModal.classList.contains('show')) closeSearchModal(); });
 
@@ -1023,8 +1017,26 @@
         if (modalSearchInput) {
             modalSearchInput.addEventListener('input', () => { clearTimeout(modalDebounceTimer); modalDebounceTimer = setTimeout(performModalSearch, 300); });
         }
+
+        async function loadPackSuggestions() {
+            const container = document.getElementById('modal-pack-suggestions');
+            if (!container) return;
+            try {
+                const { data, error } = await supabase.from('packs').select('id, name, icon_url').order('created_at', { ascending: false }).limit(4);
+                if (error) throw error;
+                if (data && data.length > 0) {
+                    container.innerHTML = data.map(pack => {
+                        const iconContent = pack.icon_url 
+                            ? `<img class="pack-icon" src="${pack.icon_url}" alt="${escapeHtml(pack.name)} Icon">`
+                            : `<div class="pack-icon" style="background:var(--bg-2); display:grid; place-items:center;"><i class="fa-solid fa-cube"></i></div>`;
+                        return `<a href="/packs.html?id=${pack.id}" class="suggestion-card">${iconContent}<div><div class="search-result-name">${escapeHtml(pack.name)}</div></div></a>`;
+                    }).join('');
+                }
+            } catch (err) {
+                console.error('Error loading suggestions:', err);
+            }
+        }
         
-        // --- INITIALIZATION ---
         document.addEventListener('auth-ready', (event) => {
             const { profile, user } = event.detail;
             loggedInProfile = profile;
@@ -1040,9 +1052,9 @@
                 createNotificationSubscription();
                 setupNotificationListeners();
             }
+            loadPackSuggestions();
         });
 
     </script>
 </body>
 </html>
-
