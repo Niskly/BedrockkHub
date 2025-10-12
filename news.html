@@ -772,7 +772,15 @@ async function loadNews() {
         allPosts = data;
         renderNews(allPosts);
     } catch (err) {
-        }
+        console.error("Error loading news:", err);
+        feedContainer.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon" style="color:var(--brand-1)"><i class="fa-solid fa-circle-exclamation"></i></div>
+                <h3>Failed to load news</h3>
+                <p>There was an error connecting to the server. Please try again later.</p>
+            </div>`;
+    }
+}
         
         const newPostBtn = document.getElementById('new-post-btn');
         const modal = document.getElementById('new-post-modal');
