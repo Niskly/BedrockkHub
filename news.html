@@ -43,7 +43,7 @@
         .spinner-sm { width: 1.2em; height: 1.2em; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* ====== NEW HEADER STYLES ====== */
+        /* ====== HEADER STYLES ====== */
         header { 
             position: fixed;
             top: 1rem;
@@ -54,7 +54,7 @@
             border: none;
         }
         body {
-            padding-top: 100px; /* Space for the fixed header */
+            padding-top: 100px;
         }
         .nav { 
             max-width: 1200px; 
@@ -166,9 +166,9 @@
             .nav-left-desktop { display: flex; align-items: center; gap: 1.5rem; }
             .desktop-nav-links, .desktop-nav-right { display: flex; align-items: center; }
             .desktop-nav-links { gap: 0.5rem; }
-            .nav-link { padding: 0.6rem 1rem; border-radius: 10px; font-weight: 700; color: var(--muted); transition: all 0.2s ease; border-bottom: 3px solid transparent; display: flex; align-items: center; gap: 0.5rem; background: transparent; border: none; font-family: inherit; font-size: inherit; }
+            .nav-link { padding: 0.6rem 1rem; border-radius: 10px; font-weight: 700; color: var(--muted); transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem; background: transparent; border: none; font-family: inherit; font-size: inherit; }
             .nav-link:hover { background-color: rgba(255, 255, 255, 0.05); color: var(--text); }
-            .nav-link.active { color: white; border-bottom-color: var(--brand-1); }
+            .nav-link.active { color: white; }
             .desktop-nav-right { gap: 1rem; }
             #desktop-auth-actions { display: flex; align-items: center; gap: 0.5rem; }
             .login-btn, .signup-btn { font-weight: 700; padding: 0.6rem 1rem; transition: all 0.2s ease; border-radius: 10px; }
@@ -177,7 +177,7 @@
             .signup-btn { background: var(--brand-1); box-shadow: var(--shadow-brand); color: white; }
             .signup-btn:hover { filter: brightness(1.1); }
         }
-        /* ====== END NEW HEADER STYLES ====== */
+        /* ====== END HEADER STYLES ====== */
 
 
         /* Page specific styles */
@@ -188,12 +188,13 @@
         .page-header h1 { font-size: 2.5rem; font-weight: 900; background: var(--gradient-brand); -webkit-background-clip: text; color: transparent; margin: 0 0 0.5rem 0; }
         .page-header p { color: var(--muted); font-size: 1.1rem; max-width: 500px; margin: 0 auto; }
         
-        .search-container { position: relative; margin-bottom: 2.5rem; }
+        .main-controls-container { display: flex; align-items: center; gap: 1rem; margin-bottom: 2.5rem; }
+        .search-container { position: relative; flex-grow: 1; }
         .search-container i { position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); color: var(--muted); }
         #news-search { width: 100%; padding: 1rem 1.25rem 1rem 3.5rem; border-radius: 12px; background: var(--bg-1); border: 1px solid var(--border); color: var(--text); font-size: 1rem; }
         #news-search:focus { outline: none; border-color: var(--brand-1); box-shadow: 0 0 0 3px rgba(var(--brand-1-rgb), 0.2); }
         
-        .admin-post-trigger { text-align: right; margin-bottom: 1rem; display: none; }
+        .admin-post-trigger { display: none; }
         .admin-post-trigger.visible { display: block; }
         
         .news-feed { display: flex; flex-direction: column; gap: 1.5rem; }
@@ -228,9 +229,10 @@
         .textarea-container:focus-within { border-color: var(--brand-1); }
         #post-textarea { width: 100%; min-height: 120px; resize: vertical; padding: 0.75rem 1rem; border: none; background: transparent; color: var(--text); font-size: 1rem; font-family: inherit; flex-grow: 1; }
         #post-textarea:focus { outline: none; }
-        .formatting-toolbar { display: flex; gap: 0.5rem; padding: 0.5rem 1rem; border-top: 1px solid var(--border); background: var(--bg-1); }
-        .format-btn { background: none; border: none; color: var(--muted); font-size: 1rem; cursor: pointer; width: 32px; height: 32px; border-radius: 6px; }
+        .formatting-toolbar { display: flex; flex-wrap: wrap; gap: 4px; padding: 0.5rem 1rem; border-top: 1px solid var(--border); background: var(--bg-1); }
+        .format-btn { background: none; border: none; color: var(--muted); font-size: 1rem; cursor: pointer; width: 36px; height: 36px; border-radius: 6px; }
         .format-btn:hover { background: var(--bg-2); color: var(--text); }
+        .format-divider { width: 1px; background: var(--border); margin: 4px 8px; }
         #post-form-actions { display: flex; justify-content: flex-end; align-items: center; gap: 1rem; margin-top: 1rem; }
         #char-counter { font-size: 0.8rem; color: var(--muted); }
     </style>
@@ -282,13 +284,14 @@
             <p>Stay updated with the latest announcements, features, and community news from MCHub.</p>
         </div>
 
-        <div class="search-container">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="news-search" placeholder="Search news posts...">
-        </div>
-        
-        <div class="admin-post-trigger" id="admin-post-trigger">
-            <button class="btn primary" id="new-post-btn"><i class="fa-solid fa-plus"></i> New Post</button>
+        <div class="main-controls-container">
+            <div class="search-container">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="news-search" placeholder="Search news posts...">
+            </div>
+            <div class="admin-post-trigger" id="admin-post-trigger">
+                <button class="btn primary" id="new-post-btn"><i class="fa-solid fa-plus"></i> New Post</button>
+            </div>
         </div>
 
         <div class="news-feed" id="news-feed-container">
@@ -309,8 +312,14 @@
                         <div class="textarea-container">
                             <textarea id="post-textarea" placeholder="What's happening?" maxlength="1000" required></textarea>
                             <div class="formatting-toolbar">
-                                <button type="button" class="format-btn" title="Bold" onclick="applyFormat('bold')"><i class="fa-solid fa-bold"></i></button>
-                                <button type="button" class="format-btn" title="Italic" onclick="applyFormat('italic')"><i class="fa-solid fa-italic"></i></button>
+                                <button type="button" class="format-btn" title="Bold" data-format="bold"><i class="fa-solid fa-bold"></i></button>
+                                <button type="button" class="format-btn" title="Italic" data-format="italic"><i class="fa-solid fa-italic"></i></button>
+                                <button type="button" class="format-btn" title="Underline" data-format="underline"><i class="fa-solid fa-underline"></i></button>
+                                <button type="button" class="format-btn" title="Strikethrough" data-format="strike"><i class="fa-solid fa-strikethrough"></i></button>
+                                <div class="format-divider"></div>
+                                <button type="button" class="format-btn" title="Link" data-format="link"><i class="fa-solid fa-link"></i></button>
+                                <button type="button" class="format-btn" title="Code" data-format="code"><i class="fa-solid fa-code"></i></button>
+                                <button type="button" class="format-btn" title="Blockquote" data-format="quote"><i class="fa-solid fa-quote-left"></i></button>
                             </div>
                         </div>
                         <div id="post-form-actions">
@@ -330,7 +339,7 @@
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIJzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         let allPosts = [];
@@ -366,12 +375,21 @@
 
         function parseContent(content) {
             let processedContent = escapeHtml(content);
-            // Bold
+            // Bold, Italic, Underline, Strikethrough
             processedContent = processedContent.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-            // Italic
             processedContent = processedContent.replace(/_(.*?)_/g, '<i>$1</i>');
-            // URLs
-            processedContent = processedContent.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+            processedContent = processedContent.replace(/__(.*?)__/g, '<u>$1</u>');
+            processedContent = processedContent.replace(/~~(.*?)~~/g, '<s>$1</s>');
+            // Blockquote
+            processedContent = processedContent.replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>');
+            // Code block
+            processedContent = processedContent.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+            // Inline code
+            processedContent = processedContent.replace(/`(.*?)`/g, '<code>$1</code>');
+            // Links
+            processedContent = processedContent.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+             // Simple URLs
+            processedContent = processedContent.replace(/(?<!href=")(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
             return processedContent;
         }
 
@@ -452,20 +470,29 @@
             charCounter.textContent = remaining;
         });
         
-        window.applyFormat = function(format) {
+        document.querySelectorAll('.format-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                applyFormat(btn.dataset.format);
+            });
+        });
+
+        function applyFormat(format) {
             const start = textarea.selectionStart;
             const end = textarea.selectionEnd;
             const selectedText = textarea.value.substring(start, end);
-            let markup = '';
+            let replacement = selectedText;
 
-            if (format === 'bold') {
-                markup = '**';
-            } else if (format === 'italic') {
-                markup = '_';
+            switch(format) {
+                case 'bold': replacement = `**${selectedText}**`; break;
+                case 'italic': replacement = `_${selectedText}_`; break;
+                case 'underline': replacement = `__${selectedText}__`; break;
+                case 'strike': replacement = `~~${selectedText}~~`; break;
+                case 'link': replacement = `[${selectedText}](url)`; break;
+                case 'code': replacement = `\`${selectedText}\``; break;
+                case 'quote': replacement = `> ${selectedText}`; break;
             }
-
-            const newText = `${markup}${selectedText}${markup}`;
-            textarea.setRangeText(newText, start, end, 'end');
+            
+            textarea.setRangeText(replacement, start, end, 'end');
             textarea.focus();
         }
 
@@ -499,7 +526,7 @@
                 modal.classList.remove('show');
                 e.target.reset();
                 charCounter.textContent = '1000';
-                await loadNews(); // Reload all news to see the new post
+                await loadNews();
 
             } catch (err) {
                 showToast(err.message, 'error');
@@ -510,7 +537,7 @@
         }
 
         // Search Logic
-        document.getElementById('news-search').addEventListener('inp.aut', (e) => {
+        document.getElementById('news-search').addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase();
             const filteredPosts = allPosts.filter(post => 
                 post.content.toLowerCase().includes(query) ||
@@ -533,3 +560,4 @@
     </script>
 </body>
 </html>
+
