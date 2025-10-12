@@ -319,4 +319,3 @@ supabase.auth.onAuthStateChange((event, session) => {
         handleAuthStateChange();
     }
 });
-
