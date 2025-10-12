@@ -53,11 +53,26 @@ function setupMobileNav(profile, user) {
     const isNews = currentPath === '/news.html';
     const isProfile = profile && currentPath === `/profile.html` && new URLSearchParams(window.location.search).get('user') === profile.username;
 
+    const toolsDropdownHTML = `
+        <div class="mobile-nav-collapsible">
+            <a href="#" class="collapsible-trigger">
+                <span><i class="fa-solid fa-wrench"></i><span>Tools</span></span>
+                <i class="fa-solid fa-chevron-down arrow"></i>
+            </a>
+            <div class="collapsible-content">
+                <a href="/skineditor.html" class="sub-link">
+                    <i style="font-size: 1rem; width: 24px; text-align: center;">🎨</i>
+                    <span>Skin Editor</span>
+                </a>
+            </div>
+        </div>
+    `;
+
     const sharedLinks = `
         <a href="/" class="${isHome ? 'active-mobile-link' : ''}"><i class="fa-solid fa-house"></i><span>Home</span></a>
         <a href="/texturepacks.html" class="${isTexturePacks ? 'active-mobile-link' : ''}"><i class="fa-solid fa-palette"></i><span>Texture Packs</span></a>
         <a href="/news.html" class="${isNews ? 'active-mobile-link' : ''}"><i class="fa-solid fa-newspaper"></i><span>News</span></a>
-        <a href="/skineditor.html"><i class="fa-solid fa-wrench"></i><span>Tools</span></a>
+        ${toolsDropdownHTML}
     `;
 
     if (profile && user) {
@@ -110,6 +125,21 @@ function setupMobileNav(profile, user) {
     if (hamburgerBtn) hamburgerBtn.addEventListener('click', openMenu);
     sidebar.querySelector('.mobile-nav-close').addEventListener('click', closeMenu);
     backdrop.addEventListener('click', closeMenu);
+    
+    // Add event listener for the new collapsible tools menu
+    const toolsCollapsible = sidebar.querySelector('.mobile-nav-collapsible');
+    if (toolsCollapsible) {
+        toolsCollapsible.querySelector('.collapsible-trigger').addEventListener('click', (e) => {
+            e.preventDefault();
+            const content = toolsCollapsible.querySelector('.collapsible-content');
+            toolsCollapsible.classList.toggle('open');
+            if (toolsCollapsible.classList.contains('open')) {
+                content.style.maxHeight = content.scrollHeight + 'px';
+            } else {
+                content.style.maxHeight = '0';
+            }
+        });
+    }
 
     if (profile) {
         sidebar.querySelector('#mobile-logout-btn')?.addEventListener('click', async (e) => {
@@ -194,7 +224,7 @@ function renderUserDropdown(profile, user) {
         const mobileAuthActions = document.getElementById('mobile-auth-actions');
         if(mobileAuthActions){
             mobileAuthActions.innerHTML = `
-                <button class="mobile-nav-btn notification-toggle-btn">
+                <button class="mobile-nav-btn notification-toggle-btn" style="color: white; font-size: 1.2rem;">
                     <i class="fa-solid fa-bell"></i>
                     <span id="notification-badge-mobile" class="notification-badge" style="display:none;"></span>
                 </button>
