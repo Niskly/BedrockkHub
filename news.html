@@ -785,11 +785,131 @@
                 modalDropdown.classList.remove('open');
             }
         });
+        
+        // NOTIFICATION SCRIPT
+        let currentUserId = null;
+        let notificationSubscription = null;
+
+        async function fetchAndRenderNotifications() {
+            if (!currentUserId) return;
+            
+            const { data, error } = await supabase
+                .from('notifications')
+                .select('*')
+                .eq('user_id', currentUserId)
+                .order('created_at', { ascending: false })
+                .limit(20);
+
+            if (error) {
+                console.error("Error fetching notifications:", error);
+                return;
+            }
+
+            const list = document.getElementById('notification-list');
+            const badgeDesktop = document.getElementById('notification-badge');
+            const badgeMobile = document.getElementById('notification-badge-mobile');
+            let unreadCount = 0;
+
+            if (data.length === 0) {
+                list.innerHTML = '<div class="notification-list-empty">You have no notifications.</div>';
+            } else {
+                list.innerHTML = data.map(n => {
+                    if (!n.is_read) unreadCount++;
+                    const iconMap = {
+                        'new_news': 'fa-solid fa-newspaper',
+                        'new_pack': 'fa-solid fa-box',
+                        'comment_reply': 'fa-solid fa-comment-dots'
+                    };
+                    return `
+                        <div class="notification-item ${n.is_read ? 'read' : ''}" id="notification-${n.id}">
+                            <i class="${iconMap[n.type] || 'fa-solid fa-bell'} notification-icon"></i>
+                            <a href="${n.content.link}" class="notification-content">
+                                <p>${escapeHtml(n.content.text)}</p>
+                                <span class="time">${timeAgo(n.created_at)}</span>
+                            </a>
+                            <button class="dismiss-notification-btn" data-id="${n.id}">&times;</button>
+                        </div>`;
+                }).join('');
+            }
+            
+            const badges = [badgeDesktop, badgeMobile];
+            badges.forEach(badge => {
+                if (badge) {
+                    badge.style.display = unreadCount > 0 ? 'block' : 'none';
+                }
+            });
+        }
+
+        async function markOneAsRead(notificationId) {
+            const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', notificationId);
+            if (!error) {
+                // No re-fetch needed, just update UI locally for speed
+                const item = document.getElementById(`notification-${notificationId}`);
+                if (item && !item.classList.contains('read')) {
+                    item.classList.add('read');
+                    const badges = document.querySelectorAll('.notification-badge');
+                    let currentCount = parseInt(badges[0].textContent) || 0;
+                    if (currentCount > 0) {
+                        badges.forEach(b => {
+                            if (currentCount - 1 <= 0) b.style.display = 'none';
+                        });
+                    }
+                }
+            }
+        }
+
+        function setupNotificationListeners() {
+            const backdrop = document.getElementById('notification-backdrop');
+            
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.notification-toggle-btn')) {
+                    backdrop.classList.add('show');
+                } 
+                else if (e.target.id === 'close-notifications-btn' || e.target.id === 'notification-backdrop') {
+                    backdrop.classList.remove('show');
+                }
+                else if (e.target.id === 'mark-all-read-btn') {
+                    supabase.from('notifications').update({ is_read: true }).eq('user_id', currentUserId).then(fetchAndRenderNotifications);
+                }
+                else if (e.target.classList.contains('dismiss-notification-btn')) {
+                    markOneAsRead(e.target.dataset.id);
+                }
+                else if (e.target.closest('.notification-content a')) {
+                    const notificationItem = e.target.closest('.notification-item');
+                    const notificationId = notificationItem.id.split('-')[1];
+                    if (!notificationItem.classList.contains('read')) {
+                        markOneAsRead(notificationId);
+                    }
+                    backdrop.classList.remove('show');
+                }
+            });
+        }
+
+        function createNotificationSubscription() {
+            if (notificationSubscription) supabase.removeChannel(notificationSubscription);
+
+            notificationSubscription = supabase.channel(`public:notifications:user_id=eq.${currentUserId}`)
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, payload => {
+                    fetchAndRenderNotifications();
+                }).subscribe();
+        }
+
 
         // Initialization
         document.addEventListener('auth-ready', (event) => {
-            const { profile } = event.detail;
+            const { user, profile } = event.detail;
             loggedInProfile = profile;
+
+            if (user) {
+                currentUserId = user.id;
+                fetchAndRenderNotifications();
+                createNotificationSubscription();
+                setupNotificationListeners();
+            } else {
+                currentUserId = null;
+                if (notificationSubscription) supabase.removeChannel(notificationSubscription);
+            }
+
             if (profile && profile.role === 'admin') {
                 document.getElementById('admin-post-trigger').classList.add('visible');
             }
@@ -811,13 +931,12 @@
             desktopNavLinks.querySelectorAll('a, button.nav-link').forEach(link => {
                 if (link.tagName.toLowerCase() === 'a') {
                     link.className = 'nav-link';
-                    const linkPathClean = (link.getAttribute('href') || '').replace('.html', '').replace(/\/$/, "");
-                    const currentPathClean = window.location.pathname.replace('.html', '').replace(/\/$/, "");
+                    const linkPath = (link.getAttribute('href') || '');
+                    const currentPath = window.location.pathname;
                     
-                    const isHomePage = currentPathClean === '' || currentPathClean === '/index';
-                    const isLinkToHome = linkPathClean === '' || linkPathClean === '/';
-
-                    if ((isHomePage && isLinkToHome) || (linkPathClean !== '' && linkPathClean === currentPathClean)) {
+                    if (linkPath === currentPath || (currentPath.endsWith('/') && linkPath.endsWith('/index.html'))) {
+                        link.classList.add('active');
+                    } else if (linkPath.includes('news.html') && currentPath.includes('news.html')) {
                         link.classList.add('active');
                     }
                 }
