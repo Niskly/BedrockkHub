@@ -1,11 +1,9 @@
-
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const navActions = document.getElementById('nav-actions');
 const header = document.querySelector('header');
 let authInitialized = false;
 let currentUserId = null;
@@ -17,9 +15,7 @@ let currentUserId = null;
  */
 function setupMobileNav(profile, user) {
     if (!header) return;
-    const navContainer = header.querySelector('.nav');
-    if (!navContainer) return;
-
+    
     document.querySelector('.mobile-nav-sidebar')?.remove();
     document.querySelector('.mobile-nav-backdrop')?.remove();
 
@@ -113,7 +109,7 @@ function setupMobileNav(profile, user) {
 
     document.body.appendChild(sidebar);
     document.body.appendChild(backdrop);
-    const hamburgerBtn = navContainer.querySelector('.mobile-nav-toggle');
+    const hamburgerBtn = document.querySelector('.mobile-nav-toggle');
 
     const openMenu = () => {
         sidebar.classList.add('show');
@@ -130,18 +126,13 @@ function setupMobileNav(profile, user) {
     sidebar.querySelector('.mobile-nav-close').addEventListener('click', closeMenu);
     backdrop.addEventListener('click', closeMenu);
     
-    // Add event listener for the new collapsible tools menu
     const toolsCollapsible = sidebar.querySelector('.mobile-nav-collapsible');
     if (toolsCollapsible) {
         toolsCollapsible.querySelector('.collapsible-trigger').addEventListener('click', (e) => {
             e.preventDefault();
             const content = toolsCollapsible.querySelector('.collapsible-content');
             toolsCollapsible.classList.toggle('open');
-            if (toolsCollapsible.classList.contains('open')) {
-                content.style.maxHeight = content.scrollHeight + 'px';
-            } else {
-                content.style.maxHeight = '0';
-            }
+            content.style.maxHeight = toolsCollapsible.classList.contains('open') ? content.scrollHeight + 'px' : '0';
         });
     }
 
@@ -154,31 +145,43 @@ function setupMobileNav(profile, user) {
     }
 }
 
-function renderUserDropdown(profile, user) {
-    const avatarSrc = profile.avatar_url ? profile.avatar_url : `https://placehold.co/28x28/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}`;
-    const dropdownAvatarSrc = profile.avatar_url ? profile.avatar_url : `https://placehold.co/40x40/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}`;
+function renderDesktopNav(isLoggedIn, profile = null, user = null) {
+    const desktopNavLinks = document.getElementById('desktop-nav-links');
+    const desktopAuth = document.getElementById('desktop-auth-actions');
+    const mobileAuth = document.getElementById('mobile-auth-actions');
 
-    if (navActions) {
-        navActions.innerHTML = `
-            <a class="btn ghost nav-link-item" href="/"><i class="fa-solid fa-house"></i>Home</a>
-            <a class="btn ghost nav-link-item" href="/texturepacks.html"><i class="fa-solid fa-palette"></i>Texture Packs</a>
-            
-            <div class="tools-dropdown-container nav-link-item">
-                <button id="tools-btn" class="nav-link">
-                    <i class="fa-solid fa-wrench"></i> Tools <i class="fa-solid fa-chevron-down" style="font-size: 0.8em; margin-left: 4px;"></i>
-                </button>
-                <div id="tools-menu">
-                    <a href="/skineditor.html"><i class="fa-solid fa-paint-brush"></i> Skin Editor</a>
-                </div>
+    if (!desktopNavLinks || !desktopAuth || !mobileAuth) return;
+
+    const currentPath = window.location.pathname.replace('/index.html', '/');
+    const links = [
+        { href: '/', icon: 'fa-house', text: 'Home' },
+        { href: '/texturepacks.html', icon: 'fa-palette', text: 'Texture Packs' },
+        { href: '/news.html', icon: 'fa-newspaper', text: 'News' }
+    ];
+
+    const toolsDropdown = `
+        <div class="tools-dropdown-container">
+            <button id="tools-btn" class="nav-link">
+                <i class="fa-solid fa-wrench"></i> Tools <i class="fa-solid fa-chevron-down"></i>
+            </button>
+            <div id="tools-menu">
+                <a href="/skineditor.html"><i class="fa-solid fa-paint-brush"></i> Skin Editor</a>
             </div>
-            
-            <a class="btn ghost nav-link-item" href="/news.html"><i class="fa-solid fa-newspaper"></i>News</a>
-            
-            <button id="notification-btn" class="notification-btn-desktop notification-toggle-btn">
+        </div>`;
+
+    desktopNavLinks.innerHTML = links.map(l => `
+        <a href="${l.href}" class="nav-link ${currentPath === l.href ? 'active' : ''}">
+            <i class="fa-solid ${l.icon}"></i>${l.text}
+        </a>`).join('') + toolsDropdown;
+
+    if (isLoggedIn && profile && user) {
+        const avatarSrc = profile.avatar_url || `https://placehold.co/28x28/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}`;
+        const dropdownAvatarSrc = profile.avatar_url || `https://placehold.co/40x40/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}`;
+        desktopAuth.innerHTML = `
+            <button class="notification-btn-desktop notification-toggle-btn">
                 <i class="fa-solid fa-bell"></i>
                 <span id="notification-badge" class="notification-badge" style="display:none;"></span>
             </button>
-
             <div class="user-dropdown">
                 <button class="user-menu-btn" aria-haspopup="true" aria-expanded="false">
                     <img src="${avatarSrc}" alt="User Avatar" class="nav-avatar-img">
@@ -195,82 +198,55 @@ function renderUserDropdown(profile, user) {
                     </div>
                     <a href="/profile.html?user=${profile.username}"><i class="fa-solid fa-user"></i> My Profile</a>
                     <a href="/settings.html"><i class="fa-solid fa-cog"></i> Settings</a>
-                    <a href="#" id="logout-btn" class="logout-link"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+                    <a href="#" class="logout-link"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
                 </div>
             </div>`;
-
-        const userDropdown = navActions.querySelector('.user-dropdown');
-        if(userDropdown) {
-            const btn = userDropdown.querySelector('.user-menu-btn');
-            const content = userDropdown.querySelector('.dropdown-content');
-
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const isExpanded = content.classList.toggle('show');
-                btn.setAttribute('aria-expanded', isExpanded);
-            });
-
-            userDropdown.querySelector('#logout-btn').addEventListener('click', async (e) => {
-                e.preventDefault();
-                await supabase.auth.signOut();
-            });
-        }
         
-        const toolsDropdown = navActions.querySelector('.tools-dropdown-container');
-        if(toolsDropdown) {
-             const btn = toolsDropdown.querySelector('#tools-btn');
-             btn.addEventListener('click', (e) => {
-                 e.stopPropagation();
-                 toolsDropdown.classList.toggle('open');
-             });
-        }
-        
-        const mobileAuthActions = document.getElementById('mobile-auth-actions');
-        if(mobileAuthActions){
-            mobileAuthActions.innerHTML = `
-                <button class="mobile-nav-btn notification-toggle-btn" style="color: white; font-size: 1.2rem;">
-                    <i class="fa-solid fa-bell"></i>
-                    <span id="notification-badge-mobile" class="notification-badge" style="display:none;"></span>
-                </button>
-            `;
-        }
+        mobileAuth.innerHTML = `
+             <button class="mobile-nav-btn notification-toggle-btn">
+                <i class="fa-solid fa-bell"></i>
+                <span id="notification-badge-mobile" class="notification-badge" style="display:none;"></span>
+            </button>`;
+
+    } else {
+        desktopAuth.innerHTML = `
+            <a href="/login.html" class="login-btn"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+            <a href="/signup.html" class="signup-btn"><i class="fa-solid fa-user-plus"></i> Sign Up</a>`;
+        mobileAuth.innerHTML = '';
+    }
+    
+    // Add event listeners for dynamic elements
+    const userDropdown = desktopAuth.querySelector('.user-dropdown');
+    if(userDropdown) {
+        userDropdown.querySelector('.user-menu-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            userDropdown.querySelector('.dropdown-content').classList.toggle('show');
+        });
+        userDropdown.querySelector('.logout-link').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await supabase.auth.signOut();
+        });
     }
 
-    setupMobileNav(profile, user);
-}
-
-function renderLoginButtons() {
-    if (navActions) {
-        navActions.innerHTML = `
-            <a class="btn ghost nav-link-item" href="/"><i class="fa-solid fa-house"></i>Home</a>
-            <a class="btn ghost nav-link-item" href="/texturepacks.html"><i class="fa-solid fa-palette"></i>Texture Packs</a>
-            <div class="tools-dropdown-container nav-link-item">
-                <button id="tools-btn" class="nav-link">
-                    <i class="fa-solid fa-wrench"></i> Tools <i class="fa-solid fa-chevron-down" style="font-size: 0.8em; margin-left: 4px;"></i>
-                </button>
-                <div id="tools-menu">
-                    <a href="/skineditor.html"><i class="fa-solid fa-paint-brush"></i> Skin Editor</a>
-                </div>
-            </div>
-            <a class="btn ghost nav-link-item" href="/news.html"><i class="fa-solid fa-newspaper"></i>News</a>
-            <a class="login-btn-item" href="/login.html"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
-            <a class="signup-btn-item" href="/signup.html"><i class="fa-solid fa-user-plus"></i> Sign Up</a>`;
-        
-        const toolsDropdown = navActions.querySelector('.tools-dropdown-container');
-        if(toolsDropdown) {
-             const btn = toolsDropdown.querySelector('#tools-btn');
-             btn.addEventListener('click', (e) => {
-                 e.stopPropagation();
-                 toolsDropdown.classList.toggle('open');
-             });
-        }
+    const toolsContainer = desktopNavLinks.querySelector('.tools-dropdown-container');
+    if (toolsContainer) {
+        toolsContainer.querySelector('#tools-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            toolsContainer.classList.toggle('open');
+        });
     }
-    setupMobileNav(null, null);
+
+    // Close dropdowns when clicking outside
+    window.addEventListener('click', (e) => {
+        if (userDropdown && !e.target.closest('.user-dropdown')) {
+            userDropdown.querySelector('.dropdown-content').classList.remove('show');
+        }
+        if (toolsContainer && !e.target.closest('.tools-dropdown-container')) {
+            toolsContainer.classList.remove('open');
+        }
+    });
 }
 
-/**
- * Central function to handle auth state changes.
- */
 async function handleAuthStateChange() {
     let user = null;
     let profile = null;
@@ -297,31 +273,27 @@ async function handleAuthStateChange() {
             if (profileData?.username) {
                 profile = profileData;
                 const dbTheme = profile.theme || 'red';
-                const cachedTheme = localStorage.getItem('mchub-theme');
-                
-                if (dbTheme !== cachedTheme) {
-                    if (window.setMCHubTheme) window.setMCHubTheme(dbTheme, true);
-                }
-                
-                renderUserDropdown(profile, user);
+                if (window.setMCHubTheme) window.setMCHubTheme(dbTheme, true);
+                renderDesktopNav(true, profile, user);
             } else {
                 const allowedPaths = ['/complete-profile.html', '/verify.html'];
                 if (!allowedPaths.includes(window.location.pathname)) {
                     window.location.replace('/complete-profile.html');
                     return;
                 }
-                 renderLoginButtons();
+                 renderDesktopNav(false);
             }
         } else {
             currentUserId = null;
-            renderLoginButtons();
+            renderDesktopNav(false);
         }
     } catch (error) {
         console.error("Authentication state error:", error);
         authError = error.message;
         currentUserId = null;
-        renderLoginButtons();
+        renderDesktopNav(false);
     } finally {
+        setupMobileNav(profile, user); // Always setup mobile nav
         if (!authInitialized) {
             document.dispatchEvent(new CustomEvent('auth-ready', {
                 detail: { user, profile, error: authError }
@@ -339,30 +311,10 @@ if (document.readyState === 'loading') {
 }
 
 supabase.auth.onAuthStateChange((event, session) => {
-    const newUserId = session?.user?.id || null;
-    if (newUserId !== currentUserId) {
-        if (event === 'SIGNED_OUT') {
-            try { localStorage.removeItem('mchub-theme'); } catch(e) {}
-            window.location.href = '/login.html';
-        } else {
-            handleAuthStateChange();
-        }
-    }
-});
-
-window.addEventListener('click', (event) => {
-    const userDropdown = document.querySelector('.user-dropdown');
-    if (userDropdown && !event.target.closest('.user-dropdown')) {
-        const content = userDropdown.querySelector('.dropdown-content.show');
-        if (content) {
-            content.classList.remove('show');
-            const btn = userDropdown.querySelector('.user-menu-btn');
-            if (btn) btn.setAttribute('aria-expanded', 'false');
-        }
-    }
-    
-    const toolsDropdown = document.querySelector('.tools-dropdown-container');
-    if (toolsDropdown && !event.target.closest('.tools-dropdown-container')) {
-        toolsDropdown.classList.remove('open');
+    if (event === 'SIGNED_OUT') {
+        try { localStorage.removeItem('mchub-theme'); } catch(e) {}
+        window.location.href = '/login.html';
+    } else {
+        handleAuthStateChange();
     }
 });
