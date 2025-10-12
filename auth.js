@@ -56,11 +56,11 @@ function setupMobileNav(profile, user) {
     const toolsDropdownHTML = `
         <div class="mobile-nav-collapsible">
             <a href="#" class="collapsible-trigger">
-                <span><i class="fa-solid fa-wrench"></i><span>Tools</span></span>
+                <span><i class="fa-solid fa-wrench"></i> <span>Tools</span></span>
                 <i class="fa-solid fa-chevron-down arrow"></i>
             </a>
             <div class="collapsible-content">
-                <a href="/skineditor.html" class="sub-link">
+                <a href="/skineditor.html" class="sub-link" style="background-color: var(--bg-2); margin: 0.25rem; display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; border-radius: 8px;">
                     <i style="font-size: 1rem; width: 24px; text-align: center;">🎨</i>
                     <span>Skin Editor</span>
                 </a>
@@ -171,7 +171,7 @@ function renderUserDropdown(profile, user) {
             <a class="btn ghost nav-link-item" href="/news.html"><i class="fa-solid fa-newspaper"></i>News</a>
             
             <button id="notification-btn" class="notification-btn-desktop notification-toggle-btn">
-                &#128276;
+                <i class="fa-solid fa-bell"></i>
                 <span id="notification-badge" class="notification-badge" style="display:none;"></span>
             </button>
 
@@ -240,9 +240,26 @@ function renderLoginButtons() {
         navActions.innerHTML = `
             <a class="btn ghost nav-link-item" href="/"><i class="fa-solid fa-house"></i>Home</a>
             <a class="btn ghost nav-link-item" href="/texturepacks.html"><i class="fa-solid fa-palette"></i>Texture Packs</a>
+            <div class="tools-dropdown-container nav-link-item">
+                <button id="tools-btn" class="nav-link">
+                    <i class="fa-solid fa-wrench"></i> Tools <i class="fa-solid fa-chevron-down" style="font-size: 0.8em; margin-left: 4px;"></i>
+                </button>
+                <div id="tools-menu">
+                    <a href="/skineditor.html"><i class="fa-solid fa-paint-brush"></i> Skin Editor</a>
+                </div>
+            </div>
             <a class="btn ghost nav-link-item" href="/news.html"><i class="fa-solid fa-newspaper"></i>News</a>
             <a class="login-btn-item" href="/login.html"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
             <a class="signup-btn-item" href="/signup.html"><i class="fa-solid fa-user-plus"></i> Sign Up</a>`;
+        
+        const toolsDropdown = navActions.querySelector('.tools-dropdown-container');
+        if(toolsDropdown) {
+             const btn = toolsDropdown.querySelector('#tools-btn');
+             btn.addEventListener('click', (e) => {
+                 e.stopPropagation();
+                 toolsDropdown.classList.toggle('open');
+             });
+        }
     }
     setupMobileNav(null, null);
 }
@@ -345,4 +362,3 @@ window.addEventListener('click', (event) => {
         toolsDropdown.classList.remove('open');
     }
 });
-
