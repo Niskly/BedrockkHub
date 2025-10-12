@@ -30,6 +30,7 @@
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c;
             --muted: #a8b3cf; --text: #e8eefc; --border: rgba(255, 255, 255, .12);
             --brand-1: #de212a; --brand-2: #b21a22; --primary: var(--brand-1);
+            --brand-1-rgb: 222, 33, 42;
             --border-strong: rgba(255, 255, 255, .2);
             --gradient-brand: linear-gradient(135deg, var(--brand-1), var(--brand-2));
             --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
@@ -179,6 +180,105 @@
         /* ====== DESKTOP NAVBAR & RESPONSIVENESS ====== */
         .desktop-nav-links, .desktop-nav-right { display: none; }
         .nav-left-desktop { display: contents; }
+        
+        /* ====== NEW: NOTIFICATION STYLES ====== */
+        .notification-toggle-btn {
+            position: relative;
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            line-height: 1;
+        }
+        .notification-toggle-btn:hover { color: var(--text); }
+        .notification-badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 10px;
+            height: 10px;
+            background-color: var(--brand-1);
+            border-radius: 50%;
+            border: 2px solid var(--bg-1);
+        }
+        .notification-panel {
+            display: none;
+            position: fixed;
+            top: calc(1rem + 68px); /* Header top + header height */
+            right: 1rem;
+            width: 100%;
+            max-width: 380px;
+            background: var(--bg-1);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 100;
+            overflow: hidden;
+            color: var(--text);
+            animation: slideInFromTop 0.3s ease-out;
+        }
+        @keyframes slideInFromTop { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-2);
+        }
+        .notification-header h3 { margin: 0; font-size: 1rem; }
+        .notification-header button { background: none; border: none; color: var(--muted); cursor: pointer; }
+        #mark-all-read-btn { font-size: 0.8rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 6px; }
+        #mark-all-read-btn:hover { background-color: var(--bg-1); }
+        #close-notifications-btn { font-size: 1.5rem; line-height: 1; }
+        .notification-list { max-height: 400px; overflow-y: auto; }
+        .notification-item {
+            padding: 1rem; display: flex; gap: 1rem; align-items: flex-start;
+            border-bottom: 1px solid var(--border); font-size: 0.9rem;
+            position: relative; transition: background-color 0.2s;
+        }
+        .notification-item a { text-decoration: none; color: inherit; }
+        .notification-item:hover { background-color: var(--bg-2); }
+        .notification-item.read { opacity: 0.6; }
+        .notification-icon { font-size: 1.2rem; color: var(--muted); padding-top: 2px; }
+        .notification-content p { margin: 0 0 0.25rem 0; color: var(--text); }
+        .notification-content .time { font-size: 0.75rem; color: var(--muted); }
+        .dismiss-notification-btn {
+            position: absolute; top: 0.5rem; right: 0.5rem; background: none;
+            border: none; color: var(--muted); cursor: pointer;
+            font-size: 1rem; display: none;
+        }
+        .notification-item:hover .dismiss-notification-btn { display: block; }
+        .notification-list-empty { padding: 2rem; text-align: center; color: var(--muted); }
+
+        /* ====== NEW: TOOLS DROPDOWN ====== */
+        .tools-dropdown-container { position: relative; }
+        #tools-menu {
+            display: none; position: absolute; right: 0; top: calc(100% + 0.5rem);
+            background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px;
+            min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10;
+            overflow: hidden;
+        }
+        .tools-dropdown-container.open #tools-menu { display: block; }
+        #tools-menu a {
+            color: var(--muted); padding: 12px 16px; text-decoration: none;
+            display: flex; align-items: center; gap: 10px; font-weight: 600;
+        }
+        #tools-menu a:hover { background: var(--bg-2); color: var(--text); }
+        #tools-btn .fa-chevron-down { font-size: 0.7em; transition: transform 0.2s; }
+        .tools-dropdown-container.open #tools-btn .fa-chevron-down { transform: rotate(180deg); }
+
+        /* ====== NEW: MOBILE USER HEADER ====== */
+        .mobile-nav-user-header {
+            padding: 1rem 1.5rem; display: flex; align-items: center;
+            gap: 1rem; border-bottom: 1px solid var(--border);
+        }
+        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+        .mobile-nav-user-info { display: flex; flex-direction: column; }
+        .mobile-nav-username { font-weight: 700; color: var(--text); }
+        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
 
         @media (min-width: 1024px) {
             .mobile-nav-controls { display: none !important; }
@@ -447,10 +547,26 @@
             <!-- MOBILE CONTROLS -->
             <div class="mobile-nav-controls">
                 <button id="mobile-search-toggle" class="mobile-nav-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+                <div id="mobile-auth-actions"></div> <!-- Placeholder for mobile notification icon -->
                 <button class="mobile-nav-btn mobile-nav-toggle"><i class="fa-solid fa-bars"></i></button>
             </div>
         </div>
     </header>
+
+    <!-- NEW: NOTIFICATION PANEL -->
+    <div id="notification-panel" class="notification-panel">
+        <div class="notification-header">
+            <h3>Notifications</h3>
+            <div>
+                <button id="mark-all-read-btn">Mark all as read</button>
+                <button id="close-notifications-btn">&times;</button>
+            </div>
+        </div>
+        <div id="notification-list" class="notification-list">
+            <!-- Notifications will be rendered here by JS -->
+        </div>
+    </div>
+
 
     <main>
         <section class="container">
@@ -747,6 +863,11 @@
             const loginBtn = navActions.querySelector('.login-btn-item');
             const signupBtn = navActions.querySelector('.signup-btn-item');
             const userDropdown = navActions.querySelector('.user-dropdown');
+            const toolsDropdown = navActions.querySelector('.tools-dropdown-container');
+            const notificationBtn = navActions.querySelector('.notification-toggle-btn');
+            
+            if(notificationBtn) desktopAuth.appendChild(notificationBtn);
+            if(toolsDropdown) desktopAuth.appendChild(toolsDropdown);
 
             if (userDropdown) {
                 desktopAuth.appendChild(userDropdown);
@@ -893,7 +1014,126 @@
                 modalDropdown.classList.remove('open');
             }
         });
+
+        // NEW: NOTIFICATION SCRIPT
+        let currentUserId = null;
+        let notificationSubscription = null;
+
+        function timeAgo(date) {
+            const seconds = Math.floor((new Date() - new Date(date)) / 1000); let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + "y ago"; interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + "mo ago"; interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + "d ago"; interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + "h ago"; interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + "m ago"; return "just now";
+        }
+
+        async function fetchAndRenderNotifications() {
+            if (!currentUserId) return;
+            
+            const { data, error } = await supabase
+                .from('notifications')
+                .select('*')
+                .eq('user_id', currentUserId)
+                .order('created_at', { ascending: false })
+                .limit(20);
+
+            if (error) {
+                console.error("Error fetching notifications:", error);
+                return;
+            }
+
+            const list = document.getElementById('notification-list');
+            const badge = document.getElementById('notification-badge');
+            let unreadCount = 0;
+
+            if (data.length === 0) {
+                list.innerHTML = '<div class="notification-list-empty">You have no notifications.</div>';
+            } else {
+                list.innerHTML = data.map(n => {
+                    if (!n.is_read) unreadCount++;
+                    const iconMap = {
+                        'new_news': 'fa-solid fa-newspaper',
+                        'new_pack': 'fa-solid fa-box',
+                        'comment_reply': 'fa-solid fa-comment-dots'
+                    };
+                    return `
+                        <div class="notification-item ${n.is_read ? 'read' : ''}" id="notification-${n.id}">
+                            <i class="${iconMap[n.type] || 'fa-solid fa-bell'} notification-icon"></i>
+                            <a href="${n.content.link}" class="notification-content">
+                                <p>${escapeHtml(n.content.text)}</p>
+                                <span class="time">${timeAgo(n.created_at)}</span>
+                            </a>
+                            <button class="dismiss-notification-btn" data-id="${n.id}">&times;</button>
+                        </div>`;
+                }).join('');
+            }
+            
+            badge.style.display = unreadCount > 0 ? 'block' : 'none';
+            badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+        }
+
+        async function markOneAsRead(notificationId) {
+            const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', notificationId);
+            if (!error) {
+                fetchAndRenderNotifications(); // Re-fetch to update UI and badge count
+            }
+        }
+
+        function setupNotificationListeners() {
+            const panel = document.getElementById('notification-panel');
+            
+            document.addEventListener('click', (e) => {
+                // Open panel
+                if (e.target.closest('#notification-btn')) {
+                    panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+                } 
+                // Close panel
+                else if (e.target.id === 'close-notifications-btn' || !e.target.closest('.notification-panel')) {
+                    panel.style.display = 'none';
+                }
+                // Mark all as read
+                else if (e.target.id === 'mark-all-read-btn') {
+                    supabase.from('notifications').update({ is_read: true }).eq('user_id', currentUserId).then(fetchAndRenderNotifications);
+                }
+                // Dismiss one
+                else if (e.target.classList.contains('dismiss-notification-btn')) {
+                    markOneAsRead(e.target.dataset.id);
+                }
+                // Click link
+                else if (e.target.closest('.notification-content a')) {
+                    const notificationItem = e.target.closest('.notification-item');
+                    const notificationId = notificationItem.id.split('-')[1];
+                    if (!notificationItem.classList.contains('read')) {
+                        markOneAsRead(notificationId);
+                    }
+                    panel.style.display = 'none'; // Close panel on click
+                }
+            });
+        }
+
+        function createNotificationSubscription() {
+            if (notificationSubscription) supabase.removeChannel(notificationSubscription);
+
+            notificationSubscription = supabase.channel(`public:notifications:user_id=eq.${currentUserId}`)
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, payload => {
+                    fetchAndRenderNotifications();
+                }).subscribe();
+        }
+
+        document.addEventListener('auth-ready', (event) => {
+            const { user } = event.detail;
+            if (user) {
+                currentUserId = user.id;
+                fetchAndRenderNotifications();
+                createNotificationSubscription();
+                setupNotificationListeners();
+            } else {
+                currentUserId = null;
+                if (notificationSubscription) supabase.removeChannel(notificationSubscription);
+            }
+        });
     </script>
+
 </body>
 </html>
-
