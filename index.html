@@ -181,45 +181,58 @@
         .desktop-nav-links, .desktop-nav-right { display: none; }
         .nav-left-desktop { display: contents; }
         
-        /* ====== NEW: NOTIFICATION STYLES ====== */
-        .notification-toggle-btn {
-            position: relative;
-            background: none;
-            border: none;
-            color: var(--muted);
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 0.5rem;
-            line-height: 1;
-        }
-        .notification-toggle-btn:hover { color: var(--text); }
-        .notification-badge {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            width: 10px;
-            height: 10px;
-            background-color: var(--brand-1);
-            border-radius: 50%;
-            border: 2px solid var(--bg-1);
-        }
-        .notification-panel {
+        /* ====== NOTIFICATION STYLES (MODAL) ====== */
+        .notification-backdrop {
             display: none;
             position: fixed;
-            top: calc(1rem + 68px); /* Header top + header height */
-            right: 1rem;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .notification-backdrop.show { display: flex; }
+        .notification-panel {
             width: 100%;
-            max-width: 380px;
+            max-width: 420px;
             background: var(--bg-1);
             border: 1px solid var(--border);
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            z-index: 100;
+            z-index: 101;
             overflow: hidden;
             color: var(--text);
             animation: slideInFromTop 0.3s ease-out;
         }
-        @keyframes slideInFromTop { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .notification-btn-desktop {
+            background: var(--bg-2);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            line-height: 1;
+            position: relative;
+            cursor: pointer;
+        }
+        .notification-btn-desktop:hover {
+            border-color: var(--border-strong);
+            color: var(--text);
+        }
+        .notification-toggle-btn { position: relative; }
+        .notification-badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 10px;
+            height: 10px;
+            font-size: 8px;
+            background-color: var(--brand-1);
+            border-radius: 50%;
+            border: 2px solid var(--bg-1);
+        }
         .notification-header {
             display: flex;
             justify-content: space-between;
@@ -253,10 +266,10 @@
         .notification-item:hover .dismiss-notification-btn { display: block; }
         .notification-list-empty { padding: 2rem; text-align: center; color: var(--muted); }
 
-        /* ====== NEW: TOOLS DROPDOWN ====== */
+        /* ====== TOOLS DROPDOWN ====== */
         .tools-dropdown-container { position: relative; }
         #tools-menu {
-            display: none; position: absolute; right: 0; top: calc(100% + 0.5rem);
+            display: none; position: absolute; left: 0; top: calc(100% + 0.5rem);
             background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px;
             min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10;
             overflow: hidden;
@@ -270,7 +283,7 @@
         #tools-btn .fa-chevron-down { font-size: 0.7em; transition: transform 0.2s; }
         .tools-dropdown-container.open #tools-btn .fa-chevron-down { transform: rotate(180deg); }
 
-        /* ====== NEW: MOBILE USER HEADER ====== */
+        /* ====== MOBILE USER HEADER ====== */
         .mobile-nav-user-header {
             padding: 1rem 1.5rem; display: flex; align-items: center;
             gap: 1rem; border-bottom: 1px solid var(--border);
@@ -394,6 +407,14 @@
         @media (max-width: 768px) { 
             .title { font-size: 2.2rem; }
             .muted { font-size: 1.1rem; }
+            .desktop-search-modal-content {
+                max-width: 90vw;
+                padding: 0.75rem;
+                padding-top: 2.5rem;
+            }
+            .modal-suggestions { display: none; }
+            #modal-universal-search { padding: 0.8rem 1rem; font-size: 1rem; }
+            #modal-search-type-btn { padding: 0 1rem; }
         }
 
         /* ====== DESKTOP SEARCH MODAL ====== */
@@ -553,17 +574,19 @@
         </div>
     </header>
 
-    <!-- NEW: NOTIFICATION PANEL -->
-    <div id="notification-panel" class="notification-panel">
-        <div class="notification-header">
-            <h3>Notifications</h3>
-            <div>
-                <button id="mark-all-read-btn">Mark all as read</button>
-                <button id="close-notifications-btn">&times;</button>
+    <!-- NEW: NOTIFICATION MODAL -->
+    <div id="notification-backdrop" class="notification-backdrop">
+        <div id="notification-panel" class="notification-panel">
+            <div class="notification-header">
+                <h3>Notifications</h3>
+                <div>
+                    <button id="mark-all-read-btn">Mark all as read</button>
+                    <button id="close-notifications-btn">&times;</button>
+                </div>
             </div>
-        </div>
-        <div id="notification-list" class="notification-list">
-            <!-- Notifications will be rendered here by JS -->
+            <div id="notification-list" class="notification-list">
+                <!-- Notifications will be rendered here by JS -->
+            </div>
         </div>
     </div>
 
@@ -851,12 +874,14 @@
                 desktopNavLinks.appendChild(link);
             });
 
-            desktopNavLinks.querySelectorAll('a').forEach(link => {
-                link.className = 'nav-link';
-                const linkPath = link.getAttribute('href');
-                const currentPath = window.location.pathname;
-                if (linkPath === currentPath || (currentPath === '/index.html' && linkPath === '/')) {
-                    link.classList.add('active');
+            desktopNavLinks.querySelectorAll('a, .tools-dropdown-container button').forEach(link => {
+                if(link.tagName.toLowerCase() === 'a') {
+                    link.className = 'nav-link';
+                    const linkPath = link.getAttribute('href');
+                    const currentPath = window.location.pathname;
+                    if (linkPath === currentPath || (currentPath === '/index.html' && linkPath === '/')) {
+                        link.classList.add('active');
+                    }
                 }
             });
 
@@ -867,7 +892,6 @@
             const notificationBtn = navActions.querySelector('.notification-toggle-btn');
             
             if(notificationBtn) desktopAuth.appendChild(notificationBtn);
-            if(toolsDropdown) desktopAuth.appendChild(toolsDropdown);
 
             if (userDropdown) {
                 desktopAuth.appendChild(userDropdown);
@@ -1044,7 +1068,8 @@
             }
 
             const list = document.getElementById('notification-list');
-            const badge = document.getElementById('notification-badge');
+            const badgeDesktop = document.getElementById('notification-badge');
+            const badgeMobile = document.getElementById('notification-badge-mobile');
             let unreadCount = 0;
 
             if (data.length === 0) {
@@ -1069,45 +1094,45 @@
                 }).join('');
             }
             
-            badge.style.display = unreadCount > 0 ? 'block' : 'none';
-            badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+            const badges = [badgeDesktop, badgeMobile];
+            badges.forEach(badge => {
+                if (badge) {
+                    badge.style.display = unreadCount > 0 ? 'block' : 'none';
+                    badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+                }
+            });
         }
 
         async function markOneAsRead(notificationId) {
             const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', notificationId);
             if (!error) {
-                fetchAndRenderNotifications(); // Re-fetch to update UI and badge count
+                fetchAndRenderNotifications();
             }
         }
 
         function setupNotificationListeners() {
-            const panel = document.getElementById('notification-panel');
+            const backdrop = document.getElementById('notification-backdrop');
             
             document.addEventListener('click', (e) => {
-                // Open panel
-                if (e.target.closest('#notification-btn')) {
-                    panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+                if (e.target.closest('.notification-toggle-btn')) {
+                    backdrop.classList.add('show');
                 } 
-                // Close panel
-                else if (e.target.id === 'close-notifications-btn' || !e.target.closest('.notification-panel')) {
-                    panel.style.display = 'none';
+                else if (e.target.id === 'close-notifications-btn' || e.target.id === 'notification-backdrop') {
+                    backdrop.classList.remove('show');
                 }
-                // Mark all as read
                 else if (e.target.id === 'mark-all-read-btn') {
                     supabase.from('notifications').update({ is_read: true }).eq('user_id', currentUserId).then(fetchAndRenderNotifications);
                 }
-                // Dismiss one
                 else if (e.target.classList.contains('dismiss-notification-btn')) {
                     markOneAsRead(e.target.dataset.id);
                 }
-                // Click link
                 else if (e.target.closest('.notification-content a')) {
                     const notificationItem = e.target.closest('.notification-item');
                     const notificationId = notificationItem.id.split('-')[1];
                     if (!notificationItem.classList.contains('read')) {
                         markOneAsRead(notificationId);
                     }
-                    panel.style.display = 'none'; // Close panel on click
+                    backdrop.classList.remove('show');
                 }
             });
         }
@@ -1137,3 +1162,4 @@
 
 </body>
 </html>
+
