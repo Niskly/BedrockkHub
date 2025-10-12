@@ -41,9 +41,8 @@ function setupMobileNav(profile, user) {
     let userHeader = '';
     let mainLinks = '';
     let footerLinks = '';
-    const currentPath = window.location.pathname.endsWith('/') || window.location.pathname.endsWith('/index.html') 
-        ? '/' 
-        : window.location.pathname;
+    const currentPath = window.location.pathname.replace('/index.html', '/');
+
 
     const isHome = currentPath === '/';
     const isTexturePacks = currentPath === '/texturepacks.html';
@@ -220,7 +219,8 @@ function renderDesktopNav(isLoggedIn, profile = null, user = null) {
     if(userDropdown) {
         userDropdown.querySelector('.user-menu-btn').addEventListener('click', (e) => {
             e.stopPropagation();
-            userDropdown.querySelector('.dropdown-content').classList.toggle('show');
+            const content = userDropdown.querySelector('.dropdown-content');
+            content.classList.toggle('show');
         });
         userDropdown.querySelector('.logout-link').addEventListener('click', async (e) => {
             e.preventDefault();
@@ -239,7 +239,8 @@ function renderDesktopNav(isLoggedIn, profile = null, user = null) {
     // Close dropdowns when clicking outside
     window.addEventListener('click', (e) => {
         if (userDropdown && !e.target.closest('.user-dropdown')) {
-            userDropdown.querySelector('.dropdown-content').classList.remove('show');
+            const content = userDropdown.querySelector('.dropdown-content');
+            if(content) content.classList.remove('show');
         }
         if (toolsContainer && !e.target.closest('.tools-dropdown-container')) {
             toolsContainer.classList.remove('open');
@@ -318,3 +319,4 @@ supabase.auth.onAuthStateChange((event, session) => {
         handleAuthStateChange();
     }
 });
+
