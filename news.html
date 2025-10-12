@@ -4,218 +4,149 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>News Feed - MCHub</title>
+    <!-- Favicon Configuration -->
+    <link rel="apple-touch-icon" sizes="180x180" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-16x16.png">
+    <link rel="manifest" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/site.webmanifest">
+    <link rel="shortcut icon" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon.ico">
+    <!-- End Favicon Configuration -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>
-    body { opacity: 0; transition: opacity 0.2s ease-in; }
+        body { opacity: 0; transition: opacity 0.2s ease-in; }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
     <style>
         :root {
-            --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c;
-            --muted: #a8b3cf; --text: #e8eefc; --border: rgba(255, 255, 255, .12);
-            --brand-1: #de212a; --brand-2: #b21a22; --primary: var(--brand-1);
-            --border-strong: rgba(255, 255, 255, .2);
+            --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
+            --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
+            --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
+            --border-strong: rgba(255, 255, 255, .2); --danger: #ef4444; --success: #22c55e;
             --gradient-brand: linear-gradient(135deg, var(--brand-1), var(--brand-2));
-            --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
+            --brand-1-rgb: 222, 33, 42;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        html { height: 100%; scroll-behavior: smooth; }
         body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 15px/1.6 Inter, sans-serif; }
-        body::-webkit-scrollbar { display: none; }
-        body { -ms-overflow-style: none; scrollbar-width: none; }
         body::before {
             content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background-image: var(--bg-image, url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg'));
-            background-size: cover; background-position: center; background-attachment: fixed;
-            filter: blur(8px); opacity: 0.25; z-index: -1;
+            background-size: cover; background-position: center; filter: blur(8px); opacity: 0.2; z-index: -1;
             transition: background-image 0.5s ease-in-out;
         }
         a { color: inherit; text-decoration: none; }
+        .tiny { font-size: 12px; color: var(--muted); }
+        .btn { padding: .7rem 1.2rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn.primary { background: var(--gradient-brand); box-shadow: var(--shadow-brand); color: white; }
+        .btn.ghost { border-color: var(--border); background: transparent; color: var(--text); }
+        .btn.ghost:hover { background: rgba(255, 255, 255, 0.05); }
+        .spinner-sm { width: 1.2em; height: 1.2em; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* ====== HEADER STYLES (FROM INDEX.HTML) ====== */
-        header { 
-            position: fixed;
-            top: 1rem;
-            left: 1rem;
-            right: 1rem;
-            z-index: 50; 
-            background: none;
-            border: none;
-        }
-        body {
-            padding-top: 80px; /* Space for the fixed header */
-        }
-        .nav { 
-            max-width: 1200px; 
-            margin: 0 auto; 
-            padding: 12px 18px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            background: rgba(28, 28, 28, 0.7);
-            backdrop-filter: blur(20px) saturate(1.2);
-            border: 1px solid var(--border);
-            border-radius: 1.25rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
+        /* Header is managed by auth.js */
+        header { position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(1.2) blur(10px); background: rgba(12, 12, 12, 0.75); border-bottom: 1px solid var(--border); }
+        .nav { max-width: 1100px; margin: 0 auto; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; }
         .brand { display: flex; align-items: center; gap: .8rem; }
         .brand-badge { height: 40px; width: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--gradient-brand); box-shadow: var(--shadow-brand); }
         .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-11px); }
         .brand-title { font-weight: 800; letter-spacing: .6px; font-size: 15px; }
-        .tiny { font-size: 12px; color: var(--muted); }
-        
-        .btn { padding: .5rem 1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
-        .primary { background: var(--gradient-brand); box-shadow: var(--shadow-brand); color: white; }
-        .user-dropdown { position: relative; display: inline-block; }
-        
-        /* ====== MAIN CONTENT & NEWS FEED ====== */
-        .container { max-width: 900px; margin: 0 auto; padding: 28px 18px; }
-        .feed-header { text-align: center; margin-bottom: 2rem; }
-        .feed-header .icon { font-size: 3rem; color: var(--brand-1); margin-bottom: 1rem; }
-        .feed-header h1 { font-size: 2.5rem; font-weight: 800; margin: 0; }
-        .feed-header p { color: var(--muted); font-size: 1.1rem; }
+        .nav-actions, .desktop-nav-right { display: flex; align-items: center; gap: 0.6rem; }
 
-        .news-controls { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 2rem; }
-        .news-search-wrapper { flex-grow: 1; position: relative; }
-        #news-search { width: 100%; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; padding: 0.8rem 1rem 0.8rem 2.5rem; color: var(--text); font-size: 1rem; }
-        .news-search-wrapper i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--muted); }
+        .container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
         
-        #new-post-btn { display: none; } /* Hidden by default, shown for admins */
-
+        .page-header { text-align: center; margin-bottom: 2.5rem; }
+        .page-header-icon { font-size: 2.5rem; color: var(--brand-1); margin-bottom: 1rem; }
+        .page-header h1 { font-size: 2.5rem; font-weight: 900; background: var(--gradient-brand); -webkit-background-clip: text; color: transparent; margin: 0 0 0.5rem 0; }
+        .page-header p { color: var(--muted); font-size: 1.1rem; max-width: 500px; margin: 0 auto; }
+        
+        .search-container { position: relative; margin-bottom: 2.5rem; }
+        .search-container i { position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); color: var(--muted); }
+        #news-search { width: 100%; padding: 1rem 1.25rem 1rem 3.5rem; border-radius: 12px; background: var(--bg-1); border: 1px solid var(--border); color: var(--text); font-size: 1rem; }
+        #news-search:focus { outline: none; border-color: var(--brand-1); box-shadow: 0 0 0 3px rgba(var(--brand-1-rgb), 0.2); }
+        
+        .admin-post-trigger { text-align: right; margin-bottom: 1rem; display: none; }
+        .admin-post-trigger.visible { display: block; }
+        
         .news-feed { display: flex; flex-direction: column; gap: 1.5rem; }
-        .news-post-card { background: rgba(28, 28, 28, 0.7); backdrop-filter: blur(20px) saturate(1.2); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
-        .news-post-card .post-content { padding: 1.5rem; }
-        .post-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
-        .author-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .author-info .author-name { font-weight: 700; color: var(--text); }
-        .author-info .post-timestamp { font-size: 0.8rem; color: var(--muted); }
-        .post-body { color: var(--muted); line-height: 1.7; }
-        .post-body p { margin-bottom: 1em; }
-        .post-body h2 { font-size: 1.2rem; font-weight: 700; color: var(--text); margin: 1.5rem 0 0.5rem; }
-        .post-body img { max-width: 100%; border-radius: 8px; margin: 1rem 0; }
-        .no-posts-found { text-align: center; padding: 3rem; color: var(--muted); }
-        .no-posts-found i { font-size: 2.5rem; margin-bottom: 1rem; }
+        .news-post { background: rgba(28, 28, 28, 0.8); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; display: flex; gap: 1rem; }
+        .post-author-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .post-content-wrapper { flex-grow: 1; }
+        .post-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+        .post-author-name { font-weight: 700; color: var(--text); }
+        .post-author-name:hover { text-decoration: underline; }
+        .post-timestamp { font-size: 0.8rem; color: var(--muted); }
+        .post-body { line-height: 1.6; color: var(--muted); white-space: pre-wrap; word-break: break-word; }
+        .post-body a { color: var(--brand-1); text-decoration: underline; }
         
-        /* ====== MODAL FOR NEW POST ====== */
-        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 1rem; animation: fadeIn 0.3s ease; }
-        .modal-backdrop.show { display: flex; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .modal-content { background: var(--bg-1); border-radius: 1rem; border: 1px solid var(--border); width: 100%; max-width: 700px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); display: flex; flex-direction: column; max-height: 90vh; }
-        .modal-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h2 { font-size: 1.2rem; margin: 0; }
-        .modal-body { padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; }
-        #post-content-input { min-height: 200px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; color: var(--text); font-family: inherit; font-size: 1rem; resize: vertical; }
-        .editor-toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; background: var(--bg-2); padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border); }
-        .toolbar-btn { background: var(--bg-1); border: 1px solid var(--border); color: var(--muted); width: 36px; height: 36px; border-radius: 6px; cursor: pointer; }
-        .toolbar-btn:hover { background: #333; color: var(--text); }
-        .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 0.5rem; }
+        .empty-state { text-align: center; padding: 4rem 2rem; background: rgba(28, 28, 28, 0.8); border: 1px solid var(--border); border-radius: 16px; }
+        .empty-state-icon { font-size: 3rem; color: var(--brand-1); margin-bottom: 1rem; }
+        .empty-state h3 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .empty-state p { color: var(--muted); }
         
-        /* ====== SHARED MOBILE NAV STYLES ====== */
-        .nav-actions { display: none; }
-        .mobile-nav-controls { display: flex; align-items: center; gap: 0.5rem; }
-        .mobile-nav-btn { background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; padding: 0.5rem; }
-        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
-        .mobile-nav-backdrop.show { display: block; opacity: 1; }
-        .mobile-nav-sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; background: var(--bg-1); z-index: 999; transform: translateX(-100%); transition: transform 0.3s ease; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
-        .mobile-nav-sidebar.show { transform: translateX(0); }
-        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
-        .mobile-nav-header { padding: 1.5rem; border-bottom: 1px solid var(--border); }
-        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
-        .mobile-nav-main-links { flex-grow: 1; }
+        #toast-container { position: fixed; top: 80px; right: 20px; z-index: 1000; }
+        .toast { padding: 12px 18px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; background: var(--bg-1); border: 1px solid var(--border); }
+        @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
         
-        /* ====== DESKTOP NAVBAR & RESPONSIVENESS (FROM INDEX.HTML) ====== */
-        .desktop-nav-links, .desktop-nav-right { display: none; }
-        .nav-left-desktop { display: contents; }
-
-        @media (min-width: 1024px) {
-            .mobile-nav-controls { display: none !important; }
-            header { padding: 0 1.5rem; }
-            .nav-left-desktop { display: flex; align-items: center; gap: 1.5rem; }
-            .desktop-nav-links, .desktop-nav-right { display: flex; align-items: center; }
-            .desktop-nav-links { gap: 0.5rem; }
-            .nav-link { padding: 0.6rem 1rem; border-radius: 10px; font-weight: 700; color: var(--muted); transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem; }
-            .nav-link:hover { background-color: rgba(255, 255, 255, 0.05); color: var(--text); }
-            .nav-link.active { background-color: var(--bg-2); color: white; }
-            .desktop-nav-right { gap: 1rem; }
-            #desktop-auth-actions { display: flex; align-items: center; gap: 0.5rem; }
-        }
-        
-        @media (max-width: 768px) { 
-            .feed-header h1 { font-size: 2rem; }
-            .feed-header p { font-size: 1rem; }
-            .news-controls { flex-direction: column; align-items: stretch; }
-        }
+        .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal.show { display: flex; }
+        .modal-dialog { background: var(--bg-1); border: 1px solid var(--border); border-radius: 20px; width: 90%; max-width: 600px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+        .modal-header { padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { font-size: 1.5rem; font-weight: 700; margin: 0; }
+        .modal-content { padding: 1.5rem; }
+        #new-post-form { display: flex; gap: 1rem; }
+        #new-post-form .post-author-avatar { width: 40px; height: 40px; }
+        #post-textarea { width: 100%; min-height: 120px; resize: vertical; padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text); font-size: 1rem; font-family: inherit; }
+        #post-textarea:focus { outline: none; border-color: var(--brand-1); }
+        #post-form-actions { display: flex; justify-content: flex-end; align-items: center; gap: 1rem; margin-top: 1rem; }
+        #char-counter { font-size: 0.8rem; color: var(--muted); }
     </style>
 </head>
-
 <body>
-    <header>
-        <div class="nav">
-            <div class="nav-left-desktop">
-                <a class="brand" href="/">
-                    <div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div>
-                    <div><div class="brand-title">MCHUB</div><div class="tiny">Minecraft • Community Hub</div></div>
-                </a>
-                <div class="desktop-nav-links" id="desktop-nav-links"></div>
-            </div>
-            <div class="desktop-nav-right">
-                <div id="desktop-auth-actions"></div>
-            </div>
-            <div class="nav-actions" id="nav-actions"></div>
-            <div class="mobile-nav-controls">
-                <button class="mobile-nav-btn mobile-nav-toggle"><i class="fa-solid fa-bars"></i></button>
-            </div>
+    <header></header> <!-- auth.js will populate this -->
+
+    <main class="container">
+        <div class="page-header">
+            <div class="page-header-icon"><i class="fa-solid fa-newspaper"></i></div>
+            <h1>News Feed</h1>
+            <p>Stay updated with the latest announcements, features, and community news from MCHub.</p>
         </div>
-    </header>
 
-    <main>
-        <section class="container">
-            <div class="feed-header">
-                <div class="icon"><i class="fa-solid fa-newspaper"></i></div>
-                <h1>News Feed</h1>
-                <p>Stay updated with the latest announcements, features, and community news.</p>
-            </div>
+        <div class="search-container">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="news-search" placeholder="Search news posts...">
+        </div>
+        
+        <div class="admin-post-trigger" id="admin-post-trigger">
+            <button class="btn primary" id="new-post-btn"><i class="fa-solid fa-plus"></i> New Post</button>
+        </div>
 
-            <div class="news-controls">
-                <div class="news-search-wrapper">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="news-search" placeholder="Search news posts...">
-                </div>
-                <button id="new-post-btn" class="btn primary"><i class="fa-solid fa-plus"></i> New Post</button>
-            </div>
-
-            <div id="news-feed-container" class="news-feed">
-                <!-- News posts will be loaded here by JavaScript -->
-            </div>
-        </section>
+        <div class="news-feed" id="news-feed-container">
+            <!-- News posts will be loaded here by JavaScript -->
+        </div>
     </main>
 
-    <!-- New Post Modal -->
-    <div id="new-post-modal" class="modal-backdrop">
-        <div class="modal-content">
+    <div id="new-post-modal" class="modal">
+        <div class="modal-dialog">
             <div class="modal-header">
                 <h2>Create New Post</h2>
-                <button class="btn ghost" id="close-modal-btn" style="padding: 0.5rem; width: 36px; height: 36px;"><i class="fa-solid fa-xmark"></i></button>
+                <button class="btn ghost" style="padding: 0.5rem; width: 40px; height: 40px;" id="close-modal-btn"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <form id="new-post-form">
-                <div class="modal-body">
-                    <div class="editor-toolbar">
-                        <!-- Toolbar buttons for formatting -->
-                        <button type="button" class="toolbar-btn" data-format="bold" title="Bold"><i class="fa-solid fa-bold"></i></button>
-                        <button type="button" class="toolbar-btn" data-format="italic" title="Italic"><i class="fa-solid fa-italic"></i></button>
-                        <button type="button" class="toolbar-btn" data-format="underline" title="Underline"><i class="fa-solid fa-underline"></i></button>
-                         <button type="button" class="toolbar-btn" data-format="insertImage" title="Insert Image"><i class="fa-solid fa-image"></i></button>
+            <div class="modal-content">
+                <form id="new-post-form">
+                    <img id="modal-user-avatar" class="post-author-avatar" src="https://placehold.co/40x40/1c1c1c/e8eefc?text=A">
+                    <div style="flex-grow: 1;">
+                        <textarea id="post-textarea" placeholder="What's happening?" maxlength="1000" required></textarea>
+                        <div id="post-form-actions">
+                            <span id="char-counter">1000</span>
+                            <button type="submit" id="tweet-btn" class="btn primary"><i class="fa-solid fa-paper-plane"></i> Tweet</button>
+                        </div>
                     </div>
-                    <textarea id="post-content-input" placeholder="Write your announcement here... Supports basic HTML." required></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" id="cancel-post-btn" class="btn ghost">Cancel</button>
-                    <button type="submit" id="submit-post-btn" class="btn primary">Tweet</button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
+    
+    <div id="toast-container"></div>
     
     <script type="module" src="/theme.js"></script>
     <script type="module" src="/auth.js"></script>
@@ -224,169 +155,180 @@
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let allPosts = [];
+        let loggedInProfile = null;
+        const feedContainer = document.getElementById('news-feed-container');
 
-        const feedContainer = document.getElementById('new-post-btn');
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast`;
+            toast.style.borderColor = type === 'success' ? 'var(--success)' : 'var(--danger)';
+            toast.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'circle-check' : 'circle-exclamation'}" style="color: ${type === 'success' ? 'var(--success)' : 'var(--danger)'};"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                if(toast) {
+                    toast.style.transform = 'translateX(120%)';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 4000);
+        }
+
+        function timeAgo(date) {
+            const seconds = Math.floor((new Date() - new Date(date)) / 1000); let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + "y ago"; interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + "mo ago"; interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + "d ago"; interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + "h ago"; interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + "m ago"; return "just now";
+        }
+        
+        function escapeHtml(str) { return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); }
+
+        function renderNews(postsToRender) {
+            if (postsToRender.length === 0) {
+                feedContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon"><i class="fa-solid fa-inbox"></i></div>
+                        <h3>No news posts yet</h3>
+                        <p>Check back later for the latest updates and announcements.</p>
+                    </div>`;
+                return;
+            }
+            feedContainer.innerHTML = postsToRender.map(post => {
+                const author = post.profiles;
+                const avatar = author?.avatar_url || `https://placehold.co/48x48/1c1c1c/de212a?text=${(author?.username || '?').charAt(0).toUpperCase()}`;
+                const username = author?.username || 'Unknown Author';
+                
+                // Regex to find URLs and wrap them in <a> tags
+                const linkedContent = escapeHtml(post.content).replace(
+                    /(https?:\/\/[^\s]+)/g,
+                    '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+                );
+
+                return `
+                    <div class="news-post">
+                        <a href="/profile.html?user=${escapeHtml(username)}">
+                            <img src="${avatar}" alt="${escapeHtml(username)}'s avatar" class="post-author-avatar">
+                        </a>
+                        <div class="post-content-wrapper">
+                            <div class="post-header">
+                                <a href="/profile.html?user=${escapeHtml(username)}" class="post-author-name">${escapeHtml(username)}</a>
+                                <span class="post-timestamp">${timeAgo(post.created_at)}</span>
+                            </div>
+                            <div class="post-body">${linkedContent}</div>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+        
+        async function loadNews() {
+            feedContainer.innerHTML = `<div class="empty-state"><div class="spinner-sm" style="font-size: 2rem;"></div><h3>Loading News...</h3></div>`;
+            try {
+                const { data, error } = await supabase
+                    .from('news')
+                    .select(`*, profiles(username, avatar_url)`)
+                    .order('created_at', { ascending: false });
+                if (error) throw error;
+                allPosts = data;
+                renderNews(allPosts);
+            } catch (err) {
+                console.error("Error loading news:", err);
+                feedContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon" style="color:var(--danger)"><i class="fa-solid fa-circle-exclamation"></i></div>
+                        <h3>Failed to load news</h3>
+                        <p>There was an error connecting to the server. Please try again later.</p>
+                    </div>`;
+            }
+        }
+        
+        // Admin Modal Logic
         const newPostBtn = document.getElementById('new-post-btn');
         const modal = document.getElementById('new-post-modal');
         const closeModalBtn = document.getElementById('close-modal-btn');
-        const cancelPostBtn = document.getElementById('cancel-post-btn');
-        const newPostForm = document.getElementById('new-post-form');
-        const contentInput = document.getElementById('post-content-input');
-        const searchInput = document.getElementById('news-search');
+        const postForm = document.getElementById('new-post-form');
+        const textarea = document.getElementById('post-textarea');
+        const charCounter = document.getElementById('char-counter');
 
-        let allPosts = [];
-
-        function formatTimeAgo(date) {
-            const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-            let interval = seconds / 31536000;
-            if (interval > 1) return Math.floor(interval) + " years ago";
-            interval = seconds / 2592000;
-            if (interval > 1) return Math.floor(interval) + " months ago";
-            interval = seconds / 86400;
-            if (interval > 1) return Math.floor(interval) + " days ago";
-            interval = seconds / 3600;
-            if (interval > 1) return Math.floor(interval) + " hours ago";
-            interval = seconds / 60;
-            if (interval > 1) return Math.floor(interval) + " minutes ago";
-            return "just now";
-        }
-
-        function renderPosts(postsToRender) {
-            const container = document.getElementById('news-feed-container');
-            if (postsToRender.length === 0) {
-                container.innerHTML = `<div class="no-posts-found card"><i class="fa-solid fa-ghost"></i><h3>No news posts yet</h3><p>Check back later for the latest updates.</p></div>`;
-                return;
+        newPostBtn.addEventListener('click', () => {
+            if (loggedInProfile) {
+                document.getElementById('modal-user-avatar').src = loggedInProfile.avatar_url || `https://placehold.co/40x40/1c1c1c/de212a?text=${loggedInProfile.username.charAt(0).toUpperCase()}`;
             }
+            modal.classList.add('show');
+            textarea.focus();
+        });
 
-            container.innerHTML = postsToRender.map(post => {
-                const author = post.profiles;
-                const avatarUrl = author.avatar_url || `https://placehold.co/40x40/1c1c1c/de212a?text=${author.username.charAt(0).toUpperCase()}`;
-                
-                // Basic HTML sanitation
-                let content = post.content.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                content = content.replace(/\[b\](.*?)\[\/b\]/g, '<strong>$1</strong>');
-                content = content.replace(/\[i\](.*?)\[\/i\]/g, '<em>$1</em>');
-                content = content.replace(/\[u\](.*?)\[\/u\]/g, '<u>$1</u>');
-                content = content.replace(/\[img\](.*?)\[\/img\]/g, '<img src="$1" alt="Post image" style="max-width: 100%; border-radius: 8px; margin-top: 1rem;">');
-                content = content.replace(/\n/g, '<br>');
-
-
-                return `
-                <div class="news-post-card">
-                    <div class="post-content">
-                        <div class="post-header">
-                            <img src="${avatarUrl}" alt="${author.username}" class="author-avatar">
-                            <div class="author-info">
-                                <a href="/profile.html?user=${author.username}" class="author-name">${author.username}</a>
-                                <div class="post-timestamp">${formatTimeAgo(post.created_at)}</div>
-                            </div>
-                        </div>
-                        <div class="post-body">
-                            ${content}
-                        </div>
-                    </div>
-                </div>
-                `;
-            }).join('');
-        }
-
-        async function fetchNews() {
-            const container = document.getElementById('news-feed-container');
-            container.innerHTML = `<div class="no-posts-found card"><i class="fa-solid fa-spinner fa-spin"></i><h3>Loading news...</h3></div>`;
-            const { data, error } = await supabase
-                .from('news')
-                .select(`*, profiles(username, avatar_url)`)
-                .order('created_at', { ascending: false });
-
-            if (error) {
-                console.error('Error fetching news:', error);
-                container.innerHTML = `<div class="no-posts-found card"><i class="fa-solid fa-triangle-exclamation"></i><h3>Failed to load news</h3><p>Please try again later.</p></div>`;
-                return;
-            }
-            allPosts = data;
-            renderPosts(allPosts);
-        }
-
-        // --- Admin post modal logic ---
-        newPostBtn.addEventListener('click', () => modal.classList.add('show'));
         closeModalBtn.addEventListener('click', () => modal.classList.remove('show'));
-        cancelPostBtn.addEventListener('click', () => modal.classList.remove('show'));
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.classList.remove('show');
-            }
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('show'); });
+
+        textarea.addEventListener('input', () => {
+            const remaining = 1000 - textarea.value.length;
+            charCounter.textContent = remaining;
         });
 
-        document.querySelectorAll('.toolbar-btn').forEach(button => {
-            button.addEventListener('click', () => {
-                const format = button.dataset.format;
-                const start = contentInput.selectionStart;
-                const end = contentInput.selectionEnd;
-                const selectedText = contentInput.value.substring(start, end);
-                let replacement = '';
-
-                if (format === 'insertImage') {
-                    const url = prompt('Enter image URL:');
-                    if (url) {
-                        replacement = `[img]${url}[/img]`;
-                         contentInput.value = contentInput.value.substring(0, start) + replacement + contentInput.value.substring(end);
-                    }
-                } else {
-                    replacement = `[${format}]${selectedText}[/${format}]`;
-                    contentInput.value = contentInput.value.substring(0, start) + replacement + contentInput.value.substring(end);
-                }
-                contentInput.focus();
-            });
-        });
-        
-        newPostForm.addEventListener('submit', async (e) => {
+        postForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            // This is a placeholder for your API call
-            alert("This is a demo. You would need to create an '/api/add-news' endpoint to make this work.");
-            // Example of what the API call would look like:
-            /*
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                alert("You must be logged in as an admin.");
-                return;
-            }
-            const response = await fetch('/api/add-news', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.access_token}`
-                },
-                body: JSON.stringify({ content: contentInput.value })
-            });
+            const content = textarea.value.trim();
+            if (!content) return;
+            
+            const tweetBtn = document.getElementById('tweet-btn');
+            const originalBtnContent = tweetBtn.innerHTML;
+            tweetBtn.disabled = true;
+            tweetBtn.innerHTML = '<div class="spinner-sm"></div>';
 
-            if (response.ok) {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) throw new Error("Authentication session not found.");
+
+                const response = await fetch('/api/add-news', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`
+                    },
+                    body: JSON.stringify({ content: content })
+                });
+                
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.details || 'Failed to post news.');
+                
+                showToast('News post created successfully!', 'success');
                 modal.classList.remove('show');
-                fetchNews(); // Refresh feed
-            } else {
-                alert("Failed to create post.");
+                postForm.reset();
+                charCounter.textContent = '1000';
+                await loadNews(); // Reload all news to see the new post
+
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                tweetBtn.disabled = false;
+                tweetBtn.innerHTML = originalBtnContent;
             }
-            */
         });
 
-        // --- Search Logic ---
-        searchInput.addEventListener('input', () => {
-            const query = searchInput.value.toLowerCase();
+        // Search Logic
+        document.getElementById('news-search').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
             const filteredPosts = allPosts.filter(post => 
                 post.content.toLowerCase().includes(query) ||
-                post.profiles.username.toLowerCase().includes(query)
+                post.profiles?.username?.toLowerCase().includes(query)
             );
-            renderPosts(filteredPosts);
+            renderNews(filteredPosts);
         });
 
-
-        // --- Initialization ---
+        // Initialization
         document.addEventListener('auth-ready', (event) => {
             const { profile } = event.detail;
+            loggedInProfile = profile;
             if (profile && profile.role === 'admin') {
-                newPostBtn.style.display = 'inline-flex';
+                document.getElementById('admin-post-trigger').classList.add('visible');
             }
-            fetchNews();
         });
+        
+        loadNews();
 
     </script>
 </body>
