@@ -4,11 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MCHub - News Feed</title>
+    <!-- Favicon Configuration -->
     <link rel="apple-touch-icon" sizes="180x180" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-16x16.png">
     <link rel="manifest" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/site.webmanifest">
     <link rel="shortcut icon" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon.ico">
+    <!-- End Favicon Configuration -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>
         body { opacity: 0; transition: opacity 0.2s ease-in; }
@@ -126,7 +128,7 @@
             .desktop-nav-links { gap: 0.5rem; }
             .nav-link { padding: 0.6rem 1rem; border-radius: 10px; font-weight: 700; color: var(--muted); transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem; background: transparent; border: none; font-family: inherit; font-size: inherit; }
             .nav-link:hover { background-color: rgba(255, 255, 255, 0.05); color: var(--text); }
-            .nav-link.active { color: white; }
+            .nav-link.active { color: var(--brand-1); }
             .desktop-nav-right { gap: 1rem; }
             .desktop-search-container { position: relative; }
             .desktop-search-container input { background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; padding: 0.6rem 1rem 0.6rem 2.5rem; width: 180px; color: var(--text); transition: all 0.2s ease; cursor: pointer; }
@@ -355,7 +357,8 @@
         </div>
 
         <div class="news-feed" id="news-feed-container">
-            </div>
+            <!-- News posts will be loaded here by JavaScript -->
+        </div>
     </main>
 
     <div id="new-post-modal" class="modal">
