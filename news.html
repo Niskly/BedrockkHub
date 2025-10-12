@@ -152,8 +152,8 @@
         .notification-btn-desktop:hover { border-color: var(--border-strong); color: var(--text); }
         .mobile-nav-btn.notification-toggle-btn { color: white; }
         .notification-toggle-btn { position: relative; }
-        .notification-badge { position: absolute; top: 2px; right: 2px; width: 10px; height: 10px; font-size: 8px; background-color: var(--brand-1); border-radius: 50%; border: 2px solid var(--bg-1); }
-        .mobile-nav-btn .notification-badge { top: 6px; right: 6px; border-color: var(--bg-2); }
+        .notification-badge { position: absolute; top: -2px; right: -2px; width: 18px; height: 18px; font-size: 10px; background-color: var(--brand-1); border-radius: 50%; border: 2px solid var(--bg-1); display: none; justify-content: center; align-items: center; font-weight: bold; }
+        .mobile-nav-btn .notification-badge { top: 2px; right: 2px; border-color: var(--bg-2); }
         .notification-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); background: var(--bg-2); }
         .notification-header h3 { margin: 0; font-size: 1rem; }
         #close-notifications-btn { font-size: 1.5rem; line-height: 1; background: none; border: none; color: var(--muted); cursor: pointer; }
@@ -282,7 +282,6 @@
                 <div class="desktop-nav-links" id="desktop-nav-links"></div>
             </div>
             <div class="desktop-nav-right">
-                 <!-- FIX: Added Desktop Search Bar -->
                 <div class="desktop-search-container">
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" placeholder="Search..." readonly>
@@ -291,7 +290,6 @@
             </div>
             <div class="nav-actions" id="nav-actions"></div>
             <div class="mobile-nav-controls">
-                 <!-- FIX: Added Mobile Search Toggle -->
                 <button id="mobile-search-toggle" class="mobile-nav-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
                 <div id="mobile-auth-actions"></div>
                 <button class="mobile-nav-btn mobile-nav-toggle"><i class="fa-solid fa-bars"></i></button>
@@ -299,7 +297,6 @@
         </div>
     </header>
 
-    <!-- FIX: Updated Notification Modal with Footer -->
     <div id="notification-backdrop" class="notification-backdrop">
         <div id="notification-panel" class="notification-panel">
             <div class="notification-header">
@@ -314,7 +311,6 @@
         </div>
     </div>
 
-    <!-- FIX: Added Search Modal from index.html -->
     <div id="desktop-search-modal" class="desktop-search-modal-backdrop">
         <div class="desktop-search-modal-content">
             <button id="close-search-modal-btn" class="close-search-modal-btn"><i class="fa-solid fa-xmark"></i></button>
@@ -602,10 +598,16 @@
             renderNews(filteredPosts);
         });
 
-        // --- NOTIFICATION LOGIC (FIX) ---
+        // --- NOTIFICATION LOGIC ---
         async function fetchAndRenderNotifications() {
             if (!currentUserId) return;
-            const { data, error } = await supabase.from('notifications').select('*').eq('user_id', currentUserId).order('created_at', { ascending: false }).limit(20);
+            const { data, error } = await supabase
+                .from('notifications')
+                .select('*', { count: 'exact' })
+                .eq('user_id', currentUserId)
+                .order('created_at', { ascending: false })
+                .limit(20);
+
             if (error) { console.error("Error fetching notifications:", error); return; }
 
             const list = document.getElementById('notification-list');
@@ -618,10 +620,12 @@
                     const iconMap = { 'new_news': 'fa-solid fa-newspaper', 'new_pack': 'fa-solid fa-box', 'comment_reply': 'fa-solid fa-comment-dots' };
                     return `
                         <div class="notification-item ${n.is_read ? 'read' : ''}" id="notification-${n.id}">
-                            <i class="${iconMap[n.type] || 'fa-solid fa-bell'} notification-icon"></i>
-                            <a href="${n.content.link}" class="notification-content">
-                                <p>${escapeHtml(n.content.text)}</p>
-                                <span class="time">${timeAgo(n.created_at)}</span>
+                            <a href="${n.content.link}">
+                                <i class="${iconMap[n.type] || 'fa-solid fa-bell'} notification-icon"></i>
+                                <div class="notification-content">
+                                    <p>${escapeHtml(n.content.text)}</p>
+                                    <span class="time">${timeAgo(n.created_at)}</span>
+                                </div>
                             </a>
                             <button class="dismiss-notification-btn" data-id="${n.id}" title="Dismiss">&times;</button>
                         </div>`;
@@ -629,24 +633,25 @@
             }
             
             document.querySelectorAll('.notification-badge').forEach(badge => {
-                badge.style.display = unreadCount > 0 ? 'flex' : 'none';
-                badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
-                badge.style.width = unreadCount > 9 ? '18px' : '10px';
-                badge.style.height = unreadCount > 9 ? '18px' : '10px';
-                 badge.style.justifyContent = 'center';
-                badge.style.alignItems = 'center';
+                if (unreadCount > 0) {
+                    badge.style.display = 'flex';
+                    badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+                } else {
+                    badge.style.display = 'none';
+                }
             });
         }
         
         async function deleteNotification(notificationId) {
              const { error } = await supabase.from('notifications').delete().eq('id', notificationId);
-             if (!error) {
-                const item = document.getElementById(`notification-${notificationId}`);
-                if (item) item.remove();
-                fetchAndRenderNotifications(); // Re-fetch to update badge count correctly
-             } else {
-                showToast('Could not dismiss notification.', 'error');
-             }
+             if (error) showToast('Could not dismiss notification.', 'error');
+             else fetchAndRenderNotifications();
+        }
+        
+        async function clearAllNotifications() {
+            const { error } = await supabase.from('notifications').delete().eq('user_id', currentUserId);
+            if (error) showToast('Could not clear notifications.', 'error');
+            else fetchAndRenderNotifications();
         }
 
         function setupNotificationListeners() {
@@ -655,20 +660,22 @@
             document.addEventListener('click', async (e) => {
                 if (e.target.closest('.notification-toggle-btn')) {
                     backdrop.classList.add('show');
-                } else if (e.target.id === 'close-notifications-btn' || e.target.id === 'notification-backdrop') {
+                } else if (e.target.id === 'close-notifications-btn' || e.target === backdrop) {
                     backdrop.classList.remove('show');
                 } else if (e.target.id === 'mark-all-read-btn') {
-                    await supabase.from('notifications').update({ is_read: true }).eq('user_id', currentUserId);
+                    await supabase.from('notifications').update({ is_read: true }).eq('user_id', currentUserId).eq('is_read', false);
                     fetchAndRenderNotifications();
                 } else if (e.target.id === 'clear-all-btn') {
-                    await supabase.from('notifications').delete().eq('user_id', currentUserId);
-                    fetchAndRenderNotifications();
+                    clearAllNotifications();
                 } else if (e.target.closest('.dismiss-notification-btn')) {
+                    e.stopPropagation();
+                    e.preventDefault();
                     deleteNotification(e.target.closest('.dismiss-notification-btn').dataset.id);
                 } else if (e.target.closest('.notification-item a')) {
                     const notificationItem = e.target.closest('.notification-item');
                     if(notificationItem && !notificationItem.classList.contains('read')) {
                        await supabase.from('notifications').update({ is_read: true }).eq('id', notificationItem.id.split('-')[1]);
+                       fetchAndRenderNotifications();
                     }
                 }
             });
@@ -677,18 +684,17 @@
         function createNotificationSubscription() {
             if (notificationSubscription) supabase.removeChannel(notificationSubscription);
             notificationSubscription = supabase.channel(`public:notifications:user_id=eq.${currentUserId}`)
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, fetchAndRenderNotifications)
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, fetchAndRenderNotifications)
                 .subscribe();
         }
         
-        // --- SEARCH MODAL LOGIC (FIX) ---
+        // --- SEARCH MODAL LOGIC ---
         const desktopSearchInput = document.querySelector('.desktop-search-container input');
         const mobileSearchToggle = document.getElementById('mobile-search-toggle');
         const searchModal = document.getElementById('desktop-search-modal');
         const closeModalBtn = document.getElementById('close-search-modal-btn');
         const modalSearchInput = document.getElementById('modal-universal-search');
         
-        async function loadNewPackSuggestions() { /* ... content as in index.html ... */ }
         function openSearchModal() { if (searchModal) { searchModal.classList.add('show'); document.body.style.overflow = 'hidden'; modalSearchInput.focus(); } }
         function closeSearchModal() { if (searchModal) { searchModal.classList.remove('show'); document.body.style.overflow = ''; } }
         
@@ -732,56 +738,31 @@
         }
 
         const modalDropdown = document.getElementById('modal-search-type-dropdown');
-        modalDropdown.addEventListener('click', (e) => { e.stopPropagation(); modalDropdown.classList.toggle('open'); });
-        modalDropdown.querySelectorAll('.search-type-option').forEach(option => {
-            option.addEventListener('click', () => {
-                modalSearchType = option.dataset.type;
-                document.getElementById('modal-search-type-label').textContent = option.textContent.trim();
-                modalSearchInput.placeholder = `Search for ${modalSearchType}...`;
-                performModalSearch();
+        if (modalDropdown) {
+            modalDropdown.addEventListener('click', (e) => { e.stopPropagation(); modalDropdown.classList.toggle('open'); });
+            modalDropdown.querySelectorAll('.search-type-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    modalSearchType = option.dataset.type;
+                    document.getElementById('modal-search-type-label').textContent = option.textContent.trim();
+                    modalSearchInput.placeholder = `Search for ${modalSearchType}...`;
+                    performModalSearch();
+                });
             });
-        });
-        modalSearchInput.addEventListener('input', () => { clearTimeout(modalDebounceTimer); modalDebounceTimer = setTimeout(performModalSearch, 300); });
+        }
+        if (modalSearchInput) {
+            modalSearchInput.addEventListener('input', () => { clearTimeout(modalDebounceTimer); modalDebounceTimer = setTimeout(performModalSearch, 300); });
+        }
         
         // --- INITIALIZATION ---
         document.addEventListener('auth-ready', (event) => {
             const { profile, user } = event.detail;
             loggedInProfile = profile;
-            currentUserId = user?.id; // Set current user ID
+            currentUserId = user?.id;
             
             if (profile?.role === 'admin') {
                 document.getElementById('admin-post-trigger').classList.add('visible');
             }
 
-            // Desktop nav link active state
-            const isDesktop = window.innerWidth >= 1024;
-            if (isDesktop) {
-                const navActions = document.getElementById('nav-actions');
-                const desktopNavLinks = document.getElementById('desktop-nav-links');
-                const desktopAuth = document.getElementById('desktop-auth-actions');
-
-                navActions.querySelectorAll('.nav-link-item, .tools-dropdown-container').forEach(el => desktopNavLinks.appendChild(el));
-                desktopNavLinks.querySelectorAll('a.nav-link').forEach(link => {
-                    if (link.getAttribute('href') === '/news.html') {
-                        link.classList.add('active');
-                    }
-                });
-
-                const loginBtn = navActions.querySelector('.login-btn-item');
-                const signupBtn = navActions.querySelector('.signup-btn-item');
-                const userDropdown = navActions.querySelector('.user-dropdown');
-                const notificationBtn = navActions.querySelector('.notification-toggle-btn');
-                
-                if(notificationBtn) desktopAuth.appendChild(notificationBtn);
-
-                if (userDropdown) { desktopAuth.appendChild(userDropdown); } 
-                else {
-                    if (loginBtn) { loginBtn.className = 'login-btn'; desktopAuth.appendChild(loginBtn); }
-                    if (signupBtn) { signupBtn.className = 'signup-btn'; desktopAuth.appendChild(signupBtn); }
-                }
-            }
-
-            // FIX: Initialize news and notifications after auth is ready
             loadNews();
             if (user) {
                 fetchAndRenderNotifications();
@@ -793,3 +774,4 @@
     </script>
 </body>
 </html>
+
