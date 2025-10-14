@@ -1163,7 +1163,7 @@
             tweetBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
             try {
                 const { data: { session } } = await supabase.auth.getSession();
-                const response = await fetch('/api/create-news', {
+                const response = await fetch('/api/update-news', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
                     body: JSON.stringify({ content: content })
@@ -1177,7 +1177,7 @@
                         errorMsg = errorData.details || errorMsg;
                     } catch (e) {
                         // This catches the "Unexpected token 'T'" error because the response is not JSON
-                        errorMsg = `Server error (${response.status}). Check if the API file 'create-news.js' exists and is correctly named.`;
+                        errorMsg = `Server error (${response.status}). Check if the API file 'update-news.js' exists and is correctly named.`;
                     }
                     throw new Error(errorMsg);
                 }
