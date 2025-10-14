@@ -60,6 +60,20 @@ export default async function handler(req, res) {
       throw new Error(`Failed to delete post: ${deleteError.message}`);
     }
 
+    // Also delete associated notifications
+    // We construct the link that would have been created by the trigger.
+    const postLink = `/news.html#post-${postId}`;
+    const { error: notificationDeleteError } = await supabaseAdmin
+        .from('notifications')
+        .delete()
+        .eq('content->>link', postLink);
+
+    if (notificationDeleteError) {
+        // Log the error but don't fail the request, as the post deletion was successful.
+        console.error(`Could not delete notifications for post ${postId}:`, notificationDeleteError.message);
+    }
+
+
     res.status(200).json({ message: 'Post deleted successfully.' });
 
   } catch (error) {
