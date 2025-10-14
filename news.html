@@ -13,7 +13,8 @@
     <!-- End Favicon Configuration -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>
-        body { opacity: 0; transition: opacity 0.2s ease-in; }
+        body { opacity: 0; transition: opacity 0.3s ease-in; }
+        body.loaded { opacity: 1; }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -177,20 +178,26 @@
             border-color: var(--border-strong);
             color: var(--text);
         }
-        .mobile-nav-btn.notification-toggle-btn { color: white; }
+        .mobile-nav-btn.notification-toggle-btn { color: white; font-size: 1rem; }
         .notification-toggle-btn { position: relative; }
         .notification-badge {
             position: absolute;
             top: 2px;
             right: 2px;
-            width: 10px;
-            height: 10px;
+            min-width: 18px;
+            height: 18px;
             background-color: var(--brand-1);
-            border-radius: 50%;
+            border-radius: 10px;
             border: 2px solid var(--bg-1);
             display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 0 4px;
+            color: white;
         }
-        .mobile-nav-btn .notification-badge { top: 6px; right: 6px; border-color: var(--bg-2); }
+        .mobile-nav-btn .notification-badge { top: 6px; right: 6px; border-color: var(--bg-1); }
         .notification-header {
             display: flex;
             justify-content: space-between;
@@ -396,15 +403,15 @@
         }
 
         .desktop-search-modal-content {
-            background: var(--bg-1);
-            border-radius: 1rem;
+            background: linear-gradient(135deg, rgba(28, 28, 28, 0.98), rgba(44, 44, 44, 0.95));
+            border-radius: 1.25rem;
             border: 1px solid var(--border);
             width: 100%;
             max-width: 700px;
-            padding: 1rem;
-            padding-top: 3rem;
+            padding: 1.25rem;
+            padding-top: 3.5rem;
             position: relative;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(222, 33, 42, 0.1);
             animation: slideDown 0.4s ease;
         }
         @keyframes slideDown {
@@ -456,39 +463,72 @@
             padding: 0 0.5rem;
         }
         .suggestions-title {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 700;
             color: var(--muted);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
             margin-bottom: 1rem;
             padding-bottom: 0.5rem;
             border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .suggestions-title i {
+            color: var(--brand-1);
         }
         .modal-suggestions-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
+            gap: 0.75rem;
         }
         .suggestion-card {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            background: var(--bg-2);
+            gap: 0.75rem;
+            background: linear-gradient(135deg, rgba(28, 28, 28, 0.9), rgba(44, 44, 44, 0.6));
             padding: 0.75rem;
             border-radius: 12px;
-            transition: background 0.2s;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+            cursor: pointer;
         }
         .suggestion-card:hover {
-            background: var(--bg-1);
+            background: linear-gradient(135deg, rgba(44, 44, 44, 0.9), rgba(28, 28, 28, 0.6));
+            border-color: var(--brand-1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(222, 33, 42, 0.2);
         }
         .suggestion-card .pack-icon {
-            width: 50px;
-            height: 50px;
+            width: 48px;
+            height: 48px;
             border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
         }
-        .search-input-wrapper { display: flex; position: relative; background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); transition: border-color 0.2s, box-shadow 0.2s; }
-        .search-input-wrapper:focus-within { border-color: var(--brand-1); box-shadow: 0 15px 40px rgba(0,0,0,0.3), 0 0 0 3px rgba(222, 33, 42, .3); }
+        .suggestion-card-info {
+            flex-grow: 1;
+            min-width: 0;
+        }
+        .suggestion-card-name {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .suggestion-card-downloads {
+            font-size: 0.75rem;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .search-input-wrapper { display: flex; position: relative; background: rgba(28, 28, 28, 0.8); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); transition: all 0.3s ease; }
+        .search-input-wrapper:focus-within { border-color: var(--brand-1); box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 0 3px rgba(222, 33, 42, .25); background: rgba(28, 28, 28, 0.95); }
         .search-type-dropdown { position: relative; }
         #modal-search-type-btn { display: flex; align-items: center; gap: 0.5rem; height: 100%; padding: 0 1.2rem; background: var(--bg-2); border: none; color: var(--text); font-weight: 600; border-radius: 15px 0 0 15px; cursor: pointer; border-right: 1px solid var(--border); }
         #modal-search-type-btn .fa-chevron-down { font-size: 0.7em; transition: transform 0.2s; }
@@ -521,7 +561,32 @@
         .admin-post-trigger { display: none; }
         .admin-post-trigger.visible { display: block; }
         .news-feed { display: flex; flex-direction: column; gap: 1.5rem; }
-        .news-post { background: rgba(28, 28, 28, 0.8); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; display: flex; gap: 1rem; }
+        .news-post { 
+            background: rgba(28, 28, 28, 0.8); 
+            backdrop-filter: blur(15px); 
+            border: 1px solid var(--border); 
+            border-radius: 16px; 
+            padding: 1.5rem; 
+            display: flex; 
+            gap: 1rem;
+            opacity: 0;
+            animation: fadeInUp 0.5s ease forwards;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .news-post:nth-child(1) { animation-delay: 0.1s; }
+        .news-post:nth-child(2) { animation-delay: 0.2s; }
+        .news-post:nth-child(3) { animation-delay: 0.3s; }
+        .news-post:nth-child(4) { animation-delay: 0.4s; }
+        .news-post:nth-child(5) { animation-delay: 0.5s; }
         .post-author-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
         .post-content-wrapper { flex-grow: 1; }
         .post-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
@@ -592,40 +657,73 @@
 
         footer {
             margin-top: 4rem;
-            padding: 4rem 2rem 2rem;
+            padding: 3rem 2rem 2rem;
             background: var(--bg-1);
             border-top: 1px solid var(--border);
         }
         .footer-container {
             max-width: 1200px;
             margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(1, 1fr);
-            gap: 2rem;
             text-align: center;
         }
+        .footer-brand {
+            margin-bottom: 2rem;
+        }
+        .footer-brand .brand {
+            display: inline-flex;
+            margin-bottom: 1rem;
+        }
         .footer-brand p {
-            max-width: 350px;
+            max-width: 500px;
             margin: 1rem auto;
             color: var(--muted);
+            line-height: 1.6;
         }
-        .footer-socials { display: flex; justify-content: center; gap: 1rem; margin-top: 1rem; }
+        .footer-socials { 
+            display: flex; 
+            justify-content: center; 
+            gap: 1rem; 
+            margin-top: 1.5rem; 
+        }
         .footer-socials a {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
             color: var(--muted);
             font-size: 1.2rem;
-            transition: color 0.2s;
+            transition: all 0.2s;
         }
-        .footer-socials a:hover { color: var(--text); }
-        .footer-links h3 {
-            font-size: 1rem;
+        .footer-socials a:hover { 
+            color: var(--text); 
+            border-color: var(--brand-1);
+            background: rgba(222, 33, 42, 0.1);
+        }
+        .footer-discord {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: #5865F2;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
             font-weight: 700;
-            margin-bottom: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            margin-top: 1.5rem;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(88, 101, 242, 0.3);
         }
-        .footer-links ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
-        .footer-links a { color: var(--muted); transition: color 0.2s; }
-        .footer-links a:hover { color: var(--text); }
+        .footer-discord:hover {
+            background: #4752C4;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(88, 101, 242, 0.4);
+        }
+        .footer-discord i {
+            font-size: 1.3rem;
+        }
         .footer-bottom {
             margin-top: 3rem;
             padding-top: 2rem;
@@ -637,15 +735,24 @@
             font-size: 0.9rem;
             color: var(--muted);
         }
-        .footer-bottom-links { display: flex; gap: 1.5rem; }
+        .footer-bottom-links { 
+            display: flex; 
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .footer-bottom-links a {
+            color: var(--muted);
+            transition: color 0.2s;
+        }
+        .footer-bottom-links a:hover {
+            color: var(--text);
+        }
         @media(min-width: 768px) {
-            .footer-container {
-                grid-template-columns: 2fr 1fr 1fr 2fr;
-                text-align: left;
+            .footer-bottom { 
+                flex-direction: row; 
+                justify-content: space-between; 
             }
-            .footer-brand p { margin-left: 0; }
-            .footer-socials { justify-content: flex-start; }
-            .footer-bottom { flex-direction: row; justify-content: space-between; }
         }
         
         .post-body img, .post-body iframe {
@@ -723,6 +830,13 @@
                     <input type="text" id="modal-universal-search" placeholder="Search for packs..." autocomplete="off">
                 </div>
                 <div id="modal-search-results"></div>
+                <div class="modal-suggestions">
+                    <div class="suggestions-title">
+                        <i class="fa-solid fa-fire"></i>
+                        Latest Packs
+                    </div>
+                    <div class="modal-suggestions-grid"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -751,7 +865,37 @@
     </main>
     
     <footer>
-        <!-- Footer content remains the same -->
+        <div class="footer-container">
+            <div class="footer-brand">
+                <a class="brand" href="/">
+                    <div class="brand-badge">
+                        <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
+                    </div>
+                    <div>
+                        <div class="brand-title">MCHUB</div>
+                        <div class="tiny">Minecraft • Community Hub</div>
+                    </div>
+                </a>
+                <p>Your ultimate destination for exploring the world of Minecraft. Discover new stories, follow your favorites, and never miss an update.</p>
+                <div class="footer-socials">
+                    <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
+                    <a href="#" aria-label="Discord"><i class="fa-brands fa-discord"></i></a>
+                </div>
+                <a href="#" class="footer-discord">
+                    <i class="fa-brands fa-discord"></i>
+                    <span>Join Server</span>
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 MCHub. All rights reserved.</p>
+            <div class="footer-bottom-links">
+                <a href="#">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">DMCA</a>
+            </div>
+        </div>
     </footer>
 
 
@@ -1215,7 +1359,12 @@
                 list.innerHTML = data.map(n => `<div class="notification-item ${n.is_read ? 'read' : ''}" id="notification-${n.id}"><a href="${n.content.link}"><i class="${{ 'new_news': 'fa-solid fa-newspaper' }[n.type] || 'fa-solid fa-bell'} notification-icon"></i><div class="notification-content"><p>${escapeHtml(n.content.text)}</p><span class="time">${timeAgo(n.created_at)}</span></div></a><button class="dismiss-notification-btn" data-id="${n.id}" title="Dismiss">&times;</button></div>`).join('');
             }
             document.querySelectorAll('.notification-badge').forEach(badge => {
-                badge.style.display = unreadCount > 0 ? 'block' : 'none';
+                if (unreadCount > 0) {
+                    badge.style.display = 'flex';
+                    badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                } else {
+                    badge.style.display = 'none';
+                }
             });
         }
         
@@ -1319,13 +1468,49 @@
             modalSearchInput.addEventListener('input', () => { clearTimeout(modalDebounceTimer); modalDebounceTimer = setTimeout(performModalSearch, 300); });
         }
         
+        async function loadLatestPacksSuggestions() {
+            try {
+                const { data, error } = await supabase
+                    .from('packs')
+                    .select('id, name, icon_url, downloads')
+                    .order('created_at', { ascending: false })
+                    .limit(4);
+                
+                if (error) throw error;
+                
+                const suggestionsContainer = document.querySelector('.modal-suggestions');
+                if (data && data.length > 0 && suggestionsContainer) {
+                    const grid = suggestionsContainer.querySelector('.modal-suggestions-grid');
+                    grid.innerHTML = data.map(pack => `
+                        <a href="/packs.html?id=${pack.id}" class="suggestion-card">
+                            <img src="${pack.icon_url || 'https://placehold.co/48x48/1c1c1c/de212a?text=P'}" class="pack-icon" alt="${escapeHtml(pack.name)}">
+                            <div class="suggestion-card-info">
+                                <div class="suggestion-card-name">${escapeHtml(pack.name)}</div>
+                                <div class="suggestion-card-downloads">
+                                    <i class="fa-solid fa-download"></i>
+                                    ${pack.downloads || 0}
+                                </div>
+                            </div>
+                        </a>
+                    `).join('');
+                    suggestionsContainer.style.display = 'block';
+                }
+            } catch (err) {
+                console.error('Error loading pack suggestions:', err);
+            }
+        }
+
         document.addEventListener('auth-ready', (event) => {
             const { profile, user } = event.detail;
             loggedInProfile = profile; currentUserId = user?.id;
             
             if (profile?.role === 'admin') document.getElementById('admin-post-trigger').classList.add('visible');
             loadNews();
+            loadLatestPacksSuggestions();
             if (user) { fetchAndRenderNotifications(); createNotificationSubscription(); setupNotificationListeners(); }
+            
+            // Add loaded class for smooth fade-in
+            setTimeout(() => document.body.classList.add('loaded'), 100);
         });
         
         setupFormatting(textarea, '#new-post-modal .format-btn', 'emoji-picker');
@@ -1339,4 +1524,3 @@
     </script>
 </body>
 </html>
-
