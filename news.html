@@ -1016,7 +1016,16 @@
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
                     body: JSON.stringify({ postId, content: newContent })
                 });
-                if (!response.ok) { const err = await response.json(); throw new Error(err.details); }
+                 if (!response.ok) {
+                    let errorMsg = `HTTP Error: ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        errorMsg = errorData.details || errorMsg;
+                    } catch (e) {
+                        errorMsg = `Server returned a non-JSON response. (Status: ${response.status})`;
+                    }
+                    throw new Error(errorMsg);
+                }
                 showToast('Post updated successfully!', 'success');
                 loadNews();
             } catch (err) {
@@ -1032,8 +1041,16 @@
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
                     body: JSON.stringify({ postId: postId })
                 });
-                const result = await response.json();
-                if (!response.ok) throw new Error(result.details);
+                if (!response.ok) {
+                    let errorMsg = `HTTP Error: ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        errorMsg = errorData.details || errorMsg;
+                    } catch (e) {
+                        errorMsg = `Server returned a non-JSON response. (Status: ${response.status})`;
+                    }
+                    throw new Error(errorMsg);
+                }
                 showToast('Post deleted successfully!', 'success');
                 loadNews();
             } catch (err) {
@@ -1151,8 +1168,22 @@
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
                     body: JSON.stringify({ content: content })
                 });
-                const result = await response.json();
-                if (!response.ok) throw new Error(result.details);
+
+                if (!response.ok) {
+                    let errorMsg = `HTTP Error: ${response.status}`;
+                    try {
+                        // Try to get a specific error message from the server's JSON response
+                        const errorData = await response.json();
+                        errorMsg = errorData.details || errorMsg;
+                    } catch (e) {
+                        // This catches the "Unexpected token 'T'" error because the response is not JSON
+                        errorMsg = `Server error (${response.status}). Check if the API file 'create-news.js' exists and is correctly named.`;
+                    }
+                    throw new Error(errorMsg);
+                }
+                
+                // Only parse JSON if the response was ok
+                const result = await response.json(); 
                 showToast('News post created successfully!', 'success');
                 modal.classList.remove('show');
                 e.target.reset();
@@ -1308,3 +1339,4 @@
     </script>
 </body>
 </html>
+
