@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
+// Use the Service Role Key for admin-level access to check roles and insert data
 const supabaseAdmin = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -11,6 +12,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    // 1. Authenticate the user from the request header
     const authHeader = req.headers.authorization;
     if (!authHeader) {
         throw new Error('No authorization header');
@@ -23,49 +25,44 @@ export default async function handler(req, res) {
       return res.status(401).json({ details: 'Authentication failed.' });
     }
 
-    const { postId, content } = req.body;
-    if (!postId || !content) {
-      return res.status(400).json({ details: 'Post ID and content are required.' });
-    }
-
-    // Check if user is admin or post owner
-    const { data: profile } = await supabaseAdmin
+    // 2. Check if the user has the 'admin' role
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single();
 
-    const { data: post } = await supabaseAdmin
-      .from('news')
-      .select('author_id')
-      .eq('id', postId)
-      .single();
-
-    if (!post) {
-      return res.status(404).json({ details: 'Post not found.' });
+    if (profileError || !profile || profile.role !== 'admin') {
+      return res.status(403).json({ details: 'You are not authorized to perform this action.' });
     }
 
-    // Allow update if user is admin or post owner
-    if (profile.role !== 'admin' && post.author_id !== user.id) {
-      return res.status(403).json({ details: 'You are not authorized to edit this post.' });
+    // 3. Get the content from the request body
+    const { content } = req.body;
+    if (!content || content.trim() === '') {
+      return res.status(400).json({ details: 'Post content cannot be empty.' });
     }
 
-    // Update the post
-    const { data: updatedPost, error: updateError } = await supabaseAdmin
+    // 4. Insert the new post into the 'news' table
+    const { data: newPost, error: insertError } = await supabaseAdmin
       .from('news')
-      .update({ content: content })
-      .eq('id', postId)
+      .insert({
+        author_id: user.id,
+        content: content
+      })
       .select()
       .single();
 
-    if (updateError) {
-      throw new Error(`Failed to update post: ${updateError.message}`);
+    if (insertError) {
+      throw new Error(`Database insert failed: ${insertError.message}`);
     }
+    
+    // The database trigger will automatically create notifications for all users.
 
-    res.status(200).json({ message: 'Post updated successfully.', post: updatedPost });
+    // 5. Return a success message
+    res.status(200).json({ message: 'News post created successfully.', post: newPost });
 
   } catch (error) {
-    console.error('Error in update-news function:', error);
+    console.error('Error in add-news function:', error);
     res.status(500).json({ details: error.message || 'An internal server error occurred.' });
   }
 }
