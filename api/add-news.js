@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Use the Service Role Key for admin-level access to check roles and insert data
 const supabaseAdmin = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -12,7 +11,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. Authenticate the user from the request header
     const authHeader = req.headers.authorization;
     if (!authHeader) {
         throw new Error('No authorization header');
@@ -25,24 +23,58 @@ export default async function handler(req, res) {
       return res.status(401).json({ details: 'Authentication failed.' });
     }
 
-    // 2. Check if the user has the 'admin' role
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single();
 
-    if (profileError || !profile || profile.role !== 'admin') {
-      return res.status(403).json({ details: 'You are not authorized to perform this action.' });
+    if (profileError || !profile) {
+      return res.status(403).json({ details: 'Profile not found.' });
     }
 
-    // 3. Get the content from the request body
-    const { content } = req.body;
+    const { content, postId } = req.body;
+
     if (!content || content.trim() === '') {
       return res.status(400).json({ details: 'Post content cannot be empty.' });
     }
 
-    // 4. Insert the new post into the 'news' table
+    // EDIT POST
+    if (postId) {
+      // Check if post exists and user owns it or is admin
+      const { data: existingPost } = await supabaseAdmin
+        .from('news')
+        .select('author_id')
+        .eq('id', postId)
+        .single();
+
+      if (!existingPost) {
+        return res.status(404).json({ details: 'Post not found.' });
+      }
+
+      if (existingPost.author_id !== user.id && profile.role !== 'admin') {
+        return res.status(403).json({ details: 'You are not authorized to edit this post.' });
+      }
+
+      const { data: updatedPost, error: updateError } = await supabaseAdmin
+        .from('news')
+        .update({ content: content })
+        .eq('id', postId)
+        .select()
+        .single();
+
+      if (updateError) {
+        throw new Error(`Database update failed: ${updateError.message}`);
+      }
+
+      return res.status(200).json({ message: 'News post updated successfully.', post: updatedPost });
+    }
+
+    // CREATE NEW POST (admin only)
+    if (profile.role !== 'admin') {
+      return res.status(403).json({ details: 'Only admins can create news posts.' });
+    }
+
     const { data: newPost, error: insertError } = await supabaseAdmin
       .from('news')
       .insert({
@@ -55,10 +87,7 @@ export default async function handler(req, res) {
     if (insertError) {
       throw new Error(`Database insert failed: ${insertError.message}`);
     }
-    
-    // The database trigger will automatically create notifications for all users.
 
-    // 5. Return a success message
     res.status(200).json({ message: 'News post created successfully.', post: newPost });
 
   } catch (error) {
