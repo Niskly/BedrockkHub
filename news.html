@@ -1,24 +1,4 @@
-textarea.addEventListener('input', () => { charCounter.textContent = 1000 - textarea.value.length; });
-        
-        document.querySelectorAll('.format-btn').forEach(btn => btn.addEventListener('click', () => applyFormat(btn.dataset.format, textarea)));
-
-        function applyFormat(format, targetTextarea = textarea) {
-            const start = targetTextarea.selectionStart, end = targetTextarea.selectionEnd;
-            const selectedText = targetTextarea.value.substring(start, end);
-            let replacement = selectedText, cursorPosition = start;
-
-            switch(format) {
-                case 'bold': replacement = `**${selectedText}**`; cursorPosition += 2; break;
-                case 'italic': replacement = `_${selectedText}_`; cursorPosition += 1; break;
-                case 'underline': replacement = `__${selectedText}__`; cursorPosition += 2; break;
-                case 'strike': replacement = `~~${selectedText}~~`; cursorPosition += 2; break;
-                case 'link': 
-                    const url = prompt("Enter the URL:");
-                    if(url) replacement = `[${selectedText || 'Link text'}](${url})`;
-                    break;
-                case 'image':
-                    const imgUrl = prompt("Enter the image URL:");
-                    if(imgUrl) replacement = `![${selectedText || 'Image'}](${imgUrl})`;<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
