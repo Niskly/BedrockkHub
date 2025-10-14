@@ -23,20 +23,19 @@ export default async function handler(req, res) {
       return res.status(401).json({ details: 'Authentication failed.' });
     }
 
-    // Delete all notifications for this user
     const { error: deleteError } = await supabaseAdmin
       .from('notifications')
       .delete()
       .eq('user_id', user.id);
 
     if (deleteError) {
-      throw new Error(`Failed to clear notifications: ${deleteError.message}`);
+      throw new Error(`Failed to clear: ${deleteError.message}`);
     }
 
-    res.status(200).json({ message: 'All notifications cleared successfully.' });
+    res.status(200).json({ message: 'Cleared successfully.' });
 
   } catch (error) {
-    console.error('Error in clear-notifications function:', error);
-    res.status(500).json({ details: error.message || 'An internal server error occurred.' });
+    console.error('Error:', error);
+    res.status(500).json({ details: error.message });
   }
 }
