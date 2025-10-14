@@ -1155,7 +1155,7 @@
         async function updatePost(postId, newContent) {
             try {
                 const { data: { session } } = await supabase.auth.getSession();
-                const response = await fetch('/api/add-news', {
+                const response = await fetch('/api/update-news', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
                     body: JSON.stringify({ postId, content: newContent })
