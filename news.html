@@ -132,7 +132,7 @@
         .mobile-nav-main-links a, .mobile-nav-footer-links a { padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem; font-weight: 600; color: var(--muted); transition: all 0.2s ease; }
         .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
         .mobile-nav-main-links a.active-mobile-link { background: var(--bg-2); color: var(--brand-1); font-weight: 800; }
-        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
+        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1rem; }
         .mobile-nav-footer-links .login-mobile-link { background-color: var(--bg-2); color: var(--text); }
         .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
         
@@ -165,6 +165,10 @@
             color: var(--text);
             animation: slideInFromTop 0.3s ease-out;
         }
+        @keyframes slideInFromTop {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
         .notification-btn-desktop {
             background: var(--bg-2);
             border: 1px solid var(--border);
@@ -184,20 +188,16 @@
         .notification-toggle-btn { position: relative; }
         .notification-badge {
             position: absolute;
-            top: -2px;
-            right: -2px;
-            width: 18px;
-            height: 18px;
-            font-size: 10px;
+            top: 2px;
+            right: 2px;
+            width: 10px;
+            height: 10px;
             background-color: var(--brand-1);
             border-radius: 50%;
             border: 2px solid var(--bg-1);
             display: none;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
         }
-        .mobile-nav-btn .notification-badge { top: 2px; right: 2px; border-color: var(--bg-2); }
+        .mobile-nav-btn .notification-badge { top: 6px; right: 6px; border-color: var(--bg-2); }
         .notification-header {
             display: flex;
             justify-content: space-between;
@@ -277,6 +277,10 @@
         }
         .collapsible-content .sub-link { padding-top: 0.5rem; padding-bottom: 0.5rem; }
 
+        .nav-link.active {
+            color: white;
+            border-bottom: 2px solid var(--brand-1);
+        }
 
         @media (min-width: 1024px) {
             .mobile-nav-controls { display: none !important; }
@@ -517,14 +521,14 @@
         .search-result-sub { font-size: 0.8rem; color: var(--muted); }
 
         /* ====== PAGE SPECIFIC STYLES ====== */
-        .container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+        .container { max-width: 800px; margin: 0 auto; padding: 0 1rem; }
         .page-header { text-align: center; margin-bottom: 2.5rem; }
         .page-header-icon { font-size: 2.5rem; color: var(--brand-1); margin-bottom: 1rem; }
         .page-header h1 { font-size: 2.5rem; font-weight: 900; background: var(--gradient-brand); -webkit-background-clip: text; background-clip: text; color: transparent; margin: 0 0 0.5rem 0; }
         .page-header p { color: var(--muted); font-size: 1.1rem; max-width: 500px; margin: 0 auto; }
         .main-controls-container { display: flex; align-items: center; gap: 1rem; margin-bottom: 2.5rem; }
         .search-container { position: relative; flex-grow: 1; }
-        .search-container i { position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); color: var(--muted); }
+        .search-container .fa-magnifying-glass { position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); color: var(--muted); }
         #news-search { width: 100%; padding: 1rem 1.25rem 1rem 3.5rem; border-radius: 12px; background: var(--bg-1); border: 1px solid var(--border); color: var(--text); font-size: 1rem; }
         #news-search:focus { outline: none; border-color: var(--brand-1); box-shadow: 0 0 0 3px rgba(var(--brand-1-rgb), 0.2); }
         .admin-post-trigger { display: none; }
@@ -560,10 +564,6 @@
         .delete-modal-actions { display: flex; gap: 1rem; }
         .delete-modal-actions button { flex: 1; }
         
-        /* Edit Modal */
-        .edit-modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 1001; }
-        .edit-modal.show { display: flex; }
-        
         .empty-state { text-align: center; padding: 4rem 2rem; background: rgba(28, 28, 28, 0.8); border: 1px solid var(--border); border-radius: 16px; }
         .empty-state-icon { font-size: 3rem; color: var(--brand-1); margin-bottom: 1rem; }
         .empty-state h3 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
@@ -579,29 +579,93 @@
         .skeleton-line.long { width: 100%; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         
-        #toast-container { position: fixed; top: 80px; right: 20px; z-index: 1000; }
+        #toast-container { position: fixed; top: 100px; right: 20px; z-index: 1000; }
         .toast { padding: 12px 18px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: toastSlideIn 0.3s ease-out forwards; background: var(--bg-1); border: 1px solid var(--border); }
         @keyframes toastSlideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
         
-        /* Modal for creating posts */
+        /* Modal for creating/editing posts */
         .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 1000; }
         .modal.show { display: flex; }
         .modal-dialog { background: var(--bg-1); border: 1px solid var(--border); border-radius: 20px; width: 90%; max-width: 600px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
         .modal-header { padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .modal-header h2 { font-size: 1.5rem; font-weight: 700; margin: 0; }
         .modal-content { padding: 1.5rem; }
-        #new-post-form { display: flex; gap: 1rem; }
-        #new-post-form .post-author-avatar { width: 40px; height: 40px; }
+        .post-form { display: flex; gap: 1rem; }
+        .post-form .post-author-avatar { width: 40px; height: 40px; }
         .textarea-container { flex-grow: 1; background: var(--bg-2); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; }
         .textarea-container:focus-within { border-color: var(--brand-1); }
-        #post-textarea { width: 100%; min-height: 120px; resize: vertical; padding: 0.75rem 1rem; border: none; background: transparent; color: var(--text); font-size: 1rem; font-family: inherit; flex-grow: 1; }
-        #post-textarea:focus { outline: none; }
+        .post-textarea { width: 100%; min-height: 120px; resize: vertical; padding: 0.75rem 1rem; border: none; background: transparent; color: var(--text); font-size: 1rem; font-family: inherit; flex-grow: 1; }
+        .post-textarea:focus { outline: none; }
         .formatting-toolbar { display: flex; flex-wrap: wrap; gap: 4px; padding: 0.5rem 1rem; border-top: 1px solid var(--border); background: var(--bg-1); }
         .format-btn { background: none; border: none; color: var(--muted); font-size: 1rem; cursor: pointer; width: 36px; height: 36px; border-radius: 6px; }
         .format-btn:hover { background: var(--bg-2); color: var(--text); }
         .format-divider { width: 1px; background: var(--border); margin: 4px 8px; }
-        #post-form-actions { display: flex; justify-content: flex-end; align-items: center; gap: 1rem; margin-top: 1rem; }
-        #char-counter { font-size: 0.8rem; color: var(--muted); }
+        .post-form-actions { display: flex; justify-content: flex-end; align-items: center; gap: 1rem; margin-top: 1rem; }
+        .char-counter { font-size: 0.8rem; color: var(--muted); }
+
+        .emoji-picker { display: none; position: absolute; background: var(--bg-1); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; max-width: 280px; }
+        .emoji-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+        .emoji-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 4px; border-radius: 4px; }
+        .emoji-btn:hover { background: var(--bg-2); }
+
+        /* Footer */
+        footer {
+            margin-top: 4rem;
+            padding: 4rem 2rem 2rem;
+            background: var(--bg-1);
+            border-top: 1px solid var(--border);
+        }
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 2rem;
+            text-align: center;
+        }
+        .footer-brand p {
+            max-width: 350px;
+            margin: 1rem auto;
+            color: var(--muted);
+        }
+        .footer-socials { display: flex; justify-content: center; gap: 1rem; margin-top: 1rem; }
+        .footer-socials a {
+            color: var(--muted);
+            font-size: 1.2rem;
+            transition: color 0.2s;
+        }
+        .footer-socials a:hover { color: var(--text); }
+        .footer-links h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .footer-links ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+        .footer-links a { color: var(--muted); transition: color 0.2s; }
+        .footer-links a:hover { color: var(--text); }
+        .footer-bottom {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+        .footer-bottom-links { display: flex; gap: 1.5rem; }
+        @media(min-width: 768px) {
+            .footer-container {
+                grid-template-columns: 2fr 1fr 1fr 2fr;
+                text-align: left;
+            }
+            .footer-brand p { margin-left: 0; }
+            .footer-socials { justify-content: flex-start; }
+            .footer-bottom { flex-direction: row; justify-content: space-between; }
+        }
     </style>
 </head>
 <body>
@@ -698,6 +762,55 @@
             <!-- News posts will be loaded here by JavaScript -->
         </div>
     </main>
+    
+    <footer>
+        <div class="footer-container">
+            <div class="footer-brand">
+                <a class="brand" href="/">
+                    <div class="brand-badge">
+                        <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
+                    </div>
+                    <div>
+                        <div class="brand-title">MCHUB</div>
+                    </div>
+                </a>
+                <p>Your ultimate destination for exploring the world of Minecraft. Discover new stories, follow your favorites, and never miss an update.</p>
+                <div class="footer-socials">
+                    <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="https://discord.gg/KtafawJZxM" target="_blank" title="Discord"><i class="fab fa-discord"></i></a>
+                </div>
+            </div>
+             <div class="footer-links">
+                <h3>Explore</h3>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/texturepacks.html">Texture Packs</a></li>
+                    <li><a href="/news.html">News</a></li>
+                </ul>
+            </div>
+             <div class="footer-links">
+                <h3>Support</h3>
+                <ul>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Report Issue</a></li>
+                    <li><a href="#">FAQ</a></li>
+                </ul>
+            </div>
+             <div class="footer-links">
+                <h3>Stay Updated</h3>
+                <p style="color:var(--muted); font-size: 0.9rem;">Join our Discord server for the latest updates and news.</p>
+                <a href="https://discord.gg/KtafawJZxM" target="_blank" class="btn primary" style="margin-top: 1rem;"><i class="fab fa-discord"></i> Join Server</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>© 2024 MCHub. All rights reserved.</span>
+            <div class="footer-bottom-links">
+                <a href="#">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+            </div>
+        </div>
+    </footer>
+
 
     <div id="new-post-modal" class="modal">
         <div class="modal-dialog">
@@ -706,25 +819,59 @@
                 <button class="btn ghost" style="padding: 0.5rem; width: 40px; height: 40px;" id="close-modal-btn"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-content">
-                <form id="new-post-form" onsubmit="handlePostSubmit(event)">
+                <form id="new-post-form" class="post-form" onsubmit="handlePostSubmit(event)">
                     <img id="modal-user-avatar" class="post-author-avatar" src="https://placehold.co/40x40/1c1c1c/e8eefc?text=A">
                     <div style="flex-grow: 1;">
                         <div class="textarea-container">
-                            <textarea id="post-textarea" placeholder="What's happening?" maxlength="1000" required></textarea>
+                            <textarea id="post-textarea" class="post-textarea" placeholder="What's happening?" maxlength="1000" required></textarea>
                             <div class="formatting-toolbar">
                                 <button type="button" class="format-btn" title="Bold" data-format="bold"><i class="fa-solid fa-bold"></i></button>
                                 <button type="button" class="format-btn" title="Italic" data-format="italic"><i class="fa-solid fa-italic"></i></button>
                                 <button type="button" class="format-btn" title="Underline" data-format="underline"><i class="fa-solid fa-underline"></i></button>
-                                <button type="button" class="format-btn" title="Strikethrough" data-format="strike"><i class="fa-solid fa-strikethrough"></i></button>
                                 <div class="format-divider"></div>
                                 <button type="button" class="format-btn" title="Link" data-format="link"><i class="fa-solid fa-link"></i></button>
+                                <button type="button" class="format-btn" title="Image" data-format="image"><i class="fa-solid fa-image"></i></button>
                                 <button type="button" class="format-btn" title="Code" data-format="code"><i class="fa-solid fa-code"></i></button>
-                                <button type="button" class="format-btn" title="Blockquote" data-format="quote"><i class="fa-solid fa-quote-left"></i></button>
+                                <button type="button" class="format-btn" title="Emoji" data-format="emoji">😀</button>
+                                <div id="emoji-picker" class="emoji-picker"></div>
                             </div>
                         </div>
-                        <div id="post-form-actions">
-                            <span id="char-counter">1000</span>
+                        <div class="post-form-actions">
+                            <span id="char-counter" class="char-counter">1000</span>
                             <button type="submit" id="tweet-btn" class="btn primary"><i class="fa-solid fa-paper-plane"></i> Tweet</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="edit-post-modal" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h2>Edit Post</h2>
+                <button class="btn ghost" style="padding: 0.5rem; width: 40px; height: 40px;" onclick="document.getElementById('edit-post-modal').classList.remove('show'); document.body.style.overflow = '';"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-content">
+                <form id="edit-post-form" class="post-form">
+                     <div style="flex-grow: 1;">
+                        <div class="textarea-container">
+                            <textarea id="edit-post-textarea" class="post-textarea" placeholder="What's happening?" maxlength="1000" required></textarea>
+                            <div class="formatting-toolbar">
+                                <button type="button" class="format-btn" data-target="edit" title="Bold" data-format="bold"><i class="fa-solid fa-bold"></i></button>
+                                <button type="button" class="format-btn" data-target="edit" title="Italic" data-format="italic"><i class="fa-solid fa-italic"></i></button>
+                                <button type="button" class="format-btn" data-target="edit" title="Underline" data-format="underline"><i class="fa-solid fa-underline"></i></button>
+                                <div class="format-divider"></div>
+                                <button type="button" class="format-btn" data-target="edit" title="Link" data-format="link"><i class="fa-solid fa-link"></i></button>
+                                <button type="button" class="format-btn" data-target="edit" title="Image" data-format="image"><i class="fa-solid fa-image"></i></button>
+                                <button type="button" class="format-btn" data-target="edit" title="Code" data-format="code"><i class="fa-solid fa-code"></i></button>
+                                <button type="button" class="format-btn" data-target="edit" title="Emoji" data-format="emoji">😀</button>
+                                 <div id="edit-emoji-picker" class="emoji-picker"></div>
+                            </div>
+                        </div>
+                        <div class="post-form-actions">
+                            <span id="edit-char-counter" class="char-counter">1000</span>
+                            <button type="submit" class="btn primary"><i class="fa-solid fa-check"></i> Save Changes</button>
                         </div>
                     </div>
                 </form>
@@ -740,40 +887,6 @@
             <div class="delete-modal-actions">
                 <button class="btn ghost" onclick="document.getElementById('delete-post-modal').classList.remove('show'); document.body.style.overflow = '';">Cancel</button>
                 <button id="confirm-delete-btn" class="btn primary" style="background: var(--brand-1);">Delete</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="edit-post-modal" class="modal edit-modal">
-        <div class="modal-dialog">
-            <div class="modal-header">
-                <h2>Edit Post</h2>
-                <button class="btn ghost" style="padding: 0.5rem; width: 40px; height: 40px;" onclick="document.getElementById('edit-post-modal').classList.remove('show'); document.body.style.overflow = '';"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="modal-content">
-                <form id="edit-post-form">
-                    <div style="flex-grow: 1;">
-                        <div class="textarea-container">
-                            <textarea id="edit-post-textarea" placeholder="What's happening?" maxlength="1000" required></textarea>
-                            <div class="formatting-toolbar">
-                                <button type="button" class="format-btn edit-format-btn" title="Bold" data-format="bold"><i class="fa-solid fa-bold"></i></button>
-                                <button type="button" class="format-btn edit-format-btn" title="Italic" data-format="italic"><i class="fa-solid fa-italic"></i></button>
-                                <button type="button" class="format-btn edit-format-btn" title="Underline" data-format="underline"><i class="fa-solid fa-underline"></i></button>
-                                <button type="button" class="format-btn edit-format-btn" title="Strikethrough" data-format="strike"><i class="fa-solid fa-strikethrough"></i></button>
-                                <div class="format-divider"></div>
-                                <button type="button" class="format-btn edit-format-btn" title="Link" data-format="link"><i class="fa-solid fa-link"></i></button>
-                                <button type="button" class="format-btn edit-format-btn" title="Image" data-format="image"><i class="fa-solid fa-image"></i></button>
-                                <button type="button" class="format-btn edit-format-btn" title="Code" data-format="code"><i class="fa-solid fa-code"></i></button>
-                                <button type="button" class="format-btn edit-format-btn" title="Emoji Tool" data-format="emoji">🔧</button>
-                                <button type="button" class="format-btn edit-format-btn" title="Blockquote" data-format="quote"><i class="fa-solid fa-quote-left"></i></button>
-                            </div>
-                        </div>
-                        <div id="post-form-actions">
-                            <span id="edit-char-counter">1000</span>
-                            <button type="submit" class="btn primary"><i class="fa-solid fa-check"></i> Save Changes</button>
-                        </div>
-                    </div>
-                </form>
             </div>
         </div>
     </div>
@@ -824,17 +937,17 @@
         function escapeHtml(str) { return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); }
 
         function parseContent(content) {
-            let processedContent = escapeHtml(content)
-                .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
-                .replace(/(?<!\*)_(.+?)_(?!\*)/g, '<i>$1</i>')
-                .replace(/__(.+?)__/g, '<u>$1</u>')
-                .replace(/~~(.+?)~~/g, '<s>$1</s>')
-                .replace(/🔧(.+?)🔧/g, '<code style="background: var(--bg-2); padding: 0.2em 0.4em; border-radius: 4px; font-family: monospace;">$1</code>')
+             let processedContent = escapeHtml(content)
+                .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+                .replace(/_(.*?)_/g, '<i>$1</i>')
+                .replace(/__(.*?)__/g, '<u>$1</u>')
+                .replace(/~~(.*?)~~/g, '<s>$1</s>')
                 .replace(/`([^`]+)`/g, '<code style="background: var(--bg-2); padding: 0.2em 0.4em; border-radius: 4px; font-family: monospace;">$1</code>')
-                .replace(/```([\s\S]+?)```/g, '<pre style="background: var(--bg-2); padding: 0.75rem; border-radius: 8px; overflow-x: auto;"><code>$1</code></pre>')
-                .replace(/^> (.+$)/gm, '<blockquote style="border-left: 3px solid var(--brand-1); padding-left: 1rem; margin: 0.5rem 0; color: var(--muted);">$1</blockquote>')
-                .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: var(--brand-1); text-decoration: underline;">$1</a>')
-                .replace(/!\[(.+?)\]\((.+?)\)/g, '<img src="$2" alt="$1" style="max-width: 100%; border-radius: 8px; margin: 0.5rem 0;">');
+                .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: var(--brand-1); text-decoration: underline;">$1</a>')
+                .replace(/!\[(.*?)\]\((.*?)\)/g, (match, alt, src) => {
+                    const sanitizedSrc = escapeHtml(src);
+                    return `<a href="${sanitizedSrc}" target="_blank"><img src="${sanitizedSrc}" alt="${escapeHtml(alt)}" style="max-width: 100%; border-radius: 8px; margin: 0.5rem 0; cursor: pointer;"></a>`;
+                });
             return processedContent.replace(/\n/g, '<br>');
         }
 
@@ -843,8 +956,8 @@
                 feedContainer.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon"><i class="fa-solid fa-inbox"></i></div>
-                        <h3>No news posts yet</h3>
-                        <p>Check back later for the latest updates and announcements.</p>
+                        <h3>No news posts found</h3>
+                        <p>Try a different search term or check back later.</p>
                     </div>`;
                 return;
             }
@@ -855,15 +968,14 @@
                 
                 const formattedContent = parseContent(post.content);
 
-                // Check if current user can delete this post (owner or admin)
-                const canDelete = loggedInProfile && (post.author_id === currentUserId || loggedInProfile.role === 'admin');
-                const actionsMenu = canDelete ? `
+                const canModify = loggedInProfile && (post.author_id === currentUserId || loggedInProfile.role === 'admin');
+                const actionsMenu = canModify ? `
                     <div class="post-actions">
                         <button class="post-menu-btn" data-post-id="${post.id}">
                             <i class="fa-solid fa-ellipsis-vertical"></i>
                         </button>
                         <div class="post-dropdown" id="post-dropdown-${post.id}">
-                            <button class="edit-post-btn" data-post-id="${post.id}" data-content="${escapeHtml(post.content).replace(/"/g, '&quot;')}">
+                            <button class="edit-post-btn" data-post-id="${post.id}" data-content="${escapeHtml(post.content)}">
                                 <i class="fa-solid fa-pen"></i> Edit Post
                             </button>
                             <button class="delete-post-btn" data-post-id="${post.id}">
@@ -889,47 +1001,18 @@
                     </div>`;
             }).join('');
 
-            // Add event listeners for the menu buttons
             document.querySelectorAll('.post-menu-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     const postId = btn.dataset.postId;
                     const dropdown = document.getElementById(`post-dropdown-${postId}`);
-                    
-                    // Close all other dropdowns
-                    document.querySelectorAll('.post-dropdown').forEach(d => {
-                        if (d.id !== `post-dropdown-${postId}`) d.classList.remove('show');
-                    });
-                    
+                    document.querySelectorAll('.post-dropdown').forEach(d => { if (d !== dropdown) d.classList.remove('show'); });
                     dropdown.classList.toggle('show');
                 });
             });
 
-            // Add event listeners for delete buttons
-            document.querySelectorAll('.delete-post-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    e.stopPropagation();
-                    const postId = btn.dataset.postId;
-                    showDeleteModal(postId);
-                });
-            });
-
-            // Add event listeners for edit buttons
-            document.querySelectorAll('.edit-post-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    e.stopPropagation();
-                    const postId = btn.dataset.postId;
-                    const content = btn.dataset.content.replace(/&quot;/g, '"');
-                    showEditModal(postId, content);
-                });
-            });
-
-            // Close dropdowns when clicking outside
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.post-actions')) {
-                    document.querySelectorAll('.post-dropdown').forEach(d => d.classList.remove('show'));
-                }
-            });
+            document.querySelectorAll('.delete-post-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); showDeleteModal(btn.dataset.postId); }));
+            document.querySelectorAll('.edit-post-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); showEditModal(btn.dataset.postId, btn.dataset.content); }));
         }
         
         function showDeleteModal(postId) {
@@ -969,64 +1052,54 @@
         
         async function updatePost(postId, newContent) {
             try {
-                const { error } = await supabase
-                    .from('news')
-                    .update({ content: newContent })
-                    .eq('id', postId);
-                
-                if (error) throw error;
-                
+                const { data: { session } } = await supabase.auth.getSession();
+                const response = await fetch('/api/update-news', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+                    body: JSON.stringify({ postId, content: newContent })
+                });
+                if (!response.ok) { const err = await response.json(); throw new Error(err.details); }
                 showToast('Post updated successfully!', 'success');
-                await loadNews();
+                loadNews();
             } catch (err) {
-                console.error('Error updating post:', err);
-                showToast('Failed to update post. Please try again.', 'error');
+                showToast(err.message || 'Failed to update post.', 'error');
             }
         }
         
         async function deletePost(postId) {
             try {
                 const { data: { session } } = await supabase.auth.getSession();
-                if (!session) throw new Error("Authentication session not found.");
-
                 const response = await fetch('/api/delete-news', {
                     method: 'DELETE',
-                    headers: { 
-                        'Content-Type': 'application/json', 
-                        'Authorization': `Bearer ${session.access_token}` 
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
                     body: JSON.stringify({ postId: postId })
                 });
-                
                 const result = await response.json();
-                if (!response.ok) throw new Error(result.details || 'Failed to delete post.');
-                
+                if (!response.ok) throw new Error(result.details);
                 showToast('Post deleted successfully!', 'success');
-                await loadNews();
+                loadNews();
             } catch (err) {
-                console.error('Error deleting post:', err);
-                showToast(err.message || 'Failed to delete post. Please try again.', 'error');
+                showToast(err.message, 'error');
             }
         }
         
         async function loadNews() {
-            feedContainer.innerHTML = `<div class="empty-state"><div style="font-size: 2rem; color: var(--brand-1);">⏳</div><h3>Loading News...</h3></div>`;
+            feedContainer.innerHTML = Array(3).fill(0).map(() => `
+                <div class="skeleton-post">
+                    <div class="skeleton-avatar"></div>
+                    <div class="skeleton-content">
+                        <div class="skeleton-line short"></div>
+                        <div class="skeleton-line long"></div>
+                        <div class="skeleton-line medium"></div>
+                    </div>
+                </div>`).join('');
             try {
-                const { data, error } = await supabase
-                    .from('news')
-                    .select(`*, profiles(username, avatar_url)`)
-                    .order('created_at', { ascending: false });
+                const { data, error } = await supabase.from('news').select(`*, profiles(username, avatar_url)`).order('created_at', { ascending: false });
                 if (error) throw error;
                 allPosts = data;
                 renderNews(allPosts);
             } catch (err) {
-                console.error("Error loading news:", err);
-                feedContainer.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon" style="color:var(--brand-1)"><i class="fa-solid fa-circle-exclamation"></i></div>
-                        <h3>Failed to load news</h3>
-                        <p>There was an error connecting to the server. Please try again later.</p>
-                    </div>`;
+                feedContainer.innerHTML = `<div class="empty-state"><div class="empty-state-icon" style="color:var(--brand-1)"><i class="fa-solid fa-circle-exclamation"></i></div><h3>Failed to load news</h3><p>There was an error connecting to the server. Please try again later.</p></div>`;
             }
         }
         
@@ -1035,11 +1108,11 @@
         const closeModalBtn = document.getElementById('close-modal-btn');
         const textarea = document.getElementById('post-textarea');
         const charCounter = document.getElementById('char-counter');
+        const editTextarea = document.getElementById('edit-post-textarea');
+        const editCharCounter = document.getElementById('edit-char-counter');
 
         newPostBtn.addEventListener('click', () => {
-            if (loggedInProfile) {
-                document.getElementById('modal-user-avatar').src = loggedInProfile.avatar_url || `https://placehold.co/40x40/1c1c1c/de212a?text=${loggedInProfile.username.charAt(0).toUpperCase()}`;
-            }
+            if (loggedInProfile) document.getElementById('modal-user-avatar').src = loggedInProfile.avatar_url || `https://placehold.co/40x40/1c1c1c/de212a?text=${loggedInProfile.username.charAt(0).toUpperCase()}`;
             modal.classList.add('show');
             textarea.focus();
         });
@@ -1048,10 +1121,32 @@
         modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('show'); });
 
         textarea.addEventListener('input', () => { charCounter.textContent = 1000 - textarea.value.length; });
+        editTextarea.addEventListener('input', () => { editCharCounter.textContent = 1000 - editTextarea.value.length; });
         
-        document.querySelectorAll('.format-btn').forEach(btn => btn.addEventListener('click', () => applyFormat(btn.dataset.format)));
+        function setupFormatting(targetTextarea, toolbarSelector, emojiPickerId) {
+            const EMOJIS = ['😀', '😂', '😍', '🤔', '👍', '❤️', '🔥', '🎉', '🚀', '💯', '🙏', '👀', '🤯', '💀', '✅', '❌'];
+            const emojiPicker = document.getElementById(emojiPickerId);
+            emojiPicker.innerHTML = `<div class="emoji-grid">${EMOJIS.map(e => `<button type="button" class="emoji-btn">${e}</button>`).join('')}</div>`;
 
-        function applyFormat(format) {
+            document.querySelectorAll(toolbarSelector).forEach(btn => btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                applyFormat(btn.dataset.format, targetTextarea, btn);
+            }));
+            
+            emojiPicker.querySelectorAll('.emoji-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                insertAtCursor(targetTextarea, btn.textContent);
+                emojiPicker.style.display = 'none';
+            }));
+        }
+        
+        function insertAtCursor(textarea, text) {
+            const start = textarea.selectionStart, end = textarea.selectionEnd;
+            textarea.setRangeText(text, start, end, 'end');
+            textarea.focus();
+        }
+
+        function applyFormat(format, textarea, btn) {
             const start = textarea.selectionStart, end = textarea.selectionEnd;
             const selectedText = textarea.value.substring(start, end);
             let replacement = selectedText, cursorPosition = start;
@@ -1060,46 +1155,56 @@
                 case 'bold': replacement = `**${selectedText}**`; cursorPosition += 2; break;
                 case 'italic': replacement = `_${selectedText}_`; cursorPosition += 1; break;
                 case 'underline': replacement = `__${selectedText}__`; cursorPosition += 2; break;
-                case 'strike': replacement = `~~${selectedText}~~`; cursorPosition += 2; break;
-                case 'link': const url = prompt("Enter the URL:"); if(url) replacement = `[${selectedText}](${url})`; break;
+                case 'link': const url = prompt("Enter the URL:"); if(url) replacement = `[${selectedText || 'link'}](${url})`; break;
+                case 'image': const imgUrl = prompt("Enter the Image URL:"); if(imgUrl) replacement = `![](${imgUrl})`; break;
                 case 'code': replacement = `\`${selectedText}\``; cursorPosition += 1; break;
-                case 'quote': const isAtStartOfLine = textarea.value.substring(0, start).split('\n').pop().trim() === ''; replacement = isAtStartOfLine ? `> ${selectedText}` : `\n> ${selectedText}`; break;
+                case 'emoji':
+                    const picker = btn.nextElementSibling;
+                    picker.style.display = picker.style.display === 'block' ? 'none' : 'block';
+                    return;
             }
-            
             textarea.setRangeText(replacement, start, end, 'end');
-            if (selectedText.length === 0) textarea.selectionStart = textarea.selectionEnd = cursorPosition;
+            if (selectedText.length === 0 && format !== 'link' && format !== 'image') textarea.selectionStart = textarea.selectionEnd = cursorPosition;
             textarea.focus();
         }
+
+        [textarea, editTextarea].forEach(ta => {
+            ta.addEventListener('paste', (e) => {
+                const clipboardData = e.clipboardData || window.clipboardData;
+                const pastedData = clipboardData.getData('Text');
+                const urlRegex = /(https?:\/\/[^\s]+?\.(?:png|jpg|jpeg|gif|webp|avif))/i;
+                if (urlRegex.test(pastedData)) {
+                    e.preventDefault();
+                    const url = pastedData.match(urlRegex)[0];
+                    const markdownImage = `![](${url})`;
+                    insertAtCursor(ta, markdownImage);
+                    showToast('Image link pasted!', 'success');
+                }
+            });
+        });
 
         window.handlePostSubmit = async function(e) {
             e.preventDefault();
             const content = textarea.value.trim();
             if (!content) return;
-            
             const tweetBtn = document.getElementById('tweet-btn');
             const originalBtnContent = tweetBtn.innerHTML;
             tweetBtn.disabled = true;
             tweetBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-
             try {
                 const { data: { session } } = await supabase.auth.getSession();
-                if (!session) throw new Error("Authentication session not found.");
-
                 const response = await fetch('/api/add-news', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
                     body: JSON.stringify({ content: content })
                 });
-                
                 const result = await response.json();
-                if (!response.ok) throw new Error(result.details || 'Failed to post news.');
-                
+                if (!response.ok) throw new Error(result.details);
                 showToast('News post created successfully!', 'success');
                 modal.classList.remove('show');
                 e.target.reset();
                 charCounter.textContent = '1000';
-                await loadNews();
-
+                loadNews();
             } catch (err) {
                 showToast(err.message, 'error');
             } finally {
@@ -1110,58 +1215,23 @@
 
         document.getElementById('news-search').addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase();
-            const filteredPosts = allPosts.filter(post => 
-                post.content.toLowerCase().includes(query) ||
-                (post.profiles?.username?.toLowerCase().includes(query))
-            );
+            const filteredPosts = allPosts.filter(post => post.content.toLowerCase().includes(query) || (post.profiles?.username?.toLowerCase().includes(query)));
             renderNews(filteredPosts);
         });
 
         async function fetchAndRenderNotifications() {
             if (!currentUserId) return;
-            const { data, error } = await supabase
-                .from('notifications')
-                .select('*', { count: 'exact' })
-                .eq('user_id', currentUserId)
-                .order('created_at', { ascending: false })
-                .limit(20);
-
+            const { data, error } = await supabase.from('notifications').select('*', { count: 'exact' }).eq('user_id', currentUserId).order('created_at', { ascending: false }).limit(20);
             if (error) { console.error("Error fetching notifications:", error); return; }
-
             const list = document.getElementById('notification-list');
             const unreadCount = data.filter(n => !n.is_read).length;
-
             if (data.length === 0) {
-                list.innerHTML = `
-                    <div class="notification-list-empty">
-                        <div class="empty-icon">🔔</div>
-                        <p>No notifications yet</p>
-                        <p style="font-size: 0.85rem; margin-top: 0.5rem;">You're all caught up!</p>
-                    </div>`;
+                list.innerHTML = `<div class="notification-list-empty"><div class="empty-icon">🔕</div><p>No notifications</p></div>`;
             } else {
-                list.innerHTML = data.map(n => {
-                    const iconMap = { 'new_news': 'fa-solid fa-newspaper', 'new_pack': 'fa-solid fa-box', 'comment_reply': 'fa-solid fa-comment-dots' };
-                    return `
-                        <div class="notification-item ${n.is_read ? 'read' : ''}" id="notification-${n.id}">
-                            <a href="${n.content.link}">
-                                <i class="${iconMap[n.type] || 'fa-solid fa-bell'} notification-icon"></i>
-                                <div class="notification-content">
-                                    <p>${escapeHtml(n.content.text)}</p>
-                                    <span class="time">${timeAgo(n.created_at)}</span>
-                                </div>
-                            </a>
-                            <button class="dismiss-notification-btn" data-id="${n.id}" title="Dismiss">&times;</button>
-                        </div>`;
-                }).join('');
+                list.innerHTML = data.map(n => `<div class="notification-item ${n.is_read ? 'read' : ''}" id="notification-${n.id}"><a href="${n.content.link}"><i class="${{ 'new_news': 'fa-solid fa-newspaper' }[n.type] || 'fa-solid fa-bell'} notification-icon"></i><div class="notification-content"><p>${escapeHtml(n.content.text)}</p><span class="time">${timeAgo(n.created_at)}</span></div></a><button class="dismiss-notification-btn" data-id="${n.id}" title="Dismiss">&times;</button></div>`).join('');
             }
-            
             document.querySelectorAll('.notification-badge').forEach(badge => {
-                if (unreadCount > 0) {
-                    badge.style.display = 'flex';
-                    badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
-                } else {
-                    badge.style.display = 'none';
-                }
+                badge.style.display = unreadCount > 0 ? 'block' : 'none';
             });
         }
         
@@ -1179,36 +1249,24 @@
 
         function setupNotificationListeners() {
             const backdrop = document.getElementById('notification-backdrop');
-            
             document.addEventListener('click', async (e) => {
-                if (e.target.closest('.notification-toggle-btn')) {
-                    backdrop.classList.add('show');
-                } else if (e.target.id === 'close-notifications-btn' || e.target === backdrop) {
-                    backdrop.classList.remove('show');
-                } else if (e.target.id === 'mark-all-read-btn') {
+                if (e.target.closest('.notification-toggle-btn')) backdrop.classList.add('show');
+                else if (e.target.id === 'close-notifications-btn' || e.target === backdrop) backdrop.classList.remove('show');
+                else if (e.target.id === 'mark-all-read-btn') {
                     await supabase.from('notifications').update({ is_read: true }).eq('user_id', currentUserId).eq('is_read', false);
                     fetchAndRenderNotifications();
-                } else if (e.target.id === 'clear-all-btn') {
-                    clearAllNotifications();
-                } else if (e.target.closest('.dismiss-notification-btn')) {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    deleteNotification(e.target.closest('.dismiss-notification-btn').dataset.id);
-                } else if (e.target.closest('.notification-item a')) {
+                } else if (e.target.id === 'clear-all-btn') clearAllNotifications();
+                else if (e.target.closest('.dismiss-notification-btn')) { e.stopPropagation(); e.preventDefault(); deleteNotification(e.target.closest('.dismiss-notification-btn').dataset.id); }
+                else if (e.target.closest('.notification-item a')) {
                     const notificationItem = e.target.closest('.notification-item');
-                    if(notificationItem && !notificationItem.classList.contains('read')) {
-                       await supabase.from('notifications').update({ is_read: true }).eq('id', notificationItem.id.split('-')[1]);
-                       fetchAndRenderNotifications();
-                    }
+                    if(notificationItem && !notificationItem.classList.contains('read')) { await supabase.from('notifications').update({ is_read: true }).eq('id', notificationItem.id.split('-')[1]); fetchAndRenderNotifications(); }
                 }
             });
         }
 
         function createNotificationSubscription() {
             if (notificationSubscription) supabase.removeChannel(notificationSubscription);
-            notificationSubscription = supabase.channel(`public:notifications:user_id=eq.${currentUserId}`)
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, fetchAndRenderNotifications)
-                .subscribe();
+            notificationSubscription = supabase.channel(`public:notifications:user_id=eq.${currentUserId}`).on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, fetchAndRenderNotifications).subscribe();
         }
         
         const desktopSearchInput = document.querySelector('.desktop-search-container input');
@@ -1265,7 +1323,7 @@
             modalDropdown.querySelectorAll('.search-type-option').forEach(option => {
                 option.addEventListener('click', () => {
                     modalSearchType = option.dataset.type;
-                    document.getElementById('modal-search-type-label').textContent = option.textContent.trim();
+                    document.getElementById('modal-search-type-label').innerHTML = option.innerHTML.replace('fa-solid', 'fa-fw fa-solid');
                     modalSearchInput.placeholder = `Search for ${modalSearchType}...`;
                     performModalSearch();
                 });
@@ -1289,27 +1347,25 @@
                         return `<a href="/packs.html?id=${pack.id}" class="suggestion-card">${iconContent}<div><div class="search-result-name">${escapeHtml(pack.name)}</div></div></a>`;
                     }).join('');
                 }
-            } catch (err) {
-                console.error('Error loading suggestions:', err);
-            }
+            } catch (err) { console.error('Error loading suggestions:', err); }
         }
         
         document.addEventListener('auth-ready', (event) => {
             const { profile, user } = event.detail;
-            loggedInProfile = profile;
-            currentUserId = user?.id;
+            loggedInProfile = profile; currentUserId = user?.id;
             
-            if (profile?.role === 'admin') {
-                document.getElementById('admin-post-trigger').classList.add('visible');
-            }
-
+            if (profile?.role === 'admin') document.getElementById('admin-post-trigger').classList.add('visible');
             loadNews();
-            if (user) {
-                fetchAndRenderNotifications();
-                createNotificationSubscription();
-                setupNotificationListeners();
-            }
+            if (user) { fetchAndRenderNotifications(); createNotificationSubscription(); setupNotificationListeners(); }
             loadPackSuggestions();
+        });
+        
+        setupFormatting(textarea, '#new-post-modal .format-btn', 'emoji-picker');
+        setupFormatting(editTextarea, '#edit-post-modal .format-btn', 'edit-emoji-picker');
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('[data-format="emoji"]')) {
+                document.querySelectorAll('.emoji-picker').forEach(p => p.style.display = 'none');
+            }
         });
 
     </script>
