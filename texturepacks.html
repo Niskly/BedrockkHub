@@ -387,8 +387,6 @@
         }
         .notification-header h3 { margin: 0; font-size: 1rem; }
         .notification-header button { background: none; border: none; color: var(--muted); cursor: pointer; }
-        #mark-all-read-btn { font-size: 0.8rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 6px; }
-        #mark-all-read-btn:hover { background-color: var(--bg-1); }
         #close-notifications-btn { font-size: 1.5rem; line-height: 1; }
         .notification-list { max-height: 400px; overflow-y: auto; }
         .notification-item {
@@ -409,6 +407,9 @@
         }
         .notification-item:hover .dismiss-notification-btn { display: block; }
         .notification-list-empty { padding: 2rem; text-align: center; color: var(--muted); }
+        .notification-footer { padding: 0.75rem 1rem; border-top: 1px solid var(--border); background: var(--bg-2); display: flex; justify-content: space-between; align-items: center;}
+        .notification-footer-btn { font-size: 0.8rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 6px; background: none; border: none; cursor: pointer; color: var(--brand-1); transition: background-color 0.2s; }
+        .notification-footer-btn:hover { background-color: var(--bg-1); }
 
         /* ====== TOOLS DROPDOWN ====== */
         .tools-dropdown-container { position: relative; }
@@ -835,13 +836,14 @@
         <div id="notification-panel" class="notification-panel">
             <div class="notification-header">
                 <h3>Notifications</h3>
-                <div>
-                    <button id="mark-all-read-btn">Mark all as read</button>
-                    <button id="close-notifications-btn">&times;</button>
-                </div>
+                <button id="close-notifications-btn">&times;</button>
             </div>
             <div id="notification-list" class="notification-list">
                 <!-- Notifications will be rendered here by JS -->
+            </div>
+            <div class="notification-footer">
+                <button id="mark-all-read-btn" class="notification-footer-btn">Mark all as read</button>
+                <button id="clear-all-btn" class="notification-footer-btn">Clear All</button>
             </div>
         </div>
     </div>
@@ -870,7 +872,7 @@
             </div>
 
             <div class="modal-suggestions">
-                <h3 class="suggestions-title">Newest Packs</h3>
+                <h3 class="suggestions-title"><i class="fa-solid fa-fire"></i> Latest Packs</h3>
                 <div id="modal-pack-suggestions" class="modal-suggestions-grid">
                     <!-- Suggestions will be loaded here -->
                 </div>
@@ -2036,6 +2038,9 @@
                 }
                 else if (e.target.id === 'mark-all-read-btn') {
                     supabase.from('notifications').update({ is_read: true }).eq('user_id', currentUserId).then(fetchAndRenderNotifications);
+                }
+                else if (e.target.id === 'clear-all-btn') {
+                    supabase.from('notifications').delete().eq('user_id', currentUserId).then(fetchAndRenderNotifications);
                 }
                 else if (e.target.classList.contains('dismiss-notification-btn')) {
                     markOneAsRead(e.target.dataset.id);
