@@ -172,9 +172,10 @@
         .pack-options-menu a:hover, .pack-options-menu button:hover { background: var(--brand-1); }
         .pack-options-menu a i, .pack-options-menu button i { width: 16px; text-align: center; }
         .share-item { position: relative; }
-        .share-item:hover .share-submenu { display: block; }
-        .share-submenu { display: none; position: absolute; left: 100%; top: 0; margin-left: 8px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); min-width: 180px; z-index: 4; }
+        .share-item:hover > .share-submenu,
+        .share-submenu:hover,
         .share-submenu.show { display: block; }
+        .share-submenu { display: none; position: absolute; left: 100%; top: 0; margin-left: 8px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); min-width: 180px; z-index: 4; }
         .share-submenu a { padding: 10px 14px; display: flex; align-items: center; gap: 10px; color: var(--text); transition: background 0.2s; }
         .share-submenu a:hover { background: var(--brand-1); }
         .share-submenu a i { width: 18px; text-align: center; }
@@ -278,8 +279,8 @@
         
         /* ====== MOBILE NAV ====== */
         .mobile-nav-controls { display: flex; align-items: center; gap: 0.5rem; }
-        .mobile-nav-btn { background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; padding: 0.5rem; }
-        .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; z-index: 1001; }
+        .mobile-nav-btn { background: none; border: none; color: var(--text); font-size: 1rem; cursor: pointer; z-index: 1001; padding: 0.5rem; }
+        .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1rem; cursor: pointer; z-index: 1001; }
         .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
         .mobile-nav-backdrop.show { display: block; opacity: 1; }
         .mobile-nav-sidebar {
@@ -1643,23 +1644,13 @@
                 : `<div class="glyph" style="background:${color}"><i class="fa-solid fa-cube"></i></div>`;
             const thumbBackgroundStyle = p.icon_url ? `background: linear-gradient(135deg,#1f2937,#0f172a);` : `background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})`;
             
-            const shareMenu = `
-                <div class="share-item">
-                    <button onclick="toggleShareMenu(event, ${p.id})"><i class="fa-solid fa-share-nodes"></i> Share</button>
-                    <div class="share-submenu" id="share-menu-${p.id}">
-                        <a href="#" onclick="copyPackLink(event, ${p.id}, '${escapeHtml(p.name)}')"><i class="fa-solid fa-link"></i> Copy Link</a>
-                        <a href="https://wa.me/?text=Check%20out%20${encodeURIComponent(p.name)}%20on%20MCHub:%20${encodeURIComponent(window.location.origin + '/packs.html?id=' + p.id)}" target="_blank" onclick="event.stopPropagation()"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
-                        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.origin + '/packs.html?id=' + p.id)}" target="_blank" onclick="event.stopPropagation()"><i class="fa-brands fa-facebook"></i> Facebook</a>
-                        <a href="https://twitter.com/intent/tweet?text=Check%20out%20${encodeURIComponent(p.name)}&url=${encodeURIComponent(window.location.origin + '/packs.html?id=' + p.id)}" target="_blank" onclick="event.stopPropagation()"><i class="fa-brands fa-twitter"></i> Twitter</a>
-                        <a href="mailto:?subject=${encodeURIComponent(p.name)}&body=Check%20out%20this%20pack:%20${encodeURIComponent(window.location.origin + '/packs.html?id=' + p.id)}" onclick="event.stopPropagation()"><i class="fa-solid fa-envelope"></i> Email</a>
-                    </div>
-                </div>`;
+            const shareLink = `<a href="#" onclick="copyPackLink(event, ${p.id}, '${escapeHtml(p.name)}'); return false;"><i class="fa-solid fa-share-nodes"></i> Copy Link</a>`;
             const editLink = currentUserRole === 'admin' ? `<a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>` : '';
 
             return `
                 <div class="card pack" onclick="navigateToPack(event, ${p.id})">
                      <button class="pack-options-btn" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                     <div class="pack-options-menu" id="options-menu-${p.id}">${shareMenu}${editLink}</div>
+                     <div class="pack-options-menu" id="options-menu-${p.id}">${shareLink}${editLink}</div>
                     <div class="thumb" style="${thumbBackgroundStyle}">
                         ${thumbContent}
                     </div>
