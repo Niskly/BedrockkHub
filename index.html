@@ -1295,9 +1295,17 @@
                         'new_pack': 'fa-solid fa-box',
                         'comment_reply': 'fa-solid fa-comment-dots'
                     };
+                    
+                    let iconHtml = '';
+                    if (n.type === 'new_pack' && n.content.pack_icon) {
+                        iconHtml = `<img src="${n.content.pack_icon}" class="notification-icon" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;" alt="Pack icon">`;
+                    } else {
+                        iconHtml = `<i class="${iconMap[n.type] || 'fa-solid fa-bell'} notification-icon"></i>`;
+                    }
+                    
                     return `
                         <div class="notification-item ${n.is_read ? 'read' : ''}" id="notification-${n.id}">
-                            <i class="${iconMap[n.type] || 'fa-solid fa-bell'} notification-icon"></i>
+                            ${iconHtml}
                             <a href="${n.content.link}" class="notification-content">
                                 <p>${escapeHtml(n.content.text)}</p>
                                 <span class="time">${timeAgo(n.created_at)}</span>
