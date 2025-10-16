@@ -45,9 +45,9 @@ function setupMobileNav(profile, user) {
 
 
     const isHome = currentPath === '/';
-    const isTexturePacks = currentPath === '/texturepacks.html';
-    const isNews = currentPath === '/news.html';
-    const isProfile = profile && currentPath === `/profile.html` && new URLSearchParams(window.location.search).get('user') === profile.username;
+    const isTexturePacks = currentPath === '/texturepacks';
+    const isNews = currentPath === '/news';
+    const isProfile = profile && currentPath === `/profile` && new URLSearchParams(window.location.search).get('user') === profile.username;
 
     const toolsDropdownHTML = `
         <div class="mobile-nav-collapsible">
