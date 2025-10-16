@@ -736,7 +736,7 @@
 }
 .emoji-content {
     padding: 0.75rem;
-    max-height: 50vh;
+    max-height: 240px;
     overflow-y: auto;
 }
 .emoji-section {
@@ -1629,6 +1629,16 @@
                         });
                     }
                 });
+                
+                // Emoji button clicks
+                emojiPicker.querySelectorAll('.emoji-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        insertAtCursor(targetTextarea, btn.textContent);
+                        emojiPicker.classList.remove('show');
+                        if (backdrop) backdrop.classList.remove('show');
+                    });
+                });
             }
             
             function showCategory(category) {
@@ -1646,14 +1656,6 @@
             document.querySelectorAll(toolbarSelector).forEach(btn => btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 applyFormat(btn.dataset.format, targetTextarea, btn);
-            }));
-            
-            emojiPicker.querySelectorAll('.emoji-btn').forEach(btn => btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                insertAtCursor(targetTextarea, btn.textContent);
-                const backdrop = document.getElementById(`${emojiPickerId}-backdrop`);
-                emojiPicker.classList.remove('show');
-                if (backdrop) backdrop.classList.remove('show');
             }));
         }
         
