@@ -5,6 +5,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MCHub — Texture Packs</title>
+    <!-- Favicon Configuration -->
+    <link rel="apple-touch-icon" sizes="180x180" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-16x16.png">
+    <link rel="manifest" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/site.webmanifest">
+    <link rel="shortcut icon" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon.ico">
+    <!-- End Favicon Configuration -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>
     /* Prevents the "flash of the wrong theme" by keeping the body hidden until the theme is ready */
@@ -160,10 +167,16 @@
         .pack-stats-top { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--muted); }
         .stat-item { display: flex; align-items: center; gap: 6px; }
         .pack-options-btn { position: absolute; top: 8px; right: 8px; z-index: 2; background: rgba(0, 0, 0, 0.4); color: white; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; width: 30px; height: 30px; display: grid; place-items: center; cursor: pointer; padding: 0; }
-        .pack-options-menu { display: none; position: absolute; top: 42px; right: 8px; z-index: 3; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); }
-        .pack-options-menu a { display: flex; align-items: center; gap: 10px; padding: 8px 14px; font-size: 14px; }
-        .pack-options-menu a:hover { background: var(--brand-1); }
-        .pack-options-menu a i { width: 16px; text-align: center; }
+        .pack-options-menu { display: none; position: absolute; top: 42px; right: 8px; z-index: 3; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; overflow: visible; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); min-width: 150px; }
+        .pack-options-menu a, .pack-options-menu button { display: flex; align-items: center; gap: 10px; padding: 10px 14px; font-size: 14px; background: none; border: none; color: var(--text); cursor: pointer; width: 100%; text-align: left; transition: background 0.2s; }
+        .pack-options-menu a:hover, .pack-options-menu button:hover { background: var(--brand-1); }
+        .pack-options-menu a i, .pack-options-menu button i { width: 16px; text-align: center; }
+        .share-item { position: relative; }
+        .share-submenu { display: none; position: absolute; left: 100%; top: 0; margin-left: 8px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); min-width: 180px; z-index: 4; }
+        .share-submenu.show { display: block; }
+        .share-submenu a { padding: 10px 14px; display: flex; align-items: center; gap: 10px; color: var(--text); transition: background 0.2s; }
+        .share-submenu a:hover { background: var(--brand-1); }
+        .share-submenu a i { width: 18px; text-align: center; }
         .btn.sm { padding: .25rem .5rem; border-radius: 8px; font-weight: 700; display: inline-flex; align-items: center; gap: .4rem; min-width: auto; }
         .btn.sm.btn-clear {
             padding: .2rem .6rem; font-size: 12px; font-weight: 800;
@@ -1629,13 +1642,23 @@
                 : `<div class="glyph" style="background:${color}"><i class="fa-solid fa-cube"></i></div>`;
             const thumbBackgroundStyle = p.icon_url ? `background: linear-gradient(135deg,#1f2937,#0f172a);` : `background:linear-gradient(135deg, ${shade(color, -20)}, ${shade(color, 20)})`;
             
-            const downloadLink = `<a href="#" onclick="handleDownload(event, ${p.id}, '${p.filename}', '${escapeHtml(p.name)}')"><i class="fa-solid fa-download"></i> Download</a>`;
+            const shareMenu = `
+                <div class="share-item">
+                    <button onclick="toggleShareMenu(event, ${p.id})"><i class="fa-solid fa-share-nodes"></i> Share</button>
+                    <div class="share-submenu" id="share-menu-${p.id}">
+                        <a href="#" onclick="copyPackLink(event, ${p.id}, '${escapeHtml(p.name)}')"><i class="fa-solid fa-link"></i> Copy Link</a>
+                        <a href="https://wa.me/?text=Check%20out%20${encodeURIComponent(p.name)}%20on%20MCHub:%20${encodeURIComponent(window.location.origin + '/packs.html?id=' + p.id)}" target="_blank" onclick="event.stopPropagation()"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.origin + '/packs.html?id=' + p.id)}" target="_blank" onclick="event.stopPropagation()"><i class="fa-brands fa-facebook"></i> Facebook</a>
+                        <a href="https://twitter.com/intent/tweet?text=Check%20out%20${encodeURIComponent(p.name)}&url=${encodeURIComponent(window.location.origin + '/packs.html?id=' + p.id)}" target="_blank" onclick="event.stopPropagation()"><i class="fa-brands fa-twitter"></i> Twitter</a>
+                        <a href="mailto:?subject=${encodeURIComponent(p.name)}&body=Check%20out%20this%20pack:%20${encodeURIComponent(window.location.origin + '/packs.html?id=' + p.id)}" onclick="event.stopPropagation()"><i class="fa-solid fa-envelope"></i> Email</a>
+                    </div>
+                </div>`;
             const editLink = currentUserRole === 'admin' ? `<a href="#" onclick="openEditModal(${p.id}); event.preventDefault();"><i class="fa-regular fa-pen-to-square"></i> Edit</a>` : '';
 
             return `
                 <div class="card pack" onclick="navigateToPack(event, ${p.id})">
                      <button class="pack-options-btn" onclick="toggleOptionsMenu(event, ${p.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                     <div class="pack-options-menu" id="options-menu-${p.id}">${downloadLink}${editLink}</div>
+                     <div class="pack-options-menu" id="options-menu-${p.id}">${shareMenu}${editLink}</div>
                     <div class="thumb" style="${thumbBackgroundStyle}">
                         ${thumbContent}
                     </div>
@@ -1823,11 +1846,34 @@
             const menu = document.getElementById(`options-menu-${id}`);
             const isVisible = menu.style.display === 'block';
             document.querySelectorAll(".pack-options-menu").forEach(m => m.style.display = 'none');
+            document.querySelectorAll(".share-submenu").forEach(m => m.classList.remove('show'));
             if (!isVisible) menu.style.display = 'block';
         };
         
+        window.toggleShareMenu = (e, id) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const shareMenu = document.getElementById(`share-menu-${id}`);
+            document.querySelectorAll(".share-submenu").forEach(m => {
+                if (m.id !== `share-menu-${id}`) m.classList.remove('show');
+            });
+            shareMenu.classList.toggle('show');
+        };
+        
+        window.copyPackLink = async (e, id, name) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const link = `${window.location.origin}/packs.html?id=${id}`;
+            try {
+                await navigator.clipboard.writeText(link);
+                showToast(`Link copied to clipboard!`, "success");
+            } catch (err) {
+                showToast("Failed to copy link", "error");
+            }
+        };
+        
         window.navigateToPack = function(event, packId) {
-            if (event.target.closest('.pack-options-btn') || event.target.closest('.pack-options-menu a')) {
+            if (event.target.closest('.pack-options-btn') || event.target.closest('.pack-options-menu')) {
                 return;
             }
             window.location.href = `/packs.html?id=${packId}`;
@@ -2183,9 +2229,17 @@
                         'new_pack': 'fa-solid fa-box',
                         'comment_reply': 'fa-solid fa-comment-dots'
                     };
+                    
+                    let iconHtml = '';
+                    if (n.type === 'new_pack' && n.content.pack_icon) {
+                        iconHtml = `<img src="${n.content.pack_icon}" class="notification-icon" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;" alt="Pack icon">`;
+                    } else {
+                        iconHtml = `<i class="${iconMap[n.type] || 'fa-solid fa-bell'} notification-icon"></i>`;
+                    }
+                    
                     return `
                         <div class="notification-item ${n.is_read ? 'read' : ''}" id="notification-${n.id}">
-                            <i class="${iconMap[n.type] || 'fa-solid fa-bell'} notification-icon"></i>
+                            ${iconHtml}
                             <a href="${n.content.link}" class="notification-content">
                                 <p>${escapeHtml(n.content.text)}</p>
                                 <span class="time">${timeAgo(n.created_at)}</span>
