@@ -154,7 +154,126 @@
         /* ====== COMMUNITY & FOOTER ====== */
         .community { margin-top: 4rem; text-align: center; }
         .glowing-title { font-size: 2.5rem; font-weight: 900; margin-bottom: 1rem; }
-        footer { margin-top: 6rem; padding: 3rem 0; border-top: 1px solid var(--border); background: var(--bg-1); text-align: center; }
+        footer {
+            margin-top: 4rem;
+            padding: 3rem 2rem 2rem;
+            background: var(--bg-1);
+            border-top: 1px solid var(--border);
+        }
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr 1fr;
+            gap: 3rem;
+            padding-bottom: 2rem;
+        }
+        .footer-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .footer-brand .brand {
+            display: flex;
+            margin-bottom: 0.5rem;
+        }
+        .footer-brand p {
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 0.9rem;
+        }
+        .footer-socials { 
+            display: flex; 
+            gap: 0.75rem; 
+            margin-top: 1rem; 
+        }
+        .footer-socials a {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--bg-2);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .footer-socials a:hover { 
+            color: var(--text); 
+            border-color: var(--brand-1);
+            background: rgba(222, 33, 42, 0.1);
+        }
+        .footer-column h4 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 1.25rem;
+            color: var(--text);
+        }
+        .footer-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .footer-links a {
+            color: var(--muted);
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover {
+            color: var(--text);
+        }
+        .footer-discord {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.65rem 1.25rem;
+            background: var(--brand-1);
+            color: white;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-brand);
+            width: fit-content;
+        }
+        .footer-discord:hover {
+            background: var(--brand-2);
+            transform: translateY(-2px);
+        }
+        .footer-discord i {
+            font-size: 1.1rem;
+        }
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+        .footer-bottom-links { 
+            display: flex; 
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .footer-bottom-links a {
+            color: var(--muted);
+            transition: color 0.2s;
+            font-size: 0.85rem;
+        }
+        .footer-bottom-links a:hover {
+            color: var(--text);
+        }
         
         /* ====== MOBILE NAV ====== */
         .nav-actions { display: none; }
@@ -267,6 +386,10 @@
         }
         .notification-item:hover .dismiss-notification-btn { display: block; }
         .notification-list-empty { padding: 2rem; text-align: center; color: var(--muted); }
+        .notification-list-empty .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+        .notification-footer { padding: 0.75rem 1rem; border-top: 1px solid var(--border); background: var(--bg-2); display: flex; justify-content: space-between; align-items: center;}
+        .notification-footer-btn { font-size: 0.8rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 6px; background: none; border: none; cursor: pointer; color: var(--brand-1); transition: background-color 0.2s; }
+        .notification-footer-btn:hover { background-color: var(--bg-1); }
 
         /* ====== TOOLS DROPDOWN ====== */
         .tools-dropdown-container { position: relative; }
@@ -409,15 +532,25 @@
              .latest-packs-grid {
                 grid-template-columns: 1fr;
                 display: flex;
-                overflow-x: auto;
-                scroll-snap-type: x mandatory;
-                padding-bottom: 1rem;
-                -ms-overflow-style: none;
-                scrollbar-width: none;
+                flex-direction: column;
+                gap: 1rem;
             }
-             .latest-packs-grid::-webkit-scrollbar { height: 6px; }
-             .latest-packs-grid::-webkit-scrollbar-track { background: var(--bg-2); border-radius: 3px; }
-             .latest-packs-grid::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+            .pack-item {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 1rem;
+            }
+            .pack-icon {
+                width: 80px;
+                height: 80px;
+            }
+            .footer-container {
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem;
+            }
+            .latest-packs-grid::-webkit-scrollbar-track { background: var(--bg-2); border-radius: 3px; }
+            .latest-packs-grid::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
             .latest-pack-card {
                 width: 300px;
                 flex-shrink: 0;
@@ -436,6 +569,10 @@
             .modal-suggestions { display: none; }
             #modal-universal-search { padding: 0.8rem 1rem; font-size: 1rem; }
             #modal-search-type-btn { padding: 0 1rem; }
+            .footer-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
         }
 
         /* ====== DESKTOP SEARCH MODAL ====== */
@@ -600,13 +737,14 @@
         <div id="notification-panel" class="notification-panel">
             <div class="notification-header">
                 <h3>Notifications</h3>
-                <div>
-                    <button id="mark-all-read-btn">Mark all as read</button>
-                    <button id="close-notifications-btn">&times;</button>
-                </div>
+                <button id="close-notifications-btn">&times;</button>
             </div>
             <div id="notification-list" class="notification-list">
                 <!-- Notifications will be rendered here by JS -->
+            </div>
+            <div class="notification-footer">
+                <button id="mark-all-read-btn" class="notification-footer-btn">Mark all as read</button>
+                <button id="clear-all-btn" class="notification-footer-btn">Clear All</button>
             </div>
         </div>
     </div>
@@ -672,10 +810,60 @@
         </section>
     </main>
 
-    <footer style="margin-top: 2rem;">
-        <div class="footer-content" style="padding: 3rem 2rem;">
-            <p class="muted">© 2024 MCHub. All rights reserved.</p>
-            <p class="tiny">Made with ❤️ for the Minecraft community</p>
+    <footer>
+        <div class="footer-container">
+            <div class="footer-brand">
+                <a class="brand" href="/">
+                    <div class="brand-badge">
+                        <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
+                    </div>
+                    <div>
+                        <div class="brand-title">MCHUB</div>
+                        <div class="tiny">Minecraft • Community Hub</div>
+                    </div>
+                </a>
+                <p>Your ultimate destination for exploring the world of Minecraft. Discover new packs, follow your favorites, and never miss an update.</p>
+                <div class="footer-socials">
+                    <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
+                    <a href="https://discord.gg/KtafawJZxM" target="_blank" aria-label="Discord"><i class="fa-brands fa-discord"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-column">
+                <h4>Explore</h4>
+                <div class="footer-links">
+                    <a href="/">Home</a>
+                    <a href="/texturepacks.html">Browse Packs</a>
+                    <a href="/news.html">News</a>
+                </div>
+            </div>
+            
+            <div class="footer-column">
+                <h4>Support</h4>
+                <div class="footer-links">
+                    <a href="#">Contact Us</a>
+                    <a href="#">Report Issue</a>
+                    <a href="#">FAQ</a>
+                </div>
+            </div>
+            
+            <div class="footer-column">
+                <h4>Stay Updated</h4>
+                <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem;">Join our Discord server for the latest updates and news.</p>
+                <a href="https://discord.gg/KtafawJZxM" target="_blank" class="footer-discord">
+                    <i class="fa-brands fa-discord"></i>
+                    <span>Join Server</span>
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 MCHub. All rights reserved.</p>
+            <div class="footer-bottom-links">
+                <a href="#">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">DMCA</a>
+            </div>
         </div>
     </footer>
 
@@ -1098,7 +1286,7 @@
             let unreadCount = 0;
 
             if (data.length === 0) {
-                list.innerHTML = '<div class="notification-list-empty">You have no notifications.</div>';
+                list.innerHTML = '<div class="notification-list-empty"><div class="empty-icon"><i class="fa-solid fa-bell-slash"></i></div><p>All caught up!</p></div>';
             } else {
                 list.innerHTML = data.map(n => {
                     if (!n.is_read) unreadCount++;
@@ -1157,6 +1345,9 @@
                 }
                 else if (e.target.id === 'mark-all-read-btn') {
                     supabase.from('notifications').update({ is_read: true }).eq('user_id', currentUserId).then(fetchAndRenderNotifications);
+                }
+                else if (e.target.id === 'clear-all-btn') {
+                    supabase.from('notifications').delete().eq('user_id', currentUserId).then(fetchAndRenderNotifications);
                 }
                 else if (e.target.classList.contains('dismiss-notification-btn')) {
                     markOneAsRead(e.target.dataset.id);
