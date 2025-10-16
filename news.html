@@ -300,12 +300,12 @@
                 font-weight: 700;
                 color: var(--muted);
                 transition: all 0.2s ease;
-                border-bottom: 3px solid transparent;
                 display: flex;
                 align-items: center;
                 gap: 0.5rem;
                 background: transparent;
                 border: none;
+                border-bottom: 3px solid transparent;
                 font-family: inherit;
                 font-size: inherit;
                 cursor: pointer;
@@ -652,21 +652,55 @@
 
 .emoji-picker {
     display: none;
-    position: absolute;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     background: var(--bg-1);
     border: 1px solid var(--border);
     border-radius: 12px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-    z-index: 10;
-    width: 360px;
-    max-height: 420px;
+    z-index: 1000;
+    width: 90vw;
+    max-width: 400px;
+    max-height: 80vh;
+}
+.emoji-picker.show {
+    display: block;
+}
+.emoji-picker-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+.emoji-picker-backdrop.show {
+    display: block;
 }
 .emoji-picker-header {
     padding: 0.75rem;
     border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+.emoji-picker-close {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    line-height: 1;
+    transition: color 0.2s;
+}
+.emoji-picker-close:hover {
+    color: var(--text);
 }
 .emoji-search {
-    width: 100%;
+    flex: 1;
     padding: 0.5rem;
     background: var(--bg-2);
     border: 1px solid var(--border);
@@ -680,6 +714,7 @@
     padding: 0.5rem 0.75rem;
     border-bottom: 1px solid var(--border);
     overflow-x: auto;
+    justify-content: center;
 }
 .emoji-category-btn {
     background: none;
@@ -701,19 +736,23 @@
 }
 .emoji-content {
     padding: 0.75rem;
-    max-height: 280px;
+    max-height: 50vh;
     overflow-y: auto;
 }
 .emoji-section {
-    margin-bottom: 1rem;
+    display: none;
+}
+.emoji-section.active {
+    display: block;
 }
 .emoji-section-title {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-weight: 700;
-    color: var(--muted);
+    color: var(--text);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    text-align: center;
 }
 .emoji-grid {
     display: grid;
@@ -735,6 +774,15 @@
 }
 .emoji-btn.selected {
     background: var(--brand-1);
+}
+
+@media (max-width: 768px) {
+    .emoji-grid {
+        grid-template-columns: repeat(6, 1fr);
+    }
+    .emoji-btn {
+        font-size: 1.3rem;
+    }
 }
 
         footer {
@@ -1507,22 +1555,49 @@
             
             function renderEmojiPicker() {
                 const categories = Object.keys(EMOJI_CATEGORIES);
+                
+                // Create backdrop if it doesn't exist
+                let backdrop = document.getElementById(`${emojiPickerId}-backdrop`);
+                if (!backdrop) {
+                    backdrop = document.createElement('div');
+                    backdrop.id = `${emojiPickerId}-backdrop`;
+                    backdrop.className = 'emoji-picker-backdrop';
+                    document.body.appendChild(backdrop);
+                }
+                
                 emojiPicker.innerHTML = `
                     <div class="emoji-picker-header">
                         <input type="text" class="emoji-search" placeholder="Search emojis..." id="${emojiPickerId}-search">
+                        <button type="button" class="emoji-picker-close" id="${emojiPickerId}-close">&times;</button>
                     </div>
                     <div class="emoji-categories">
                         ${categories.map(cat => `<button type="button" class="emoji-category-btn ${cat === currentCategory ? 'active' : ''}" data-category="${cat}">${cat}</button>`).join('')}
                     </div>
                     <div class="emoji-content" id="${emojiPickerId}-content">
-                        ${Object.entries(EMOJI_CATEGORIES).map(([icon, {name, emojis}]) => `
-                            <div class="emoji-section" data-category="${icon}">
+                        ${Object.entries(EMOJI_CATEGORIES).map(([icon, {name, emojis}], index) => `
+                            <div class="emoji-section ${index === 0 ? 'active' : ''}" data-category="${icon}">
                                 <div class="emoji-section-title">${name}</div>
                                 <div class="emoji-grid">${emojis.map(e => `<button type="button" class="emoji-btn">${e}</button>`).join('')}</div>
                             </div>
                         `).join('')}
                     </div>
                 `;
+                
+                // Show first category by default
+                showCategory(currentCategory);
+                
+                // Close button
+                const closeBtn = document.getElementById(`${emojiPickerId}-close`);
+                closeBtn.addEventListener('click', () => {
+                    emojiPicker.classList.remove('show');
+                    backdrop.classList.remove('show');
+                });
+                
+                // Backdrop click to close
+                backdrop.addEventListener('click', () => {
+                    emojiPicker.classList.remove('show');
+                    backdrop.classList.remove('show');
+                });
                 
                 // Category buttons
                 emojiPicker.querySelectorAll('.emoji-category-btn').forEach(btn => {
@@ -1531,8 +1606,7 @@
                         currentCategory = btn.dataset.category;
                         emojiPicker.querySelectorAll('.emoji-category-btn').forEach(b => b.classList.remove('active'));
                         btn.classList.add('active');
-                        const section = emojiPicker.querySelector(`.emoji-section[data-category="${currentCategory}"]`);
-                        if (section) section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        showCategory(currentCategory);
                     });
                 });
                 
@@ -1540,16 +1614,30 @@
                 const searchInput = document.getElementById(`${emojiPickerId}-search`);
                 searchInput.addEventListener('input', (e) => {
                     const query = e.target.value.toLowerCase();
-                    emojiPicker.querySelectorAll('.emoji-section').forEach(section => {
-                        if (query === '') {
-                            section.style.display = 'block';
-                        } else {
+                    if (query === '') {
+                        showCategory(currentCategory);
+                    } else {
+                        emojiPicker.querySelectorAll('.emoji-section').forEach(section => {
                             const hasMatch = Array.from(section.querySelectorAll('.emoji-btn')).some(btn => 
                                 btn.textContent.includes(query) || section.querySelector('.emoji-section-title').textContent.toLowerCase().includes(query)
                             );
-                            section.style.display = hasMatch ? 'block' : 'none';
-                        }
-                    });
+                            if (hasMatch) {
+                                section.classList.add('active');
+                            } else {
+                                section.classList.remove('active');
+                            }
+                        });
+                    }
+                });
+            }
+            
+            function showCategory(category) {
+                emojiPicker.querySelectorAll('.emoji-section').forEach(section => {
+                    if (section.dataset.category === category) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
                 });
             }
             
@@ -1563,7 +1651,9 @@
             emojiPicker.querySelectorAll('.emoji-btn').forEach(btn => btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 insertAtCursor(targetTextarea, btn.textContent);
-                emojiPicker.style.display = 'none';
+                const backdrop = document.getElementById(`${emojiPickerId}-backdrop`);
+                emojiPicker.classList.remove('show');
+                if (backdrop) backdrop.classList.remove('show');
             }));
         }
         
@@ -1585,8 +1675,17 @@
                 case 'underline': replacement = `__${selectedText}__`; cursorPosition += 2; break;
                 case 'code': replacement = `\`${selectedText}\``; cursorPosition += 1; break;
                 case 'emoji':
-                    const picker = document.getElementById(btn.dataset.target === 'edit' ? 'edit-emoji-picker' : 'emoji-picker');
-                    picker.style.display = picker.style.display === 'block' ? 'none' : 'block';
+                    const pickerId = btn.dataset.target === 'edit' ? 'edit-emoji-picker' : 'emoji-picker';
+                    const picker = document.getElementById(pickerId);
+                    const backdrop = document.getElementById(`${pickerId}-backdrop`);
+                    const isVisible = picker.classList.contains('show');
+                    if (isVisible) {
+                        picker.classList.remove('show');
+                        if (backdrop) backdrop.classList.remove('show');
+                    } else {
+                        picker.classList.add('show');
+                        if (backdrop) backdrop.classList.add('show');
+                    }
                     return;
             }
             textarea.setRangeText(replacement, start, end, 'end');
