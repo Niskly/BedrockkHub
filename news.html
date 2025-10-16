@@ -1630,14 +1630,15 @@
                     }
                 });
                 
-                // Emoji button clicks
-                emojiPicker.querySelectorAll('.emoji-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
+                // Emoji button clicks using event delegation
+                emojiPicker.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('emoji-btn')) {
                         e.stopPropagation();
-                        insertAtCursor(targetTextarea, btn.textContent);
+                        const emojiText = e.target.textContent;
+                        insertAtCursor(targetTextarea, emojiText);
                         emojiPicker.classList.remove('show');
                         if (backdrop) backdrop.classList.remove('show');
-                    });
+                    }
                 });
             }
             
