@@ -1552,8 +1552,11 @@
             
             const emojiPicker = document.getElementById(emojiPickerId);
             let currentCategory = '😀';
+            let isInitialized = false;
             
             function renderEmojiPicker() {
+                if (isInitialized) return; // Prevent re-initialization
+                isInitialized = true;
                 const categories = Object.keys(EMOJI_CATEGORIES);
                 
                 // Create backdrop if it doesn't exist
@@ -1599,15 +1602,16 @@
                     backdrop.classList.remove('show');
                 });
                 
-                // Category buttons
-                emojiPicker.querySelectorAll('.emoji-category-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
+                // Category buttons using event delegation
+                const categoriesContainer = emojiPicker.querySelector('.emoji-categories');
+                categoriesContainer.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('emoji-category-btn')) {
                         e.stopPropagation();
-                        currentCategory = btn.dataset.category;
+                        currentCategory = e.target.dataset.category;
                         emojiPicker.querySelectorAll('.emoji-category-btn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
+                        e.target.classList.add('active');
                         showCategory(currentCategory);
-                    });
+                    }
                 });
                 
                 // Search functionality
