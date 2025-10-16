@@ -276,7 +276,7 @@
 
         .nav-link.active {
             color: white;
-            border-bottom: 2px solid var(--brand-1);
+            border-bottom: none;
         }
 
         @media (min-width: 1024px) {
@@ -318,7 +318,7 @@
                 background-color: transparent;
                 color: white;
                 box-shadow: none;
-                border-bottom-color: var(--brand-1);
+                border-bottom: none;
             }
 
             .desktop-nav-right { gap: 1rem; }
@@ -701,38 +701,41 @@
         .footer-container {
             max-width: 1200px;
             margin: 0 auto;
-            text-align: center;
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr 1fr;
+            gap: 3rem;
+            padding-bottom: 2rem;
         }
         .footer-brand {
-            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
         }
         .footer-brand .brand {
-            display: inline-flex;
-            margin-bottom: 1rem;
+            display: flex;
+            margin-bottom: 0.5rem;
         }
         .footer-brand p {
-            max-width: 500px;
-            margin: 1rem auto;
             color: var(--muted);
             line-height: 1.6;
+            font-size: 0.9rem;
         }
         .footer-socials { 
             display: flex; 
-            justify-content: center; 
-            gap: 1rem; 
-            margin-top: 1.5rem; 
+            gap: 0.75rem; 
+            margin-top: 1rem; 
         }
         .footer-socials a {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
+            border-radius: 50%;
             background: var(--bg-2);
             border: 1px solid var(--border);
-            border-radius: 10px;
             color: var(--muted);
-            font-size: 1.2rem;
+            font-size: 1rem;
             transition: all 0.2s;
         }
         .footer-socials a:hover { 
@@ -740,36 +743,59 @@
             border-color: var(--brand-1);
             background: rgba(222, 33, 42, 0.1);
         }
+        .footer-column h4 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 1.25rem;
+            color: var(--text);
+        }
+        .footer-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .footer-links a {
+            color: var(--muted);
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover {
+            color: var(--text);
+        }
         .footer-discord {
             display: inline-flex;
             align-items: center;
-            gap: 0.75rem;
-            background: #5865F2;
+            gap: 0.5rem;
+            padding: 0.65rem 1.25rem;
+            background: var(--brand-1);
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
+            border-radius: 8px;
             font-weight: 700;
-            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            margin-top: 1rem;
             transition: all 0.2s;
-            box-shadow: 0 4px 12px rgba(88, 101, 242, 0.3);
+            box-shadow: var(--shadow-brand);
+            width: fit-content;
         }
         .footer-discord:hover {
-            background: #4752C4;
+            background: var(--brand-2);
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(88, 101, 242, 0.4);
         }
         .footer-discord i {
-            font-size: 1.3rem;
+            font-size: 1.1rem;
         }
         .footer-bottom {
-            margin-top: 3rem;
+            max-width: 1200px;
+            margin: 0 auto;
             padding-top: 2rem;
             border-top: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 1rem;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--muted);
         }
         .footer-bottom-links { 
@@ -781,14 +807,33 @@
         .footer-bottom-links a {
             color: var(--muted);
             transition: color 0.2s;
+            font-size: 0.85rem;
         }
         .footer-bottom-links a:hover {
             color: var(--text);
         }
-        @media(min-width: 768px) {
+        .footer-bottom-credit {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+        }
+        .footer-bottom-credit i {
+            color: var(--brand-1);
+        }
+        @media(max-width: 1024px) {
+            .footer-container {
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem;
+            }
+        }
+        @media(max-width: 768px) {
+            .footer-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
             .footer-bottom { 
-                flex-direction: row; 
-                justify-content: space-between; 
+                flex-direction: column; 
             }
         }
         
@@ -872,7 +917,7 @@
                         <i class="fa-solid fa-fire"></i>
                         Latest Packs
                     </div>
-                    <div class="modal-suggestions-grid"></div>
+                    <div class="modal-suggestions-grid" id="modal-pack-suggestions"></div>
                 </div>
             </div>
         </div>
@@ -917,9 +962,32 @@
                 <div class="footer-socials">
                     <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook"></i></a>
                     <a href="#" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
-                    <a href="#" aria-label="Discord"><i class="fa-brands fa-discord"></i></a>
+                    <a href="https://discord.gg/KtafawJZxM" target="_blank" aria-label="Discord"><i class="fa-brands fa-discord"></i></a>
                 </div>
-                <a href="#" class="footer-discord">
+            </div>
+            
+            <div class="footer-column">
+                <h4>Explore</h4>
+                <div class="footer-links">
+                    <a href="/">Home</a>
+                    <a href="/texturepacks.html">Browse Packs</a>
+                    <a href="/news.html">News</a>
+                </div>
+            </div>
+            
+            <div class="footer-column">
+                <h4>Support</h4>
+                <div class="footer-links">
+                    <a href="#">Contact Us</a>
+                    <a href="#">Report Issue</a>
+                    <a href="#">FAQ</a>
+                </div>
+            </div>
+            
+            <div class="footer-column">
+                <h4>Stay Updated</h4>
+                <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem;">Join our Discord server for the latest updates and news.</p>
+                <a href="https://discord.gg/KtafawJZxM" target="_blank" class="footer-discord">
                     <i class="fa-brands fa-discord"></i>
                     <span>Join Server</span>
                 </a>
@@ -1541,7 +1609,29 @@
         const closeSearchBtn = document.getElementById('close-search-modal-btn');
         const modalSearchInput = document.getElementById('modal-universal-search');
         
-        function openSearchModal() { if (searchModal) { searchModal.classList.add('show'); document.body.style.overflow = 'hidden'; modalSearchInput.focus(); } }
+        async function loadNewPackSuggestions() {
+            const container = document.getElementById('modal-pack-suggestions');
+            if (!container) return;
+            container.innerHTML = '<div class="loading" style="grid-column: 1 / -1; padding: 1rem 0; text-align: center; color: var(--muted);">Loading...</div>';
+            try {
+                const { data, error } = await supabase.from('packs').select('id, name, icon_url').order('created_at', { ascending: false }).limit(4);
+                if (error) throw error;
+                if (data && data.length > 0) {
+                    container.innerHTML = data.map(pack => {
+                        const iconContent = pack.icon_url 
+                            ? `<img class="pack-icon" src="${pack.icon_url}" alt="${escapeHtml(pack.name)} Icon">`
+                            : `<div class="pack-icon" style="background:var(--bg-2); display:grid; place-items:center;"><i class="fa-solid fa-cube"></i></div>`;
+                        return `<a href="/packs.html?id=${pack.id}" class="suggestion-card">${iconContent}<div><div class="search-result-name">${escapeHtml(pack.name)}</div></div></a>`;
+                    }).join('');
+                } else {
+                    container.innerHTML = '<p class="tiny" style="text-align: center; color: var(--muted);">No new packs to suggest.</p>';
+                }
+            } catch (err) {
+                container.innerHTML = '<p class="tiny" style="text-align: center; color: var(--muted);">Could not load suggestions.</p>';
+            }
+        }
+        
+        function openSearchModal() { if (searchModal) { searchModal.classList.add('show'); document.body.style.overflow = 'hidden'; loadNewPackSuggestions(); modalSearchInput.focus(); } }
         function closeSearchModal() { if (searchModal) { searchModal.classList.remove('show'); document.body.style.overflow = ''; } }
         
         if (desktopSearchInput) desktopSearchInput.addEventListener('click', (e) => { e.preventDefault(); openSearchModal(); });
