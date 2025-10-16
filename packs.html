@@ -193,6 +193,11 @@
         .tag-checkbox { padding: .4rem .8rem; border-radius: 8px; background: var(--bg-2); border: 1px solid var(--border); cursor: pointer; font-weight: 600; font-size: 0.85rem; text-transform: capitalize; }
         .tag-checkbox.selected { background: var(--brand-1); border-color: var(--brand-2); color: white; }
 
+        /* ====== MOBILE NAV ====== */
+        .nav-actions { display: none; }
+        .mobile-nav-controls { display: flex; align-items: center; gap: 0.5rem; }
+        .mobile-nav-btn { background: none; border: none; color: var(--text); font-size: 1rem; cursor: pointer; z-index: 1001; padding: 0.5rem; }
+
         .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
         .mobile-nav-backdrop.show { display: block; opacity: 1; }
         .mobile-nav-sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; background: var(--bg-1); z-index: 999; transform: translateX(-100%); transition: transform 0.3s ease; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
@@ -212,11 +217,27 @@
         .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
         .mobile-nav-footer-links .login-mobile-link { background-color: var(--bg-2); color: var(--text); }
         .primary-mobile-link { background: var(--gradient-brand); color: white !important; box-shadow: var(--shadow-brand); }
+        
         .mobile-nav-btn.notification-toggle-btn { color: white; }
         .notification-toggle-btn { position: relative; }
         .mobile-nav-btn .notification-badge { top: 6px; right: 6px; border-color: var(--bg-2); }
         #mobile-auth-actions { display: none; align-items: center; }
         #mobile-auth-actions:not(:empty) { display: flex; }
+        
+        /* ====== MOBILE TOOLS COLLAPSIBLE ====== */
+        .mobile-nav-collapsible .collapsible-trigger {
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .mobile-nav-collapsible .arrow {
+            font-size: 0.8em; transition: transform 0.3s ease;
+        }
+        .mobile-nav-collapsible.open .arrow { transform: rotate(180deg); }
+        .collapsible-content {
+            max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out;
+            padding-left: 1rem;
+        }
+        .collapsible-content .sub-link { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        
         #desktop-auth-actions { display: flex; align-items: center; gap: 0.5rem; }
         
         .comments-section { margin-top: 3rem; }
@@ -723,7 +744,6 @@
                 <div id="desktop-auth-actions"></div>
             </div>
             
-            <!-- This is populated by auth.js but will be hidden on desktop -->
             <div class="nav-actions" id="nav-actions"></div>
             
             <!-- MOBILE CONTROLS -->
@@ -1699,38 +1719,13 @@
                 const { data: pack, error } = await supabase.from('packs').select('*').eq('id', parseInt(packId, 10)).single();
                 if (error || !pack) throw new Error("Pack data could not be found.");
                 renderPackPage(pack);
-            } catch (error) { showError("Could Not Load Pack", "The pack doesn't exist or there was an error loading it."); }
-        }
-
-        function setupMobileNav(profile, user) {
-            const header = document.querySelector('header');
-            if (!header) return;
-            const navContainer = header.querySelector('.nav');
-            if (!navContainer) return;
-            navContainer.querySelector('.mobile-nav-toggle')?.remove();
-            document.querySelector('.mobile-nav-sidebar')?.remove();
-            document.querySelector('.mobile-nav-backdrop')?.remove();
-            const hamburgerBtn = document.createElement('button');
-            hamburgerBtn.className = 'mobile-nav-toggle'; hamburgerBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
-            const sidebar = document.createElement('div'); sidebar.className = 'mobile-nav-sidebar';
-            const backdrop = document.createElement('div'); backdrop.className = 'mobile-nav-backdrop';
-            let userHeader, mainLinks, footerLinks;
-            if (profile && user) {
-                const avatarSrc = profile.avatar_url ? profile.avatar_url : `https://placehold.co/60x60/1c1c1c/de212a?text=${profile.username.charAt(0).toUpperCase()}`;
-                userHeader = `<div class="mobile-nav-header"><img src="${avatarSrc}" alt="Avatar" class="mobile-nav-avatar"><div class="mobile-nav-user-info"><span class="mobile-nav-username">${profile.username}</span><span class="mobile-nav-email">${user.email}</span></div></div>`;
-                mainLinks = `<a href="/"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="/texturepacks.html"><i class="fa-solid fa-palette"></i><span>Texture Packs</span></a><a href="/profile.html?user=${profile.username}"><i class="fa-solid fa-user"></i><span>My Profile</span></a>`;
-                footerLinks = `<a href="/settings.html"><i class="fa-solid fa-cog"></i><span>Settings</span></a><a href="#" id="mobile-logout-btn"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>`;
-            } else {
-                userHeader = `<div class="mobile-nav-header"><div class="mobile-nav-avatar" style="background: var(--brand-1); display: grid; place-items:center;"><i class="fa-solid fa-question"></i></div><div class="mobile-nav-user-info"><span class="mobile-nav-username">Guest</span><span class="mobile-nav-email">Not logged in</span></div></div>`;
-                mainLinks = `<a href="/"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="/texturepacks.html"><i class="fa-solid fa-palette"></i><span>Texture Packs</span></a>`;
-                footerLinks = `<a href="/login.html"><i class="fa-solid fa-right-to-bracket"></i><span>Login</span></a><a href="/signup.html" class="primary-mobile-link"><i class="fa-solid fa-user-plus"></i><span>Sign Up</span></a>`;
+            } catch (error) { 
+                if (error.message === "Pack data could not be found.") {
+                    showError("Pack Not Found", "The pack doesn't exist.");
+                } else {
+                    showError("Could Not Load Pack", "There was an error loading the pack.");
+                }
             }
-            sidebar.innerHTML = `<button class="mobile-nav-close"><i class="fa-solid fa-xmark"></i></button>${userHeader}<nav class="mobile-nav-main-links">${mainLinks}</nav><nav class="mobile-nav-footer-links">${footerLinks}</nav>`;
-            navContainer.appendChild(hamburgerBtn); document.body.appendChild(sidebar); document.body.appendChild(backdrop);
-            const openMenu = () => { sidebar.classList.add('show'); backdrop.classList.add('show'); };
-            const closeMenu = () => { sidebar.classList.remove('show'); backdrop.classList.remove('show'); };
-            hamburgerBtn.addEventListener('click', openMenu); sidebar.querySelector('.mobile-nav-close').addEventListener('click', closeMenu); backdrop.addEventListener('click', closeMenu);
-            if (profile) sidebar.querySelector('#mobile-logout-btn')?.addEventListener('click', async (e) => { e.preventDefault(); await supabase.auth.signOut(); });
         }
 
         function timeAgo(date) {
@@ -2233,26 +2228,38 @@
                 resultsContainer.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--muted);">Searching...</div>';
 
                 try {
-                    const { data, error } = await supabase
-                        .from('packs')
-                        .select('id, name, icon_url')
-                        .ilike('name', `%${query}%`)
-                        .limit(8);
+                    let results = [];
+                    
+                    if (modalSearchType === 'packs') {
+                        const { data } = await supabase.from('packs').select('id, name, icon_url').ilike('name', `%${query}%`).limit(8);
+                        results = (data || []).map(item => ({
+                            html: `<a href="/packs.html?id=${item.id}" class="search-result-item">
+                                <img src="${item.icon_url || 'https://placehold.co/48x48/1c1c1c/e8eefc?text=ICON'}" style="width: 48px; height: 48px; border-radius: 8px; object-fit: cover;">
+                                <div style="font-weight: 600; color: var(--text);">${escapeHtml(item.name)}</div>
+                            </a>`
+                        }));
+                    } else if (modalSearchType === 'users') {
+                        const { data } = await supabase.from('profiles').select('username, avatar_url').ilike('username', `%${query}%`).limit(8);
+                        results = (data || []).map(item => ({
+                            html: `<a href="/profile.html?user=${item.username}" class="search-result-item">
+                                <img src="${item.avatar_url || 'https://placehold.co/48x48/1c1c1c/e8eefc?text=' + item.username.charAt(0).toUpperCase()}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
+                                <div style="font-weight: 600; color: var(--text);">${escapeHtml(item.username)}</div>
+                            </a>`
+                        }));
+                    } else if (modalSearchType === 'gamertags') {
+                        const { data } = await supabase.from('profiles').select('username, bedrock_gamertag, xuid').ilike('bedrock_gamertag', `%${query}%`).limit(8);
+                        results = (data || []).map(item => ({
+                            html: `<a href="/profile.html?user=${item.username}" class="search-result-item">
+                                <i class="fa-brands fa-xbox" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--brand-1);"></i>
+                                <div><div style="font-weight: 600; color: var(--text);">${escapeHtml(item.bedrock_gamertag)}</div><div style="font-size: 0.8rem; color: var(--muted);">${escapeHtml(item.username)}</div></div>
+                            </a>`
+                        }));
+                    }
 
-                    if (error) throw error;
-
-                    if (data && data.length > 0) {
-                        resultsContainer.innerHTML = data.map(pack => {
-                            const iconUrl = pack.icon_url || 'https://placehold.co/80x80/1c1c1c/e8eefc?text=ICON';
-                            return `
-                                <a href="/packs.html?id=${pack.id}" class="search-result-item" style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; border-radius: 8px; transition: background 0.2s; margin-bottom: 0.5rem;">
-                                    <img src="${iconUrl}" alt="${escapeHtml(pack.name)}" style="width: 48px; height: 48px; border-radius: 8px; object-fit: cover;">
-                                    <div style="font-weight: 600; color: var(--text);">${escapeHtml(pack.name)}</div>
-                                </a>
-                            `;
-                        }).join('');
+                    if (results.length > 0) {
+                        resultsContainer.innerHTML = results.map(r => r.html).join('');
                     } else {
-                        resultsContainer.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 1rem;">No packs found.</p>';
+                        resultsContainer.innerHTML = `<p style="text-align: center; color: var(--muted); padding: 1rem;">No ${modalSearchType} found.</p>`;
                     }
                 } catch (err) {
                     resultsContainer.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 1rem;">Search error.</p>';
