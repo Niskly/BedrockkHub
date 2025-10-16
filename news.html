@@ -1664,7 +1664,16 @@
             if (data.length === 0) {
                 list.innerHTML = `<div class="notification-list-empty"><div class="empty-icon"><i class="fa-solid fa-bell-slash"></i></div><p>All caught up!</p></div>`;
             } else {
-                list.innerHTML = data.map(n => `<div class="notification-item ${n.is_read ? 'read' : ''}" id="notification-${n.id}"><a href="${n.content.link}"><i class="${{ 'new_news': 'fa-solid fa-newspaper' }[n.type] || 'fa-solid fa-bell'} notification-icon"></i><div class="notification-content"><p>${escapeHtml(n.content.text)}</p><span class="time">${timeAgo(n.created_at)}</span></div></a><button class="dismiss-notification-btn" data-id="${n.id}" title="Dismiss">&times;</button></div>`).join('');
+                list.innerHTML = data.map(n => {
+                    const iconMap = { 'new_news': 'fa-solid fa-newspaper', 'new_pack': 'fa-solid fa-box' };
+                    let iconHtml = '';
+                    if (n.type === 'new_pack' && n.content.pack_icon) {
+                        iconHtml = `<img src="${n.content.pack_icon}" class="notification-icon" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;" alt="Pack icon">`;
+                    } else {
+                        iconHtml = `<i class="${iconMap[n.type] || 'fa-solid fa-bell'} notification-icon"></i>`;
+                    }
+                    return `<div class="notification-item ${n.is_read ? 'read' : ''}" id="notification-${n.id}"><a href="${n.content.link}">${iconHtml}<div class="notification-content"><p>${escapeHtml(n.content.text)}</p><span class="time">${timeAgo(n.created_at)}</span></div></a><button class="dismiss-notification-btn" data-id="${n.id}" title="Dismiss">&times;</button></div>`;
+                }).join('');
             }
             document.querySelectorAll('.notification-badge').forEach(badge => {
                 if (unreadCount > 0) {
