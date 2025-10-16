@@ -44,7 +44,7 @@ function setupMobileNav(profile, user) {
     const currentPath = window.location.pathname.replace('/index.html', '/');
 
     const isHome = ['/', '/index.html'].includes(currentPath);
-    const isTexturePacks = ['/texturepacks.html', '/texturepacks'].includes(currentPath);
+    const isTexturePacks = ['/texturepacks.html', '/texturepacks', '/packs.html', '/packs'].includes(currentPath);
     const isNews = ['/news.html', '/news'].includes(currentPath);
     const isProfile = profile && ['/profile.html', '/profile'].includes(currentPath) && new URLSearchParams(window.location.search).get('user') === profile.username;
 
@@ -153,7 +153,7 @@ function renderDesktopNav(isLoggedIn, profile = null, user = null) {
     const currentPath = window.location.pathname.replace('/index.html', '/');
     const links = [
         { href: '/', icon: 'fa-house', text: 'Home', paths: ['/', '/index.html'] },
-        { href: '/texturepacks.html', icon: 'fa-palette', text: 'Texture Packs', paths: ['/texturepacks.html', '/texturepacks'] },
+        { href: '/texturepacks.html', icon: 'fa-palette', text: 'Texture Packs', paths: ['/texturepacks.html', '/texturepacks', '/packs.html', '/packs'] },
         { href: '/news.html', icon: 'fa-newspaper', text: 'News', paths: ['/news.html', '/news'] }
     ];
 
