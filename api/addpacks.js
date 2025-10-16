@@ -83,11 +83,19 @@ export default async function handler(req, res) {
 
     // 5. Create notifications for all users about new packs
     try {
+        console.log('Starting notification creation for', insertedPacks.length, 'pack(s)');
+        
         // Get all user IDs except the uploader
-        const { data: allUsers } = await supabase
+        const { data: allUsers, error: usersError } = await supabase
             .from('profiles')
             .select('id')
             .neq('id', user.id);
+        
+        if (usersError) {
+            console.error('Error fetching users for notifications:', usersError);
+        } else {
+            console.log('Found', allUsers?.length || 0, 'users to notify');
+        }
         
         if (allUsers && allUsers.length > 0) {
             // Create notification for each pack
@@ -106,9 +114,20 @@ export default async function handler(req, res) {
                 }
             }
             
+            console.log('Creating', notifications.length, 'notifications');
+            
             // Insert all notifications at once
             if (notifications.length > 0) {
-                await supabase.from('notifications').insert(notifications);
+                const { data: insertedNotifs, error: notifInsertError } = await supabase
+                    .from('notifications')
+                    .insert(notifications)
+                    .select();
+                
+                if (notifInsertError) {
+                    console.error('Error inserting notifications:', notifInsertError);
+                } else {
+                    console.log('Successfully created', insertedNotifs?.length || 0, 'notifications');
+                }
             }
         }
     } catch (notifError) {
