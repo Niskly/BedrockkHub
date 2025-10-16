@@ -99,8 +99,20 @@
         .edit-pack-btn { background: var(--bg-2); border: 1px solid var(--border); color: white; }
         .edit-pack-btn:hover { background: var(--bg-1); border-color: var(--border-strong); }
         
-        .youtube-video-container { margin-top: 1.5rem; border-radius: 12px; aspect-ratio: 16/9; overflow: hidden; background: var(--bg-2); border: 1px solid var(--border); }
-        .youtube-video-container iframe { width: 100%; height: 100%; border: none; }
+        .youtube-video-container { margin: 2rem 0; border-radius: 12px; overflow: hidden; }
+        .youtube-video-container iframe { width: 100%; aspect-ratio: 16 / 9; border: none; }
+        
+        .gallery-section { margin: 2rem 0; }
+        .gallery-viewer { position: relative; width: 100%; aspect-ratio: 16 / 9; background: var(--bg-2); border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .gallery-viewer img { width: 100%; height: 100%; object-fit: contain; }
+        .gallery-nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0, 0, 0, 0.7); color: white; border: none; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: all 0.2s; z-index: 10; }
+        .gallery-nav-btn:hover { background: rgba(0, 0, 0, 0.9); transform: translateY(-50%) scale(1.1); }
+        .gallery-prev { left: 1rem; }
+        .gallery-next { right: 1rem; }
+        .gallery-thumbnails { display: flex; gap: 0.75rem; margin-top: 1rem; overflow-x: auto; padding: 0.5rem 0; }
+        .gallery-thumb { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; flex-shrink: 0; }
+        .gallery-thumb:hover { border-color: var(--muted); }
+        .gallery-thumb.active { border-color: var(--brand-1); }
         
         .description-section, .tags-section { margin-top: 2.5rem; }
         .section-title { font-size: 1rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
@@ -646,6 +658,15 @@
                         <input type="url" id="edit-youtube-url" class="form-input" placeholder="e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ">
                     </div>
                     <div class="form-group">
+                        <label class="form-label">Gallery Images</label>
+                        <div id="gallery-container" style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.5rem;">
+                            <button type="button" id="add-gallery-image-btn" style="width: 80px; height: 80px; border: 2px dashed var(--border); border-radius: 10px; background: var(--bg-2); color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 2rem; transition: all 0.2s;">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                        <input type="file" id="gallery-image-input" accept="image/*" style="display: none;" multiple>
+                    </div>
+                    <div class="form-group">
                         <label class="form-label">Primary Color</label>
                         <div class="swatches" id="edit-pack-colors"></div>
                     </div>
@@ -883,6 +904,20 @@
             tagsHtml += (pack.tags || '').split(',').filter(t => t.trim() !== '' && t.trim() !== 'user-upload').map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
             const videoId = getYouTubeVideoId(pack.youtube_url);
             const videoHtml = videoId ? `<div class="youtube-video-container"><iframe src="https://www.youtube.com/embed/${videoId}" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>` : '';
+            
+            // Gallery images
+            const galleryHtml = pack.gallery && Array.isArray(pack.gallery) && pack.gallery.length > 0 ? `
+                <div class="gallery-section">
+                    <div class="gallery-viewer">
+                        <button class="gallery-nav-btn gallery-prev" onclick="changeGalleryImage(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                        <img id="gallery-main-image" src="${pack.gallery[0]}" alt="Gallery image">
+                        <button class="gallery-nav-btn gallery-next" onclick="changeGalleryImage(1)"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                    <div class="gallery-thumbnails" id="gallery-thumbnails">
+                        ${pack.gallery.map((img, i) => `<img src="${img}" class="gallery-thumb ${i === 0 ? 'active' : ''}" onclick="setGalleryImage(${i})" alt="Thumbnail ${i + 1}">`).join('')}
+                    </div>
+                </div>
+            ` : '';
 
             pageContainer.innerHTML = `
                 <div class="pack-layout">
@@ -902,6 +937,7 @@
                             <div class="pack-header-actions" id="header-action-container"></div>
                         </div>
                         ${videoHtml}
+                        ${galleryHtml}
                         <div class="description-section"><h3 class="section-title">Description</h3><div class="pack-description">${pack.description ? escapeHtml(pack.description).replace(/\n/g, '<br>') : '<p>This pack has no description.</p>'}</div></div>
                         <div class="tags-section"><h3 class="section-title">Tags</h3><div class="tags-container">${tagsHtml || '<p class="tiny">No tags for this pack.</p>'}</div></div>
                     </div>
@@ -1731,12 +1767,84 @@
             const currentTags = new Set(currentPackData.tags ? currentPackData.tags.split(',') : []);
             tagsContainer.innerHTML = ALL_TAGS.map(t => `<div class="tag-checkbox ${currentTags.has(t) ? 'selected' : ''}" data-tag="${t}">${t}</div>`).join('');
             tagsContainer.querySelectorAll('.tag-checkbox').forEach(tc => tc.onclick = () => tc.classList.toggle('selected'));
+            
+            // Load existing gallery images
+            galleryImages = currentPackData.gallery ? (Array.isArray(currentPackData.gallery) ? currentPackData.gallery : []) : [];
+            renderGalleryImages();
+            
             modal.classList.add('show');
         }
         window.closeEditPackModal = function() { document.getElementById('edit-pack-modal').classList.remove('show'); }
+        
+        // Gallery image handling
+        let galleryImages = [];
+        
+        document.getElementById('add-gallery-image-btn')?.addEventListener('click', () => {
+            document.getElementById('gallery-image-input').click();
+        });
+        
+        document.getElementById('gallery-image-input')?.addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+            
+            const addBtn = document.getElementById('add-gallery-image-btn');
+            addBtn.innerHTML = '<div class="spinner" style="width: 24px; height: 24px; border-width: 3px;"></div>';
+            
+            for (const file of files) {
+                try {
+                    const fileName = `gallery_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${file.name.split('.').pop()}`;
+                    const { data, error } = await supabase.storage.from('packs').upload(fileName, file);
+                    if (error) throw error;
+                    
+                    const { data: { publicUrl } } = supabase.storage.from('packs').getPublicUrl(fileName);
+                    galleryImages.push(publicUrl);
+                    renderGalleryImages();
+                } catch (err) {
+                    showToast('Failed to upload image: ' + err.message, 'error');
+                }
+            }
+            
+            addBtn.innerHTML = '<i class="fa-solid fa-plus"></i>';
+            e.target.value = '';
+        });
+        
+        function renderGalleryImages() {
+            const container = document.getElementById('gallery-container');
+            const addBtn = document.getElementById('add-gallery-image-btn');
+            
+            container.innerHTML = '';
+            
+            galleryImages.forEach((url, index) => {
+                const imgWrapper = document.createElement('div');
+                imgWrapper.style.cssText = 'position: relative; width: 80px; height: 80px; border-radius: 10px; overflow: hidden; border: 2px solid var(--border);';
+                imgWrapper.innerHTML = `
+                    <img src="${url}" style="width: 100%; height: 100%; object-fit: cover;">
+                    <button type="button" onclick="removeGalleryImage(${index})" style="position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; border-radius: 50%; background: rgba(0,0,0,0.7); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.75rem;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                `;
+                container.appendChild(imgWrapper);
+            });
+            
+            container.appendChild(addBtn);
+        }
+        
+        window.removeGalleryImage = function(index) {
+            galleryImages.splice(index, 1);
+            renderGalleryImages();
+        };
+        
         document.getElementById('edit-pack-form')?.addEventListener('submit', async (e) => {
             e.preventDefault(); const packId = document.getElementById('edit-pack-id').value;
-            const updates = { name: document.getElementById('edit-pack-name').value.trim(), description: document.getElementById('edit-pack-description').value.trim(), youtube_url: document.getElementById('edit-youtube-url').value.trim() || null, color: document.querySelector('#edit-pack-colors .swatch.active')?.dataset.color || 'none', resolution: document.querySelector('#edit-pack-resolutions .tag-checkbox.selected')?.dataset.res || null, tags: Array.from(document.querySelectorAll('#edit-pack-tags .tag-checkbox.selected')).map(el => el.dataset.tag).join(',') };
+            const updates = { 
+                name: document.getElementById('edit-pack-name').value.trim(), 
+                description: document.getElementById('edit-pack-description').value.trim(), 
+                youtube_url: document.getElementById('edit-youtube-url').value.trim() || null, 
+                color: document.querySelector('#edit-pack-colors .swatch.active')?.dataset.color || 'none', 
+                resolution: document.querySelector('#edit-pack-resolutions .tag-checkbox.selected')?.dataset.res || null, 
+                tags: Array.from(document.querySelectorAll('#edit-pack-tags .tag-checkbox.selected')).map(el => el.dataset.tag).join(','),
+                gallery: galleryImages.length > 0 ? galleryImages : null
+            };
             try { const { error } = await supabase.from('packs').update(updates).eq('id', packId); if (error) throw error; showToast('Pack updated successfully!', 'success'); closeEditPackModal(); await loadPack(); } catch (error) { showToast('Failed to update pack: ' + error.message, 'error'); }
         });
         
@@ -1954,6 +2062,30 @@
                 createNotificationSubscription();
             }
         });
+        
+        // Gallery navigation
+        let currentGalleryIndex = 0;
+        let galleryImagesArray = [];
+        
+        window.setGalleryImage = function(index) {
+            if (!currentPackData || !currentPackData.gallery) return;
+            galleryImagesArray = currentPackData.gallery;
+            currentGalleryIndex = index;
+            
+            const mainImage = document.getElementById('gallery-main-image');
+            if (mainImage) mainImage.src = galleryImagesArray[currentGalleryIndex];
+            
+            document.querySelectorAll('.gallery-thumb').forEach((thumb, i) => {
+                thumb.classList.toggle('active', i === currentGalleryIndex);
+            });
+        };
+        
+        window.changeGalleryImage = function(direction) {
+            if (!currentPackData || !currentPackData.gallery) return;
+            galleryImagesArray = currentPackData.gallery;
+            currentGalleryIndex = (currentGalleryIndex + direction + galleryImagesArray.length) % galleryImagesArray.length;
+            setGalleryImage(currentGalleryIndex);
+        };
         
         // Initialize pack loading immediately (don't wait for auth)
         (async () => {
