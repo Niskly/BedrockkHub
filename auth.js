@@ -43,11 +43,10 @@ function setupMobileNav(profile, user) {
     let footerLinks = '';
     const currentPath = window.location.pathname.replace('/index.html', '/');
 
-
-    const isHome = currentPath === '/';
-    const isTexturePacks = currentPath === '/texturepacks';
-    const isNews = currentPath === '/news';
-    const isProfile = profile && currentPath === `/profile` && new URLSearchParams(window.location.search).get('user') === profile.username;
+    const isHome = ['/', '/index.html'].includes(currentPath);
+    const isTexturePacks = ['/texturepacks.html', '/texturepacks'].includes(currentPath);
+    const isNews = ['/news.html', '/news'].includes(currentPath);
+    const isProfile = profile && ['/profile.html', '/profile'].includes(currentPath) && new URLSearchParams(window.location.search).get('user') === profile.username;
 
     const toolsDropdownHTML = `
         <div class="mobile-nav-collapsible">
@@ -153,9 +152,9 @@ function renderDesktopNav(isLoggedIn, profile = null, user = null) {
 
     const currentPath = window.location.pathname.replace('/index.html', '/');
     const links = [
-        { href: '/', icon: 'fa-house', text: 'Home' },
-        { href: '/texturepacks.html', icon: 'fa-palette', text: 'Texture Packs' },
-        { href: '/news.html', icon: 'fa-newspaper', text: 'News' }
+        { href: '/', icon: 'fa-house', text: 'Home', paths: ['/', '/index.html'] },
+        { href: '/texturepacks.html', icon: 'fa-palette', text: 'Texture Packs', paths: ['/texturepacks.html', '/texturepacks'] },
+        { href: '/news.html', icon: 'fa-newspaper', text: 'News', paths: ['/news.html', '/news'] }
     ];
 
     const toolsDropdown = `
@@ -169,7 +168,7 @@ function renderDesktopNav(isLoggedIn, profile = null, user = null) {
         </div>`;
 
     desktopNavLinks.innerHTML = links.map(l => `
-        <a href="${l.href}" class="nav-link ${currentPath === l.href ? 'active' : ''}">
+        <a href="${l.href}" class="nav-link ${l.paths.includes(currentPath) ? 'active' : ''}">
             <i class="fa-solid ${l.icon}"></i>${l.text}
         </a>`).join('') + toolsDropdown;
 
