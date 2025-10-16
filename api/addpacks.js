@@ -74,14 +74,49 @@ export default async function handler(req, res) {
     const { data: insertedPacks, error: dbError } = await supabase
       .from('packs')
       .insert(insertionRecords)
-      .select('id, name');
+      .select('id, name, icon_url');
 
     if (dbError) { 
         console.error('Supabase DB Insert Error:', dbError);
         throw dbError; 
     }
 
-    // 5. Send success response
+    // 5. Create notifications for all users about new packs
+    try {
+        // Get all user IDs except the uploader
+        const { data: allUsers } = await supabase
+            .from('profiles')
+            .select('id')
+            .neq('id', user.id);
+        
+        if (allUsers && allUsers.length > 0) {
+            // Create notification for each pack
+            const notifications = [];
+            for (const pack of insertedPacks) {
+                for (const targetUser of allUsers) {
+                    notifications.push({
+                        user_id: targetUser.id,
+                        type: 'new_pack',
+                        content: {
+                            text: `New pack uploaded: ${pack.name}`,
+                            link: `/packs.html?id=${pack.id}`,
+                            pack_icon: pack.icon_url
+                        }
+                    });
+                }
+            }
+            
+            // Insert all notifications at once
+            if (notifications.length > 0) {
+                await supabase.from('notifications').insert(notifications);
+            }
+        }
+    } catch (notifError) {
+        console.error('Error creating notifications:', notifError);
+        // Don't fail the request if notifications fail
+    }
+
+    // 6. Send success response
     res.status(200).json({ 
         message: `${insertedPacks.length} pack(s) added successfully!`, 
         packs: insertedPacks
