@@ -344,11 +344,55 @@
         .mobile-nav-controls { display: flex; align-items: center; gap: 0.5rem; }
         .mobile-nav-btn { background: none; border: none; color: var(--text); font-size: 1rem; cursor: pointer; z-index: 1001; padding: 0.5rem; }
         
-        .notification-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); z-index: 1000; display: none; align-items: flex-start; justify-content: center; padding-top: 80px; }
+        .notification-backdrop {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);
+            z-index: 100; align-items: center; justify-content: center; padding: 1rem;
+        }
         .notification-backdrop.show { display: flex; }
-        .notification-dropdown { background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; width: 90%; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); max-height: 80vh; display: flex; flex-direction: column; }
-        .notification-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .notification-header h3 { font-size: 1.1rem; font-weight: 700; }
+        .notification-dropdown {
+            width: 100%; max-width: 420px; background: var(--bg-1);
+            border: 1px solid var(--border); border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 101;
+            overflow: hidden; color: var(--text); animation: slideInFromTop 0.3s ease-out;
+        }
+        @keyframes slideInFromTop {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .notification-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); background: var(--bg-2);
+        }
+        .notification-header h3 { margin: 0; font-size: 1rem; }
+        #close-notifications-btn { font-size: 1.5rem; line-height: 1; background: none; border: none; color: var(--muted); cursor: pointer; }
+        .notification-list { max-height: 400px; overflow-y: auto; }
+        .notification-item {
+            padding: 1rem; display: flex; gap: 1rem; align-items: flex-start;
+            border-bottom: 1px solid var(--border); font-size: 0.9rem;
+            position: relative; transition: background-color 0.2s;
+        }
+        .notification-item a { text-decoration: none; color: inherit; display: contents; }
+        .notification-item:hover { background-color: var(--bg-2); }
+        .notification-item.read { opacity: 0.6; }
+        .notification-icon { font-size: 1.2rem; color: var(--muted); padding-top: 2px; flex-shrink: 0; }
+        .notification-content { flex-grow: 1; min-width: 0; }
+        .notification-content p { margin: 0 0 0.25rem 0; color: var(--text); }
+        .notification-content .time { font-size: 0.75rem; color: var(--muted); }
+        .dismiss-notification-btn {
+            position: absolute; top: 0.5rem; right: 0.5rem; background: var(--bg-2);
+            border: 1px solid var(--border); color: var(--muted); cursor: pointer;
+            font-size: 1.2rem; width: 24px; height: 24px; border-radius: 50%;
+            display: none; align-items: center; justify-content: center; line-height: 1;
+            transition: all 0.2s;
+        }
+        .dismiss-notification-btn:hover { background: var(--bg-1); color: var(--text); border-color: var(--border-strong); }
+        .notification-item:hover .dismiss-notification-btn { display: flex; }
+        .notification-list-empty { padding: 2rem; text-align: center; color: var(--muted); }
+        .notification-list-empty .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+        .notification-footer { padding: 0.75rem 1rem; border-top: 1px solid var(--border); background: var(--bg-2); display: flex; justify-content: space-between; align-items: center;}
+        .notification-footer-btn { font-size: 0.8rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 6px; background: none; border: none; cursor: pointer; color: var(--brand-1); transition: background-color 0.2s; }
+        .notification-footer-btn:hover { background-color: var(--bg-1); }
         .notification-list { flex: 1; overflow-y: auto; max-height: 400px; }
         .notification-item { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; gap: 1rem; align-items: flex-start; position: relative; transition: background 0.2s; }
         .notification-item:hover { background: var(--bg-2); }
@@ -488,9 +532,20 @@
             border: 1px solid var(--border);
             border-radius: 12px;
             transition: background 0.2s;
+            min-width: 0;
         }
         .suggestion-card:hover {
             background: var(--bg-1);
+        }
+        .suggestion-card > div {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+        }
+        .suggestion-card .search-result-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .suggestion-card .pack-icon {
             width: 50px;
@@ -517,9 +572,10 @@
         .search-result-item:hover { background: var(--bg-2); }
         .search-result-icon, .search-result-avatar { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
         .search-result-avatar.is-mc-skin { border-radius: 4px; image-rendering: pixelated; border: 1px solid var(--border); background: var(--bg-2); }
-        .search-result-info { flex: 1; min-width: 0; text-align: left; }
-        .search-result-name { font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .search-result-sub { font-size: 0.8rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .search-result-info { flex: 1; min-width: 0; text-align: left; overflow: hidden; }
+        .search-result-name { font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+        .search-result-sub { font-size: 0.8rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+        .search-result-avatar.is-mc-skin { border-radius: 4px; image-rendering: pixelated; border: 1px solid var(--border); background: var(--bg-2); }
         
         @media (max-width: 768px) { 
             .desktop-search-modal-content {
@@ -764,23 +820,16 @@
     </header>
     
     <!-- NOTIFICATION DROPDOWN -->
-    <div class="notification-backdrop notification-toggle-btn">
-        <div class="notification-dropdown" onclick="event.stopPropagation()">
+    <div id="notification-backdrop" class="notification-backdrop">
+        <div id="notification-panel" class="notification-dropdown" onclick="event.stopPropagation()">
             <div class="notification-header">
                 <h3>Notifications</h3>
-                <button class="notification-toggle-btn" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;padding:0.25rem;">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+                <button id="close-notifications-btn">&times;</button>
             </div>
-            <div class="notification-list" id="notification-list">
-                <div class="notification-list-empty">
-                    <div class="empty-icon"><i class="fa-solid fa-bell-slash"></i></div>
-                    <p>All caught up!</p>
-                </div>
-            </div>
+            <div id="notification-list" class="notification-list"></div>
             <div class="notification-footer">
-                <button class="notification-footer-btn" onclick="markAllNotificationsAsRead()">Mark all as read</button>
-                <button class="notification-footer-btn" onclick="clearAllNotifications()">Clear All</button>
+                <button id="mark-all-read-btn" class="notification-footer-btn">Mark all as read</button>
+                <button id="clear-all-btn" class="notification-footer-btn">Clear All</button>
             </div>
         </div>
     </div>
@@ -2108,12 +2157,35 @@
                 .subscribe();
         }
 
-        // Notification toggle
-        document.querySelectorAll('.notification-toggle-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelector('.notification-backdrop').classList.toggle('show');
+        // Notification setup
+        function setupNotificationListeners() {
+            const backdrop = document.getElementById('notification-backdrop');
+            document.addEventListener('click', async (e) => {
+                if (e.target.closest('.notification-toggle-btn')) backdrop.classList.add('show');
+                else if (e.target.id === 'close-notifications-btn' || e.target === backdrop) backdrop.classList.remove('show');
+                else if (e.target.id === 'mark-all-read-btn') {
+                    await supabase.from('notifications').update({ is_read: true }).eq('user_id', currentUserId).eq('is_read', false);
+                    fetchAndRenderNotifications();
+                } else if (e.target.id === 'clear-all-btn') {
+                    if (!confirm('Are you sure you want to clear all notifications?')) return;
+                    await supabase.from('notifications').delete().eq('user_id', currentUserId);
+                    fetchAndRenderNotifications();
+                } else if (e.target.closest('.dismiss-notification-btn')) {
+                    e.stopPropagation(); e.preventDefault();
+                    const notifId = e.target.closest('.dismiss-notification-btn').dataset.id;
+                    await supabase.from('notifications').delete().eq('id', notifId);
+                    fetchAndRenderNotifications();
+                }
+                else if (e.target.closest('.notification-item a')) {
+                    const notificationItem = e.target.closest('.notification-item');
+                    if(notificationItem && !notificationItem.classList.contains('read')) {
+                        await supabase.from('notifications').update({ is_read: true }).eq('id', notificationItem.id.split('-')[1]);
+                        fetchAndRenderNotifications();
+                    }
+                }
             });
-        });
+        }
+        setupNotificationListeners();
 
         // Dismiss individual notification
         document.addEventListener('click', async (e) => {
@@ -2259,16 +2331,19 @@
                             </a>`
                         }));
                     } else if (modalSearchType === 'gamertags') {
-                        const { data } = await supabase.from('profiles').select('username, bedrock_gamertag, xuid').ilike('bedrock_gamertag', `%${query}%`).limit(8);
-                        results = (data || []).map(item => ({
-                            html: `<a href="/profile.html?user=${item.username}" class="search-result-item">
-                                <i class="fa-brands fa-xbox" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--brand-1); flex-shrink: 0;"></i>
-                                <div class="search-result-info">
-                                    <div class="search-result-name">${escapeHtml(item.bedrock_gamertag)}</div>
-                                    <div class="search-result-sub">${escapeHtml(item.username)}</div>
-                                </div>
-                            </a>`
-                        }));
+                        const { data } = await supabase.from('profiles').select('username, bedrock_gamertag, xuid, avatar_url').ilike('bedrock_gamertag', `%${query}%`).limit(8);
+                        results = (data || []).map(item => {
+                            const skinHeadUrl = item.xuid ? `https://crafatar.com/avatars/${item.xuid}?size=48&overlay` : (item.avatar_url || 'https://placehold.co/48x48/1c1c1c/e8eefc?text=' + item.username.charAt(0).toUpperCase());
+                            return {
+                                html: `<a href="/profile.html?user=${item.username}" class="search-result-item">
+                                    <img src="${skinHeadUrl}" class="search-result-avatar is-mc-skin" style="width: 48px; height: 48px; border-radius: 4px; object-fit: cover; flex-shrink: 0; image-rendering: pixelated;">
+                                    <div class="search-result-info">
+                                        <div class="search-result-name">${escapeHtml(item.bedrock_gamertag)}</div>
+                                        <div class="search-result-sub"><i class="fa-solid fa-user" style="font-size: 0.7rem; margin-right: 0.25rem;"></i>${escapeHtml(item.username)}</div>
+                                    </div>
+                                </a>`
+                            };
+                        });
                     }
 
                     if (results.length > 0) {
