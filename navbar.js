@@ -63,12 +63,14 @@ function injectMobileSidebar() {
         <div class="mobile-nav-backdrop"></div>
         <div class="mobile-nav-sidebar">
             <button class="mobile-nav-close">&times;</button>
-            <div class="mobile-nav-header" id="mobile-nav-header-placeholder"></div>
+            <div class="mobile-nav-header" id="mobile-nav-header-content">
+                <!-- Auth.js will populate this -->
+            </div>
             <div class="mobile-nav-main-links">
-                <a href="/"><i class="fa-solid fa-house"></i> Home</a>
-                <a href="/packs.html"><i class="fa-solid fa-box"></i> Packs</a>
-                <a href="/texturepacks.html"><i class="fa-solid fa-palette"></i> Texture Packs</a>
-                <a href="/news.html"><i class="fa-solid fa-newspaper"></i> News</a>
+                <a href="/" class="mobile-nav-link"><i class="fa-solid fa-house"></i> Home</a>
+                <a href="/packs.html" class="mobile-nav-link"><i class="fa-solid fa-box"></i> Packs</a>
+                <a href="/texturepacks.html" class="mobile-nav-link"><i class="fa-solid fa-palette"></i> Texture Packs</a>
+                <a href="/news.html" class="mobile-nav-link"><i class="fa-solid fa-newspaper"></i> News</a>
                 <div class="mobile-nav-collapsible">
                     <a href="#" class="collapsible-trigger">
                         <span><i class="fa-solid fa-wrench"></i> Tools</span>
@@ -80,7 +82,9 @@ function injectMobileSidebar() {
                     </div>
                 </div>
             </div>
-            <div class="mobile-nav-footer-links" id="mobile-nav-footer-placeholder"></div>
+            <div class="mobile-nav-footer-links" id="mobile-nav-footer-content">
+                <!-- Auth.js will populate login/signup buttons here -->
+            </div>
         </div>
     `;
     
