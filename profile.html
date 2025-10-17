@@ -180,18 +180,7 @@
     </style>
 </head>
 <body>
-    <header>
-        <div class="nav">
-            <a class="brand" href="/">
-                <div class="brand-badge"><img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom"></div>
-                <div>
-                    <div class="brand-title">MCHUB</div>
-                    <div class="tiny">Minecraft Bedrock • community</div>
-                </div>
-            </a>
-            <div id="nav-actions" class="nav-actions"></div>
-        </div>
-    </header>
+    <header></header>
 
     <main class="container" id="profile-container">
         <div class="loading-container"><div class="spinner"></div><p>Loading Profile...</p></div>
@@ -241,6 +230,10 @@
     
     <script type="module" src="/theme.js"></script>
     <script type="module" src="/auth.js"></script>
+    <script type="module">
+        import { initNavbar } from '/navbar.js';
+        initNavbar();
+    </script>
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
