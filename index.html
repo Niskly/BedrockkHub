@@ -1297,13 +1297,19 @@
                             </a>`
                         }));
                     } else if (modalSearchType === 'gamertags') {
-                        const { data } = await supabase.from('profiles').select('username, bedrock_gamertag, xuid').ilike('bedrock_gamertag', `%${query}%`).limit(8);
-                        results = (data || []).map(item => ({
-                            html: `<a href="/profile.html?user=${item.username}" class="search-result-item">
-                                <i class="fa-brands fa-xbox" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--brand-1);"></i>
-                                <div><div style="font-weight: 600; color: var(--text);">${escapeHtml(item.bedrock_gamertag)}</div><div style="font-size: 0.8rem; color: var(--muted);">${escapeHtml(item.username)}</div></div>
-                            </a>`
-                        }));
+                        const { data } = await supabase.from('profiles').select('username, bedrock_gamertag, xuid, avatar_url').ilike('bedrock_gamertag', `%${query}%`).limit(8);
+                        results = (data || []).map(item => {
+                            const skinHeadUrl = item.xuid ? `https://crafatar.com/avatars/${item.xuid}?size=48&overlay` : (item.avatar_url || 'https://placehold.co/48x48/1c1c1c/e8eefc?text=' + item.username.charAt(0).toUpperCase());
+                            return {
+                                html: `<a href="/profile.html?user=${item.username}" class="search-result-item">
+                                    <img src="${skinHeadUrl}" class="search-result-avatar is-mc-skin" style="width: 48px; height: 48px; border-radius: 4px; object-fit: cover; flex-shrink: 0; image-rendering: pixelated;">
+                                    <div class="search-result-info">
+                                        <div class="search-result-name">${escapeHtml(item.bedrock_gamertag)}</div>
+                                        <div class="search-result-sub"><i class="fa-solid fa-user" style="font-size: 0.7rem; margin-right: 0.25rem;"></i>${escapeHtml(item.username)}</div>
+                                    </div>
+                                </a>`
+                            };
+                        });
                     }
 
                     if (results.length > 0) {
