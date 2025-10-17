@@ -470,23 +470,59 @@
             border: 1px solid var(--border); border-radius: 16px; padding: 1rem;
         }
 
-        .body-parts-table {
-            width: 100%;
+        .steve-models-container {
+            display: flex;
+            gap: 1rem;
+            justify-content: space-around;
+            margin-bottom: 1rem;
+        }
+        .steve-model-wrapper {
             text-align: center;
-            border-collapse: collapse;
         }
-        .body-parts-table th, .body-parts-table td {
-            padding: 0.5rem;
-        }
-        .body-parts-table th {
+        .model-label {
             font-size: 0.8rem;
-            text-transform: uppercase;
+            font-weight: 600;
             color: var(--muted);
+            margin-bottom: 0.5rem;
         }
-        .body-parts-table input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
+        .steve-model {
+            position: relative;
+            display: inline-block;
+            width: 64px;
+            height: 88px;
+            background: var(--bg-2);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .steve-model canvas {
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        .body-part-overlay {
+            transition: all 0.2s ease;
+        }
+        .body-part-overlay:hover {
+            background: rgba(222, 33, 42, 0.2);
+            border-color: var(--brand-1) !important;
+        }
+        .body-part-overlay.hidden {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--muted) !important;
+            opacity: 0.5;
+        }
+        .body-part-overlay.hidden::after {
+            content: '✕';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: bold;
         }
         
         .model-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 1rem; }
@@ -544,6 +580,25 @@
         }
 
         /* Search Modal Styles */
+        .desktop-search-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: none;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 10vh;
+            animation: fadeIn 0.3s ease;
+        }
+        .desktop-search-modal-backdrop.show {
+            display: flex;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
         @keyframes slideDown {
             from { transform: translateY(-20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
@@ -724,7 +779,7 @@
     </div>
 
     <!-- DESKTOP SEARCH MODAL -->
-    <div id="desktop-search-modal" class="desktop-search-modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); z-index: 1000; align-items: flex-start; justify-content: center; padding-top: 10vh;">
+    <div id="desktop-search-modal" class="desktop-search-modal-backdrop">
         <div class="desktop-search-modal-content" style="background: var(--bg-1); border-radius: 1rem; border: 1px solid var(--border); width: 100%; max-width: 700px; padding: 1rem; padding-top: 3rem; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: slideDown 0.4s ease;">
             <button id="close-search-modal-btn" class="close-search-modal-btn" style="position: absolute; top: 0.75rem; right: 0.75rem; background: var(--bg-2); border: 1px solid var(--border); color: var(--muted); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: grid; place-items: center; transition: all 0.2s;">
                 <i class="fa-solid fa-xmark"></i>
@@ -810,39 +865,32 @@
             </div>
             <div class="panel">
                  <h3 class="panel-title" style="margin-bottom: 1rem;">Body Parts Visibility</h3>
-                 <table id="layers-table" class="body-parts-table">
-                       <thead>
-                           <tr>
-                               <th>Layer</th>
-                               <th>Head</th>
-                               <th>Body</th>
-                               <th>R. Arm</th>
-                               <th>L. Arm</th>
-                               <th>R. Leg</th>
-                               <th>L. Leg</th>
-                           </tr>
-                       </thead>
-                       <tbody>
-                           <tr>
-                               <th>Inner</th>
-                               <td><input type="checkbox" data-layer="innerLayer" data-part="head" checked></td>
-                               <td><input type="checkbox" data-layer="innerLayer" data-part="body" checked></td>
-                               <td><input type="checkbox" data-layer="innerLayer" data-part="rightArm" checked></td>
-                               <td><input type="checkbox" data-layer="innerLayer" data-part="leftArm" checked></td>
-                               <td><input type="checkbox" data-layer="innerLayer" data-part="rightLeg" checked></td>
-                               <td><input type="checkbox" data-layer="innerLayer" data-part="leftLeg" checked></td>
-                           </tr>
-                           <tr>
-                               <th>Outer</th>
-                               <td><input type="checkbox" data-layer="outerLayer" data-part="head" checked></td>
-                               <td><input type="checkbox" data-layer="outerLayer" data-part="body" checked></td>
-                               <td><input type="checkbox" data-layer="outerLayer" data-part="rightArm" checked></td>
-                               <td><input type="checkbox" data-layer="outerLayer" data-part="leftArm" checked></td>
-                               <td><input type="checkbox" data-layer="outerLayer" data-part="rightLeg" checked></td>
-                               <td><input type="checkbox" data-layer="outerLayer" data-part="leftLeg" checked></td>
-                           </tr>
-                       </tbody>
-                 </table>
+                 <div class="steve-models-container">
+                     <div class="steve-model-wrapper">
+                         <h4 class="model-label">Inner Layer</h4>
+                         <div class="steve-model" id="inner-steve-model">
+                             <canvas id="inner-steve-canvas" width="64" height="64"></canvas>
+                             <div class="body-part-overlay" data-layer="innerLayer" data-part="head" style="position: absolute; top: 8px; left: 20px; width: 24px; height: 24px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
+                             <div class="body-part-overlay" data-layer="innerLayer" data-part="body" style="position: absolute; top: 32px; left: 20px; width: 24px; height: 32px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
+                             <div class="body-part-overlay" data-layer="innerLayer" data-part="rightArm" style="position: absolute; top: 32px; left: 44px; width: 12px; height: 32px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
+                             <div class="body-part-overlay" data-layer="innerLayer" data-part="leftArm" style="position: absolute; top: 32px; left: 8px; width: 12px; height: 32px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
+                             <div class="body-part-overlay" data-layer="innerLayer" data-part="rightLeg" style="position: absolute; top: 64px; left: 32px; width: 12px; height: 24px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
+                             <div class="body-part-overlay" data-layer="innerLayer" data-part="leftLeg" style="position: absolute; top: 64px; left: 20px; width: 12px; height: 24px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
+                         </div>
+                     </div>
+                     <div class="steve-model-wrapper">
+                         <h4 class="model-label">Outer Layer</h4>
+                         <div class="steve-model" id="outer-steve-model">
+                             <canvas id="outer-steve-canvas" width="64" height="64"></canvas>
+                             <div class="body-part-overlay" data-layer="outerLayer" data-part="head" style="position: absolute; top: 8px; left: 20px; width: 24px; height: 24px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
+                             <div class="body-part-overlay" data-layer="outerLayer" data-part="body" style="position: absolute; top: 32px; left: 20px; width: 24px; height: 32px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
+                             <div class="body-part-overlay" data-layer="outerLayer" data-part="rightArm" style="position: absolute; top: 32px; left: 44px; width: 12px; height: 32px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
+                             <div class="body-part-overlay" data-layer="outerLayer" data-part="leftArm" style="position: absolute; top: 32px; left: 8px; width: 12px; height: 32px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
+                             <div class="body-part-overlay" data-layer="outerLayer" data-part="rightLeg" style="position: absolute; top: 64px; left: 32px; width: 12px; height: 24px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
+                             <div class="body-part-overlay" data-layer="outerLayer" data-part="leftLeg" style="position: absolute; top: 64px; left: 20px; width: 12px; height: 24px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
+                         </div>
+                     </div>
+                 </div>
                  <div class="model-toggle">
                     <button class="part-btn active" id="steve-model-btn" data-model="default">Steve</button>
                     <button class="part-btn" id="alex-model-btn" data-model="slim">Alex</button>
@@ -916,6 +964,7 @@
         let historyIndex = -1;
         let recentColors = JSON.parse(localStorage.getItem('recentColors')) || [];
         let isDrawingOn3D = false;
+        let refreshTimeout = null;
         let lastTexturePos = null;
         
         function showToast(message, type = 'success') {
@@ -966,6 +1015,16 @@ function refreshSkinTextures() {
             });
         });
     });
+}
+
+function throttledRefreshSkinTextures() {
+    if (refreshTimeout) {
+        clearTimeout(refreshTimeout);
+    }
+    refreshTimeout = setTimeout(() => {
+        refreshSkinTextures();
+        refreshTimeout = null;
+    }, 16); // ~60fps throttling
 }
 
 
@@ -1108,7 +1167,7 @@ function refreshSkinTextures() {
             } else if (currentTool === 'eraser') {
                 masterCtx.clearRect(pos.x, pos.y, 1, 1);
             }
-            refreshSkinTextures();
+            // Don't refresh textures on every pixel - this will be done when drawing stops
         }
         
         function drawTextureLineOnMaster(x0, y0, x1, y1) {
@@ -1116,7 +1175,13 @@ function refreshSkinTextures() {
             const dy = -Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
             let err = dx + dy;
             while (true) {
-                drawOnMasterCanvas({ x: x0, y: y0 });
+                // Draw pixel without refreshing textures
+                if (currentTool === 'pencil') {
+                    masterCtx.fillStyle = colorPicker.value;
+                    masterCtx.fillRect(x0, y0, 1, 1);
+                } else if (currentTool === 'eraser') {
+                    masterCtx.clearRect(x0, y0, 1, 1);
+                }
                 if (x0 === x1 && y0 === y1) break;
                 let e2 = 2 * err;
                 if (e2 >= dy) { err += dy; x0 += sx; }
@@ -1182,6 +1247,8 @@ function refreshSkinTextures() {
                 } else {
                     drawOnMasterCanvas(pos);
                 }
+                // Use throttled refresh for continuous drawing
+                throttledRefreshSkinTextures();
             } else { 
                 drawOnMasterCanvas(pos);
             }
@@ -1245,6 +1312,8 @@ function refreshSkinTextures() {
 
         const stopDrawing = () => {
             if (isDrawingOn3D && (currentTool === 'pencil' || currentTool === 'eraser' || currentTool === 'bucket')) {
+                // Refresh textures only when drawing stops
+                refreshSkinTextures();
                 saveState();
             }
             isDrawingOn3D = false;
@@ -1463,7 +1532,7 @@ function syncVisibility() {
 
         function openSearchModal() {
             if (searchModal) {
-                searchModal.style.display = 'flex';
+                searchModal.classList.add('show');
                 document.body.style.overflow = 'hidden';
                 const modalSearchInput = document.getElementById('modal-universal-search');
                 if (modalSearchInput) {
@@ -1474,7 +1543,7 @@ function syncVisibility() {
 
         function closeSearchModal() {
             if (searchModal) {
-                searchModal.style.display = 'none';
+                searchModal.classList.remove('show');
                 document.body.style.overflow = '';
                 const resultsContainer = document.getElementById('modal-search-results');
                 if (resultsContainer) {
@@ -1490,7 +1559,7 @@ function syncVisibility() {
         if (mobileSearchToggle) mobileSearchToggle.addEventListener('click', openSearchModal);
         if (closeModalBtn) closeModalBtn.addEventListener('click', closeSearchModal);
         if (searchModal) searchModal.addEventListener('click', (e) => { if (e.target === searchModal) closeSearchModal(); });
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && searchModal.style.display === 'flex') closeSearchModal(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && searchModal.classList.contains('show')) closeSearchModal(); });
 
         // Search type dropdown
         const modalDropdown = document.getElementById('modal-search-type-dropdown');
