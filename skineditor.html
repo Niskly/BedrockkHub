@@ -27,8 +27,29 @@
             --border-strong: rgba(255, 255, 255, .2);
             --success: #22c55e; --danger: #ef4444;
         }
-        * { box-sizing: border-box; }
-        body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 14px/1.6 Inter, sans-serif; overflow: hidden; }
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 14px/1.6 Inter, sans-serif; }
+        
+        /* Hide overflow only on mobile for editor */
+        @media (max-width: 992px) {
+            body { overflow: hidden; }
+        }
+        
+        /* Allow text selection for specific elements */
+        input, textarea, .selectable-text {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
         body::before { 
             content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
             background-image: var(--bg-image, url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg')); 
@@ -88,7 +109,8 @@
         /* Mobile Nav Controls */
         .nav-actions { display: none; }
         .mobile-nav-controls { display: flex; align-items: center; gap: 0.5rem; }
-        .mobile-nav-btn { background: none; border: none; color: var(--text); font-size: 1rem; cursor: pointer; z-index: 1001; padding: 0.5rem; }
+        .mobile-nav-btn { background: none; border: none; color: var(--text); font-size: 1rem; cursor: pointer; z-index: 1001; padding: 0.5rem; display: flex; align-items: center; justify-content: center; }
+        .mobile-nav-btn i { font-size: 1rem; }
         .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
         .mobile-nav-backdrop.show { display: block; opacity: 1; }
         .mobile-nav-sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; background: var(--bg-1); z-index: 999; transform: translateX(-100%); transition: transform 0.3s ease; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
@@ -668,6 +690,142 @@
             background: var(--muted);
         }
 
+        /* ====== FOOTER ====== */
+        footer {
+            margin-top: 4rem;
+            padding: 3rem 2rem 2rem;
+            background: var(--bg-1);
+            border-top: 1px solid var(--border);
+        }
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr 1fr;
+            gap: 3rem;
+            padding-bottom: 2rem;
+        }
+        .footer-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .footer-brand .brand {
+            display: flex;
+            margin-bottom: 0.5rem;
+        }
+        .footer-brand p {
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 0.9rem;
+        }
+        .footer-socials { 
+            display: flex; 
+            gap: 0.75rem; 
+            margin-top: 1rem; 
+        }
+        .footer-socials a {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--bg-2);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .footer-socials a:hover { 
+            color: var(--text); 
+            border-color: var(--brand-1);
+            background: rgba(222, 33, 42, 0.1);
+        }
+        .footer-column h4 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 1.25rem;
+            color: var(--text);
+        }
+        .footer-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .footer-links a {
+            color: var(--muted);
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover {
+            color: var(--text);
+        }
+        .footer-discord {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.65rem 1.25rem;
+            background: var(--brand-1);
+            color: white;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-brand);
+            width: fit-content;
+        }
+        .footer-discord:hover {
+            background: var(--brand-2);
+            transform: translateY(-2px);
+        }
+        .footer-discord i {
+            font-size: 1.1rem;
+        }
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+        .footer-bottom-links { 
+            display: flex; 
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .footer-bottom-links a {
+            color: var(--muted);
+            transition: color 0.2s;
+            font-size: 0.85rem;
+        }
+        .footer-bottom-links a:hover {
+            color: var(--text);
+        }
+        @media(max-width: 1024px) {
+            .footer-container {
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem;
+            }
+        }
+        @media(max-width: 768px) {
+            .footer-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            .footer-bottom { 
+                flex-direction: column; 
+            }
+        }
 
         @media (max-width: 1200px) {
             .editor-container {
@@ -776,8 +934,7 @@
             <!-- MOBILE CONTROLS -->
             <div class="mobile-nav-controls">
                 <button id="mobile-search-toggle" class="mobile-nav-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
-                <button class="mobile-nav-btn notification-toggle-btn"><i class="fa-solid fa-bell"></i></button>
-                <div id="mobile-auth-actions"></div> <!-- Placeholder for mobile notification icon -->
+                <div id="mobile-auth-actions"></div>
                 <button class="mobile-nav-btn mobile-nav-toggle"><i class="fa-solid fa-bars"></i></button>
             </div>
         </div>
@@ -913,10 +1070,9 @@
                  
                  <!-- Layers Table for Visibility Controls -->
                  <div id="layers-table" style="margin-bottom: 1rem;">
-                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                          <div>
                              <h4 style="color: var(--muted); font-size: 0.9rem; margin-bottom: 0.5rem;">Inner Layer</h4>
-                             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
                                  <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; background: var(--bg-2);">
                                      <input type="checkbox" data-layer="innerLayer" data-part="head" checked>
                                      <span>Head</span>
@@ -927,25 +1083,25 @@
                                  </label>
                                  <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; background: var(--bg-2);">
                                      <input type="checkbox" data-layer="innerLayer" data-part="rightArm" checked>
-                                     <span>Right Arm</span>
+                                     <span>R.Arm</span>
                                  </label>
                                  <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; background: var(--bg-2);">
                                      <input type="checkbox" data-layer="innerLayer" data-part="leftArm" checked>
-                                     <span>Left Arm</span>
+                                     <span>L.Arm</span>
                                  </label>
                                  <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; background: var(--bg-2);">
                                      <input type="checkbox" data-layer="innerLayer" data-part="rightLeg" checked>
-                                     <span>Right Leg</span>
+                                     <span>R.Leg</span>
                                  </label>
                                  <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; background: var(--bg-2);">
                                      <input type="checkbox" data-layer="innerLayer" data-part="leftLeg" checked>
-                                     <span>Left Leg</span>
+                                     <span>L.Leg</span>
                                  </label>
                              </div>
                          </div>
                          <div>
                              <h4 style="color: var(--muted); font-size: 0.9rem; margin-bottom: 0.5rem;">Outer Layer</h4>
-                             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
                                  <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; background: var(--bg-2);">
                                      <input type="checkbox" data-layer="outerLayer" data-part="head" checked>
                                      <span>Head</span>
@@ -956,19 +1112,19 @@
                                  </label>
                                  <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; background: var(--bg-2);">
                                      <input type="checkbox" data-layer="outerLayer" data-part="rightArm" checked>
-                                     <span>Right Arm</span>
+                                     <span>R.Arm</span>
                                  </label>
                                  <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; background: var(--bg-2);">
                                      <input type="checkbox" data-layer="outerLayer" data-part="leftArm" checked>
-                                     <span>Left Arm</span>
+                                     <span>L.Arm</span>
                                  </label>
                                  <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; background: var(--bg-2);">
                                      <input type="checkbox" data-layer="outerLayer" data-part="rightLeg" checked>
-                                     <span>Right Leg</span>
+                                     <span>R.Leg</span>
                                  </label>
                                  <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; background: var(--bg-2);">
                                      <input type="checkbox" data-layer="outerLayer" data-part="leftLeg" checked>
-                                     <span>Left Leg</span>
+                                     <span>L.Leg</span>
                                  </label>
                              </div>
                          </div>
@@ -1196,8 +1352,10 @@ function throttledRefreshSkinTextures() {
         swatchesContainer.innerHTML = swatches.map(color => `<div class="swatch" style="background-color: ${color}" data-color="${color}"></div>`).join('');
         swatchesContainer.querySelectorAll('.swatch').forEach(sw => sw.onclick = () => {
             colorPicker.value = sw.dataset.color;
+            addRecentColor(sw.dataset.color);
         });
         colorPicker.addEventListener('change', (e) => addRecentColor(e.target.value));
+        colorPicker.addEventListener('input', (e) => addRecentColor(e.target.value));
 
         document.querySelectorAll('.tool-btn').forEach(btn => {
             if (btn.id.includes('upload') || btn.id.includes('download') || btn.id.includes('reset')) return;
@@ -1367,6 +1525,15 @@ function throttledRefreshSkinTextures() {
 
         const editorCanvas = editorSkinViewer.canvas;
 
+        const stopDrawing = () => {
+            if (isDrawingOn3D && (currentTool === 'pencil' || currentTool === 'eraser' || currentTool === 'bucket')) {
+                refreshSkinTextures();
+                saveState();
+            }
+            isDrawingOn3D = false;
+            lastTexturePos = null;
+        };
+
         editorCanvas.addEventListener('mousedown', (e) => {
             if (e.button !== 0) return; 
             const intersection = getIntersection(e);
@@ -1375,34 +1542,6 @@ function throttledRefreshSkinTextures() {
             handle3DInteraction(intersection, false);
         });
 
-        editorCanvas.addEventListener('mousemove', (e) => {
-            const intersection = getIntersection(e);
-            updateLoupe(intersection, e);
-            
-            if (intersection && intersection.face && pixelHighlighter) {
-                pixelHighlighter.visible = true;
-                const normal = intersection.face.normal.clone();
-                const worldNormal = normal.transformDirection(intersection.object.matrixWorld);
-                pixelHighlighter.position.copy(intersection.point).addScaledVector(worldNormal, 0.05);
-                pixelHighlighter.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), worldNormal);
-            } else if (pixelHighlighter) {
-                pixelHighlighter.visible = false;
-            }
-
-            if (isDrawingOn3D && intersection) {
-                handle3DInteraction(intersection, true);
-            }
-        });
-
-        const stopDrawing = () => {
-            if (isDrawingOn3D && (currentTool === 'pencil' || currentTool === 'eraser' || currentTool === 'bucket')) {
-                // Refresh textures only when drawing stops
-                refreshSkinTextures();
-                saveState();
-            }
-            isDrawingOn3D = false;
-            lastTexturePos = null;
-        }
         editorCanvas.addEventListener('mouseup', stopDrawing);
         editorCanvas.addEventListener('mouseleave', () => {
             stopDrawing();
@@ -1613,6 +1752,12 @@ function syncVisibility() {
     <script type="module" src="/theme.js"></script>
     <script type="module" src="/auth.js"></script>
     <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        
+        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
         // Desktop search modal functionality
         const desktopSearchInput = document.querySelector('.desktop-search-container input');
         const mobileSearchToggle = document.getElementById('mobile-search-toggle');
@@ -1707,8 +1852,6 @@ function syncVisibility() {
 
             try {
                 let results = [];
-                const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
-                const supabase = createClient('https://whxmfpdmnsungcwlffdx.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8');
 
                 if (modalSearchType === 'packs') {
                     const { data } = await supabase.from('packs').select('id, name, icon_url').ilike('name', `%${query}%`).limit(8);
@@ -1816,12 +1959,6 @@ function syncVisibility() {
         });
 
         // NOTIFICATION SCRIPT
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-        
-        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
         let currentUserId = null;
         let notificationSubscription = null;
 
@@ -1838,10 +1975,6 @@ function syncVisibility() {
             interval = seconds / 60;
             if (interval > 1) return Math.floor(interval) + "m ago";
             return "just now";
-        }
-
-        function escapeHtml(str) {
-            return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]));
         }
 
         async function fetchAndRenderNotifications() {
@@ -1971,6 +2104,62 @@ function syncVisibility() {
             }
         });
     </script>
+
+    <footer>
+        <div class="footer-container">
+            <div class="footer-brand">
+                <a class="brand" href="/">
+                    <div class="brand-badge">
+                        <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
+                    </div>
+                    <div>
+                        <div class="brand-title">MCHUB</div>
+                        <div class="tiny">Minecraft • Community Hub</div>
+                    </div>
+                </a>
+                <p>Your ultimate destination for exploring the world of Minecraft. Discover new stories, follow your favorites, and never miss an update.</p>
+                <div class="footer-socials">
+                    <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
+                    <a href="https://discord.gg/KtafawJZxM" target="_blank" aria-label="Discord"><i class="fa-brands fa-discord"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-column">
+                <h4>Explore</h4>
+                <div class="footer-links">
+                    <a href="/">Home</a>
+                    <a href="/texturepacks.html">Browse Packs</a>
+                    <a href="/news.html">News</a>
+                </div>
+            </div>
+            
+            <div class="footer-column">
+                <h4>Support</h4>
+                <div class="footer-links">
+                    <a href="#">Contact Us</a>
+                    <a href="#">Report Issue</a>
+                    <a href="#">FAQ</a>
+                </div>
+            </div>
+            
+            <div class="footer-column">
+                <h4>Stay Updated</h4>
+                <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem;">Join our Discord server for the latest updates and news.</p>
+                <a href="https://discord.gg/KtafawJZxM" target="_blank" class="footer-discord">
+                    <i class="fa-brands fa-discord"></i>
+                    <span>Join Server</span>
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 MCHub. All rights reserved.</p>
+            <div class="footer-bottom-links">
+                <a href="#">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">DMCA</a>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>
-
