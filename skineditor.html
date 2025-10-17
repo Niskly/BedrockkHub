@@ -533,6 +533,16 @@
         .part-btn:hover { background: var(--bg-1); border-color: var(--border-strong); }
         .part-btn.active { background: var(--brand-1); color: white; border-color: var(--brand-1); }
 
+        /* Body part visibility checkboxes */
+        #layers-table label {
+            transition: all 0.2s ease;
+        }
+        #layers-table label:hover {
+            background: var(--bg-1) !important;
+        }
+        #layers-table input[type="checkbox"] {
+            accent-color: var(--brand-1);
+        }
         
         #toast-container { position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); z-index: 200; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;}
         .toast { padding: 12px 18px; border-radius: 10px; color: white; font-weight: 600; display: flex; align-items: center; gap: 10px; background: var(--bg-1); border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideUp 0.3s ease-out forwards; }
@@ -727,11 +737,46 @@
             </div>
             
             <!-- This is populated by auth.js but will be hidden on desktop -->
-            <div class="nav-actions" id="nav-actions"></div>
+            <div class="nav-actions" id="nav-actions">
+                <a href="/" class="nav-link-item">Home</a>
+                <a href="/packs.html" class="nav-link-item">Packs</a>
+                <a href="/texturepacks.html" class="nav-link-item">Texture Packs</a>
+                <a href="/news.html" class="nav-link-item">News</a>
+                <div class="tools-dropdown-container">
+                    <button class="nav-link-item" id="tools-btn">Tools <i class="fa-solid fa-chevron-down"></i></button>
+                    <div id="tools-menu">
+                        <a href="/skineditor.html"><i class="fa-solid fa-paintbrush"></i> Skin Editor</a>
+                        <a href="/armor-viewer.html"><i class="fa-solid fa-shield"></i> Armor Viewer</a>
+                    </div>
+                </div>
+                <button class="notification-toggle-btn mobile-nav-btn" id="notification-toggle-mobile">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="notification-badge" id="notification-badge-mobile"></span>
+                </button>
+                <div class="user-dropdown">
+                    <button class="user-menu-btn">
+                        <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/default-avatar.png" alt="User" class="nav-avatar-img">
+                        <span>User</span>
+                    </button>
+                    <div class="dropdown-content">
+                        <div class="dropdown-header">
+                            <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/default-avatar.png" alt="User" class="dropdown-avatar">
+                            <div>
+                                <div class="dropdown-username">User</div>
+                                <div class="dropdown-email">user@example.com</div>
+                            </div>
+                        </div>
+                        <a href="/profile.html"><i class="fa-solid fa-user"></i> Profile</a>
+                        <a href="/settings.html"><i class="fa-solid fa-cog"></i> Settings</a>
+                        <a href="#" class="logout-link"><i class="fa-solid fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+            </div>
             
             <!-- MOBILE CONTROLS -->
             <div class="mobile-nav-controls">
                 <button id="mobile-search-toggle" class="mobile-nav-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+                <button class="mobile-nav-btn notification-toggle-btn"><i class="fa-solid fa-bell"></i></button>
                 <div id="mobile-auth-actions"></div> <!-- Placeholder for mobile notification icon -->
                 <button class="mobile-nav-btn mobile-nav-toggle"><i class="fa-solid fa-bars"></i></button>
             </div>
@@ -865,32 +910,71 @@
             </div>
             <div class="panel">
                  <h3 class="panel-title" style="margin-bottom: 1rem;">Body Parts Visibility</h3>
-                 <div class="steve-models-container">
-                     <div class="steve-model-wrapper">
-                         <h4 class="model-label">Inner Layer</h4>
-                         <div class="steve-model" id="inner-steve-model">
-                             <canvas id="inner-steve-canvas" width="64" height="64"></canvas>
-                             <div class="body-part-overlay" data-layer="innerLayer" data-part="head" style="position: absolute; top: 8px; left: 20px; width: 24px; height: 24px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
-                             <div class="body-part-overlay" data-layer="innerLayer" data-part="body" style="position: absolute; top: 32px; left: 20px; width: 24px; height: 32px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
-                             <div class="body-part-overlay" data-layer="innerLayer" data-part="rightArm" style="position: absolute; top: 32px; left: 44px; width: 12px; height: 32px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
-                             <div class="body-part-overlay" data-layer="innerLayer" data-part="leftArm" style="position: absolute; top: 32px; left: 8px; width: 12px; height: 32px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
-                             <div class="body-part-overlay" data-layer="innerLayer" data-part="rightLeg" style="position: absolute; top: 64px; left: 32px; width: 12px; height: 24px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
-                             <div class="body-part-overlay" data-layer="innerLayer" data-part="leftLeg" style="position: absolute; top: 64px; left: 20px; width: 12px; height: 24px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
+                 
+                 <!-- Layers Table for Visibility Controls -->
+                 <div id="layers-table" style="margin-bottom: 1rem;">
+                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                         <div>
+                             <h4 style="color: var(--muted); font-size: 0.9rem; margin-bottom: 0.5rem;">Inner Layer</h4>
+                             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; background: var(--bg-2);">
+                                     <input type="checkbox" data-layer="innerLayer" data-part="head" checked>
+                                     <span>Head</span>
+                                 </label>
+                                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; background: var(--bg-2);">
+                                     <input type="checkbox" data-layer="innerLayer" data-part="body" checked>
+                                     <span>Body</span>
+                                 </label>
+                                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; background: var(--bg-2);">
+                                     <input type="checkbox" data-layer="innerLayer" data-part="rightArm" checked>
+                                     <span>Right Arm</span>
+                                 </label>
+                                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; background: var(--bg-2);">
+                                     <input type="checkbox" data-layer="innerLayer" data-part="leftArm" checked>
+                                     <span>Left Arm</span>
+                                 </label>
+                                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; background: var(--bg-2);">
+                                     <input type="checkbox" data-layer="innerLayer" data-part="rightLeg" checked>
+                                     <span>Right Leg</span>
+                                 </label>
+                                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; background: var(--bg-2);">
+                                     <input type="checkbox" data-layer="innerLayer" data-part="leftLeg" checked>
+                                     <span>Left Leg</span>
+                                 </label>
+                             </div>
                          </div>
-                     </div>
-                     <div class="steve-model-wrapper">
-                         <h4 class="model-label">Outer Layer</h4>
-                         <div class="steve-model" id="outer-steve-model">
-                             <canvas id="outer-steve-canvas" width="64" height="64"></canvas>
-                             <div class="body-part-overlay" data-layer="outerLayer" data-part="head" style="position: absolute; top: 8px; left: 20px; width: 24px; height: 24px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
-                             <div class="body-part-overlay" data-layer="outerLayer" data-part="body" style="position: absolute; top: 32px; left: 20px; width: 24px; height: 32px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
-                             <div class="body-part-overlay" data-layer="outerLayer" data-part="rightArm" style="position: absolute; top: 32px; left: 44px; width: 12px; height: 32px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
-                             <div class="body-part-overlay" data-layer="outerLayer" data-part="leftArm" style="position: absolute; top: 32px; left: 8px; width: 12px; height: 32px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
-                             <div class="body-part-overlay" data-layer="outerLayer" data-part="rightLeg" style="position: absolute; top: 64px; left: 32px; width: 12px; height: 24px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
-                             <div class="body-part-overlay" data-layer="outerLayer" data-part="leftLeg" style="position: absolute; top: 64px; left: 20px; width: 12px; height: 24px; cursor: pointer; border: 2px solid transparent; border-radius: 4px;"></div>
+                         <div>
+                             <h4 style="color: var(--muted); font-size: 0.9rem; margin-bottom: 0.5rem;">Outer Layer</h4>
+                             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; background: var(--bg-2);">
+                                     <input type="checkbox" data-layer="outerLayer" data-part="head" checked>
+                                     <span>Head</span>
+                                 </label>
+                                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; background: var(--bg-2);">
+                                     <input type="checkbox" data-layer="outerLayer" data-part="body" checked>
+                                     <span>Body</span>
+                                 </label>
+                                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; background: var(--bg-2);">
+                                     <input type="checkbox" data-layer="outerLayer" data-part="rightArm" checked>
+                                     <span>Right Arm</span>
+                                 </label>
+                                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; background: var(--bg-2);">
+                                     <input type="checkbox" data-layer="outerLayer" data-part="leftArm" checked>
+                                     <span>Left Arm</span>
+                                 </label>
+                                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; background: var(--bg-2);">
+                                     <input type="checkbox" data-layer="outerLayer" data-part="rightLeg" checked>
+                                     <span>Right Leg</span>
+                                 </label>
+                                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; background: var(--bg-2);">
+                                     <input type="checkbox" data-layer="outerLayer" data-part="leftLeg" checked>
+                                     <span>Left Leg</span>
+                                 </label>
+                             </div>
                          </div>
                      </div>
                  </div>
+                 
                  <div class="model-toggle">
                     <button class="part-btn active" id="steve-model-btn" data-model="default">Steve</button>
                     <button class="part-btn" id="alex-model-btn" data-model="slim">Alex</button>
@@ -1469,33 +1553,42 @@ function syncVisibility() {
         }
 
         async function initializeEditor() {
-            const initialSkinUrl = previewSkinViewer.skinUrl;
+            // Create a default 64x64 skin with Steve texture
+            masterCanvas.width = 64;
+            masterCanvas.height = 64;
+            masterCtx.imageSmoothingEnabled = false;
+            
+            // Load the default Steve skin
+            const initialSkinUrl = "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png";
             const initialImg = new Image();
             initialImg.crossOrigin = "anonymous";
+            
             initialImg.onload = async () => {
-                masterCanvas.width = initialImg.width;
-                masterCanvas.height = initialImg.height;
-                masterCtx.imageSmoothingEnabled = false; 
-                masterCtx.drawImage(initialImg, 0, 0);
-                
-                await update3DViewers(true);
-                createPixelHighlighter(); 
-                setupVisibilityControls();
-                renderRecentColors();
-                saveState();
+                try {
+                    masterCtx.drawImage(initialImg, 0, 0);
+                    
+                    await update3DViewers(true);
+                    createPixelHighlighter(); 
+                    setupVisibilityControls();
+                    renderRecentColors();
+                    saveState();
 
-                editorRenderLoop();
-
-                document.body.style.opacity = '1';
+                    editorRenderLoop();
+                    document.body.style.opacity = '1';
+                } catch (err) {
+                    console.error("Error initializing editor:", err);
+                    showToast("Error initializing skin editor", "error");
+                    document.body.style.opacity = '1';
+                }
             };
+            
             initialImg.onerror = (err) => {
                 console.error("Failed to load initial skin:", err);
                 showToast("Could not load initial skin. Creating blank skin...", "error");
                 
                 // Create a blank skin as fallback
-                masterCanvas.width = 64;
-                masterCanvas.height = 64;
-                masterCtx.clearRect(0, 0, 64, 64);
+                masterCtx.fillStyle = '#8B4513'; // Brown color for Steve
+                masterCtx.fillRect(0, 0, 64, 64);
                 
                 update3DViewers(true).then(() => {
                     createPixelHighlighter(); 
@@ -1509,6 +1602,7 @@ function syncVisibility() {
                     document.body.style.opacity = '1';
                 });
             }
+            
             initialImg.src = initialSkinUrl;
         }
 
