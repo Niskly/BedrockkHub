@@ -543,6 +543,66 @@
             flex-direction: column; gap: 1rem;
         }
 
+        /* Search Modal Styles */
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .close-search-modal-btn:hover {
+            background: var(--bg-1) !important;
+            color: var(--text) !important;
+        }
+        .search-type-option:hover {
+            background: var(--bg-1) !important;
+        }
+        #modal-search-type-dropdown.open #modal-search-type-btn .fa-chevron-down {
+            transform: rotate(180deg);
+        }
+        #modal-search-type-dropdown.open #modal-search-type-menu {
+            display: block !important;
+        }
+        .search-result-item {
+            display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem;
+            transition: background-color 0.2s; text-decoration: none; color: inherit;
+        }
+        .search-result-item:not(:last-child) {
+            border-bottom: 1px solid var(--border);
+        }
+        .search-result-item:hover {
+            background: var(--bg-1);
+        }
+        .search-result-icon, .search-result-avatar {
+            width: 40px; height: 40px; border-radius: 8px;
+            object-fit: cover; flex-shrink: 0;
+        }
+        .search-result-avatar.is-mc-skin {
+            border-radius: 4px; image-rendering: pixelated;
+            border: 1px solid var(--border); background: var(--bg-2);
+        }
+        .search-result-info {
+            text-align: left; flex: 1;
+        }
+        .search-result-name {
+            font-weight: 600; color: var(--text);
+        }
+        .search-result-sub {
+            font-size: 0.8rem; color: var(--muted);
+        }
+        #modal-search-results::-webkit-scrollbar {
+            width: 8px;
+        }
+        #modal-search-results::-webkit-scrollbar-track {
+            background: var(--bg-1);
+            border-radius: 4px;
+        }
+        #modal-search-results::-webkit-scrollbar-thumb {
+            background: var(--border-strong);
+            border-radius: 4px;
+        }
+        #modal-search-results::-webkit-scrollbar-thumb:hover {
+            background: var(--muted);
+        }
+
 
         @media (max-width: 1200px) {
             .editor-container {
@@ -665,11 +725,28 @@
 
     <!-- DESKTOP SEARCH MODAL -->
     <div id="desktop-search-modal" class="desktop-search-modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); z-index: 1000; align-items: flex-start; justify-content: center; padding-top: 10vh;">
-        <div class="desktop-search-modal-content" style="background: var(--bg-1); border-radius: 1rem; border: 1px solid var(--border); width: 100%; max-width: 700px; padding: 1rem; padding-top: 3rem; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
-            <button id="close-search-modal-btn" class="close-search-modal-btn" style="position: absolute; top: 0.75rem; right: 0.75rem; background: var(--bg-2); border: 1px solid var(--border); color: var(--muted); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: grid; place-items: center;">
+        <div class="desktop-search-modal-content" style="background: var(--bg-1); border-radius: 1rem; border: 1px solid var(--border); width: 100%; max-width: 700px; padding: 1rem; padding-top: 3rem; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: slideDown 0.4s ease;">
+            <button id="close-search-modal-btn" class="close-search-modal-btn" style="position: absolute; top: 0.75rem; right: 0.75rem; background: var(--bg-2); border: 1px solid var(--border); color: var(--muted); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: grid; place-items: center; transition: all 0.2s;">
                 <i class="fa-solid fa-xmark"></i>
             </button>
-            <p style="text-align: center; color: var(--muted); margin: 2rem 0;">Search functionality coming soon to Skin Editor!</p>
+            <div class="search-hub-container" style="margin: 0; max-width: 100%;">
+                <div class="search-input-wrapper" style="display: flex; position: relative; background: var(--bg-2); border: 1px solid var(--border); border-radius: 16px; transition: border-color 0.2s;">
+                    <div class="search-type-dropdown" id="modal-search-type-dropdown" style="position: relative;">
+                        <button id="modal-search-type-btn" style="display: flex; align-items: center; gap: 0.5rem; height: 100%; padding: 0 1.2rem; background: var(--bg-1); border: none; color: var(--text); font-weight: 600; border-radius: 15px 0 0 15px; cursor: pointer; border-right: 1px solid var(--border); font-family: inherit;">
+                            <i class="fa-solid fa-palette"></i>
+                            <span>Packs</span>
+                            <i class="fa-solid fa-chevron-down" style="font-size: 0.7em; transition: transform 0.2s;"></i>
+                        </button>
+                        <div id="modal-search-type-menu" style="display: none; position: absolute; top: 110%; left: 0; z-index: 12; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 100%; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.3);">
+                            <div class="search-type-option" data-type="packs" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; transition: background 0.2s;"><i class="fa-solid fa-palette" style="width: 16px; color: var(--muted);"></i> Packs</div>
+                            <div class="search-type-option" data-type="users" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; transition: background 0.2s;"><i class="fa-solid fa-user" style="width: 16px; color: var(--muted);"></i> Users</div>
+                            <div class="search-type-option" data-type="gamertags" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; transition: background 0.2s;"><i class="fa-brands fa-xbox" style="width: 16px; color: var(--muted);"></i> Gamertags</div>
+                        </div>
+                    </div>
+                    <input type="text" id="modal-universal-search" placeholder="Search for packs..." style="width: 100%; padding: 1rem 1.5rem; font-size: 1rem; background: transparent; border: none; color: var(--text); outline: none; font-family: inherit;">
+                </div>
+                <div id="modal-search-results" style="display: none; margin-top: 0.5rem; background: var(--bg-2); border: 1px solid var(--border); border-radius: 16px; max-height: 350px; overflow-y: auto;"></div>
+            </div>
         </div>
     </div>
 
@@ -1260,33 +1337,39 @@ function syncVisibility() {
 
     checkboxes.forEach(checkbox => {
         const isChecked = checkbox.checked;
-        const partName = checkbox.dataset.part;
-        const layerName = checkbox.dataset.layer;
+        const partName = checkbox.dataset.part; // e.g., "head", "body", "rightArm"
+        const layerName = checkbox.dataset.layer; // e.g., "innerLayer", "outerLayer"
 
         [previewSkinViewer, editorSkinViewer].forEach(viewer => {
             const skinParts = viewer.playerObject?.skin;
-
             if (!skinParts) return;
 
-            Object.values(skinParts).forEach(part => {
-                const layer = part[layerName];
-                if (layer) {
-                    layer.visible = isChecked;
+            // Access the specific part by its name
+            const part = skinParts[partName];
+            if (!part) return;
 
+            // Access the specific layer within that part
+            const layer = part[layerName];
+            if (layer) {
+                layer.visible = isChecked;
+
+                // Update texture reference
+                layer.traverse(child => {
+                    if (child.isMesh && child.material?.map) {
+                        child.material.map.image = masterCanvas;
+                        child.material.map.needsUpdate = true;
+                    }
+                });
+
+                // Add to raycastable meshes for editor if visible
+                if (isChecked && viewer === editorSkinViewer) {
                     layer.traverse(child => {
                         if (child.isMesh) {
-                            child.material.map.image = masterCanvas;
-                            child.material.map.needsUpdate = true;
+                            raycastableMeshes.push(child);
                         }
                     });
-
-                    if (isChecked) {
-                        layer.traverse(child => {
-                            if (child.isMesh) raycastableMeshes.push(child);
-                        });
-                    }
                 }
-            });
+            }
         });
     });
 
@@ -1338,8 +1421,24 @@ function syncVisibility() {
             };
             initialImg.onerror = (err) => {
                 console.error("Failed to load initial skin:", err);
-                showToast("Could not load initial skin.", "error");
-                document.body.style.opacity = '1';
+                showToast("Could not load initial skin. Creating blank skin...", "error");
+                
+                // Create a blank skin as fallback
+                masterCanvas.width = 64;
+                masterCanvas.height = 64;
+                masterCtx.clearRect(0, 0, 64, 64);
+                
+                update3DViewers(true).then(() => {
+                    createPixelHighlighter(); 
+                    setupVisibilityControls();
+                    renderRecentColors();
+                    saveState();
+                    editorRenderLoop();
+                    document.body.style.opacity = '1';
+                }).catch(viewerErr => {
+                    console.error("Failed to initialize viewers:", viewerErr);
+                    document.body.style.opacity = '1';
+                });
             }
             initialImg.src = initialSkinUrl;
         }
@@ -1356,11 +1455,20 @@ function syncVisibility() {
         const mobileSearchToggle = document.getElementById('mobile-search-toggle');
         const searchModal = document.getElementById('desktop-search-modal');
         const closeModalBtn = document.getElementById('close-search-modal-btn');
+        let modalSearchType = 'packs';
+
+        function escapeHtml(str) {
+            return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]));
+        }
 
         function openSearchModal() {
             if (searchModal) {
                 searchModal.style.display = 'flex';
                 document.body.style.overflow = 'hidden';
+                const modalSearchInput = document.getElementById('modal-universal-search');
+                if (modalSearchInput) {
+                    setTimeout(() => modalSearchInput.focus(), 100);
+                }
             }
         }
 
@@ -1368,6 +1476,13 @@ function syncVisibility() {
             if (searchModal) {
                 searchModal.style.display = 'none';
                 document.body.style.overflow = '';
+                const resultsContainer = document.getElementById('modal-search-results');
+                if (resultsContainer) {
+                    resultsContainer.style.display = 'none';
+                    resultsContainer.innerHTML = '';
+                }
+                const modalSearchInput = document.getElementById('modal-universal-search');
+                if (modalSearchInput) modalSearchInput.value = '';
             }
         }
 
@@ -1376,6 +1491,117 @@ function syncVisibility() {
         if (closeModalBtn) closeModalBtn.addEventListener('click', closeSearchModal);
         if (searchModal) searchModal.addEventListener('click', (e) => { if (e.target === searchModal) closeSearchModal(); });
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && searchModal.style.display === 'flex') closeSearchModal(); });
+
+        // Search type dropdown
+        const modalDropdown = document.getElementById('modal-search-type-dropdown');
+        const modalSearchTypeBtn = document.getElementById('modal-search-type-btn');
+        const modalSearchInput = document.getElementById('modal-universal-search');
+
+        if (modalDropdown) {
+            modalSearchTypeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                modalDropdown.classList.toggle('open');
+            });
+
+            modalDropdown.querySelectorAll('.search-type-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    modalSearchType = option.dataset.type;
+                    const btnSpan = modalSearchTypeBtn.querySelector('span');
+                    const btnIcon = modalSearchTypeBtn.querySelector('i:first-child');
+                    const optionIcon = option.querySelector('i');
+                    
+                    if (btnSpan) btnSpan.textContent = option.textContent.trim();
+                    if (btnIcon && optionIcon) btnIcon.className = optionIcon.className;
+                    modalSearchInput.placeholder = `Search for ${modalSearchType}...`;
+                    modalDropdown.classList.remove('open');
+                    
+                    if (modalSearchInput.value.trim().length >= 2) {
+                        performModalSearch();
+                    }
+                });
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#modal-search-type-dropdown')) {
+                    modalDropdown.classList.remove('open');
+                }
+            });
+        }
+
+        // Search functionality
+        async function performModalSearch() {
+            const query = modalSearchInput.value.trim();
+            const resultsContainer = document.getElementById('modal-search-results');
+            
+            if (query.length < 2) {
+                resultsContainer.style.display = 'none';
+                return;
+            }
+
+            resultsContainer.style.display = 'block';
+            resultsContainer.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--muted);">Searching...</div>';
+
+            try {
+                let results = [];
+                const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
+                const supabase = createClient('https://whxmfpdmnsungcwlffdx.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8');
+
+                if (modalSearchType === 'packs') {
+                    const { data } = await supabase.from('packs').select('id, name, icon_url').ilike('name', `%${query}%`).limit(8);
+                    results = (data || []).map(item => ({
+                        type: 'pack', name: item.name, icon: item.icon_url, link: `/packs.html?id=${item.id}`
+                    }));
+                } else if (modalSearchType === 'users') {
+                    const { data } = await supabase.from('profiles').select('username, avatar_url').ilike('username', `%${query}%`).limit(8);
+                    results = (data || []).map(item => ({
+                        type: 'user', name: item.username, icon: item.avatar_url, link: `/profile.html?user=${item.username}`
+                    }));
+                } else if (modalSearchType === 'gamertags') {
+                    const { data } = await supabase.from('profiles').select('username, bedrock_gamertag, xuid').ilike('bedrock_gamertag', `%${query}%`).limit(8);
+                    results = (data || []).map(item => ({
+                        type: 'gamertag', name: item.bedrock_gamertag, sub: item.username, xuid: item.xuid, link: `/profile.html?user=${item.username}`
+                    }));
+                }
+
+                renderModalSearchResults(results);
+            } catch (error) {
+                console.error('Search error:', error);
+                resultsContainer.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--danger);">Search failed. Please try again.</div>';
+            }
+        }
+
+        function renderModalSearchResults(results) {
+            const container = document.getElementById('modal-search-results');
+            if (results.length === 0) {
+                container.innerHTML = `<div class="search-result-item"><div class="search-result-info"><div class="search-result-name">No results found</div></div></div>`;
+            } else {
+                container.innerHTML = results.map(item => {
+                    let iconHtml = '';
+                    if (item.type === 'pack') {
+                        iconHtml = item.icon 
+                            ? `<img src="${item.icon}" class="search-result-icon">`
+                            : `<div class="search-result-icon" style="background:var(--bg-1); display:grid; place-items:center;"><i class="fa-solid fa-cube"></i></div>`;
+                    } else if (item.type === 'gamertag' && item.xuid) {
+                        iconHtml = `<img src="/api/bedrock-skin?xuid=${item.xuid}&render_type=head" class="search-result-avatar is-mc-skin">`;
+                    } else {
+                        const initial = (item.name || '?').charAt(0).toUpperCase();
+                        iconHtml = `<img src="${item.icon || `https://placehold.co/40x40/1c1c1c/de212a?text=${initial}`}" class="search-result-avatar">`;
+                    }
+                    return `<a href="${item.link}" class="search-result-item">${iconHtml}<div class="search-result-info"><div class="search-result-name">${escapeHtml(item.name)}</div>${item.sub ? `<div class="search-result-sub">MCHub User: ${escapeHtml(item.sub)}</div>` : ''}</div></a>`;
+                }).join('');
+            }
+            container.style.display = 'block';
+        }
+
+        // Debounced search
+        let searchDebounceTimer;
+        if (modalSearchInput) {
+            modalSearchInput.addEventListener('input', () => {
+                clearTimeout(searchDebounceTimer);
+                searchDebounceTimer = setTimeout(performModalSearch, 300);
+            });
+        }
 
         // Desktop navbar population
         document.addEventListener('auth-ready', () => {
