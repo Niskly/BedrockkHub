@@ -46,10 +46,11 @@ function setupMobileNav(profile, user) {
     const isHome = ['/', '/index.html'].includes(currentPath);
     const isTexturePacks = ['/texturepacks.html', '/texturepacks', '/packs.html', '/packs'].includes(currentPath);
     const isNews = ['/news.html', '/news'].includes(currentPath);
+    const isSkinEditor = ['/skineditor.html', '/skineditor'].includes(currentPath);
     const isProfile = profile && ['/profile.html', '/profile'].includes(currentPath) && new URLSearchParams(window.location.search).get('user') === profile.username;
 
     const toolsDropdownHTML = `
-        <div class="mobile-nav-collapsible">
+        <div class="mobile-nav-collapsible ${isSkinEditor ? 'open' : ''}">
             <a href="#" class="collapsible-trigger">
                 <span style="display: flex; align-items: center; gap: 1rem;">
                     <i class="fa-solid fa-wrench" style="width: 24px; text-align: center; font-size: 1.1rem;"></i>
@@ -57,8 +58,8 @@ function setupMobileNav(profile, user) {
                 </span>
                 <i class="fa-solid fa-chevron-down arrow"></i>
             </a>
-            <div class="collapsible-content">
-                <a href="/skineditor.html" class="sub-link" style="background-color: var(--bg-2); margin: 0.25rem; display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; border-radius: 8px;">
+            <div class="collapsible-content" style="${isSkinEditor ? 'max-height: 100px;' : ''}">
+                <a href="/skineditor.html" class="sub-link ${isSkinEditor ? 'active-mobile-link' : ''}" style="background-color: var(--bg-2); margin: 0.25rem; display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; border-radius: 8px;">
                     <i class="fa-solid fa-paint-brush" style="width: 24px; text-align: center; font-size: 1.1rem;"></i>
                     <span>Skin Editor</span>
                 </a>
@@ -157,13 +158,15 @@ function renderDesktopNav(isLoggedIn, profile = null, user = null) {
         { href: '/news.html', icon: 'fa-newspaper', text: 'News', paths: ['/news.html', '/news'] }
     ];
 
+    // Check if current page is a tool page
+    const isToolPage = ['/skineditor.html', '/skineditor'].includes(currentPath);
     const toolsDropdown = `
         <div class="tools-dropdown-container">
-            <button id="tools-btn" class="nav-link">
+            <button id="tools-btn" class="nav-link ${isToolPage ? 'active' : ''}">
                 <i class="fa-solid fa-wrench"></i> Tools <i class="fa-solid fa-chevron-down"></i>
             </button>
             <div id="tools-menu">
-                <a href="/skineditor.html"><i class="fa-solid fa-paint-brush"></i> Skin Editor</a>
+                <a href="/skineditor.html" class="${isToolPage ? 'active' : ''}"><i class="fa-solid fa-paint-brush"></i> Skin Editor</a>
             </div>
         </div>`;
 
