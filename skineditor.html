@@ -36,7 +36,7 @@
             -ms-user-select: none;
             user-select: none;
         }
-        body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 14px/1.6 Inter, sans-serif; }
+        body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 15px/1.6 Inter, sans-serif; }
         
         /* Hide overflow only on mobile for editor */
         @media (max-width: 992px) {
@@ -69,7 +69,12 @@
             border: none;
         }
         body {
-            padding-top: 80px;
+            padding-top: 100px;
+        }
+        @media (max-width: 992px) {
+            body {
+                padding-top: 90px;
+            }
         }
         .nav { 
             max-width: 1200px; 
@@ -387,15 +392,15 @@
             background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(20px);
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 1rem;
+            padding: 0.75rem;
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
-            overflow-y: auto;
+            gap: 1rem;
+            overflow-y: visible;
         }
 
-        .panel-section { display: flex; flex-direction: column; gap: 0.75rem; }
-        .panel-title { font-weight: 700; color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 0.25rem; }
+        .panel-section { display: flex; flex-direction: column; gap: 0.5rem; }
+        .panel-title { font-weight: 700; color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); padding-bottom: 0.35rem; margin-bottom: 0; }
 
         .tools-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
         .tool-btn {
@@ -453,19 +458,6 @@
              width: 40px; height: 40px; font-size: 1rem; padding: 0;
         }
 
-        #color-loupe {
-            position: fixed;
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            border: 3px solid white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            pointer-events: none;
-            display: none;
-            image-rendering: pixelated;
-            z-index: 9999;
-            background: var(--bg-1);
-        }
 
         .preview-area {
             grid-area: preview;
@@ -674,6 +666,53 @@
         }
         .search-result-sub {
             font-size: 0.8rem; color: var(--muted);
+        }
+        /* Suggestion Cards */
+        .suggestion-card {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: linear-gradient(135deg, rgba(28, 28, 28, 0.9), rgba(44, 44, 44, 0.6));
+            padding: 0.75rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+        .suggestion-card:hover {
+            background: linear-gradient(135deg, rgba(44, 44, 44, 0.9), rgba(28, 28, 28, 0.6));
+            border-color: var(--brand-1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(222, 33, 42, 0.2);
+        }
+        .suggestion-card .pack-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .suggestion-card-info {
+            flex-grow: 1;
+            min-width: 0;
+        }
+        .suggestion-card-name {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .suggestion-card-downloads {
+            font-size: 0.75rem;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
         }
         #modal-search-results::-webkit-scrollbar {
             width: 8px;
@@ -1003,6 +1042,15 @@
                     <input type="text" id="modal-universal-search" placeholder="Search for packs..." style="width: 100%; padding: 1rem 1.5rem; font-size: 1rem; background: transparent; border: none; color: var(--text); outline: none; font-family: inherit;">
                 </div>
                 <div id="modal-search-results" style="display: none; margin-top: 0.5rem; background: var(--bg-2); border: 1px solid var(--border); border-radius: 16px; max-height: 350px; overflow-y: auto;"></div>
+                
+                <!-- Latest Packs Suggestions -->
+                <div class="modal-suggestions" style="margin-top: 1.5rem; padding: 0 0.5rem;">
+                    <div class="suggestions-title" style="font-size: 0.85rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-fire" style="color: var(--brand-1);"></i>
+                        Latest Packs
+                    </div>
+                    <div class="modal-suggestions-grid" id="modal-pack-suggestions" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -1025,7 +1073,7 @@
                 <div class="tools-grid">
                     <button class="tool-btn active" id="pencil-tool" title="Pencil"><i class="fa-solid fa-pencil"></i></button>
                     <button class="tool-btn" id="eraser-tool" title="Eraser"><i class="fa-solid fa-eraser"></i></button>
-                    <button class="tool-btn" id="picker-tool" title="Color Picker"><i class="fa-solid fa-eye-dropper"></i></button>
+                    <button class="tool-btn" id="picker-tool" title="Color Picker"><i class="fa-solid fa-xmark"></i></button>
                     <button class="tool-btn" id="bucket-tool" title="Fill Bucket"><i class="fa-solid fa-fill-drip"></i></button>
                 </div>
                  <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
@@ -1055,7 +1103,6 @@
                  <button id="zoom-out-btn" class="btn ghost" title="Zoom Out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
                  <button id="zoom-in-btn" class="btn ghost" title="Zoom In"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
             </div>
-            <canvas id="color-loupe"></canvas>
         </div>
 
         <div class="preview-area">
@@ -1128,13 +1175,15 @@
                                  </label>
                              </div>
                          </div>
+                         <div style="margin-top: 1rem;">
+                             <h4 style="color: var(--muted); font-size: 0.9rem; margin-bottom: 0.5rem;">Model Type</h4>
+                             <div class="model-toggle">
+                                <button class="part-btn active" id="steve-model-btn" data-model="default">Normal</button>
+                                <button class="part-btn" id="alex-model-btn" data-model="slim">Slim</button>
+                             </div>
+                         </div>
                      </div>
                  </div>
-                 
-                 <div class="model-toggle">
-                    <button class="part-btn active" id="steve-model-btn" data-model="default">Steve</button>
-                    <button class="part-btn" id="alex-model-btn" data-model="slim">Alex</button>
-                </div>
             </div>
         </div>
     </main>
@@ -1157,7 +1206,6 @@
 
     <script type="module">
         // --- 3D Viewer Setup ---
-        let pixelHighlighter;
         let raycaster = new THREE.Raycaster();
         let mouse = new THREE.Vector2();
         let raycastableMeshes = [];
@@ -1195,14 +1243,17 @@
         // --- 2D Editor Setup ---
         const masterCanvas = document.getElementById('master-skin-canvas');
         const masterCtx = masterCanvas.getContext('2d');
-        const loupeCanvas = document.getElementById('color-loupe');
-        const loupeCtx = loupeCanvas.getContext('2d');
 
         // --- State Management ---
         let currentTool = 'pencil';
         let history = [];
         let historyIndex = -1;
         let recentColors = JSON.parse(localStorage.getItem('recentColors')) || [];
+        // Trim recent colors to max 7 if there are more from old cache
+        if (recentColors.length > 7) {
+            recentColors = recentColors.slice(0, 7);
+            localStorage.setItem('recentColors', JSON.stringify(recentColors));
+        }
         let isDrawingOn3D = false;
         let refreshTimeout = null;
         let lastTexturePos = null;
@@ -1336,7 +1387,7 @@ function throttledRefreshSkinTextures() {
                 recentColors = recentColors.filter(c => c !== upperColor);
             }
             recentColors.unshift(upperColor);
-            if (recentColors.length > 16) recentColors.pop();
+            if (recentColors.length > 7) recentColors.pop();
             localStorage.setItem('recentColors', JSON.stringify(recentColors));
             renderRecentColors();
         }
@@ -1352,10 +1403,7 @@ function throttledRefreshSkinTextures() {
         swatchesContainer.innerHTML = swatches.map(color => `<div class="swatch" style="background-color: ${color}" data-color="${color}"></div>`).join('');
         swatchesContainer.querySelectorAll('.swatch').forEach(sw => sw.onclick = () => {
             colorPicker.value = sw.dataset.color;
-            addRecentColor(sw.dataset.color);
         });
-        colorPicker.addEventListener('change', (e) => addRecentColor(e.target.value));
-        colorPicker.addEventListener('input', (e) => addRecentColor(e.target.value));
 
         document.querySelectorAll('.tool-btn').forEach(btn => {
             if (btn.id.includes('upload') || btn.id.includes('download') || btn.id.includes('reset')) return;
@@ -1364,7 +1412,7 @@ function throttledRefreshSkinTextures() {
                 document.querySelector('.tool-btn.active')?.classList.remove('active');
                 btn.classList.add('active');
                 currentTool = btn.id.replace('-tool', '');
-                editorSkinViewer.canvas.style.cursor = currentTool === 'picker' ? 'copy' : 'crosshair';
+                editorSkinViewer.canvas.style.cursor = 'crosshair';
             });
         });
 
@@ -1401,11 +1449,15 @@ function throttledRefreshSkinTextures() {
             };
         }
 
-        function drawOnMasterCanvas(pos) {
+        function drawOnMasterCanvas(pos, addToRecent = false) {
             if (!pos) return;
             if (currentTool === 'pencil') {
                 masterCtx.fillStyle = colorPicker.value;
                 masterCtx.fillRect(pos.x, pos.y, 1, 1);
+                // Add to recent colors only once per stroke
+                if (addToRecent) {
+                    addRecentColor(colorPicker.value);
+                }
             } else if (currentTool === 'eraser') {
                 masterCtx.clearRect(pos.x, pos.y, 1, 1);
             }
@@ -1483,45 +1535,19 @@ function throttledRefreshSkinTextures() {
                 return;
             }
 
-            if (isDrawing && (currentTool === 'pencil' || currentTool === 'eraser')) {
-                if(lastTexturePos) {
-                    drawTextureLineOnMaster(lastTexturePos.x, lastTexturePos.y, pos.x, pos.y);
-                } else {
-                    drawOnMasterCanvas(pos);
+            if (currentTool === 'pencil' || currentTool === 'eraser') {
+                if (!isDrawing) {
+                    // Only draw on click, not while moving
+                    drawOnMasterCanvas(pos, false);
+                    addRecentColor(colorPicker.value);
+                    refreshSkinTextures();
                 }
-                // Use throttled refresh for continuous drawing
-                throttledRefreshSkinTextures();
-            } else { 
-                drawOnMasterCanvas(pos);
+                // Don't draw while moving - only on individual clicks
             }
             lastTexturePos = pos;
         }
         
-        function updateLoupe(intersection, event) {
-            if (currentTool !== 'picker' || !intersection || !event) {
-                loupeCanvas.style.display = 'none';
-                return;
-            }
-            const pos = getTexturePosFromIntersection(intersection);
-            if (!pos) return;
-            
-            loupeCanvas.style.display = 'block';
-            loupeCanvas.style.left = `${event.clientX - 60}px`;
-            loupeCanvas.style.top = `${event.clientY - 60}px`;
-
-            const zoomFactor = 7;
-            const pixelSize = loupeCanvas.width / zoomFactor;
-            loupeCtx.imageSmoothingEnabled = false;
-            loupeCtx.clearRect(0,0, loupeCanvas.width, loupeCanvas.height);
-            loupeCtx.drawImage(masterCanvas, 
-                pos.x - Math.floor(zoomFactor / 2), pos.y - Math.floor(zoomFactor / 2), zoomFactor, zoomFactor, 
-                0, 0, loupeCanvas.width, loupeCanvas.height);
-            
-            const center = Math.floor(zoomFactor/2) * pixelSize;
-            loupeCtx.strokeStyle = 'rgba(255,255,255,0.8)';
-            loupeCtx.lineWidth = 2;
-            loupeCtx.strokeRect(center, center, pixelSize, pixelSize);
-        }
+        // Color picker now just picks on click - no loupe/zoom
 
         const editorCanvas = editorSkinViewer.canvas;
 
@@ -1542,11 +1568,35 @@ function throttledRefreshSkinTextures() {
             handle3DInteraction(intersection, false);
         });
 
+        // No drawing on mousemove - only on clicks
+
         editorCanvas.addEventListener('mouseup', stopDrawing);
         editorCanvas.addEventListener('mouseleave', () => {
             stopDrawing();
-            loupeCanvas.style.display = 'none';
-            if (pixelHighlighter) pixelHighlighter.visible = false;
+        });
+
+        // Add touch support for mobile
+        editorCanvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousedown', {
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                button: 0
+            });
+            editorCanvas.dispatchEvent(mouseEvent);
+        });
+
+        // No drawing on touchmove - only on tap
+
+        editorCanvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            stopDrawing();
+        });
+
+        editorCanvas.addEventListener('touchcancel', (e) => {
+            e.preventDefault();
+            stopDrawing();
         });
 
 
@@ -1591,13 +1641,29 @@ function throttledRefreshSkinTextures() {
         });
         
         document.getElementById('reset-btn').addEventListener('click', () => {
-            showConfirmation('This will create a blank skin and all unsaved changes will be lost.', async () => {
+            showConfirmation('This will reset to the default Steve skin and all unsaved changes will be lost.', async () => {
                 masterCanvas.width = 64; masterCanvas.height = 64;
-                masterCtx.clearRect(0, 0, 64, 64);
-                await update3DViewers(true);
-                history = []; historyIndex = -1;
-                saveState();
-                showToast("New blank skin created.", "success");
+                masterCtx.imageSmoothingEnabled = false;
+                
+                const steveImg = new Image();
+                steveImg.crossOrigin = "anonymous";
+                steveImg.onload = async () => {
+                    masterCtx.clearRect(0, 0, 64, 64);
+                    masterCtx.drawImage(steveImg, 0, 0);
+                    await update3DViewers(true);
+                    history = []; historyIndex = -1;
+                    saveState();
+                    showToast("Reset to Steve skin.", "success");
+                };
+                steveImg.onerror = async () => {
+                    // Fallback to blank if Steve image fails
+                    masterCtx.clearRect(0, 0, 64, 64);
+                    await update3DViewers(true);
+                    history = []; historyIndex = -1;
+                    saveState();
+                    showToast("Reset to blank skin.", "success");
+                };
+                steveImg.src = "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png";
             });
         });
 
@@ -1678,13 +1744,6 @@ function syncVisibility() {
         }
         
         // --- INITIAL LOAD ---
-        function createPixelHighlighter() {
-            const highlightGeometry = new THREE.PlaneGeometry(1.05, 1.05); // Slightly larger
-            const wireframeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, side: THREE.DoubleSide });
-            pixelHighlighter = new THREE.Mesh(highlightGeometry, wireframeMaterial);
-            pixelHighlighter.visible = false;
-            editorSkinViewer.scene.add(pixelHighlighter);
-        }
 
         function editorRenderLoop() {
             requestAnimationFrame(editorRenderLoop);
@@ -1707,7 +1766,6 @@ function syncVisibility() {
                     masterCtx.drawImage(initialImg, 0, 0);
                     
                     await update3DViewers(true);
-                    createPixelHighlighter(); 
                     setupVisibilityControls();
                     renderRecentColors();
                     saveState();
@@ -1730,7 +1788,6 @@ function syncVisibility() {
                 masterCtx.fillRect(0, 0, 64, 64);
                 
                 update3DViewers(true).then(() => {
-                    createPixelHighlighter(); 
                     setupVisibilityControls();
                     renderRecentColors();
                     saveState();
@@ -1777,6 +1834,8 @@ function syncVisibility() {
                 if (modalSearchInput) {
                     setTimeout(() => modalSearchInput.focus(), 100);
                 }
+                // Load latest packs
+                loadLatestPacksSuggestions();
             }
         }
 
@@ -1841,13 +1900,16 @@ function syncVisibility() {
         async function performModalSearch() {
             const query = modalSearchInput.value.trim();
             const resultsContainer = document.getElementById('modal-search-results');
+            const suggestionsContainer = document.querySelector('.modal-suggestions');
             
             if (query.length < 2) {
                 resultsContainer.style.display = 'none';
+                if (suggestionsContainer) suggestionsContainer.style.display = '';
                 return;
             }
 
             resultsContainer.style.display = 'block';
+            if (suggestionsContainer) suggestionsContainer.style.display = 'none';
             resultsContainer.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--muted);">Searching...</div>';
 
             try {
@@ -1898,6 +1960,45 @@ function syncVisibility() {
                 }).join('');
             }
             container.style.display = 'block';
+        }
+
+        // Load latest packs suggestions
+        async function loadLatestPacksSuggestions() {
+            try {
+                if (!supabase) {
+                    console.log('Supabase not initialized yet');
+                    return;
+                }
+                
+                const { data, error } = await supabase
+                    .from('packs')
+                    .select('id, name, icon_url')
+                    .order('created_at', { ascending: false })
+                    .limit(4);
+                
+                if (error) {
+                    console.error('Supabase error:', error);
+                    return;
+                }
+                
+                const suggestionsContainer = document.querySelector('.modal-suggestions');
+                
+                if (data && data.length > 0 && suggestionsContainer) {
+                    const grid = suggestionsContainer.querySelector('.modal-suggestions-grid');
+                    if (grid) {
+                        grid.innerHTML = data.map(pack => `
+                            <a href="/packs.html?id=${pack.id}" class="suggestion-card">
+                                <img src="${pack.icon_url || 'https://placehold.co/48x48/1c1c1c/de212a?text=P'}" class="pack-icon" alt="${escapeHtml(pack.name)}">
+                                <div class="suggestion-card-info">
+                                    <div class="suggestion-card-name">${escapeHtml(pack.name)}</div>
+                                </div>
+                            </a>
+                        `).join('');
+                    }
+                }
+            } catch (err) {
+                console.error('Error loading pack suggestions:', err);
+            }
         }
 
         // Debounced search
