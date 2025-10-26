@@ -133,7 +133,7 @@
             mobileUserMenu.innerHTML = `
                 <div class="mobile-user-menu-auth">
                     <a href="/login.html" class="login-link">Login</a>
-                    <a href="/register.html" class="signup-link">Sign Up</a>
+                    <a href="/signup.html" class="signup-link">Sign Up</a>
                 </div>
             `;
         }
