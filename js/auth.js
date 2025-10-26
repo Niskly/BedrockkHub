@@ -341,6 +341,7 @@ async function handleAuthStateChange() {
                  renderDesktopNav(false);
             }
         } else {
+            // User logged out - don't reset theme, keep current selection
             currentUserId = null;
             renderDesktopNav(false);
         }
