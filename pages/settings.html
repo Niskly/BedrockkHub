@@ -15,7 +15,7 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js" defer></script>
-    <script src="/theme.js"></script>
+    <script src="/js/components.js"></script>
     <style>
         :root {
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
@@ -123,7 +123,7 @@
         
         .notification-backdrop {
             display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px); z-index: 100; align-items: center; justify-content: center; padding: 1rem;
+            backdrop-filter: blur(5px); z-index: 1200; align-items: center; justify-content: center; padding: 1rem;
         }
         .notification-backdrop.show { display: flex; }
         .notification-panel {
@@ -794,8 +794,8 @@
         <div class="loading-container"><div class="spinner"></div><p>Loading Settings...</p></div>
     </main>
     
-    <script type="module" src="/theme.js"></script>
-    <script type="module" src="/auth.js"></script>
+    <script type="module" src="/js/theme.js"></script>
+    <script type="module" src="/js/auth.js"></script>
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         
@@ -1164,11 +1164,6 @@
         });
     </script>
     <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
         const OPENXBL_PUBLIC_KEY = 'e2ed13c6-bea5-9f3a-a796-546b48c71960';
         
         let currentUser, currentProfile, isProcessing = false;

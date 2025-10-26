@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MCHub - Contact Us</title>
+    <title>MCHub - FAQ</title>
     <link rel="apple-touch-icon" sizes="180x180" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-16x16.png">
@@ -606,138 +606,70 @@
 
     <main class="container">
         <div class="page-header">
-            <h1>Contact Us</h1>
-            <p>Have a question, suggestion, or need support? We'd love to hear from you.<br>Get in touch and we'll respond as soon as possible.</p>
+            <h1>Frequently Asked Questions</h1>
+            <p>Find answers to common questions about MCHub, packs, and our community</p>
         </div>
 
-        <div class="contact-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
-            <!-- Contact Form -->
-            <div style="background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; padding: 2rem;">
-                <h2 style="font-size: 1.3rem; font-weight: 700; margin: 0 0 1.5rem 0; display: flex; align-items: center; gap: 0.75rem;">
-                    <i class="fa-solid fa-envelope" style="color: var(--brand-1); font-size: 1.5rem;"></i>
-                    Send us a Message
-                </h2>
-                <form id="contact-form">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                        <div>
-                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text); font-size: 0.9rem;">Full Name</label>
-                            <input type="text" required placeholder="Your full name" style="width: 100%; padding: 0.875rem 1rem; background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: inherit; font-size: 1rem; transition: all 0.2s;">
-                        </div>
-                        <div>
-                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text); font-size: 0.9rem;">Email Address</label>
-                            <input type="email" required placeholder="your.email@example.com" style="width: 100%; padding: 0.875rem 1rem; background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: inherit; font-size: 1rem; transition: all 0.2s;">
-                        </div>
-                    </div>
-                    <div style="margin-bottom: 1rem;">
-                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text); font-size: 0.9rem;">Subject</label>
-                        <input type="text" required placeholder="What's this about?" style="width: 100%; padding: 0.875rem 1rem; background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: inherit; font-size: 1rem; transition: all 0.2s;">
-                    </div>
-                    <div style="margin-bottom: 1.5rem;">
-                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text); font-size: 0.9rem;">Message</label>
-                        <textarea required placeholder="Tell us more about your inquiry..." rows="6" style="width: 100%; padding: 0.875rem 1rem; background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: inherit; font-size: 1rem; transition: all 0.2s; resize: vertical;"></textarea>
-                    </div>
-                    <button type="submit" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); border: none; border-radius: 10px; color: white; font-weight: 700; font-size: 1rem; cursor: pointer; box-shadow: var(--shadow-brand); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-family: inherit;">
-                        <i class="fa-solid fa-paper-plane"></i>
-                        Send Message
-                    </button>
-                </form>
-            </div>
+        <div class="faq-search-container">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" class="faq-search-input" id="faq-search" placeholder="Search for answers...">
+        </div>
 
-            <!-- Contact Info - Individual Glowing Boxes -->
-            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                <h2 style="font-size: 1.4rem; font-weight: 800; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.75rem; color: var(--text);">
-                    <i class="fa-solid fa-circle-info" style="color: var(--brand-1); font-size: 1.5rem;"></i>
-                    Get in Touch
-                </h2>
-                
-                <!-- Email Box -->
-                <div class="glow-box" style="background: linear-gradient(135deg, rgba(28, 28, 28, 0.95), rgba(44, 44, 44, 0.8)); border: 2px solid var(--brand-1); border-radius: 12px; padding: 1.5rem; box-shadow: 0 0 20px rgba(var(--brand-1-rgb), 0.3), inset 0 0 20px rgba(var(--brand-1-rgb), 0.05); transition: all 0.3s; position: relative; overflow: hidden;">
-                    <!-- Decorative corner icon -->
-                    <div style="position: absolute; top: -10px; right: -10px; width: 60px; height: 60px; background: rgba(var(--brand-1-rgb), 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fa-solid fa-envelope" style="color: rgba(var(--brand-1-rgb), 0.3); font-size: 1.8rem;"></i>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
-                        <div style="width: 40px; height: 40px; background: rgba(var(--brand-1-rgb), 0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                            <i class="fa-solid fa-at" style="color: var(--brand-1); font-size: 1.2rem;"></i>
-                        </div>
-                        <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0;">Email Address</h3>
-                    </div>
-                    <p style="margin: 0 0 0.5rem 0; color: var(--text); font-weight: 600; font-size: 1.05rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fa-solid fa-paper-plane" style="font-size: 0.9rem; color: var(--brand-1);"></i>
-                        xxXX@gmail.com
-                    </p>
-                    <p style="margin: 0; font-size: 0.85rem; color: var(--muted); display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fa-solid fa-clock" style="font-size: 0.8rem;"></i>
-                        Response within 24 hours
-                    </p>
+        <!-- Mobile Category Selector -->
+        <div class="mobile-category-selector">
+            <div class="custom-select" id="mobile-category-dropdown">
+                <div class="custom-select-trigger">
+                    <i class="fa-solid fa-grip"></i>
+                    <span>All Questions</span>
+                    <i class="fa-solid fa-chevron-down" style="margin-left: auto;"></i>
                 </div>
-                
-                <!-- Support Hours Box -->
-                <div class="glow-box" style="background: linear-gradient(135deg, rgba(28, 28, 28, 0.95), rgba(44, 44, 44, 0.8)); border: 2px solid var(--brand-1); border-radius: 12px; padding: 1.5rem; box-shadow: 0 0 20px rgba(var(--brand-1-rgb), 0.3), inset 0 0 20px rgba(var(--brand-1-rgb), 0.05); transition: all 0.3s; position: relative; overflow: hidden;">
-                    <!-- Decorative corner icon -->
-                    <div style="position: absolute; top: -10px; right: -10px; width: 60px; height: 60px; background: rgba(var(--brand-1-rgb), 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fa-solid fa-headset" style="color: rgba(var(--brand-1-rgb), 0.3); font-size: 1.8rem;"></i>
+                <div class="custom-select-options">
+                    <div class="custom-select-option active" data-category="all">
+                        <i class="fa-solid fa-grip"></i>
+                        <span>All Questions</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
-                        <div style="width: 40px; height: 40px; background: rgba(var(--brand-1-rgb), 0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                            <i class="fa-solid fa-clock" style="color: var(--brand-1); font-size: 1.2rem;"></i>
-                        </div>
-                        <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0;">Support Hours</h3>
+                    <div class="custom-select-option" data-category="general">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>General</span>
                     </div>
-                    <p style="margin: 0 0 0.5rem 0; color: var(--text); font-weight: 600; font-size: 1.05rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fa-solid fa-circle-check" style="font-size: 0.9rem; color: var(--success);"></i>
-                        24/7 Support Available
-                    </p>
-                    <p style="margin: 0; font-size: 0.85rem; color: var(--muted); display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fa-solid fa-heart" style="font-size: 0.8rem;"></i>
-                        Always here to help
-                    </p>
-                </div>
-                
-                <!-- Discord Community Box -->
-                <div class="glow-box" style="background: linear-gradient(135deg, rgba(28, 28, 28, 0.95), rgba(44, 44, 44, 0.8)); border: 2px solid var(--brand-1); border-radius: 12px; padding: 1.5rem; box-shadow: 0 0 20px rgba(var(--brand-1-rgb), 0.3), inset 0 0 20px rgba(var(--brand-1-rgb), 0.05); transition: all 0.3s; position: relative; overflow: hidden;">
-                    <!-- Decorative corner icon -->
-                    <div style="position: absolute; top: -10px; right: -10px; width: 60px; height: 60px; background: rgba(var(--brand-1-rgb), 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fa-solid fa-users" style="color: rgba(var(--brand-1-rgb), 0.3); font-size: 1.8rem;"></i>
+                    <div class="custom-select-option" data-category="packs">
+                        <i class="fa-solid fa-cube"></i>
+                        <span>Packs</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
-                        <div style="width: 40px; height: 40px; background: rgba(var(--brand-1-rgb), 0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                            <i class="fa-brands fa-discord" style="color: var(--brand-1); font-size: 1.2rem;"></i>
-                        </div>
-                        <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0;">Join Our Community</h3>
+                    <div class="custom-select-option" data-category="account">
+                        <i class="fa-solid fa-user"></i>
+                        <span>Account</span>
                     </div>
-                    <p style="margin: 0 0 1rem 0; color: var(--muted); font-size: 0.95rem; display: flex; align-items: flex-start; gap: 0.5rem;">
-                        <i class="fa-solid fa-comments" style="font-size: 0.9rem; margin-top: 0.2rem; color: var(--brand-1);"></i>
-                        <span>Connect with other users, get instant help, and stay updated with the latest announcements.</span>
-                    </p>
-                    <a href="https://discord.gg/KtafawJZxM" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.875rem 1.5rem; background: var(--brand-1); color: white; border-radius: 10px; font-weight: 700; box-shadow: var(--shadow-brand); transition: all 0.3s; text-decoration: none;">
-                        <i class="fa-brands fa-discord" style="font-size: 1.2rem;"></i>
-                        Discord
-                        <i class="fa-solid fa-arrow-right" style="font-size: 0.9rem; margin-left: 0.25rem;"></i>
-                    </a>
                 </div>
             </div>
         </div>
 
-        <style>
-            @keyframes pulse {
-                0%, 100% { opacity: 0.5; transform: scale(1); }
-                50% { opacity: 0.8; transform: scale(1.05); }
-            }
-            .glow-box:hover {
-                box-shadow: 0 0 30px rgba(var(--brand-1-rgb), 0.5), 
-                            0 0 50px rgba(var(--brand-1-rgb), 0.3), 
-                            inset 0 0 30px rgba(var(--brand-1-rgb), 0.1) !important;
-                transform: translateY(-3px);
-                border-color: var(--brand-1);
-            }
-            input:focus, textarea:focus { outline: none; border-color: var(--brand-1); }
-            button:hover { filter: brightness(1.1); transform: translateY(-2px); }
-            a:hover { filter: brightness(1.2); transform: translateY(-2px); }
-            @media (max-width: 992px) {
-                .contact-grid { grid-template-columns: 1fr !important; }
-            }
-        </style>
+        <div class="faq-categories">
+            <button class="category-btn active" data-category="all">
+                <i class="fa-solid fa-grip"></i>
+                <span>All Questions</span>
+            </button>
+            <button class="category-btn" data-category="general">
+                <i class="fa-solid fa-circle-info"></i>
+                <span>General</span>
+            </button>
+            <button class="category-btn" data-category="packs">
+                <i class="fa-solid fa-cube"></i>
+                <span>Packs</span>
+            </button>
+            <button class="category-btn" data-category="account">
+                <i class="fa-solid fa-user"></i>
+                <span>Account</span>
+            </button>
+        </div>
+
+        <div class="faq-list" id="faq-list"></div>
+
+        <div class="no-results" id="no-results" style="display: none;">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <h3>No results found</h3>
+            <p>Try searching with different keywords</p>
+        </div>
     </main>
 
     <footer>
@@ -765,14 +697,13 @@
                     <a href="/">Home</a>
                     <a href="/texturepacks.html">Browse Packs</a>
                     <a href="/news.html">News</a>
-                  
                 </div>
             </div>
             <div class="footer-column">
                 <h4>Support</h4>
                 <div class="footer-links">
-                    <a href="/contact.html">Contact Us</a>
-                    <a href="/report.html">Report Issue</a>
+                    <a href="#">Contact Us</a>
+                    <a href="#">Report Issue</a>
                     <a href="/faq.html">FAQ</a>
                 </div>
             </div>
@@ -795,8 +726,8 @@
         </div>
     </footer>
 
-    <script type="module" src="/theme.js"></script>
-    <script type="module" src="/auth.js"></script>
+    <script src="/js/components.js"></script>
+    <script type="module" src="/js/auth.js"></script>
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         
@@ -1165,36 +1096,233 @@
         });
     </script>
     <script>
-        // Contact Form Handler
-        const contactForm = document.getElementById('contact-form');
-        if (contactForm) {
-            contactForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const button = contactForm.querySelector('button[type="submit"]');
-                const originalText = button.innerHTML;
-                button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
-                button.disabled = true;
-                
-                // Simulate form submission (you can replace this with actual API call)
-                setTimeout(() => {
-                    button.innerHTML = '<i class="fa-solid fa-check"></i> Message Sent!';
-                    button.style.background = 'var(--success)';
-                    
-                    setTimeout(() => {
-                        contactForm.reset();
-                        button.innerHTML = originalText;
-                        button.style.background = '';
-                        button.disabled = false;
-                    }, 2000);
-                }, 1500);
+        // FAQ Data
+        const faqData = [
+            {
+                category: 'general',
+                question: 'What is MCHub?',
+                answer: 'MCHub is your ultimate Minecraft community hub where you can discover and download amazing resource packs, texture packs, and stay updated with the latest Minecraft news and updates.'
+            },
+            {
+                category: 'general',
+                question: 'Is MCHub free to use?',
+                answer: 'Yes! MCHub is completely free to use. You can browse, download packs, and access all features without any cost.'
+            },
+            {
+                category: 'packs',
+                question: 'How do I download a pack?',
+                answer: 'Simply browse our pack library, click on any pack you like, and click the download button. The pack will be downloaded to your device, ready to be installed in Minecraft.'
+            },
+            {
+                category: 'packs',
+                question: 'What types of packs are available?',
+                answer: 'We offer a wide variety of packs including resource packs, texture packs, shader packs, and more. Each pack is carefully curated to enhance your Minecraft experience.'
+            },
+            {
+                category: 'packs',
+                question: 'How do I install a downloaded pack?',
+                answer: 'For Bedrock Edition: Open Minecraft, go to Settings > Global Resources > My Packs, and activate your downloaded pack. For Java Edition: Place the pack file in your resourcepacks folder and activate it in the game settings.'
+            },
+            {
+                category: 'packs',
+                question: 'Can I upload my own packs?',
+                answer: 'Yes! If you\'re a creator, you can upload your own packs to MCHub. Simply create an account, go to your profile, and use the upload feature to share your creations with the community.'
+            },
+            {
+                category: 'account',
+                question: 'Do I need an account to download packs?',
+                answer: 'No, you don\'t need an account to download packs. However, creating an account allows you to like packs, leave comments, upload your own creations, and get personalized recommendations.'
+            },
+            {
+                category: 'account',
+                question: 'How do I create an account?',
+                answer: 'Click the "Sign Up" button in the navigation bar, fill in your details, and verify your email. You\'ll be able to access all account features immediately after verification.'
+            },
+            {
+                category: 'account',
+                question: 'Can I link my Xbox/Bedrock gamertag?',
+                answer: 'Yes! You can link your Bedrock gamertag in your profile settings. This allows other users to find you and see your Minecraft skin on your profile.'
+            },
+            {
+                category: 'general',
+                question: 'What is the Skin Editor?',
+                answer: 'The Skin Editor is our powerful online tool that lets you create and edit Minecraft skins directly in your browser. You can paint, use different tools, and download your custom skin when you\'re done.'
+            },
+            {
+                category: 'general',
+                question: 'Is there a mobile app?',
+                answer: 'Currently, MCHub is a web-based platform optimized for both desktop and mobile browsers. We\'re working on a dedicated mobile app for the future!'
+            },
+            {
+                category: 'packs',
+                question: 'Are all packs compatible with my version of Minecraft?',
+                answer: 'Each pack page shows which Minecraft version it\'s compatible with. Make sure to check the compatibility before downloading. We support both Bedrock and Java editions.'
+            },
+            {
+                category: 'account',
+                question: 'How do I report inappropriate content?',
+                answer: 'If you find any inappropriate content, click the report button on the pack or comment page. Our moderation team will review your report within 24 hours.'
+            },
+            {
+                category: 'general',
+                question: 'Can I suggest new features?',
+                answer: 'Absolutely! We love hearing from our community. Join our Discord server or use the contact form to suggest new features or improvements.'
+            },
+            {
+                category: 'account',
+                question: 'How do I delete my account?',
+                answer: 'Go to your account settings and scroll to the bottom of the page. Click "Delete Account" and confirm. Please note that this action is irreversible.'
+            }
+        ];
+
+        // Render FAQ items
+        function renderFAQs(items) {
+            const faqList = document.getElementById('faq-list');
+            const noResults = document.getElementById('no-results');
+            
+            if (items.length === 0) {
+                faqList.innerHTML = '';
+                noResults.style.display = 'block';
+                return;
+            }
+            
+            // Icon mapping for categories
+            const categoryIcons = {
+                'general': 'fa-solid fa-circle-info',
+                'packs': 'fa-solid fa-cube',
+                'account': 'fa-solid fa-user'
+            };
+            
+            noResults.style.display = 'none';
+            faqList.innerHTML = items.map((faq, index) => `
+                <div class="faq-item" data-category="${faq.category}" data-index="${index}">
+                    <div class="faq-question">
+                        <div class="faq-question-icon">
+                            <i class="${categoryIcons[faq.category] || 'fa-solid fa-question'}"></i>
+                        </div>
+                        <div class="faq-question-content">
+                            <h3>${faq.question}</h3>
+                        </div>
+                        <div class="faq-icon">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="faq-answer">
+                        <p>${faq.answer}</p>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Add click handlers
+            document.querySelectorAll('.faq-question').forEach(question => {
+                question.addEventListener('click', () => {
+                    const item = question.closest('.faq-item');
+                    item.classList.toggle('open');
+                });
             });
         }
+
+        // Category filtering
+        function filterByCategory(category) {
+            const filtered = category === 'all' ? faqData : faqData.filter(faq => faq.category === category);
+            renderFAQs(filtered);
+            
+            // Update desktop buttons
+            document.querySelectorAll('.category-btn').forEach(b => {
+                if (b.dataset.category === category) {
+                    b.classList.add('active');
+                } else {
+                    b.classList.remove('active');
+                }
+            });
+            
+            // Update mobile custom select
+            const customSelect = document.getElementById('mobile-category-dropdown');
+            if (customSelect) {
+                const options = customSelect.querySelectorAll('.custom-select-option');
+                options.forEach(opt => {
+                    if (opt.dataset.category === category) {
+                        opt.classList.add('active');
+                        // Update trigger to show selected option
+                        const trigger = customSelect.querySelector('.custom-select-trigger');
+                        const icon = opt.querySelector('i').cloneNode(true);
+                        const text = opt.querySelector('span').textContent;
+                        trigger.querySelector('i:first-child').className = icon.className;
+                        trigger.querySelector('span').textContent = text;
+                    } else {
+                        opt.classList.remove('active');
+                    }
+                });
+            }
+        }
+        
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterByCategory(btn.dataset.category);
+            });
+        });
+        
+        // Mobile custom dropdown
+        const customSelect = document.getElementById('mobile-category-dropdown');
+        if (customSelect) {
+            const trigger = customSelect.querySelector('.custom-select-trigger');
+            const options = customSelect.querySelectorAll('.custom-select-option');
+            
+            // Toggle dropdown
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                customSelect.classList.toggle('open');
+            });
+            
+            // Select option
+            options.forEach(option => {
+                option.addEventListener('click', () => {
+                    filterByCategory(option.dataset.category);
+                    customSelect.classList.remove('open');
+                });
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', () => {
+                customSelect.classList.remove('open');
+            });
+        }
+
+        // Search functionality
+        const searchInput = document.getElementById('faq-search');
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            
+            // Get active category from either desktop buttons or mobile custom dropdown
+            let activeCategory = 'all';
+            const activeBtn = document.querySelector('.category-btn.active');
+            const mobileActiveOption = document.querySelector('.custom-select-option.active');
+            
+            if (window.innerWidth <= 768 && mobileActiveOption) {
+                activeCategory = mobileActiveOption.dataset.category;
+            } else if (activeBtn) {
+                activeCategory = activeBtn.dataset.category;
+            }
+            
+            let filtered = activeCategory === 'all' ? faqData : faqData.filter(faq => faq.category === activeCategory);
+            
+            if (query) {
+                filtered = filtered.filter(faq => 
+                    faq.question.toLowerCase().includes(query) || 
+                    faq.answer.toLowerCase().includes(query)
+                );
+            }
+            
+            renderFAQs(filtered);
+        });
+
+        // Initial render
+        renderFAQs(faqData);
         
         // Fade in
         document.addEventListener('DOMContentLoaded', () => {
             document.body.style.opacity = '1';
         });
-        
     </script>
 </body>
 </html>

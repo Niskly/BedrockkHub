@@ -1,6 +1,24 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "rewrites": [
+    { "source": "/login", "destination": "/pages/auth/login.html" },
+    { "source": "/signup", "destination": "/pages/auth/signup.html" },
+    { "source": "/verify", "destination": "/pages/auth/verify.html" },
+    { "source": "/complete-profile", "destination": "/pages/auth/complete-profile.html" },
+    { "source": "/forgot-password", "destination": "/pages/auth/forgot-password.html" },
+    { "source": "/update-password", "destination": "/pages/auth/update-password.html" },
+    { "source": "/skineditor", "destination": "/pages/tools/skineditor.html" },
+    { "source": "/capeeditor", "destination": "/pages/tools/capeeditor.html" },
+    { "source": "/texturepacks", "destination": "/pages/content/texturepacks.html" },
+    { "source": "/packs", "destination": "/pages/content/packs.html" },
+    { "source": "/news", "destination": "/pages/content/news.html" },
+    { "source": "/profile", "destination": "/pages/content/profile.html" },
+    { "source": "/settings", "destination": "/pages/settings.html" },
+    { "source": "/faq", "destination": "/pages/info/faq.html" },
+    { "source": "/contact", "destination": "/pages/info/contact.html" },
+    { "source": "/report", "destination": "/pages/info/report.html" }
+  ],
   "headers": [
     {
       "source": "/(.*)\\.(css|js|png|jpg|jpeg|gif|svg|webp|woff2)",

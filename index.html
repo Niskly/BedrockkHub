@@ -792,7 +792,7 @@
                     </div>
                      <div class="hero-actions">
                         <a href="#latest-uploads" class="btn ghost" id="scroll-to-latest"><i class="fa-solid fa-sparkles"></i> Latest Uploads</a>
-                        <a href="/texturepacks.html" class="btn primary"><i class="fa-solid fa-compass"></i> Explore Packs</a>
+                        <a href="/pages/content/texturepacks.html" class="btn primary"><i class="fa-solid fa-compass"></i> Explore Packs</a>
                     </div>
                 </div>
 
@@ -844,8 +844,8 @@
                 <h4>Explore</h4>
                 <div class="footer-links">
                     <a href="/">Home</a>
-                    <a href="/texturepacks.html">Browse Packs</a>
-                    <a href="/news.html">News</a>
+                    <a href="/pages/content/texturepacks.html">Browse Packs</a>
+                    <a href="/pages/content/news.html">News</a>
                 </div>
             </div>
             
@@ -912,8 +912,8 @@
         </div>
     </div>
     
-    <script type="module" src="/theme.js"></script>
-    <script type="module" src="/auth.js"></script>
+    <script src="/js/components.js"></script>
+    <script type="module" src="/js/auth.js"></script>
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -940,7 +940,7 @@
                         : `<div class="pack-icon" style="background:var(--bg-2); display:grid; place-items:center;"><i class="fa-solid fa-cube" style="color:var(--muted); font-size:2.2em;"></i></div>`;
 
                     return `
-                        <a href="/packs.html?id=${pack.id}" class="latest-pack-card">
+                        <a href="/pages/tools/skineditor.html?id=${pack.id}" class="latest-pack-card">
                             <div class="pack-main-info">
                                 <div class="pack-top-section">
                                     ${iconContent}
@@ -980,7 +980,7 @@
                     .ilike('name', `%${query}%`)
                     .limit(5);
                 results = (data || []).map(item => ({
-                    type: 'pack', name: item.name, icon: item.icon_url, link: `/packs.html?id=${item.id}`
+                    type: 'pack', name: item.name, icon: item.icon_url, link: `/pages/tools/skineditor.html?id=${item.id}`
                 }));
             } else if (searchType === 'users') {
                 const { data } = await supabase.from('profiles').select('username, avatar_url').ilike('username', `%${query}%`).limit(5);
@@ -1153,7 +1153,7 @@
                         const iconContent = pack.icon_url 
                             ? `<img class="pack-icon" src="${pack.icon_url}" alt="${escapeHtml(pack.name)} Icon">`
                             : `<div class="pack-icon" style="background:var(--bg-2); display:grid; place-items:center;"><i class="fa-solid fa-cube"></i></div>`;
-                        return `<a href="/packs.html?id=${pack.id}" class="suggestion-card">${iconContent}<div><div class="search-result-name">${escapeHtml(pack.name)}</div></div></a>`;
+                        return `<a href="/pages/tools/skineditor.html?id=${pack.id}" class="suggestion-card">${iconContent}<div><div class="search-result-name">${escapeHtml(pack.name)}</div></div></a>`;
                     }).join('');
                 } else {
                     container.innerHTML = '<p class="tiny">No new packs to suggest.</p>';
@@ -1195,7 +1195,7 @@
             let results = [];
             if (modalSearchType === 'packs') {
                 const { data } = await supabase.from('packs').select('id, name, icon_url').ilike('name', `%${query}%`).limit(5);
-                results = (data || []).map(item => ({ type: 'pack', name: item.name, icon: item.icon_url, link: `/packs.html?id=${item.id}` }));
+                results = (data || []).map(item => ({ type: 'pack', name: item.name, icon: item.icon_url, link: `/pages/tools/skineditor.html?id=${item.id}` }));
             } else if (modalSearchType === 'users') {
                 const { data } = await supabase.from('profiles').select('username, avatar_url').ilike('username', `%${query}%`).limit(5);
                 results = (data || []).map(item => ({ type: 'user', name: item.username, icon: item.avatar_url, link: `/profile.html?user=${item.username}` }));
@@ -1283,7 +1283,7 @@
                     if (modalSearchType === 'packs') {
                         const { data } = await supabase.from('packs').select('id, name, icon_url').ilike('name', `%${query}%`).limit(8);
                         results = (data || []).map(item => ({
-                            html: `<a href="/packs.html?id=${item.id}" class="search-result-item">
+                            html: `<a href="/pages/tools/skineditor.html?id=${item.id}" class="search-result-item">
                                 <img src="${item.icon_url || 'https://placehold.co/48x48/1c1c1c/e8eefc?text=ICON'}" style="width: 48px; height: 48px; border-radius: 8px; object-fit: cover;">
                                 <div style="font-weight: 600; color: var(--text);">${escapeHtml(item.name)}</div>
                             </a>`
@@ -1291,7 +1291,7 @@
                     } else if (modalSearchType === 'users') {
                         const { data } = await supabase.from('profiles').select('username, avatar_url').ilike('username', `%${query}%`).limit(8);
                         results = (data || []).map(item => ({
-                            html: `<a href="/profile.html?user=${item.username}" class="search-result-item">
+                            html: `<a href="/pages/content/profile.html?user=${item.username}" class="search-result-item">
                                 <img src="${item.avatar_url || 'https://placehold.co/48x48/1c1c1c/e8eefc?text=' + item.username.charAt(0).toUpperCase()}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
                                 <div style="font-weight: 600; color: var(--text);">${escapeHtml(item.username)}</div>
                             </a>`
@@ -1301,7 +1301,7 @@
                         results = (data || []).map(item => {
                             const skinHeadUrl = item.xuid ? `https://crafatar.com/avatars/${item.xuid}?size=48&overlay` : (item.avatar_url || 'https://placehold.co/48x48/1c1c1c/e8eefc?text=' + item.username.charAt(0).toUpperCase());
                             return {
-                                html: `<a href="/profile.html?user=${item.username}" class="search-result-item">
+                                html: `<a href="/pages/content/profile.html?user=${item.username}" class="search-result-item">
                                     <img src="${skinHeadUrl}" class="search-result-avatar is-mc-skin" style="width: 48px; height: 48px; border-radius: 4px; object-fit: cover; flex-shrink: 0; image-rendering: pixelated;">
                                     <div class="search-result-info">
                                         <div class="search-result-name">${escapeHtml(item.bedrock_gamertag)}</div>

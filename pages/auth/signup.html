@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MCHub - Login</title>
+    <title>MCHub - Sign Up</title>
     <link rel="apple-touch-icon" sizes="180x180" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-16x16.png">
@@ -11,6 +11,11 @@
     <link rel="shortcut icon" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon.ico">
     <!-- End Favicon Configuration -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="/components/nav.css">
+    <link rel="stylesheet" href="/components/footer.css">
+    <style>
+        body { opacity: 0; transition: opacity 0.5s ease-in-out; }
+    </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -27,7 +32,7 @@
         }
         body::before {
             content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-image: var(--bg-image, url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/bgs/redbg.png'));
+            background-image: var(--bg-image, url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/bgs/ls.png'));
             background-size: cover; filter: blur(8px); opacity: 0.25; z-index: -1;
             transition: background-image 0.5s ease-in-out;
         }
@@ -168,7 +173,7 @@
         }
         .hero-section {
             background: linear-gradient(135deg, rgba(222, 33, 42, 0.15), rgba(178, 26, 34, 0.25)),
-                        url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/bgs/ss1.jpg');
+                        url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/bgs/ss1.pnf');
             background-size: cover; background-position: center;
             display: flex; align-items: center; justify-content: center;
             position: relative; overflow: hidden;
@@ -219,8 +224,17 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .login-header { margin-bottom: 1.15rem; }
-        .login-header h1 { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.3rem; color: var(--text); }
+        .login-header h1 { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.4rem; color: var(--text); }
         .login-header p { color: var(--muted); font-size: 0.75rem; }
+        
+        .progress-bar-container { margin-top: 0.65rem; margin-bottom: 0.9rem; }
+        .progress-bar {
+            width: 100%; height: 6px; background: var(--bg-2); border-radius: 10px; overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%; background: linear-gradient(90deg, var(--brand-1), var(--brand-2));
+            border-radius: 10px; transition: width 0.3s ease; width: 33.33%;
+        }
         .form-group { margin-bottom: 0.75rem; text-align: left; position: relative;}
         label { display: block; margin-bottom: .35rem; font-weight: 600; color: var(--muted); font-size: 0.85rem; }
         input {
@@ -396,53 +410,7 @@
     </style>
 </head>
 <body>
-    <header id="main-header">
-        <div class="nav">
-            <div class="nav-left-desktop">
-                <a class="brand" href="/">
-                    <div class="brand-badge">
-                        <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
-                    </div>
-                    <div>
-                        <div class="brand-title">MCHUB</div>
-                        <div class="tiny">Minecraft • Community Hub</div>
-                    </div>
-                </a>
-                <div class="desktop-nav-links" id="desktop-nav-links"></div>
-            </div>
-            <div class="desktop-nav-right">
-                <div class="desktop-search-container">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" placeholder="Search..." readonly>
-                </div>
-                <div id="desktop-auth-actions"></div>
-            </div>
-            <div class="nav-actions" id="nav-actions"></div>
-            <div class="mobile-nav-controls">
-                <button id="mobile-search-toggle" class="mobile-nav-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
-                <div id="mobile-auth-actions"></div>
-                <button class="mobile-nav-btn mobile-nav-toggle"><i class="fa-solid fa-bars"></i></button>
-            </div>
-        </div>
-    </header>
-
-    <div class="mobile-nav-backdrop"></div>
-    <div class="mobile-nav-sidebar">
-        <button class="mobile-nav-close" aria-label="Close navigation menu"><i class="fa-solid fa-xmark"></i></button>
-        <div class="mobile-nav-header">
-            <a class="brand" href="/">
-                <div class="brand-badge">
-                    <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
-                </div>
-                <div>
-                    <div class="brand-title">MCHUB</div>
-                    <div class="tiny">Minecraft • Community Hub</div>
-                </div>
-            </a>
-        </div>
-        <div class="mobile-nav-main-links" id="mobile-nav-main-links"></div>
-        <div class="mobile-nav-footer-links" id="mobile-nav-footer-links"></div>
-    </div>
+    <div id="nav-component"></div>
 
     <div id="auth-redirect-overlay">
         <div class="spinner"></div>
@@ -461,29 +429,30 @@
                         <div class="brand-title">MCHUB</div>
                     </div>
                     <div class="login-header">
-                        <h1>Sign In</h1>
-                        <p>Welcome back! Please enter your details</p>
+                        <h1>Create your account</h1>
+                        <p>Step 1 of 3: Create Account</p>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar">
+                                <div class="progress-bar-fill"></div>
+                            </div>
+                        </div>
                     </div>
-            <form id="login-form">
+            <form id="signup-form">
                 <div class="form-group">
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" required>
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="email@domain.com" required>
                 </div>
                 <div class="form-group">
-                    <label for="password">Password:</label>
-                    <input type="password" id="password" required>
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
                      <i class="fa-solid fa-eye password-toggle" data-target="password"></i>
                 </div>
-                <div class="extra-options">
-                    <label class="remember-me">
-                        <input type="checkbox" id="rememberMe">
-                        Remember me
-                    </label>
-                    <div class="forgot-password">
-                        <a href="/forgot-password">Forgot Password?</a>
-                    </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" placeholder="••••••••" required>
+                     <i class="fa-solid fa-eye password-toggle" data-target="confirmPassword"></i>
                 </div>
-                <button type="submit" class="btn primary">Sign In</button>
+                <button type="submit" class="btn primary">Create Account</button>
             </form>
 
             <div class="divider">
@@ -491,18 +460,18 @@
             </div>
 
             <div class="social-logins">
-                 <button id="google-login-btn" class="social-btn">
+                 <button id="google-signup-btn" class="social-btn">
                      <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
-                     <span>Login with Google</span>
+                     <span>Sign up with Google</span>
                  </button>
             </div>
 
-                <p class="sub-text">Don't have an account? <a href="/signup.html">Sign Up</a></p>
+                <p class="sub-text">Already have an account? <a href="/login.html">Login</a></p>
                 </div>
             </div>
             <div class="hero-section">
                 <div class="hero-content">
-                    <h2>Welcome Back!</h2>
+                    <h2>Welcome to MCHub!</h2>
                     <p>Join thousands of Minecraft enthusiasts. Discover amazing texture packs and enhance your gaming experience.</p>
                 </div>
             </div>
@@ -515,8 +484,8 @@
     
     <div id="toast-container"></div>
 
-    <script type="module" src="/theme.js"></script>
-    <script type="module" src="/auth.js"></script>
+    <script src="/js/components.js"></script>
+    <script type="module" src="/js/auth.js"></script>
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
@@ -525,7 +494,6 @@
 
         const loginCard = document.getElementById('login-card');
         const redirectOverlay = document.getElementById('redirect-overlay');
-        const mainHeader = document.getElementById('main-header');
 
         function showToast(message, type = 'error') {
             const container = document.getElementById('toast-container');
@@ -547,35 +515,43 @@
             });
         });
 
-        document.getElementById('login-form').addEventListener('submit', async (event) => {
+        document.getElementById('signup-form').addEventListener('submit', async (event) => {
             event.preventDefault();
             const submitBtn = event.target.querySelector('button[type="submit"]');
             const originalBtnContent = submitBtn.innerHTML;
 
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match');
+                return;
+            }
+
             // Show loading state
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<div class="spinner-sm"></div>';
-            mainHeader.style.opacity = '0';
             loginCard.classList.add('hidden');
             redirectOverlay.classList.add('visible');
 
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            const { data, error } = await supabase.auth.signUp({ email, password });
             
             if (error) {
-                showToast('Incorrect email or password');
+                showToast(error.message || 'Failed to create account');
                 // Revert UI on error
                 loginCard.classList.remove('hidden');
                 redirectOverlay.classList.remove('visible');
-                mainHeader.style.opacity = '1';
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnContent;
+            } else {
+                // Redirect to email verification step with email prefilled
+                window.location.href = `/verify.html?email=${encodeURIComponent(email)}`;
             }
         });
 
-        document.getElementById('google-login-btn').addEventListener('click', async () => {
-            mainHeader.style.opacity = '0';
+        document.getElementById('google-signup-btn').addEventListener('click', async () => {
             loginCard.classList.add('hidden');
             redirectOverlay.classList.add('visible');
             await supabase.auth.signInWithOAuth({
@@ -586,59 +562,6 @@
         
     </script>
 
-    <footer>
-        <div class="footer-container">
-            <div class="footer-brand">
-                <a class="brand" href="/">
-                    <div class="brand-badge">
-                        <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
-                    </div>
-                    <div>
-                        <div class="brand-title">MCHUB</div>
-                        <div class="tiny">Minecraft • Community Hub</div>
-                    </div>
-                </a>
-                <p>Your ultimate destination for exploring the world of Minecraft. Discover new stories, follow your favorites, and never miss an update.</p>
-                <div class="footer-socials">
-                    <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook"></i></a>
-                    <a href="#" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
-                    <a href="https://discord.gg/KtafawJZxM" target="_blank" aria-label="Discord"><i class="fa-brands fa-discord"></i></a>
-                </div>
-            </div>
-            <div class="footer-column">
-                <h4>Explore</h4>
-                <div class="footer-links">
-                    <a href="/">Home</a>
-                    <a href="/texturepacks.html">Browse Packs</a>
-                    <a href="/news.html">News</a>
-                  
-                </div>
-            </div>
-            <div class="footer-column">
-                <h4>Support</h4>
-                <div class="footer-links">
-                    <a href="/contact.html">Contact Us</a>
-                    <a href="/report.html">Report Issue</a>
-                    <a href="/faq.html">FAQ</a>
-                </div>
-            </div>
-            <div class="footer-column">
-                <h4>Stay Updated</h4>
-                <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem;">Join our Discord server for the latest updates and news.</p>
-                <a href="https://discord.gg/KtafawJZxM" target="_blank" class="footer-discord">
-                    <i class="fa-brands fa-discord"></i>
-                    <span>Join Server</span>
-                </a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>© 2025 MCHub. All rights reserved.</p>
-            <div class="footer-bottom-links">
-                <a href="#">Terms of Service</a>
-                <a href="#">Privacy Policy</a>
-                <a href="#">DMCA</a>
-            </div>
-        </div>
-    </footer>
+    <div id="footer-component"></div>
 </body>
 </html>
