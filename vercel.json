@@ -1,6 +1,4 @@
 {
-  "cleanUrls": true,
-  "trailingSlash": false,
   "rewrites": [
     { "source": "/login", "destination": "/pages/auth/login.html" },
     { "source": "/signup", "destination": "/pages/auth/signup.html" },
