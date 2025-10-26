@@ -69,10 +69,10 @@
         await injectComponent('footer-component', '/components/footer.html');
         
         // Load mobile user menu handler
-        loadScript('/mobile-user-menu.js');
+        loadScript('/js/mobile-user-menu.js');
         
         // Load search handler
-        loadScript('/search-handler.js');
+        loadScript('/js/search-handler.js');
         
         // Dispatch custom event to signal components are loaded
         // This is useful for scripts that depend on the nav being present
