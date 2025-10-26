@@ -11,11 +11,15 @@
     <link rel="shortcut icon" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon.ico">
     <!-- End Favicon Configuration -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="/components/nav.css">
+    <link rel="stylesheet" href="/components/footer.css">
+    <style>
+        body { opacity: 0; transition: opacity 0.5s ease-in-out; }
+    </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js" defer></script>
-    <script src="/js/components.js"></script>
     <style>
         :root {
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
@@ -1807,6 +1811,7 @@
 
         document.addEventListener('auth-ready', async (event) => {
             const { user, profile, error } = event.detail;
+            document.body.style.opacity = '1'; // Make body visible
             if (error || !user) {
                 settingsContainer.innerHTML = `<div class="loading-container"><p>Please log in to view your settings.</p><a href="/login.html" class="btn primary" style="margin-top: 1rem;">Login</a></div>`;
                 return;
@@ -1821,5 +1826,9 @@
     </script>
 
     <div id="footer-component"></div>
+
+    <script src="/js/components.js"></script>
+    <script type="module" src="/js/theme.js"></script>
+    <script type="module" src="/js/auth.js"></script>
 </body>
 </html>
