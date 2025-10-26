@@ -1,0 +1,48 @@
+/* Footer */
+footer {
+    margin-top: 4rem; padding: 3rem 2rem 2rem; background: var(--bg-1); border-top: 1px solid var(--border);
+}
+.footer-container {
+    max-width: 1200px; margin: 0 auto; display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 3rem; padding-bottom: 2rem;
+}
+.footer-brand { display: flex; flex-direction: column; gap: 1rem; }
+.footer-brand .brand { display: flex; margin-bottom: 0.5rem; }
+.footer-brand p { color: var(--muted); line-height: 1.6; font-size: 0.9rem; }
+.footer-socials { display: flex; gap: 0.75rem; margin-top: 1rem; }
+.footer-socials a {
+    width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; background: var(--bg-2); border: 1px solid var(--border);
+    color: var(--muted); font-size: 1rem; transition: all 0.2s;
+}
+.footer-socials a:hover { color: var(--text); border-color: var(--brand-1); background: rgba(222, 33, 42, 0.1); }
+.footer-column h4 {
+    font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; margin-bottom: 1.25rem; color: var(--text);
+}
+.footer-links { display: flex; flex-direction: column; gap: 0.75rem; }
+.footer-links a { color: var(--muted); font-size: 0.9rem; transition: color 0.2s; }
+.footer-links a:hover { color: var(--text); }
+.footer-discord {
+    display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.65rem 1.25rem;
+    background: var(--brand-1); color: white; border-radius: 8px; font-weight: 700;
+    font-size: 0.9rem; margin-top: 1rem; transition: all 0.2s;
+    box-shadow: var(--shadow-brand); width: fit-content;
+}
+.footer-discord:hover { background: var(--brand-2); transform: translateY(-2px); }
+.footer-discord i { font-size: 1.1rem; }
+.footer-bottom {
+    max-width: 1200px; margin: 0 auto; padding-top: 2rem; border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; align-items: center; gap: 1rem;
+    font-size: 0.85rem; color: var(--muted);
+}
+.footer-bottom-links { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+.footer-bottom-links a { color: var(--muted); transition: color 0.2s; font-size: 0.85rem; }
+.footer-bottom-links a:hover { color: var(--text); }
+@media(max-width: 1024px) {
+    .footer-container { grid-template-columns: 1fr 1fr; gap: 2rem; }
+}
+@media(max-width: 768px) {
+    .footer-container { grid-template-columns: 1fr; gap: 2rem; }
+    .footer-bottom { flex-direction: column; }
+}

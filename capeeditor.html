@@ -1,0 +1,3114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mchub - Cape Editor</title>
+    <!-- Favicon Configuration -->
+    <link rel="apple-touch-icon" sizes="180x180" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-16x16.png">
+    <link rel="manifest" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/site.webmanifest">
+    <link rel="shortcut icon" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon.ico">
+    <!-- End Favicon Configuration -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="/components/nav.css">
+    <link rel="stylesheet" href="/components/footer.css">
+    <style>
+        body { opacity: 0; transition: opacity 0.5s ease-in-out; }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/skinview3d@3.0.1/bundles/skinview3d.bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
+            --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
+            --brand-1-rgb: 222, 33, 42; --brand-2: #b21a22; 
+            --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
+            --border-strong: rgba(255, 255, 255, .2);
+            --success: #22c55e; --danger: #ef4444;
+        }
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        body { margin: 0; background-color: var(--bg-0); color: var(--text); font: 500 15px/1.6 Inter, sans-serif; }
+        
+        /* Hide overflow only on mobile for editor */
+        @media (max-width: 992px) {
+            body { overflow: hidden; }
+        }
+        
+        /* Allow text selection for specific elements */
+        input, textarea, .selectable-text {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+        body::before { 
+            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+            background-image: var(--bg-image, url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg')); 
+            background-size: cover; filter: blur(8px); opacity: 0.2; z-index: -1;
+            transition: background-image 0.5s ease-in-out;
+        }
+        a { color: inherit; text-decoration: none; }
+        
+        body {
+            padding-top: 100px;
+        }
+        @media (max-width: 992px) {
+            body {
+                padding-top: 110px;
+            }
+        }
+
+        .editor-container {
+            display: grid;
+            grid-template-columns: 280px 1fr 400px;
+            grid-template-rows: 1fr;
+            grid-template-areas: "toolbar editor preview";
+            height: calc(100vh - 80px);
+            gap: 1rem;
+            padding: 1rem;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .btn { padding: .5rem 1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn.primary { background: linear-gradient(90deg, var(--brand-1), var(--brand-2)); box-shadow: var(--shadow-brand); color: white; }
+        .btn.ghost { border-color: var(--border); background: rgba(28, 28, 28, 0.8); color: var(--text); }
+        .btn.ghost:hover { background: var(--bg-1); border-color: var(--border-strong); }
+        .btn.icon-btn { padding: 0; width: 38px; height: 38px; font-size: 1rem; }
+        .spinner-sm { width: 1.2em; height: 1.2em; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .toolbar-panel {
+            grid-area: toolbar;
+            background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow-y: visible;
+        }
+
+        .panel-section { display: flex; flex-direction: column; gap: 0.5rem; }
+        .panel-title { font-weight: 700; color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); padding-bottom: 0.35rem; margin-bottom: 0; }
+
+        .tools-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+        .tool-btn {
+            background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px;
+            height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 4px; font-size: 1.2rem; cursor: pointer; transition: all 0.2s ease; color: var(--muted);
+        }
+        .tool-btn i { color: var(--brand-1); transition: color 0.2s; }
+        .tool-btn:hover { border-color: var(--border-strong); background: var(--bg-1); }
+        .tool-btn.active { border-color: var(--brand-1); background: rgba(var(--brand-1-rgb), 0.2); color: white; }
+        .tool-btn.active i { color: var(--brand-1); }
+        .tool-btn[disabled] { opacity: 0.5; cursor: not-allowed; background: var(--bg-2); border-color: var(--border); }
+        .tool-btn[disabled] i { color: var(--muted); }
+        
+        .color-palette { display: flex; flex-direction: column; gap: 0.75rem; }
+        .color-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(28px, 1fr)); gap: 0.5rem; }
+        .swatch { width: 100%; aspect-ratio: 1/1; border-radius: 8px; border: 2px solid var(--border); cursor: pointer; transition: transform 0.2s; }
+        .swatch:hover { transform: scale(1.1); }
+        .swatch.active { border-color: var(--brand-1); box-shadow: 0 0 0 2px rgba(var(--brand-1-rgb), 0.5); }
+
+        .editor-area {
+            grid-area: editor; 
+            background: #0a0a0a url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='8' height='8' fill='%232c2c2c'/%3E%3Crect x='8' y='8' width='8' height='8' fill='%232c2c2c'/%3E%3C/svg%3E");
+            border-radius: 16px; 
+            border: 1px solid var(--border);
+            position: relative; 
+            overflow: hidden;
+            transition: background 0.3s;
+        }
+        .editor-area.solid-bg {
+             background-image: none;
+             background-color: var(--bg-1);
+        }
+        #editor-skin-viewer {
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+        
+        .editor-overlay-controls {
+            position: absolute;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(18, 18, 18, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 0.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        .editor-overlay-controls .btn.ghost {
+             width: 40px; height: 40px; font-size: 1rem; padding: 0;
+        }
+
+
+        .preview-area {
+            grid-area: preview;
+            display: grid;
+            grid-template-rows: 1fr auto;
+            gap: 1rem;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .skin-viewer-wrapper {
+            position: relative;
+        }
+        #preview-skin-viewer { 
+            width: 100%; 
+            aspect-ratio: 1/1;
+            border-radius: 12px;
+            background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg');
+            background-size: cover;
+            background-position: center;
+            cursor: grab; 
+            display: block;
+        }
+        #preview-skin-viewer.dragging { cursor: grabbing; }
+
+        .preview-controls {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 5;
+        }
+        
+        .preview-controls-mobile {
+            display: none !important;
+        }
+        
+        @media (max-width: 992px) {
+            .preview-controls {
+                display: none !important;
+            }
+            
+            .preview-controls-mobile {
+                display: flex !important;
+            }
+        }
+        .preview-controls .btn.ghost.icon-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--muted);
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            transition: all 0.2s;
+            padding: 0;
+            font-size: 1rem;
+        }
+        .preview-controls .btn.ghost.icon-btn:hover {
+            color: var(--text);
+            background: rgba(0, 0, 0, 0.8);
+            border-color: var(--border-strong);
+            transform: scale(1.05);
+        }
+        .preview-controls .btn.ghost.icon-btn img {
+            width: 18px !important;
+            height: 18px !important;
+        }
+        
+        @media (max-width: 992px) {
+            .preview-controls .btn.ghost.icon-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 0.9rem;
+            }
+            .preview-controls .btn.ghost.icon-btn img {
+                width: 16px !important;
+                height: 16px !important;
+            }
+        }
+
+        .panel {
+            background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(20px);
+            border: 1px solid var(--border); border-radius: 16px; padding: 1rem;
+        }
+        
+        .preview-area .panel {
+            padding: 0;
+        }
+        
+        /* Statistics Panel */
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Preview Mode Dropdown (Desktop) / Tabs (Mobile) */
+        .preview-mode-tabs-mobile {
+            display: none !important; /* Hidden on mobile too now */
+        }
+        
+        #preview-mode-dropdown-container {
+            display: none;
+        }
+        
+        @media (min-width: 993px) {
+            .stats-panel {
+                display: block !important;
+            }
+            
+            #preview-mode-dropdown-container {
+                display: block !important;
+            }
+        }
+
+        /* Preview tab buttons hover effects */
+        #cape-only-btn:hover:not([style*="linear-gradient"]),
+        #skin-cape-btn:hover:not([style*="linear-gradient"]) {
+            background: rgba(var(--brand-1-rgb), 0.1) !important;
+            color: var(--text) !important;
+        }
+        
+        #cape-only-btn:hover[style*="linear-gradient"],
+        #skin-cape-btn:hover[style*="linear-gradient"] {
+            filter: brightness(1.1);
+        }
+
+        .steve-models-container {
+            display: flex;
+            gap: 1rem;
+            justify-content: space-around;
+            margin-bottom: 1rem;
+        }
+        .steve-model-wrapper {
+            text-align: center;
+        }
+        .model-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 0.5rem;
+        }
+        .steve-model {
+            position: relative;
+            display: inline-block;
+            width: 64px;
+            height: 88px;
+            background: var(--bg-2);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .steve-model canvas {
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        .body-part-overlay {
+            transition: all 0.2s ease;
+        }
+        .body-part-overlay:hover {
+            background: rgba(222, 33, 42, 0.2);
+            border-color: var(--brand-1) !important;
+        }
+        .body-part-overlay.hidden {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--muted) !important;
+            opacity: 0.5;
+        }
+        .body-part-overlay.hidden::after {
+            content: '✕';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .body-part-toggle {
+            transition: all 0.2s ease;
+        }
+        
+        .body-part-toggle:hover {
+            stroke: var(--brand-1);
+            stroke-width: 2;
+        }
+        
+        .model-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 1rem; }
+        .part-btn {
+            padding: 0.5rem 1rem; border: 1px solid var(--border); background: var(--bg-2); color: white; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; font-weight: 500; 
+        }
+        .part-btn:hover { background: var(--bg-1); border-color: var(--border-strong); }
+        .part-btn.active { background: var(--brand-1); color: white; border-color: var(--brand-1); }
+
+        /* Body part visibility checkboxes */
+        #layers-table label {
+            transition: all 0.2s ease;
+        }
+        #layers-table label:hover {
+            background: var(--bg-1) !important;
+        }
+        #layers-table input[type="checkbox"] {
+            accent-color: var(--brand-1);
+        }
+        
+        #toast-container { position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); z-index: 200; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;}
+        .toast { padding: 12px 18px; border-radius: 10px; color: white; font-weight: 600; display: flex; align-items: center; gap: 10px; background: var(--bg-1); border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideUp 0.3s ease-out forwards; }
+        .toast.error { border-color: var(--danger); }
+        .toast.error i { color: var(--danger); }
+        .toast.success { border-color: var(--success); }
+        .toast.success i { color: var(--success); }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .modal-backdrop {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px); display: none; align-items: center;
+            justify-content: center; z-index: 200;
+        }
+        .modal-content {
+            background: var(--bg-1); border: 1px solid var(--border);
+            border-radius: 16px; padding: 1.5rem; display: flex;
+            flex-direction: column; gap: 1rem;
+        }
+
+        /* Search Modal Styles */
+        .desktop-search-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: none;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 10vh;
+            animation: fadeIn 0.3s ease;
+        }
+        .desktop-search-modal-backdrop.show {
+            display: flex;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .close-search-modal-btn:hover {
+            background: var(--bg-1) !important;
+            color: var(--text) !important;
+        }
+        .search-type-option:hover {
+            background: var(--bg-1) !important;
+        }
+        #modal-search-type-dropdown.open #modal-search-type-btn .fa-chevron-down {
+            transform: rotate(180deg);
+        }
+        #modal-search-type-dropdown.open #modal-search-type-menu {
+            display: block !important;
+        }
+        .search-result-item {
+            display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem;
+            transition: background-color 0.2s; text-decoration: none; color: inherit;
+        }
+        .search-result-item:not(:last-child) {
+            border-bottom: 1px solid var(--border);
+        }
+        .search-result-item:hover {
+            background: var(--bg-1);
+        }
+        .search-result-icon, .search-result-avatar {
+            width: 40px; height: 40px; border-radius: 8px;
+            object-fit: cover; flex-shrink: 0;
+        }
+        .search-result-avatar.is-mc-skin {
+            border-radius: 4px; image-rendering: pixelated;
+            border: 1px solid var(--border); background: var(--bg-2);
+        }
+        .search-result-info {
+            text-align: left; flex: 1;
+        }
+        .search-result-name {
+            font-weight: 600; color: var(--text);
+        }
+        .search-result-sub {
+            font-size: 0.8rem; color: var(--muted);
+        }
+        /* Suggestion Cards */
+        .suggestion-card {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: linear-gradient(135deg, rgba(28, 28, 28, 0.9), rgba(44, 44, 44, 0.6));
+            padding: 0.75rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+        .suggestion-card:hover {
+            background: linear-gradient(135deg, rgba(44, 44, 44, 0.9), rgba(28, 28, 28, 0.6));
+            border-color: var(--brand-1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(222, 33, 42, 0.2);
+        }
+        .suggestion-card .pack-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .suggestion-card-info {
+            flex-grow: 1;
+            min-width: 0;
+        }
+        .suggestion-card-name {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .suggestion-card-downloads {
+            font-size: 0.75rem;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        #modal-search-results::-webkit-scrollbar {
+            width: 8px;
+        }
+        #modal-search-results::-webkit-scrollbar-track {
+            background: var(--bg-1);
+            border-radius: 4px;
+        }
+        #modal-search-results::-webkit-scrollbar-thumb {
+            background: var(--border-strong);
+            border-radius: 4px;
+        }
+        #modal-search-results::-webkit-scrollbar-thumb:hover {
+            background: var(--muted);
+        }
+
+        @media (max-width: 1200px) {
+            .editor-container {
+                grid-template-columns: 240px 1fr 320px;
+            }
+        }
+        @media (max-width: 992px) {
+            /* Hide desktop toolbar on mobile */
+            .toolbar-panel {
+                display: none !important;
+            }
+            
+            /* Show mobile UI */
+            .mobile-file-actions,
+            .mobile-tools-section,
+            .mobile-body-parts {
+                display: flex !important;
+            }
+            
+            .mobile-body-parts {
+                flex-direction: column;
+                padding: 0 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .editor-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+                grid-template-areas: "editor" "preview";
+                height: auto;
+                overflow-y: auto;
+            }
+            
+            /* Mobile file buttons */
+            .mobile-file-actions {
+                display: flex;
+                gap: 0.5rem;
+                margin-bottom: 1rem;
+                padding: 0 1rem;
+            }
+            
+            .mobile-btn {
+                flex: 1;
+                padding: 0.5rem 0.75rem;
+                border-radius: 6px;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.4rem;
+                cursor: pointer;
+                border: 1px solid var(--brand-1);
+                background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+                color: white;
+                transition: all 0.2s ease;
+                font-size: 0.85rem;
+                box-shadow: 0 4px 12px rgba(222, 33, 42, 0.3);
+            }
+            
+            .mobile-btn:active {
+                transform: scale(0.95);
+            }
+            
+            .mobile-btn:hover {
+                box-shadow: 0 6px 16px rgba(222, 33, 42, 0.4);
+                transform: translateY(-1px);
+            }
+            
+            .mobile-btn.reset-btn {
+                flex: 0 0 auto;
+                padding: 0.5rem;
+                width: 42px;
+                background: var(--bg-2);
+                border: 1px solid var(--border);
+                box-shadow: none;
+                color: var(--muted);
+            }
+            
+            .mobile-btn.reset-btn:hover {
+                background: var(--bg-1);
+                border-color: var(--border-strong);
+                color: var(--text);
+                box-shadow: none;
+                transform: translateY(0);
+            }
+            
+            /* Mobile tools section */
+            .mobile-tools-section {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+                padding: 0 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .mobile-section-title {
+                font-weight: 700;
+                color: var(--muted);
+                font-size: 0.8rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 0.5rem;
+            }
+            
+            .mobile-tools-grid {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 0.5rem;
+            }
+            
+            .mobile-colors-section {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            /* Mobile color picker now uses tool-btn class */
+            
+            .body-part-toggle {
+                transition: all 0.2s ease;
+            }
+            
+            .body-part-toggle:hover {
+                stroke: var(--brand-1);
+                stroke-width: 2;
+            }
+            
+            .editor-area, .skin-viewer-wrapper, .preview-area {
+                aspect-ratio: 1 / 1;
+                min-height: 300px;
+            }
+            
+            .skin-viewer-wrapper {
+                min-height: 0;
+            }
+            
+            .preview-area {
+                display: none !important;
+            }
+            
+            /* Make preview canvas match editor size exactly */
+            .preview-area .panel,
+            .preview-area .skin-viewer-wrapper {
+                width: 100%;
+                height: 100%;
+            }
+        }
+        @media (max-width: 768px) {
+            body { overflow: auto; }
+            .nav-actions { display: none; }
+            .mobile-nav-toggle { display: block; }
+            .editor-container {
+                gap: 0.75rem;
+                padding: 0.75rem;
+            }
+            .panel { overflow-y: visible; padding: 0.75rem; }
+            .panel-title { margin-bottom: 0.75rem; }
+            
+            /* Remove border and padding from preview panel on mobile */
+            .preview-area .panel {
+                border: none !important;
+                padding: 0 !important;
+                background: none !important;
+            }
+            
+            .preview-area .skin-viewer-wrapper {
+                padding: 0 !important;
+            }
+            
+            #mobile-view-switcher { display: block !important; }
+            .mobile-tools-section { display: block !important; }
+            .mobile-body-parts { display: none !important; }
+            .preview-area { display: none !important; }
+            aside { display: none; }
+            .mobile-nav-controls { align-items: center; }
+            #preview-mobile-switcher { display: block !important; }
+            
+            /* Mobile layout order */
+            .editor-container {
+                display: flex;
+                flex-direction: column;
+            }
+            .mobile-file-actions { order: 1; }
+            .editor-area { order: 2; }
+            .preview-area { order: 2; } /* Same order as editor so they swap */
+            .mobile-tools-section { order: 3; }
+            .mobile-body-parts { order: 3; }
+        }
+    </style>
+</head>
+<body>
+    <div id="nav-component"></div>
+
+    <!-- NOTIFICATION MODAL -->
+    <div id="notification-backdrop" class="notification-backdrop">
+        <div id="notification-panel" class="notification-panel">
+            <div class="notification-header">
+                <h3>Notifications</h3>
+                <button id="close-notifications-btn">&times;</button>
+            </div>
+            <div id="notification-list" class="notification-list">
+                <!-- Notifications will be rendered here by JS -->
+            </div>
+            <div class="notification-footer">
+                <button id="mark-all-read-btn" class="notification-footer-btn">Mark all as read</button>
+                <button id="clear-all-btn" class="notification-footer-btn">Clear All</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile nav sidebar is created dynamically by auth.js -->
+
+    <!-- DESKTOP SEARCH MODAL -->
+    <div id="desktop-search-modal" class="desktop-search-modal-backdrop">
+        <div class="desktop-search-modal-content" style="background: var(--bg-1); border-radius: 1rem; border: 1px solid var(--border); width: 100%; max-width: 700px; padding: 1rem; padding-top: 3rem; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: slideDown 0.4s ease;">
+            <button id="close-search-modal-btn" class="close-search-modal-btn" style="position: absolute; top: 0.75rem; right: 0.75rem; background: var(--bg-2); border: 1px solid var(--border); color: var(--muted); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: grid; place-items: center; transition: all 0.2s;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="search-hub-container" style="margin: 0; max-width: 100%;">
+                <div class="search-input-wrapper" style="display: flex; position: relative; background: var(--bg-2); border: 1px solid var(--border); border-radius: 16px; transition: border-color 0.2s;">
+                    <div class="search-type-dropdown" id="modal-search-type-dropdown" style="position: relative;">
+                        <button id="modal-search-type-btn" style="display: flex; align-items: center; gap: 0.5rem; height: 100%; padding: 0 1.2rem; background: var(--bg-1); border: none; color: var(--text); font-weight: 600; border-radius: 15px 0 0 15px; cursor: pointer; border-right: 1px solid var(--border); font-family: inherit;">
+                            <i class="fa-solid fa-palette"></i>
+                            <span>Packs</span>
+                            <i class="fa-solid fa-chevron-down" style="font-size: 0.7em; transition: transform 0.2s;"></i>
+                        </button>
+                        <div id="modal-search-type-menu" style="display: none; position: absolute; top: 110%; left: 0; z-index: 12; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 100%; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.3);">
+                            <div class="search-type-option" data-type="packs" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; transition: background 0.2s;"><i class="fa-solid fa-palette" style="width: 16px; color: var(--muted);"></i> Packs</div>
+                            <div class="search-type-option" data-type="users" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; transition: background 0.2s;"><i class="fa-solid fa-user" style="width: 16px; color: var(--muted);"></i> Users</div>
+                            <div class="search-type-option" data-type="gamertags" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; transition: background 0.2s;"><i class="fa-brands fa-xbox" style="width: 16px; color: var(--muted);"></i> Gamertags</div>
+                        </div>
+                    </div>
+                    <input type="text" id="modal-universal-search" placeholder="Search for packs..." style="width: 100%; padding: 1rem 1.5rem; font-size: 1rem; background: transparent; border: none; color: var(--text); outline: none; font-family: inherit;">
+                </div>
+                <div id="modal-search-results" style="display: none; margin-top: 0.5rem; background: var(--bg-2); border: 1px solid var(--border); border-radius: 16px; max-height: 350px; overflow-y: auto;"></div>
+                
+                <!-- Latest Packs Suggestions -->
+                <div class="modal-suggestions" style="margin-top: 1.5rem; padding: 0 0.5rem;">
+                    <div class="suggestions-title" style="font-size: 0.85rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-fire" style="color: var(--brand-1);"></i>
+                        Latest Packs
+                    </div>
+                    <div class="modal-suggestions-grid" id="modal-pack-suggestions" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile File Actions (hidden on desktop) -->
+    <div class="mobile-file-actions" style="display: none; margin-bottom: 0.5rem;">
+        <div style="display: flex; gap: 0.5rem; width: 100%;">
+            <label for="mobile-upload-input" class="mobile-btn" style="flex: 1;">
+                <i class="fa-solid fa-upload"></i>
+                <span>Upload</span>
+            </label>
+            <button class="mobile-btn" id="mobile-download-btn" style="flex: 1;">
+                <i class="fa-solid fa-download"></i>
+                <span>Download</span>
+            </button>
+        </div>
+        <input type="file" id="mobile-upload-input" accept="image/png" style="display: none;">
+    </div>
+
+    <main class="editor-container">
+        <aside class="toolbar-panel" style="padding-top: 1.5rem;">
+            <div class="panel-section">
+                <h3 class="panel-title">File</h3>
+                <div class="tools-grid" style="grid-template-columns: repeat(3, 1fr);">
+                    <button class="tool-btn" id="reset-btn" title="New Cape"><i class="fa-solid fa-file"></i></button>
+                    <label for="upload-skin-input" class="tool-btn" id="upload-btn" title="Load Cape from PC" style="cursor: pointer;">
+                        <i class="fa-solid fa-upload"></i>
+                    </label>
+                    <button class="tool-btn" id="download-btn" title="Download Cape"><i class="fa-solid fa-download"></i></button>
+                    <input type="file" id="upload-skin-input" accept="image/png" style="display: none;">
+                </div>
+            </div>
+            <div class="panel-section">
+                <h3 class="panel-title">Tools</h3>
+                <div class="tools-grid">
+                    <button class="tool-btn active" id="pencil-tool" title="Pencil"><i class="fa-solid fa-pencil"></i></button>
+                    <button class="tool-btn" id="eraser-tool" title="Eraser"><i class="fa-solid fa-eraser"></i></button>
+                    <button class="tool-btn" id="picker-tool" title="Color Picker"><i class="fa-solid fa-xmark"></i></button>
+                    <button class="tool-btn" id="bucket-tool" title="Fill Bucket"><i class="fa-solid fa-fill-drip"></i></button>
+                </div>
+                 <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
+                    <label for="grid-bg-toggle" style="display:flex; align-items:center; gap: 0.5rem; font-size: 0.9rem; color: var(--muted); cursor: pointer;">
+                        <input type="checkbox" id="grid-bg-toggle" checked> Use Grid Background
+                    </label>
+                </div>
+            </div>
+            <div class="panel-section">
+                <h3 class="panel-title">Edit Mode</h3>
+                <div class="tools-grid" style="grid-template-columns: repeat(2, 1fr);">
+                    <button class="tool-btn active" id="3d-mode-btn" title="3D Mode">
+                        <i class="fa-solid fa-cube"></i>
+                    </button>
+                    <button class="tool-btn" id="2d-mode-btn" title="PNG Mode">
+                        <i class="fa-solid fa-image"></i>
+                    </button>
+                </div>
+            </div>
+             <div class="panel-section">
+                <h3 class="panel-title">Color</h3>
+                <div class="color-palette">
+                    <div class="color-swatches">
+                        <div id="color-picker-swatch" class="swatch" title="Color Picker" style="cursor: pointer; position: relative; display: flex; align-items: center; justify-content: center; background: #de212a;">
+                            <i class="fa-solid fa-palette" style="color: white; font-size: 1rem; text-shadow: 0 0 3px rgba(0,0,0,0.5); pointer-events: none;"></i>
+                            <input type="color" id="color-picker" value="#de212a" style="position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; left: 0; top: 0; border: none;">
+                        </div>
+                        <div id="color-swatches" style="display: contents;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-section">
+                <h3 class="panel-title">Recent Colors</h3>
+                <div class="color-swatches" id="recent-color-swatches"></div>
+            </div>
+        </aside>
+
+        <div class="editor-area">
+            <!-- Mobile View Switcher (top left corner of editor) -->
+            <div id="mobile-view-switcher" style="position: absolute; top: 1rem; left: 1rem; z-index: 10; display: none;">
+                <div style="position: relative;">
+                    <button id="mobile-view-toggle-btn" class="btn ghost" style="padding: 0.5rem 0.75rem; font-size: 0.9rem; font-weight: 600;">
+                        Editor <i class="fa-solid fa-chevron-down" style="margin-left: 0.25rem; font-size: 0.7rem;"></i>
+                    </button>
+                    <div id="mobile-view-dropdown" style="position: absolute; top: calc(100% + 0.5rem); left: 0; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; min-width: 120px; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                        <button id="mobile-switch-to-preview" style="width: 100%; padding: 0.75rem 1rem; background: none; border: none; color: white; text-align: left; cursor: pointer; border-radius: 8px; font-size: 0.9rem; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'">
+                            <i class="fa-solid fa-eye" style="margin-right: 0.5rem; width: 16px;"></i> Preview
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <canvas id="editor-skin-viewer"></canvas>
+            <!-- 2D PNG Overlay -->
+            <div id="png-overlay" style="position: absolute; inset: 0; pointer-events: none; display: none; align-items: center; justify-content: center; overflow: hidden;">
+                <canvas id="png-canvas" style="image-rendering: pixelated; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges; cursor: grab;"></canvas>
+            </div>
+            <div class="editor-overlay-controls">
+                 <button id="undo-btn" class="btn ghost" title="Undo (Ctrl+Z)" disabled><i class="fa-solid fa-undo"></i></button>
+                 <button id="redo-btn" class="btn ghost" title="Redo (Ctrl+Y)" disabled><i class="fa-solid fa-redo"></i></button>
+                 <button id="zoom-out-btn" class="btn ghost" title="Zoom Out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                 <button id="zoom-in-btn" class="btn ghost" title="Zoom In"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+            </div>
+            <div style="position: absolute; top: 1rem; right: 1rem; display: flex; gap: 0.5rem;">
+                 <button id="elytra-toggle-btn" class="btn ghost icon-btn" title="Toggle Elytra">
+                     <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/elytra.png" style="width: 20px; height: 20px; filter: invert(1);">
+                 </button>
+            </div>
+        </div>
+
+        <!-- Mobile Tools & Colors (hidden on desktop) -->
+        <div class="mobile-tools-section" style="display: none;">
+            <div>
+                <h3 class="mobile-section-title">Tools</h3>
+                <div class="mobile-tools-grid">
+                    <button class="tool-btn active" id="mobile-pencil-tool" title="Pencil"><i class="fa-solid fa-pencil"></i></button>
+                    <button class="tool-btn" id="mobile-eraser-tool" title="Eraser"><i class="fa-solid fa-eraser"></i></button>
+                    <button class="tool-btn" id="mobile-picker-tool" title="Color Picker"><i class="fa-solid fa-xmark"></i></button>
+                    <button class="tool-btn" id="mobile-bucket-tool" title="Fill Bucket"><i class="fa-solid fa-fill-drip"></i></button>
+                    <button class="tool-btn" id="mobile-reset-btn" title="Reset"><i class="fa-solid fa-file"></i></button>
+                </div>
+            </div>
+            
+            <div>
+                <h3 class="mobile-section-title">Edit Mode</h3>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                    <button class="tool-btn active" id="mobile-3d-mode-btn" title="3D Mode">
+                        <i class="fa-solid fa-cube"></i>
+                    </button>
+                    <button class="tool-btn" id="mobile-2d-mode-btn" title="PNG Mode">
+                        <i class="fa-solid fa-image"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="mobile-colors-section">
+                <div>
+                    <h3 class="mobile-section-title">Color</h3>
+                    <div class="color-swatches">
+                        <div id="mobile-color-picker-swatch" class="swatch" title="Color Picker" style="cursor: pointer; position: relative; display: flex; align-items: center; justify-content: center; background: #de212a;">
+                            <i class="fa-solid fa-palette" style="color: white; font-size: 0.9rem; text-shadow: 0 0 3px rgba(0,0,0,0.5); pointer-events: none;"></i>
+                            <input type="color" id="mobile-color-picker" value="#de212a" style="position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; top: 0; left: 0; border: none;">
+                        </div>
+                        <div id="mobile-color-swatches" style="display: contents;"></div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="mobile-section-title">Recent Colors</h3>
+                    <div class="color-swatches" id="mobile-recent-color-swatches"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Preview Options (hidden on desktop) -->
+        <div class="mobile-body-parts" style="display: none;"></div>
+
+        <div class="preview-area" style="display: flex; flex-direction: column; gap: 0.75rem; padding: 0;">
+            <!-- Preview Panel -->
+            <div class="panel" style="flex: 1; display: flex; flex-direction: column; padding: 0; overflow: hidden; min-height: 0;">
+                <!-- Cape/Skin+Cape Tabs (Mobile Only) -->
+                <div class="preview-mode-tabs-mobile" style="display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--border);">
+                    <button id="cape-only-btn-mobile" style="padding: 0.75rem 1rem; background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); border: none; border-bottom: 3px solid var(--brand-1); color: white; cursor: pointer; font-weight: 700; font-size: 0.9rem; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-family: inherit;">
+                        <i class="fa-solid fa-user-tie"></i> Cape
+                    </button>
+                    <button id="skin-cape-btn-mobile" style="padding: 0.75rem 1rem; background: var(--bg-2); border: none; border-bottom: 3px solid transparent; color: var(--muted); cursor: pointer; font-weight: 700; font-size: 0.9rem; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-family: inherit;">
+                        <i class="fa-solid fa-user"></i> Skin+Cape
+                    </button>
+                </div>
+                <div class="skin-viewer-wrapper" style="padding: 0.5rem; position: relative;">
+                    <!-- Preview Mode Dropdown (Desktop Only) -->
+                    <div id="preview-mode-dropdown-container" style="position: absolute; top: 0.5rem; left: 0.5rem; z-index: 15; display: none;">
+                        <div style="position: relative;">
+                            <button id="preview-mode-toggle-btn" class="btn ghost" style="padding: 0.5rem 0.75rem; font-size: 0.85rem; font-weight: 600; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px); border: 1px solid var(--border);">
+                                <i class="fa-solid fa-user-tie"></i> Cape <i class="fa-solid fa-chevron-down" style="margin-left: 0.25rem; font-size: 0.65rem;"></i>
+                            </button>
+                            <div id="preview-mode-dropdown-menu" style="position: absolute; top: calc(100% + 0.5rem); left: 0; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; min-width: 140px; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.4); overflow: hidden;">
+                                <button id="cape-only-btn" style="width: 100%; padding: 0.75rem 1rem; background: rgba(var(--brand-1-rgb), 0.15); border: none; color: white; text-align: left; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; font-family: inherit; font-weight: 600;" onmouseover="this.style.background='rgba(var(--brand-1-rgb), 0.25)'" onmouseout="this.style.background='rgba(var(--brand-1-rgb), 0.15)'">
+                                    <i class="fa-solid fa-user-tie"></i> Cape
+                                </button>
+                                <button id="skin-cape-btn" style="width: 100%; padding: 0.75rem 1rem; background: none; border: none; color: var(--muted); text-align: left; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; font-family: inherit; font-weight: 600;" onmouseover="this.style.background='var(--bg-1)'; this.style.color='var(--text)'" onmouseout="this.style.background='none'; this.style.color='var(--muted)'">
+                                    <i class="fa-solid fa-user"></i> Skin+Cape
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Mobile View Switcher - Top Left (only on mobile) -->
+                    <div id="preview-mobile-switcher" style="position: absolute; top: 0.5rem; left: 0.5rem; z-index: 10; display: none;">
+                        <div style="position: relative;">
+                            <button id="preview-mobile-view-toggle-btn" class="btn ghost" style="padding: 0.5rem 0.75rem; font-size: 0.85rem; font-weight: 600;">
+                                Preview <i class="fa-solid fa-chevron-down" style="margin-left: 0.25rem; font-size: 0.65rem;"></i>
+                            </button>
+                            <div id="preview-mobile-view-dropdown" style="position: absolute; top: calc(100% + 0.5rem); left: 0; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; min-width: 120px; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                                <button id="preview-mobile-switch-to-editor" style="width: 100%; padding: 0.75rem 1rem; background: none; border: none; color: white; text-align: left; cursor: pointer; border-radius: 8px; font-size: 0.85rem; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'">
+                                    <i class="fa-solid fa-palette" style="margin-right: 0.5rem; width: 16px;"></i> Editor
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Play/Pause, Upload & Elytra - Top Right (Desktop) -->
+                    <div class="preview-controls">
+                        <button id="play-pause-btn" class="btn ghost icon-btn" title="Pause Animation"><i class="fa-solid fa-pause"></i></button>
+                        <label for="test-skin-upload-input" id="skin-upload-btn" class="btn ghost icon-btn" title="Upload Test Skin" style="cursor: pointer; display: none;">
+                            <i class="fa-solid fa-upload"></i>
+                        </label>
+                        <input type="file" id="test-skin-upload-input" accept="image/png" style="display: none;">
+                        <button id="preview-elytra-toggle-btn" class="btn ghost icon-btn" title="Toggle Elytra Mode">
+                            <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/elytra.png" style="width: 14px; height: 14px; filter: invert(1);">
+                        </button>
+                    </div>
+                    
+                    <!-- Mobile Preview Mode Controls - Top Right (Mobile Only) -->
+                    <div class="preview-controls-mobile" style="position: absolute; top: 0.5rem; right: 0.5rem; display: none; flex-direction: column; gap: 0.5rem; z-index: 5;">
+                        <button id="mobile-pause-btn" class="btn ghost icon-btn" title="Pause Animation"><i class="fa-solid fa-pause"></i></button>
+                        <button id="mobile-cape-mode-btn" class="btn ghost icon-btn" title="Cape Only" style="background: rgba(var(--brand-1-rgb), 0.6); border-color: var(--brand-1);">
+                            <i class="fa-solid fa-user-tie"></i>
+                        </button>
+                        <button id="mobile-skin-mode-btn" class="btn ghost icon-btn" title="Show with Skin">
+                            <i class="fa-solid fa-user"></i>
+                        </button>
+                        <label for="mobile-test-skin-upload" id="mobile-skin-upload-btn" class="btn ghost icon-btn" title="Upload Skin" style="cursor: pointer; opacity: 0.3; pointer-events: none;">
+                            <i class="fa-solid fa-upload"></i>
+                        </label>
+                        <input type="file" id="mobile-test-skin-upload" accept="image/png" style="display: none;">
+                        <button id="mobile-elytra-btn" class="btn ghost icon-btn" title="Toggle Elytra">
+                            <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/elytra.png" style="width: 18px; height: 18px; filter: invert(1);">
+                        </button>
+                    </div>
+                    <canvas id="preview-skin-viewer"></canvas>
+                </div>
+            </div>
+            
+            <!-- Statistics Panel -->
+            <div class="stats-panel" style="background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(20px); border: 1px solid var(--border); border-radius: 16px; padding: 1rem; display: none;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                    <h3 style="margin: 0; font-size: 0.9rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-chart-simple" style="color: var(--brand-1);"></i>
+                        Statistics
+                    </h3>
+                    <button id="reset-stats-btn" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='var(--bg-2)'; this.style.color='var(--text)';" onmouseout="this.style.background='none'; this.style.color='var(--muted)';">
+                        <i class="fa-solid fa-rotate-right"></i> Reset
+                    </button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+                    <!-- Pixels Painted -->
+                    <div class="stat-card" style="background: linear-gradient(135deg, rgba(var(--brand-1-rgb), 0.1), rgba(var(--brand-1-rgb), 0.05)); border: 1px solid rgba(var(--brand-1-rgb), 0.3); border-radius: 12px; padding: 0.75rem; transition: all 0.2s;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(var(--brand-1-rgb), 0.2); display: grid; place-items: center;">
+                                <i class="fa-solid fa-paintbrush" style="color: var(--brand-1); font-size: 0.9rem;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 0.7rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Pixels Painted</div>
+                                <div id="stat-pixels" style="font-size: 1.25rem; font-weight: 800; color: var(--text);">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Colors Used -->
+                    <div class="stat-card" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05)); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 12px; padding: 0.75rem; transition: all 0.2s;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(34, 197, 94, 0.2); display: grid; place-items: center;">
+                                <i class="fa-solid fa-palette" style="color: #22c55e; font-size: 0.9rem;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 0.7rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Colors Used</div>
+                                <div id="stat-colors" style="font-size: 1.25rem; font-weight: 800; color: var(--text);">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions Taken -->
+                    <div class="stat-card" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05)); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 0.75rem; transition: all 0.2s;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(59, 130, 246, 0.2); display: grid; place-items: center;">
+                                <i class="fa-solid fa-hand-pointer" style="color: #3b82f6; font-size: 0.9rem;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 0.7rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Actions</div>
+                                <div id="stat-actions" style="font-size: 1.25rem; font-weight: 800; color: var(--text);">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Time Editing -->
+                    <div class="stat-card" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(168, 85, 247, 0.05)); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 12px; padding: 0.75rem; transition: all 0.2s;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(168, 85, 247, 0.2); display: grid; place-items: center;">
+                                <i class="fa-solid fa-clock" style="color: #a855f7; font-size: 0.9rem;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 0.7rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Time</div>
+                                <div id="stat-time" style="font-size: 1.25rem; font-weight: 800; color: var(--text);">0:00</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal-backdrop" class="modal-backdrop">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <h3 id="confirmation-modal-title">Are you sure?</h3>
+            <p id="confirmation-modal-text" style="color: var(--muted); margin: 1rem 0;"></p>
+            <div class="editor-modal-actions" style="display: flex; gap: 1rem; justify-content: center;">
+                <button id="cancel-confirmation-btn" class="btn ghost">Cancel</button>
+                <button id="confirm-action-btn" class="btn primary" style="background: var(--danger);">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+    
+    <canvas id="master-skin-canvas" style="display: none;"></canvas>
+
+    <script type="module">
+        // --- 3D Viewer Setup ---
+        let raycaster = new THREE.Raycaster();
+        let mouse = new THREE.Vector2();
+        let raycastableMeshes = [];
+
+        const previewSkinViewer = new skinview3d.SkinViewer({
+            canvas: document.getElementById("preview-skin-viewer"),
+            cape: "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/bgs/cape.png"
+        });
+        previewSkinViewer.controls.enableRotate = true;
+        previewSkinViewer.controls.enableZoom = true;
+        previewSkinViewer.autoRotate = true;
+        previewSkinViewer.autoRotateSpeed = 1;
+        
+        // Zoom out to show full character including legs
+        previewSkinViewer.camera.position.z = 60;
+        previewSkinViewer.camera.fov = 50;
+        previewSkinViewer.camera.updateProjectionMatrix();
+        
+        const editorSkinViewer = new skinview3d.SkinViewer({
+            canvas: document.getElementById("editor-skin-viewer"),
+            cape: "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/bgs/cape.png",
+            renderer: { alpha: true, antialias: false }
+        });
+        editorSkinViewer.renderer.setClearColor(0x000000, 0);
+        editorSkinViewer.controls.enableRotate = true;
+        editorSkinViewer.controls.enableZoom = true;
+        editorSkinViewer.autoRotate = false;
+        editorSkinViewer.animation = new skinview3d.IdleAnimation();
+        editorSkinViewer.animation.paused = false;
+        
+        // Fix leg positioning - body at -2/2, overlay at -2.15/2.15
+        function fixLegPositions() {
+            [editorSkinViewer, previewSkinViewer].forEach(viewer => {
+                if (viewer.playerObject && viewer.playerObject.skin) {
+                    const skin = viewer.playerObject.skin;
+                    // Position parent containers at -2/2 (this sets body position)
+                    if (skin.rightLeg) {
+                        skin.rightLeg.position.x = -2;
+                        // Add extra offset to overlay for -2.15 total
+                        if (skin.rightLeg.outerLayer) skin.rightLeg.outerLayer.position.x = -0.20;
+                    }
+                    if (skin.leftLeg) {
+                        skin.leftLeg.position.x = 2;
+                        // Add extra offset to overlay for 2.15 total
+                        if (skin.leftLeg.outerLayer) skin.leftLeg.outerLayer.position.x = 0.20;
+                    }
+                }
+            });
+        }
+        setTimeout(fixLegPositions, 100);
+
+        function setupViewerResize(viewer, wrapper) {
+            const resizeObserver = new ResizeObserver(entries => {
+                if (!entries || entries.length === 0) return;
+                const { width, height } = entries[0].contentRect;
+                viewer.setSize(width, height);
+            });
+            resizeObserver.observe(wrapper);
+        }
+        setupViewerResize(previewSkinViewer, document.querySelector('.skin-viewer-wrapper'));
+        setupViewerResize(editorSkinViewer, document.querySelector('.editor-area'));
+
+        // --- 2D Editor Setup ---
+        const masterCanvas = document.getElementById('master-skin-canvas');
+        const masterCtx = masterCanvas.getContext('2d');
+
+        // --- State Management ---
+        let currentTool = 'pencil';
+        let history = [];
+        let historyIndex = -1;
+        let recentColors = JSON.parse(localStorage.getItem('recentColors')) || [];
+        // Trim recent colors to max 7 if there are more from old cache
+        if (recentColors.length > 7) {
+            recentColors = recentColors.slice(0, 7);
+            localStorage.setItem('recentColors', JSON.stringify(recentColors));
+        }
+        let isDrawingOn3D = false;
+        let refreshTimeout = null;
+        let lastTexturePos = null;
+        
+        // --- Statistics Tracking ---
+        let stats = {
+            pixelsPainted: 0,
+            colorsUsed: new Set(),
+            actions: 0,
+            startTime: Date.now(),
+            elapsedTime: 0
+        };
+        
+        function updateStatDisplay() {
+            document.getElementById('stat-pixels').textContent = stats.pixelsPainted.toLocaleString();
+            document.getElementById('stat-colors').textContent = stats.colorsUsed.size;
+            document.getElementById('stat-actions').textContent = stats.actions.toLocaleString();
+            
+            const seconds = Math.floor(stats.elapsedTime / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            document.getElementById('stat-time').textContent = `${minutes}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        function incrementStat(type, value = 1) {
+            if (type === 'pixels') stats.pixelsPainted += value;
+            if (type === 'actions') stats.actions += value;
+            if (type === 'color' && value) stats.colorsUsed.add(value.toUpperCase());
+            updateStatDisplay();
+        }
+        
+        // Update timer every second
+        setInterval(() => {
+            stats.elapsedTime = Date.now() - stats.startTime;
+            updateStatDisplay();
+        }, 1000);
+        
+        // Reset stats button
+        document.getElementById('reset-stats-btn')?.addEventListener('click', () => {
+            stats = {
+                pixelsPainted: 0,
+                colorsUsed: new Set(),
+                actions: 0,
+                startTime: Date.now(),
+                elapsedTime: 0
+            };
+            updateStatDisplay();
+            showToast('Statistics reset', 'success');
+        });
+        
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const iconClass = type === 'success' ? 'fa-solid fa-check-circle' : 'fa-solid fa-circle-exclamation';
+            toast.innerHTML = `<i class="${iconClass}"></i> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'slideUp 0.3s ease-out forwards reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // --- Confirmation Modal ---
+        let confirmCallback = null;
+        function showConfirmation(text, onConfirm) {
+            document.getElementById('confirmation-modal-text').textContent = text;
+            confirmCallback = onConfirm;
+            document.getElementById('confirmation-modal-backdrop').style.display = 'flex';
+        }
+        document.getElementById('cancel-confirmation-btn').addEventListener('click', () => {
+            document.getElementById('confirmation-modal-backdrop').style.display = 'none';
+            confirmCallback = null;
+        });
+        document.getElementById('confirm-action-btn').addEventListener('click', () => {
+            if (confirmCallback) confirmCallback();
+            document.getElementById('confirmation-modal-backdrop').style.display = 'none';
+            confirmCallback = null;
+        });
+
+        // --- Core Functions ---
+
+        // Update cape textures in the 3D viewers
+function refreshCapeTextures() {
+    [editorSkinViewer, previewSkinViewer].forEach(viewer => {
+        if (!viewer.playerObject) return;
+        
+        const backEquipment = viewer.playerObject.cape || viewer.playerObject.elytra;
+        if (!backEquipment) return;
+
+        // Update the cape/elytra texture - traverse to get all textured meshes
+        backEquipment.traverse(child => {
+            if (child.isMesh && child.material?.map) {
+                child.material.map.image = masterCanvas;
+                child.material.map.needsUpdate = true;
+            }
+        });
+    });
+    
+    // Also update PNG view if in PNG mode
+    if (currentEditMode === '2d') {
+        updatePNGView();
+    }
+}
+
+function refreshSkinTextures() {
+    // Legacy function - redirects to cape refresh
+    refreshCapeTextures();
+}
+
+function throttledRefreshSkinTextures() {
+    if (refreshTimeout) {
+        clearTimeout(refreshTimeout);
+    }
+    refreshTimeout = setTimeout(() => {
+        refreshCapeTextures();
+        refreshTimeout = null;
+    }, 16); // ~60fps throttling
+}
+
+
+        
+        async function updateCapeViewers(forceRedraw = false) {
+            const dataUrl = masterCanvas.toDataURL();
+            try {
+                if (forceRedraw) {
+                    // Load each viewer separately based on its own elytra mode
+                    const previewPromise = (typeof previewElytraMode !== 'undefined' && previewElytraMode)
+                        ? previewSkinViewer.loadCape(dataUrl, { backEquipment: "elytra" })
+                        : previewSkinViewer.loadCape(dataUrl);
+                    
+                    const editorPromise = (typeof editorElytraMode !== 'undefined' && editorElytraMode)
+                        ? editorSkinViewer.loadCape(dataUrl, { backEquipment: "elytra" })
+                        : editorSkinViewer.loadCape(dataUrl);
+                    
+                    await Promise.all([previewPromise, editorPromise]);
+                }
+            } catch (err) {
+                console.error("Failed to load cape into viewers:", err);
+                showToast("Error updating 3D preview.", "error");
+            }
+        }
+        
+        async function update3DViewers(forceRedraw = false) {
+            // Legacy function for compatibility - redirects to cape update
+            await updateCapeViewers(forceRedraw);
+        }
+
+        // --- History (Undo/Redo) ---
+        const undoBtn = document.getElementById('undo-btn');
+        const redoBtn = document.getElementById('redo-btn');
+        function saveState() {
+            if (historyIndex < history.length - 1) {
+                history = history.slice(0, historyIndex + 1);
+            }
+            history.push(masterCtx.getImageData(0, 0, masterCanvas.width, masterCanvas.height));
+            historyIndex++;
+            updateHistoryButtons();
+            incrementStat('actions');
+        }
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                masterCtx.putImageData(history[historyIndex], 0, 0);
+                refreshSkinTextures(); // More efficient!
+                updateHistoryButtons();
+                incrementStat('actions');
+            }
+        }
+        function redo() {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                masterCtx.putImageData(history[historyIndex], 0, 0);
+                refreshSkinTextures(); // More efficient!
+                updateHistoryButtons();
+                incrementStat('actions');
+            }
+        }
+        function updateHistoryButtons() {
+            undoBtn.disabled = historyIndex <= 0;
+            redoBtn.disabled = historyIndex >= history.length - 1;
+        }
+        undoBtn.addEventListener('click', undo);
+        redoBtn.addEventListener('click', redo);
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); }
+                if (e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); }
+            }
+        });
+        
+        // --- Color Management & Tools ---
+        const colorPicker = document.getElementById('color-picker');
+        function addRecentColor(color) {
+             const upperColor = color.toUpperCase();
+            if (recentColors.includes(upperColor)) {
+                recentColors = recentColors.filter(c => c !== upperColor);
+            }
+            recentColors.unshift(upperColor);
+            if (recentColors.length > 7) recentColors.pop();
+            localStorage.setItem('recentColors', JSON.stringify(recentColors));
+            renderRecentColors();
+        }
+        function renderRecentColors() {
+            const container = document.getElementById('recent-color-swatches');
+            container.innerHTML = recentColors.map(color => `<div class="swatch" style="background-color: ${color}" data-color="${color}"></div>`).join('');
+            container.querySelectorAll('.swatch').forEach(sw => sw.onclick = () => {
+                colorPicker.value = sw.dataset.color;
+                // Update button backgrounds
+                if (colorPickerSwatch) colorPickerSwatch.style.background = sw.dataset.color;
+                if (mobileColorPickerSwatch) mobileColorPickerSwatch.style.background = sw.dataset.color;
+            });
+            // Also render mobile recent colors
+            renderMobileRecentColors();
+        }
+        // Get color picker swatch elements (used throughout)
+        const colorPickerSwatch = document.getElementById('color-picker-swatch');
+        const mobileColorPickerSwatch = document.getElementById('mobile-color-picker-swatch');
+        
+        const swatches = ['#FF0000', '#0000FF', '#00FF00', '#FFFF00', '#FFA500', '#000000', '#FFFFFF', '#800080', '#FF69B4'];
+        const swatchesContainer = document.getElementById('color-swatches');
+        swatchesContainer.innerHTML = swatches.map(color => `<div class="swatch" style="background-color: ${color}" data-color="${color}"></div>`).join('');
+        swatchesContainer.querySelectorAll('.swatch').forEach(sw => sw.onclick = () => {
+            colorPicker.value = sw.dataset.color;
+            // Update button backgrounds
+            if (colorPickerSwatch) colorPickerSwatch.style.background = sw.dataset.color;
+            if (mobileColorPickerSwatch) mobileColorPickerSwatch.style.background = sw.dataset.color;
+        });
+
+        document.querySelectorAll('.tool-btn').forEach(btn => {
+            if (btn.id.includes('upload') || btn.id.includes('download') || btn.id.includes('reset')) return;
+            if (btn.id.includes('mobile-')) return; // Skip mobile tools for now
+            btn.addEventListener('click', () => {
+                if (btn.disabled) return;
+                document.querySelector('.tool-btn.active')?.classList.remove('active');
+                btn.classList.add('active');
+                currentTool = btn.id.replace('-tool', '').replace('mobile-', '');
+                editorSkinViewer.canvas.style.cursor = 'crosshair';
+            });
+        });
+
+        // --- Mobile Tools & File Actions ---
+        // Mobile file buttons
+        const mobileUploadInput = document.getElementById('mobile-upload-input');
+        if (mobileUploadInput) {
+            mobileUploadInput.addEventListener('change', (e) => {
+                // Trigger the desktop upload handler
+                uploadInput.files = e.target.files;
+                uploadInput.dispatchEvent(new Event('change'));
+            });
+        }
+        
+        const mobileDownloadBtn = document.getElementById('mobile-download-btn');
+        if (mobileDownloadBtn) {
+            mobileDownloadBtn.addEventListener('click', () => {
+                document.getElementById('download-btn').click();
+            });
+        }
+        
+        const mobileResetBtn = document.getElementById('mobile-reset-btn');
+        if (mobileResetBtn) {
+            mobileResetBtn.addEventListener('click', () => {
+                document.getElementById('reset-btn').click();
+            });
+        }
+
+        // Mobile tools
+        ['mobile-pencil-tool', 'mobile-eraser-tool', 'mobile-picker-tool', 'mobile-bucket-tool'].forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.mobile-tools-grid .tool-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tools-grid .tool-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentTool = id.replace('mobile-', '').replace('-tool', '');
+                    editorSkinViewer.canvas.style.cursor = 'crosshair';
+                });
+            }
+        });
+
+        // Mobile color picker
+        const mobileColorPicker = document.getElementById('mobile-color-picker');
+        
+        if (mobileColorPicker) {
+            mobileColorPicker.addEventListener('change', (e) => {
+                colorPicker.value = e.target.value;
+                // Update button backgrounds
+                if (colorPickerSwatch) colorPickerSwatch.style.background = e.target.value;
+                if (mobileColorPickerSwatch) mobileColorPickerSwatch.style.background = e.target.value;
+            });
+            mobileColorPicker.addEventListener('input', (e) => {
+                colorPicker.value = e.target.value;
+                // Update button backgrounds
+                if (colorPickerSwatch) colorPickerSwatch.style.background = e.target.value;
+                if (mobileColorPickerSwatch) mobileColorPickerSwatch.style.background = e.target.value;
+            });
+        }
+
+        // Sync mobile and desktop color pickers
+        colorPicker.addEventListener('change', (e) => {
+            if (mobileColorPicker) mobileColorPicker.value = e.target.value;
+            // Update button backgrounds
+            if (colorPickerSwatch) colorPickerSwatch.style.background = e.target.value;
+            if (mobileColorPickerSwatch) mobileColorPickerSwatch.style.background = e.target.value;
+        });
+        colorPicker.addEventListener('input', (e) => {
+            if (mobileColorPicker) mobileColorPicker.value = e.target.value;
+            // Update button backgrounds
+            if (colorPickerSwatch) colorPickerSwatch.style.background = e.target.value;
+            if (mobileColorPickerSwatch) mobileColorPickerSwatch.style.background = e.target.value;
+        });
+
+        // Mobile color swatches
+        function renderMobileSwatches() {
+            const mobileSwatchesContainer = document.getElementById('mobile-color-swatches');
+            if (mobileSwatchesContainer) {
+                mobileSwatchesContainer.innerHTML = swatches.map(color => `<div class="swatch" style="background-color: ${color}" data-color="${color}"></div>`).join('');
+                mobileSwatchesContainer.querySelectorAll('.swatch').forEach(sw => sw.onclick = () => {
+                    colorPicker.value = sw.dataset.color;
+                    if (mobileColorPicker) mobileColorPicker.value = sw.dataset.color;
+                    // Update button backgrounds
+                    if (colorPickerSwatch) colorPickerSwatch.style.background = sw.dataset.color;
+                    if (mobileColorPickerSwatch) mobileColorPickerSwatch.style.background = sw.dataset.color;
+                });
+            }
+        }
+        renderMobileSwatches();
+
+        // Mobile recent colors
+        function renderMobileRecentColors() {
+            const mobileRecentContainer = document.getElementById('mobile-recent-color-swatches');
+            if (mobileRecentContainer) {
+                mobileRecentContainer.innerHTML = recentColors.map(color => `<div class="swatch" style="background-color: ${color}" data-color="${color}"></div>`).join('');
+                mobileRecentContainer.querySelectorAll('.swatch').forEach(sw => sw.onclick = () => {
+                    colorPicker.value = sw.dataset.color;
+                    if (mobileColorPicker) mobileColorPicker.value = sw.dataset.color;
+                    // Update button backgrounds
+                    if (colorPickerSwatch) colorPickerSwatch.style.background = sw.dataset.color;
+                    if (mobileColorPickerSwatch) mobileColorPickerSwatch.style.background = sw.dataset.color;
+                });
+            }
+        }
+
+        // Cape editor doesn't need visibility controls
+        function setupMobileVisibilityControls() {
+            // No-op function for cape editor - capes don't have body parts
+        }
+
+        // --- Viewport Controls ---
+        document.getElementById('zoom-in-btn').addEventListener('click', () => {
+            if (currentEditMode === '2d') {
+                pngZoom = Math.min(5, pngZoom * 1.2);
+                updatePNGView();
+            } else {
+                editorSkinViewer.camera.fov = Math.max(10, editorSkinViewer.camera.fov - 5);
+                editorSkinViewer.camera.updateProjectionMatrix();
+            }
+        });
+        document.getElementById('zoom-out-btn').addEventListener('click', () => {
+            if (currentEditMode === '2d') {
+                pngZoom = Math.max(0.5, pngZoom * 0.8);
+                updatePNGView();
+            } else {
+                editorSkinViewer.camera.fov = Math.min(100, editorSkinViewer.camera.fov + 5);
+                editorSkinViewer.camera.updateProjectionMatrix();
+            }
+        });
+
+        // --- Raycasting and Drawing Logic ---
+        function getIntersection(event) {
+            if (!editorSkinViewer.playerObject || raycastableMeshes.length === 0) {
+                console.log('Cannot raycast - no player or meshes');
+                return null;
+            }
+            
+            const bounds = editorCanvas.getBoundingClientRect();
+            mouse.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
+            mouse.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, editorSkinViewer.camera);
+            // Use recursive to check all child meshes including elytra parts
+            const intersects = raycaster.intersectObjects(raycastableMeshes, true);
+            console.log('Raycaster found', intersects.length, 'intersections');
+            
+            if (intersects.length > 0) {
+                console.log('First intersection:', intersects[0].object.name, 'has UV:', !!intersects[0].uv);
+            }
+
+            // For color picker, check through transparent pixels
+            if (currentTool === 'picker' && intersects.length > 0) {
+                for (let i = 0; i < intersects.length; i++) {
+                    const intersection = intersects[i];
+                    if (intersection && intersection.uv) {
+                        // Check if this pixel is transparent
+                        const pos = {
+                            x: Math.floor(intersection.uv.x * masterCanvas.width),
+                            y: Math.floor((1.0 - intersection.uv.y) * masterCanvas.height)
+                        };
+                        const pixelData = masterCtx.getImageData(pos.x, pos.y, 1, 1).data;
+                        // If pixel has color (alpha > 0), return this intersection
+                        if (pixelData[3] > 0) {
+                            return intersection;
+                        }
+                        // Otherwise continue to next intersection
+                    }
+                }
+                // If all intersections are transparent, return null
+                return null;
+            }
+
+            // For other tools, return the first valid intersection
+            if (intersects.length > 0) {
+                const closest = intersects[0];
+                if (closest && closest.uv) {
+                    return closest;
+                }
+            }
+            return null;
+        }
+        
+        function getTexturePosFromIntersection(intersection) {
+            if (!intersection || !intersection.uv) return null;
+            const { uv } = intersection;
+            return {
+                x: Math.floor(uv.x * masterCanvas.width),
+                y: Math.floor((1.0 - uv.y) * masterCanvas.height)
+            };
+        }
+
+        function drawOnMasterCanvas(pos, addToRecent = false) {
+            if (!pos) return;
+            if (currentTool === 'pencil') {
+                masterCtx.fillStyle = colorPicker.value;
+                masterCtx.fillRect(pos.x, pos.y, 1, 1);
+                incrementStat('pixels');
+                incrementStat('color', colorPicker.value);
+                // Add to recent colors only once per stroke
+                if (addToRecent) {
+                    addRecentColor(colorPicker.value);
+                }
+            } else if (currentTool === 'eraser') {
+                masterCtx.clearRect(pos.x, pos.y, 1, 1);
+                // Don't count erasing as painting pixels
+            }
+            // Don't refresh textures on every pixel - this will be done when drawing stops
+        }
+        
+        function drawTextureLineOnMaster(x0, y0, x1, y1) {
+            const dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+            const dy = -Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+            let err = dx + dy;
+            while (true) {
+                // Draw pixel without refreshing textures
+                if (currentTool === 'pencil') {
+                    masterCtx.fillStyle = colorPicker.value;
+                    masterCtx.fillRect(x0, y0, 1, 1);
+                } else if (currentTool === 'eraser') {
+                    masterCtx.clearRect(x0, y0, 1, 1);
+                }
+                if (x0 === x1 && y0 === y1) break;
+                let e2 = 2 * err;
+                if (e2 >= dy) { err += dy; x0 += sx; }
+                if (e2 <= dx) { err += dx; y0 += sy; }
+            }
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)] : null;
+        }
+
+        function floodFill(startX, startY) {
+            const imageData = masterCtx.getImageData(0, 0, masterCanvas.width, masterCanvas.height);
+            const { width, height, data } = imageData;
+            
+            const startIdx = (startY * width + startX) * 4;
+            const startR = data[startIdx], startG = data[startIdx+1], startB = data[startIdx+2], startA = data[startIdx+3];
+
+            const fillRgb = hexToRgb(colorPicker.value);
+            if (!fillRgb) return;
+            const [fillR, fillG, fillB] = fillRgb;
+            if (startR === fillR && startG === fillG && startB === fillB && startA === 255) return;
+
+            let pixelsFilled = 0;
+            const pixelStack = [[startX, startY]];
+            while (pixelStack.length) {
+                const [x, y] = pixelStack.pop();
+                if (x < 0 || x >= width || y < 0 || y >= height) continue;
+                
+                const currentIdx = (y * width + x) * 4;
+                if (data[currentIdx] === startR && data[currentIdx+1] === startG && data[currentIdx+2] === startB && data[currentIdx+3] === startA) {
+                    data[currentIdx] = fillR; data[currentIdx+1] = fillG; data[currentIdx+2] = fillB; data[currentIdx+3] = 255;
+                    pixelsFilled++;
+                    pixelStack.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+                }
+            }
+            masterCtx.putImageData(imageData, 0, 0);
+            refreshSkinTextures();
+            incrementStat('pixels', pixelsFilled);
+            incrementStat('color', colorPicker.value);
+        }
+
+
+        function handle3DInteraction(intersection, isDrawing) {
+            const pos = getTexturePosFromIntersection(intersection);
+            if (!pos) return;
+
+            if (currentTool === 'picker') {
+                const pixelData = masterCtx.getImageData(pos.x, pos.y, 1, 1).data;
+                // Only pick color if pixel is not transparent (alpha > 0)
+                if (pixelData[3] > 0) {
+                    const hexColor = "#" + ("000000" + ((pixelData[0] << 16) | (pixelData[1] << 8) | pixelData[2]).toString(16)).slice(-6);
+                    colorPicker.value = hexColor;
+                    // Update button backgrounds
+                    if (colorPickerSwatch) colorPickerSwatch.style.background = hexColor;
+                    if (mobileColorPickerSwatch) mobileColorPickerSwatch.style.background = hexColor;
+                    // Sync mobile color picker
+                    const mobileColorPicker = document.getElementById('mobile-color-picker');
+                    if (mobileColorPicker) mobileColorPicker.value = hexColor;
+                }
+                // If transparent, don't do anything - let user click through to base layer
+                return;
+            }
+            
+            if (currentTool === 'bucket' && !isDrawing) {
+                floodFill(pos.x, pos.y);
+                saveState();
+                return;
+            }
+
+            if (currentTool === 'pencil' || currentTool === 'eraser') {
+                if (!isDrawing) {
+                    // Only draw on click, not while moving
+                    drawOnMasterCanvas(pos, false);
+                    addRecentColor(colorPicker.value);
+                    refreshSkinTextures();
+                }
+                // Don't draw while moving - only on individual clicks
+            }
+            lastTexturePos = pos;
+        }
+        
+        // Color picker now just picks on click - no loupe/zoom
+
+        const editorCanvas = editorSkinViewer.canvas;
+
+        const stopDrawing = () => {
+            if (isDrawingOn3D && (currentTool === 'pencil' || currentTool === 'eraser' || currentTool === 'bucket')) {
+                refreshSkinTextures();
+                saveState();
+            }
+            isDrawingOn3D = false;
+            lastTexturePos = null;
+        };
+
+        editorCanvas.addEventListener('mousedown', (e) => {
+            if (e.button !== 0) return;
+            if (currentEditMode !== '3d') return; // Only in 3D mode
+            
+            console.log('Mouse down in 3D mode, raycastable meshes:', raycastableMeshes.length);
+            const intersection = getIntersection(e);
+            if (!intersection) {
+                console.log('No intersection found');
+                return;
+            }
+            console.log('Intersection found:', intersection);
+            isDrawingOn3D = true;
+            handle3DInteraction(intersection, false);
+        });
+
+        // No drawing on mousemove - only on clicks
+
+        editorCanvas.addEventListener('mouseup', stopDrawing);
+        editorCanvas.addEventListener('mouseleave', () => {
+            stopDrawing();
+        });
+
+        // Add touch support for mobile
+        editorCanvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousedown', {
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                button: 0
+            });
+            editorCanvas.dispatchEvent(mouseEvent);
+        });
+
+        // No drawing on touchmove - only on tap
+
+        editorCanvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            stopDrawing();
+        });
+
+        editorCanvas.addEventListener('touchcancel', (e) => {
+            e.preventDefault();
+            stopDrawing();
+        });
+
+
+        // --- FILE HANDLING ---
+        const uploadInput = document.getElementById('upload-skin-input');
+        uploadInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file || file.type !== "image/png") { 
+                if(file) showToast("Invalid file type. Please upload a .png file.", "error");
+                e.target.value = ''; return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const img = new Image();
+                img.onload = async () => {
+                    // Cape should be 64x32 (or multiples)
+                    if (img.width === 64 && img.height === 32) {
+                        masterCanvas.width = img.width;
+                        masterCanvas.height = img.height;
+                        masterCtx.imageSmoothingEnabled = false;
+                        masterCtx.clearRect(0, 0, masterCanvas.width, masterCanvas.height);
+                        masterCtx.drawImage(img, 0, 0);
+                        
+                        // Update both viewers with new cape
+                        await updateCapeViewers(true);
+                        
+                        // Update PNG view if in PNG mode
+                        if (currentEditMode === '2d') {
+                            updatePNGView();
+                        }
+                        
+                        history = [];
+                        historyIndex = -1;
+                        saveState();
+                        showToast("Cape loaded successfully!", "success");
+                    } else {
+                         showToast(`Invalid cape dimensions (${img.width}x${img.height}). Expected 64x32.`, "error");
+                    }
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        });
+
+        document.getElementById('download-btn').addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = `mchub_cape_${Date.now()}.png`;
+            link.href = masterCanvas.toDataURL("image/png");
+            link.click();
+        });
+        
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            showConfirmation('This will reset to the default cape and all unsaved changes will be lost.', async () => {
+                masterCanvas.width = 64; masterCanvas.height = 32;
+                masterCtx.imageSmoothingEnabled = false;
+                
+                // Reset recent colors
+                recentColors = [];
+                localStorage.setItem('recentColors', JSON.stringify(recentColors));
+                renderRecentColors();
+                if (typeof renderMobileRecentColors === 'function') {
+                    renderMobileRecentColors();
+                }
+                
+                const capeImg = new Image();
+                capeImg.crossOrigin = "anonymous";
+                capeImg.onload = async () => {
+                    masterCtx.clearRect(0, 0, 64, 32);
+                    masterCtx.drawImage(capeImg, 0, 0);
+                    await updateCapeViewers(true);
+                    history = []; historyIndex = -1;
+                    saveState();
+                    showToast("Reset to default cape.", "success");
+                };
+                capeImg.onerror = async () => {
+                    // Fallback to blank if cape image fails
+                    masterCtx.clearRect(0, 0, 64, 32);
+                    await updateCapeViewers(true);
+                    history = []; historyIndex = -1;
+                    saveState();
+                    showToast("Reset to blank cape.", "success");
+                };
+                capeImg.src = "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/bgs/cape.png";
+            });
+        });
+
+        // --- Edit Mode Controls (3D/PNG Toggle) ---
+        let currentEditMode = '3d'; // Start in 3D mode
+        let currentPreviewMode = 'cape'; // Start with cape only
+        
+        const pngOverlay = document.getElementById('png-overlay');
+        const pngCanvas = document.getElementById('png-canvas');
+        const pngCtx = pngCanvas ? pngCanvas.getContext('2d') : null;
+        
+        // PNG pan and zoom
+        let pngZoom = 1;
+        let pngPanX = 0;
+        let pngPanY = 0;
+        let isPanning = false;
+        let lastPanX = 0;
+        let lastPanY = 0;
+        
+        function updatePNGView() {
+            if (!pngCanvas || !pngCtx) return;
+            
+            // Base size
+            const baseWidth = masterCanvas.width * 8;
+            const baseHeight = masterCanvas.height * 8;
+            
+            // Apply zoom
+            pngCanvas.width = baseWidth * pngZoom;
+            pngCanvas.height = baseHeight * pngZoom;
+            
+            // Apply pan position
+            pngCanvas.style.transform = `translate(${pngPanX}px, ${pngPanY}px)`;
+            
+            // Disable smoothing for pixelated look
+            pngCtx.imageSmoothingEnabled = false;
+            
+            // Clear canvas first to ensure transparency
+            pngCtx.clearRect(0, 0, pngCanvas.width, pngCanvas.height);
+            
+            // Draw the cape texture scaled up
+            pngCtx.drawImage(masterCanvas, 0, 0, pngCanvas.width, pngCanvas.height);
+        }
+        
+        // PNG Editing
+        let isPngDrawing = false;
+        let pngEditingSetup = false;
+        
+        function setupPNGEditing() {
+            if (!pngCanvas || pngEditingSetup) return;
+            pngEditingSetup = true;
+            
+            // Mouse wheel for zoom
+            pngCanvas.addEventListener('wheel', (e) => {
+                if (currentEditMode !== '2d') return;
+                e.preventDefault();
+                
+                const zoomDelta = e.deltaY > 0 ? 0.9 : 1.1;
+                pngZoom = Math.max(0.5, Math.min(5, pngZoom * zoomDelta));
+                updatePNGView();
+            });
+            
+            // Track spacebar state
+            let spacePressed = false;
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space' && currentEditMode === '2d' && !spacePressed) {
+                    spacePressed = true;
+                    if (pngCanvas) pngCanvas.style.cursor = 'grab';
+                }
+            });
+            document.addEventListener('keyup', (e) => {
+                if (e.code === 'Space') {
+                    spacePressed = false;
+                    if (pngCanvas && !isPanning) pngCanvas.style.cursor = 'crosshair';
+                }
+            });
+            
+            pngCanvas.addEventListener('mousedown', (e) => {
+                if (currentEditMode !== '2d') return;
+                
+                // Spacebar + left click, middle button, or right click for panning
+                if (spacePressed || e.button === 1 || e.button === 2) {
+                    e.preventDefault();
+                    isPanning = true;
+                    lastPanX = e.clientX;
+                    lastPanY = e.clientY;
+                    pngCanvas.style.cursor = 'grabbing';
+                } else if (e.button === 0) {
+                    // Left click for drawing
+                    isPngDrawing = true;
+                    if (currentTool === 'bucket') {
+                        drawOnPNG(e);
+                        saveState();
+                        refreshCapeTextures();
+                    } else {
+                        drawOnPNG(e);
+                    }
+                }
+            });
+            
+            pngCanvas.addEventListener('mousemove', (e) => {
+                if (currentEditMode !== '2d') return;
+                
+                if (isPanning) {
+                    const dx = e.clientX - lastPanX;
+                    const dy = e.clientY - lastPanY;
+                    pngPanX += dx;
+                    pngPanY += dy;
+                    lastPanX = e.clientX;
+                    lastPanY = e.clientY;
+                    updatePNGView();
+                } else if (isPngDrawing) {
+                    drawOnPNG(e);
+                }
+            });
+            
+            pngCanvas.addEventListener('mouseup', () => {
+                if (currentEditMode !== '2d') return;
+                
+                if (isPanning) {
+                    isPanning = false;
+                    pngCanvas.style.cursor = spacePressed ? 'grab' : 'crosshair';
+                } else if (isPngDrawing) {
+                    isPngDrawing = false;
+                    if (currentTool !== 'bucket') {
+                        saveState();
+                        refreshCapeTextures();
+                    }
+                }
+            });
+            
+            pngCanvas.addEventListener('mouseleave', () => {
+                isPngDrawing = false;
+                isPanning = false;
+                pngCanvas.style.cursor = spacePressed ? 'grab' : 'crosshair';
+            });
+            
+            // Prevent context menu on right click
+            pngCanvas.addEventListener('contextmenu', (e) => {
+                if (currentEditMode === '2d') e.preventDefault();
+            });
+        }
+        
+        function drawOnPNG(e) {
+            if (!pngCanvas || !pngCtx) return;
+            
+            const rect = pngCanvas.getBoundingClientRect();
+            // Account for pan and zoom when calculating pixel position
+            const scaleX = pngCanvas.width / rect.width;
+            const scaleY = pngCanvas.height / rect.height;
+            const x = Math.floor(((e.clientX - rect.left) * scaleX) / (pngCanvas.width / masterCanvas.width));
+            const y = Math.floor(((e.clientY - rect.top) * scaleY) / (pngCanvas.height / masterCanvas.height));
+            
+            // Bounds check
+            if (x < 0 || x >= masterCanvas.width || y < 0 || y >= masterCanvas.height) return;
+            
+            const colorPicker = document.getElementById('color-picker');
+            const colorPickerSwatch = document.getElementById('color-picker-swatch');
+            const mobileColorPickerSwatch = document.getElementById('mobile-color-picker-swatch');
+            
+            // Draw on master canvas
+            if (currentTool === 'pencil') {
+                if (colorPicker) {
+                    masterCtx.fillStyle = colorPicker.value;
+                    masterCtx.fillRect(x, y, 1, 1);
+                }
+            } else if (currentTool === 'eraser') {
+                masterCtx.clearRect(x, y, 1, 1);
+            } else if (currentTool === 'picker') {
+                const pixelData = masterCtx.getImageData(x, y, 1, 1).data;
+                if (pixelData[3] > 0 && colorPicker) {
+                    const hexColor = "#" + ("000000" + ((pixelData[0] << 16) | (pixelData[1] << 8) | pixelData[2]).toString(16)).slice(-6);
+                    colorPicker.value = hexColor;
+                    if (colorPickerSwatch) colorPickerSwatch.style.background = hexColor;
+                    if (mobileColorPickerSwatch) mobileColorPickerSwatch.style.background = hexColor;
+                }
+                return;
+            } else if (currentTool === 'bucket') {
+                floodFill(x, y);
+                return;
+            }
+            
+            // Update PNG view
+            updatePNGView();
+        }
+        
+        function toggleEditMode(mode) {
+            currentEditMode = mode;
+            const editorCanvas = document.getElementById('editor-skin-viewer');
+            const elytraToggleBtn = document.getElementById('elytra-toggle-btn');
+            
+            // IMPORTANT: Preserve the current tool - don't reset it!
+            // currentTool variable stays the same, we just change the view mode
+            
+            if (mode === '2d') {
+                // PNG mode - show 2D texture overlay
+                editorCanvas.style.display = 'none';
+                pngOverlay.style.display = 'flex';
+                pngOverlay.style.pointerEvents = 'auto'; // Enable clicking
+                if (pngCanvas) pngCanvas.style.cursor = 'crosshair';
+                // Hide elytra button in PNG mode
+                if (elytraToggleBtn) elytraToggleBtn.parentElement.style.display = 'none';
+                // Reset pan and zoom for PNG mode
+                pngZoom = 1;
+                pngPanX = 0;
+                pngPanY = 0;
+                updatePNGView();
+                setupPNGEditing(); // Add PNG editing listeners
+                showToast(`PNG Mode - ${currentTool.charAt(0).toUpperCase() + currentTool.slice(1)} Tool Active`, 'success');
+            } else {
+                // 3D mode - show 3D viewer
+                editorCanvas.style.display = 'block';
+                pngOverlay.style.display = 'none';
+                pngOverlay.style.pointerEvents = 'none'; // Disable clicking
+                // Show elytra button in 3D mode
+                if (elytraToggleBtn) elytraToggleBtn.parentElement.style.display = 'flex';
+                showToast(`3D Mode - ${currentTool.charAt(0).toUpperCase() + currentTool.slice(1)} Tool Active`, 'success');
+            }
+            
+            // Ensure the active tool button stays highlighted
+            // currentTool is already preserved, now ensure UI reflects it
+            // Remove active from all tool buttons first
+            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // Re-activate the current tool button on both desktop and mobile
+            const desktopToolBtn = document.getElementById(`${currentTool}-tool`);
+            const mobileToolBtn = document.getElementById(`mobile-${currentTool}-tool`);
+            
+            if (desktopToolBtn) desktopToolBtn.classList.add('active');
+            if (mobileToolBtn) mobileToolBtn.classList.add('active');
+        }
+        
+        async function togglePreviewMode(mode) {
+            currentPreviewMode = mode;
+            const skinUploadBtn = document.getElementById('skin-upload-btn');
+            const mobilePreviewUploadBtn = document.getElementById('mobile-preview-upload-btn');
+            
+            if (mode === 'skin-cape') {
+                // Show upload buttons
+                if (skinUploadBtn) skinUploadBtn.style.display = 'grid';
+                if (mobilePreviewUploadBtn) mobilePreviewUploadBtn.style.display = 'block';
+                
+                // Load Steve skin ONLY in preview viewer
+                try {
+                    await previewSkinViewer.loadSkin("https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/steve.png");
+                    
+                    // Reload cape on preview, respecting elytra mode
+                    const capeDataUrl = masterCanvas.toDataURL();
+                    if (typeof previewElytraMode !== 'undefined' && previewElytraMode) {
+                        await previewSkinViewer.loadCape(capeDataUrl, { backEquipment: "elytra" });
+                    } else {
+                        await previewSkinViewer.loadCape(capeDataUrl);
+                    }
+                    
+                    showToast('Preview: Steve + Cape', 'success');
+                } catch (err) {
+                    console.error('Error loading Steve skin:', err);
+                    showToast('Error loading skin', 'error');
+                }
+            } else {
+                // Hide upload buttons
+                if (skinUploadBtn) skinUploadBtn.style.display = 'none';
+                if (mobilePreviewUploadBtn) mobilePreviewUploadBtn.style.display = 'none';
+                
+                // Remove skin from preview - show cape only
+                try {
+                    await previewSkinViewer.loadSkin(null);
+                    
+                    // Reload cape on preview, respecting elytra mode
+                    const capeDataUrl = masterCanvas.toDataURL();
+                    if (typeof previewElytraMode !== 'undefined' && previewElytraMode) {
+                        await previewSkinViewer.loadCape(capeDataUrl, { backEquipment: "elytra" });
+                    } else {
+                        await previewSkinViewer.loadCape(capeDataUrl);
+                    }
+                    
+                    showToast('Preview: Cape Only', 'success');
+                } catch (err) {
+                    console.error('Error:', err);
+                }
+            }
+        }
+        
+        // Desktop edit mode buttons
+        const desktop3dBtn = document.getElementById('3d-mode-btn');
+        const desktop2dBtn = document.getElementById('2d-mode-btn');
+        
+        if (desktop3dBtn) {
+            desktop3dBtn.addEventListener('click', () => {
+                desktop3dBtn.classList.add('active');
+                if (desktop2dBtn) desktop2dBtn.classList.remove('active');
+                toggleEditMode('3d');
+            });
+        }
+        
+        if (desktop2dBtn) {
+            desktop2dBtn.addEventListener('click', () => {
+                desktop2dBtn.classList.add('active');
+                if (desktop3dBtn) desktop3dBtn.classList.remove('active');
+                toggleEditMode('2d');
+            });
+        }
+        
+        // Mobile edit mode buttons
+        const mobile3dBtn = document.getElementById('mobile-3d-mode-btn');
+        const mobile2dBtn = document.getElementById('mobile-2d-mode-btn');
+        
+        if (mobile3dBtn) {
+            mobile3dBtn.addEventListener('click', () => {
+                mobile3dBtn.classList.add('active');
+                if (mobile2dBtn) mobile2dBtn.classList.remove('active');
+                toggleEditMode('3d');
+            });
+        }
+        
+        if (mobile2dBtn) {
+            mobile2dBtn.addEventListener('click', () => {
+                mobile2dBtn.classList.add('active');
+                if (mobile3dBtn) mobile3dBtn.classList.remove('active');
+                toggleEditMode('2d');
+            });
+        }
+        
+        // Tools dropdown mode buttons
+        const tools3dBtn = document.getElementById('tools-3d-mode-btn');
+        const tools2dBtn = document.getElementById('tools-2d-mode-btn');
+        
+        if (tools3dBtn) {
+            tools3dBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Keep dropdown open
+                if (desktop3dBtn) desktop3dBtn.classList.add('active');
+                if (desktop2dBtn) desktop2dBtn.classList.remove('active');
+                if (mobile3dBtn) mobile3dBtn.classList.add('active');
+                if (mobile2dBtn) mobile2dBtn.classList.remove('active');
+                toggleEditMode('3d');
+            });
+        }
+        
+        if (tools2dBtn) {
+            tools2dBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Keep dropdown open
+                if (desktop2dBtn) desktop2dBtn.classList.add('active');
+                if (desktop3dBtn) desktop3dBtn.classList.remove('active');
+                if (mobile2dBtn) mobile2dBtn.classList.add('active');
+                if (mobile3dBtn) mobile3dBtn.classList.remove('active');
+                toggleEditMode('2d');
+            });
+        }
+        
+        // Preview mode buttons (Desktop Dropdown + Mobile Tabs)
+        const capeOnlyBtn = document.getElementById('cape-only-btn');
+        const skinCapeBtn = document.getElementById('skin-cape-btn');
+        const capeOnlyBtnMobile = document.getElementById('cape-only-btn-mobile');
+        const skinCapeBtnMobile = document.getElementById('skin-cape-btn-mobile');
+        
+        const previewModeToggleBtn = document.getElementById('preview-mode-toggle-btn');
+        const previewModeDropdown = document.getElementById('preview-mode-dropdown-menu');
+        
+        // Toggle dropdown
+        if (previewModeToggleBtn) {
+            previewModeToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = previewModeDropdown.style.display === 'block';
+                previewModeDropdown.style.display = isOpen ? 'none' : 'block';
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#preview-mode-dropdown-container')) {
+                    previewModeDropdown.style.display = 'none';
+                }
+            });
+        }
+        
+        function updatePreviewModeUI(mode) {
+            // Update desktop dropdown button text
+            if (previewModeToggleBtn) {
+                if (mode === 'cape') {
+                    previewModeToggleBtn.innerHTML = '<i class="fa-solid fa-user-tie"></i> Cape <i class="fa-solid fa-chevron-down" style="margin-left: 0.25rem; font-size: 0.65rem;"></i>';
+                } else {
+                    previewModeToggleBtn.innerHTML = '<i class="fa-solid fa-user"></i> Skin+Cape <i class="fa-solid fa-chevron-down" style="margin-left: 0.25rem; font-size: 0.65rem;"></i>';
+                }
+            }
+            
+            // Update desktop dropdown buttons
+            if (mode === 'cape') {
+                if (capeOnlyBtn) {
+                    capeOnlyBtn.style.background = 'rgba(var(--brand-1-rgb), 0.15)';
+                    capeOnlyBtn.style.color = 'white';
+                }
+                if (skinCapeBtn) {
+                    skinCapeBtn.style.background = 'none';
+                    skinCapeBtn.style.color = 'var(--muted)';
+                }
+            } else {
+                if (skinCapeBtn) {
+                    skinCapeBtn.style.background = 'rgba(var(--brand-1-rgb), 0.15)';
+                    skinCapeBtn.style.color = 'white';
+                }
+                if (capeOnlyBtn) {
+                    capeOnlyBtn.style.background = 'none';
+                    capeOnlyBtn.style.color = 'var(--muted)';
+                }
+            }
+            
+            // Update mobile tab buttons
+            if (mode === 'cape') {
+                if (capeOnlyBtnMobile) {
+                    capeOnlyBtnMobile.style.background = 'linear-gradient(135deg, var(--brand-1), var(--brand-2))';
+                    capeOnlyBtnMobile.style.borderBottom = '3px solid var(--brand-1)';
+                    capeOnlyBtnMobile.style.color = 'white';
+                }
+                if (skinCapeBtnMobile) {
+                    skinCapeBtnMobile.style.background = 'var(--bg-2)';
+                    skinCapeBtnMobile.style.borderBottom = '3px solid transparent';
+                    skinCapeBtnMobile.style.color = 'var(--muted)';
+                }
+            } else {
+                if (skinCapeBtnMobile) {
+                    skinCapeBtnMobile.style.background = 'linear-gradient(135deg, var(--brand-1), var(--brand-2))';
+                    skinCapeBtnMobile.style.borderBottom = '3px solid var(--brand-1)';
+                    skinCapeBtnMobile.style.color = 'white';
+                }
+                if (capeOnlyBtnMobile) {
+                    capeOnlyBtnMobile.style.background = 'var(--bg-2)';
+                    capeOnlyBtnMobile.style.borderBottom = '3px solid transparent';
+                    capeOnlyBtnMobile.style.color = 'var(--muted)';
+                }
+            }
+        }
+        
+        // Desktop dropdown - Cape button
+        if (capeOnlyBtn) {
+            capeOnlyBtn.addEventListener('click', () => {
+                updatePreviewModeUI('cape');
+                togglePreviewMode('cape');
+                if (previewModeDropdown) previewModeDropdown.style.display = 'none';
+            });
+        }
+        
+        // Desktop dropdown - Skin+Cape button
+        if (skinCapeBtn) {
+            skinCapeBtn.addEventListener('click', () => {
+                updatePreviewModeUI('skin-cape');
+                togglePreviewMode('skin-cape');
+                if (previewModeDropdown) previewModeDropdown.style.display = 'none';
+            });
+        }
+        
+        // Mobile tabs - Cape button
+        if (capeOnlyBtnMobile) {
+            capeOnlyBtnMobile.addEventListener('click', () => {
+                updatePreviewModeUI('cape');
+                togglePreviewMode('cape');
+            });
+        }
+        
+        // Mobile tabs - Skin+Cape button
+        if (skinCapeBtnMobile) {
+            skinCapeBtnMobile.addEventListener('click', () => {
+                updatePreviewModeUI('skin-cape');
+                togglePreviewMode('skin-cape');
+            });
+        }
+        
+        // Mobile Preview Mode Icon Buttons
+        const mobileCapeBtn = document.getElementById('mobile-cape-mode-btn');
+        const mobileSkinBtn = document.getElementById('mobile-skin-mode-btn');
+        const mobileSkinUploadBtn = document.getElementById('mobile-skin-upload-btn');
+        const mobilePauseBtn = document.getElementById('mobile-pause-btn');
+        const mobileElytraBtn = document.getElementById('mobile-elytra-btn');
+        
+        // Cape mode button (default)
+        if (mobileCapeBtn) {
+            mobileCapeBtn.addEventListener('click', () => {
+                // Highlight cape button
+                mobileCapeBtn.style.background = 'rgba(var(--brand-1-rgb), 0.6)';
+                mobileCapeBtn.style.borderColor = 'var(--brand-1)';
+                
+                // Unhighlight skin button
+                if (mobileSkinBtn) {
+                    mobileSkinBtn.style.background = 'rgba(0, 0, 0, 0.6)';
+                    mobileSkinBtn.style.borderColor = 'var(--border)';
+                }
+                
+                // Disable upload button
+                if (mobileSkinUploadBtn) {
+                    mobileSkinUploadBtn.style.opacity = '0.3';
+                    mobileSkinUploadBtn.style.pointerEvents = 'none';
+                }
+                
+                togglePreviewMode('cape');
+            });
+        }
+        
+        // Skin mode button
+        if (mobileSkinBtn) {
+            mobileSkinBtn.addEventListener('click', () => {
+                // Highlight skin button
+                mobileSkinBtn.style.background = 'rgba(var(--brand-1-rgb), 0.6)';
+                mobileSkinBtn.style.borderColor = 'var(--brand-1)';
+                
+                // Unhighlight cape button
+                if (mobileCapeBtn) {
+                    mobileCapeBtn.style.background = 'rgba(0, 0, 0, 0.6)';
+                    mobileCapeBtn.style.borderColor = 'var(--border)';
+                }
+                
+                // Enable upload button
+                if (mobileSkinUploadBtn) {
+                    mobileSkinUploadBtn.style.opacity = '1';
+                    mobileSkinUploadBtn.style.pointerEvents = 'auto';
+                }
+                
+                togglePreviewMode('skin-cape');
+            });
+        }
+        
+        // Mobile pause button
+        if (mobilePauseBtn) {
+            mobilePauseBtn.addEventListener('click', () => {
+                const playPauseBtn = document.getElementById('play-pause-btn');
+                if (playPauseBtn) playPauseBtn.click();
+            });
+        }
+        
+        // Mobile elytra button
+        if (mobileElytraBtn) {
+            mobileElytraBtn.addEventListener('click', () => {
+                const elytraBtn = document.getElementById('preview-elytra-toggle-btn');
+                if (elytraBtn) elytraBtn.click();
+            });
+        }
+        
+        // Mobile skin upload
+        const mobileTestSkinUpload = document.getElementById('mobile-test-skin-upload');
+        if (mobileTestSkinUpload) {
+            mobileTestSkinUpload.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    handleSkinUpload(e.target.files[0]);
+                }
+            });
+        }
+        
+        // Skin upload for testing cape
+        const testSkinUploadInput = document.getElementById('test-skin-upload-input');
+        const testSkinUploadInputMobile = document.getElementById('test-skin-upload-input-mobile');
+        const mobileSkinUploadInput = document.getElementById('mobile-skin-upload-input');
+        
+        function handleSkinUpload(file) {
+            if (!file || !file.type.match('image/png')) {
+                showToast('Please upload a PNG file', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    // Load skin ONLY on preview viewer
+                    await previewSkinViewer.loadSkin(e.target.result);
+                    
+                    // Reload cape on preview, respecting elytra mode
+                    const capeDataUrl = masterCanvas.toDataURL();
+                    if (typeof previewElytraMode !== 'undefined' && previewElytraMode) {
+                        await previewSkinViewer.loadCape(capeDataUrl, { backEquipment: "elytra" });
+                    } else {
+                        await previewSkinViewer.loadCape(capeDataUrl);
+                    }
+                    
+                    // Auto-switch to skin+cape mode
+                    if (skinCapeBtn) {
+                        skinCapeBtn.classList.add('active');
+                        if (capeOnlyBtn) capeOnlyBtn.classList.remove('active');
+                        currentPreviewMode = 'skin-cape';
+                        // Show upload button
+                        const skinUploadBtn = document.getElementById('skin-upload-btn');
+                        if (skinUploadBtn) skinUploadBtn.style.display = 'grid';
+                    }
+                    
+                    showToast('Test skin loaded on preview!', 'success');
+                } catch (err) {
+                    console.error('Error loading skin:', err);
+                    showToast('Error loading skin file', 'error');
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        if (testSkinUploadInput) {
+            testSkinUploadInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    handleSkinUpload(e.target.files[0]);
+                    e.target.value = '';
+                }
+            });
+        }
+        
+        if (testSkinUploadInputMobile) {
+            testSkinUploadInputMobile.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    handleSkinUpload(e.target.files[0]);
+                    e.target.value = '';
+                }
+            });
+        }
+        
+        if (mobileSkinUploadInput) {
+            mobileSkinUploadInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    handleSkinUpload(e.target.files[0]);
+                    e.target.value = '';
+                }
+            });
+        }
+        
+        // --- Elytra Toggle ---
+        let editorElytraMode = false;
+        let previewElytraMode = false;
+        const elytraToggleBtn = document.getElementById('elytra-toggle-btn');
+        const previewElytraToggleBtn = document.getElementById('preview-elytra-toggle-btn');
+        
+        // Toggle elytra for EDITOR viewer only
+        async function toggleEditorElytra() {
+            editorElytraMode = !editorElytraMode;
+            const capeDataUrl = masterCanvas.toDataURL();
+            
+            if (editorElytraMode) {
+                elytraToggleBtn.classList.add('active');
+                elytraToggleBtn.style.background = 'rgba(var(--brand-1-rgb), 0.2)';
+                elytraToggleBtn.style.borderColor = 'var(--brand-1)';
+                
+                // Load as elytra first
+                await editorSkinViewer.loadCape(capeDataUrl, { backEquipment: "elytra" });
+                
+                // Then set flying animation
+                editorSkinViewer.animation = new skinview3d.FlyingAnimation();
+                
+                // Wait for elytra to load and apply animation
+                setTimeout(() => {
+                    // Set animation to middle of flying pose and freeze it
+                    if (editorSkinViewer.animation) {
+                        editorSkinViewer.animation.progress = 0.5; // Middle of flying animation (wings spread)
+                        editorSkinViewer.animation.speed = 0; // Freeze the animation
+                        editorSkinViewer.animation.paused = false; // Keep animating at 0 speed (frozen pose)
+                    }
+                    
+                    // Force a render to ensure animation is applied
+                    editorSkinViewer.render();
+                    
+                    // Wait a bit more then set up raycasting
+                    setTimeout(() => {
+                        setupCapeRaycasting();
+                        console.log('Elytra raycasting setup complete. Meshes:', raycastableMeshes.length);
+                    }, 200);
+                }, 500);
+                
+                showToast('Editor: Elytra Mode ON (Flying Pose)', 'success');
+            } else {
+                elytraToggleBtn.classList.remove('active');
+                elytraToggleBtn.style.background = '';
+                elytraToggleBtn.style.borderColor = '';
+                
+                await editorSkinViewer.loadCape(capeDataUrl);
+                
+                // Reset to idle animation
+                editorSkinViewer.animation = new skinview3d.IdleAnimation();
+                editorSkinViewer.animation.paused = false;
+                
+                // Update raycasting
+                setupCapeRaycasting();
+                
+                showToast('Editor: Cape Mode ON', 'success');
+            }
+        }
+        
+        // Toggle elytra for PREVIEW viewer only
+        async function togglePreviewElytra() {
+            previewElytraMode = !previewElytraMode;
+            const capeDataUrl = masterCanvas.toDataURL();
+            
+            if (previewElytraMode) {
+                previewElytraToggleBtn.classList.add('active');
+                previewElytraToggleBtn.style.background = 'rgba(var(--brand-1-rgb), 0.2)';
+                previewElytraToggleBtn.style.borderColor = 'var(--brand-1)';
+                
+                await previewSkinViewer.loadCape(capeDataUrl, { backEquipment: "elytra" });
+                showToast('Preview: Elytra Mode ON', 'success');
+            } else {
+                previewElytraToggleBtn.classList.remove('active');
+                previewElytraToggleBtn.style.background = '';
+                previewElytraToggleBtn.style.borderColor = '';
+                
+                await previewSkinViewer.loadCape(capeDataUrl);
+                showToast('Preview: Cape Mode ON', 'success');
+            }
+        }
+        
+        if (elytraToggleBtn) {
+            elytraToggleBtn.addEventListener('click', toggleEditorElytra);
+        }
+        
+        if (previewElytraToggleBtn) {
+            previewElytraToggleBtn.addEventListener('click', togglePreviewElytra);
+        }
+        
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        playPauseBtn.addEventListener('click', () => {
+            previewSkinViewer.autoRotate = !previewSkinViewer.autoRotate;
+            playPauseBtn.innerHTML = previewSkinViewer.autoRotate ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-play"></i>';
+            playPauseBtn.title = previewSkinViewer.autoRotate ? 'Pause Animation' : 'Play Animation';
+        });
+
+        document.getElementById('grid-bg-toggle').addEventListener('change', (e) => {
+            document.querySelector('.editor-area').classList.toggle('solid-bg', !e.target.checked);
+        });
+
+        // Mobile view switcher with dropdown
+        let mobileCurrentView = 'editor'; // 'editor' or 'preview'
+        const mobileViewToggleBtn = document.getElementById('mobile-view-toggle-btn');
+        const mobileViewDropdown = document.getElementById('mobile-view-dropdown');
+        const mobileSwitchToPreview = document.getElementById('mobile-switch-to-preview');
+        const editorArea = document.querySelector('.editor-area');
+        const previewArea = document.querySelector('.preview-area');
+        const mobileToolsSection = document.querySelector('.mobile-tools-section');
+        const mobileBodyParts = document.querySelector('.mobile-body-parts');
+        
+        // Toggle dropdown
+        if (mobileViewToggleBtn) {
+            mobileViewToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (mobileCurrentView === 'editor') {
+                    mobileViewDropdown.style.display = mobileViewDropdown.style.display === 'none' ? 'block' : 'none';
+                } else {
+                    // If in preview, switch back to editor
+                    switchToEditor();
+                }
+            });
+        }
+        
+        // Switch to preview
+        if (mobileSwitchToPreview) {
+            mobileSwitchToPreview.addEventListener('click', () => {
+                mobileCurrentView = 'preview';
+                editorArea.style.display = 'none';
+                previewArea.style.display = 'flex';
+                previewArea.style.setProperty('display', 'flex', 'important');
+                mobileToolsSection.style.display = 'none';
+                mobileBodyParts.style.display = 'block';
+                mobileBodyParts.style.setProperty('display', 'block', 'important');
+                mobileViewToggleBtn.innerHTML = 'Preview <i class="fa-solid fa-chevron-down" style="margin-left: 0.25rem; font-size: 0.7rem;"></i>';
+                mobileViewDropdown.style.display = 'none';
+            });
+        }
+        
+        function switchToEditor() {
+            mobileCurrentView = 'editor';
+            editorArea.style.display = 'block';
+            previewArea.style.display = 'none';
+            previewArea.style.setProperty('display', 'none', 'important');
+            mobileToolsSection.style.display = 'block';
+            mobileBodyParts.style.display = 'none';
+            mobileBodyParts.style.setProperty('display', 'none', 'important');
+            mobileViewToggleBtn.innerHTML = 'Editor <i class="fa-solid fa-chevron-down" style="margin-left: 0.25rem; font-size: 0.7rem;"></i>';
+            mobileViewDropdown.style.display = 'none';
+        }
+        
+        // Preview UI dropdown (switch back to editor)
+        const previewMobileViewToggleBtn = document.getElementById('preview-mobile-view-toggle-btn');
+        const previewMobileViewDropdown = document.getElementById('preview-mobile-view-dropdown');
+        const previewMobileSwitchToEditor = document.getElementById('preview-mobile-switch-to-editor');
+        
+        if (previewMobileViewToggleBtn) {
+            previewMobileViewToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                previewMobileViewDropdown.style.display = previewMobileViewDropdown.style.display === 'none' ? 'block' : 'none';
+            });
+        }
+        
+        if (previewMobileSwitchToEditor) {
+            previewMobileSwitchToEditor.addEventListener('click', () => {
+                switchToEditor();
+                previewMobileViewDropdown.style.display = 'none';
+            });
+        }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+            if (mobileViewDropdown) mobileViewDropdown.style.display = 'none';
+            if (previewMobileViewDropdown) previewMobileViewDropdown.style.display = 'none';
+        });
+
+function setupCapeRaycasting() {
+    raycastableMeshes = [];
+    if (!editorSkinViewer.playerObject) {
+        console.log('No player object found');
+        return;
+    }
+
+    // Get the back equipment (cape or elytra)
+    // In skinview3d, both are stored in the cape property
+    const backEquipment = editorSkinViewer.playerObject.cape;
+    
+    if (!backEquipment) {
+        console.log('No back equipment found');
+        return;
+    }
+    
+    console.log('Back equipment found:', backEquipment);
+    
+    // Traverse all children and set up raycasting
+    backEquipment.traverse(child => {
+        if (child.isMesh) {
+            console.log('Found mesh:', child.name, 'Has material:', !!child.material);
+            
+            // Update texture if it has a material with map
+            if (child.material?.map) {
+                child.material.map.image = masterCanvas;
+                child.material.map.needsUpdate = true;
+                console.log('Updated texture for mesh:', child.name);
+            }
+            
+            // Add to raycastable meshes
+            raycastableMeshes.push(child);
+        }
+    });
+
+    console.log('Total raycastable meshes:', raycastableMeshes.length);
+
+    // Force a redraw
+    editorSkinViewer.render();
+}
+
+function syncVisibility() {
+    // Legacy function - redirects to cape raycasting setup
+    setupCapeRaycasting();
+}
+        
+function setupVisibilityControls() {
+    // Setup cape raycasting instead of visibility controls
+    setupCapeRaycasting();
+}
+        
+        // --- INITIAL LOAD ---
+
+        function editorRenderLoop() {
+            requestAnimationFrame(editorRenderLoop);
+            editorSkinViewer.render();
+        }
+
+        async function initializeEditor() {
+            // Create a default 64x32 cape texture
+            masterCanvas.width = 64;
+            masterCanvas.height = 32;
+            masterCtx.imageSmoothingEnabled = false;
+            
+            // Load the default cape texture
+            const initialCapeUrl = "https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/bgs/cape.png";
+            const initialImg = new Image();
+            initialImg.crossOrigin = "anonymous";
+            
+            initialImg.onload = async () => {
+                try {
+                    masterCtx.drawImage(initialImg, 0, 0);
+                    
+                    await updateCapeViewers(true);
+                    renderRecentColors();
+                    saveState();
+                    
+                    // Initialize - editor stays cape-only, preview can toggle
+                    setTimeout(async () => {
+                        // Make sure editor has no skin, just cape
+                        await editorSkinViewer.loadSkin(null);
+                        await editorSkinViewer.loadCape(masterCanvas.toDataURL());
+                        
+                        // Preview starts with cape only too
+                        await togglePreviewMode('cape');
+                        setupCapeRaycasting();
+                    }, 100);
+
+                    editorRenderLoop();
+                    document.body.style.opacity = '1';
+                } catch (err) {
+                    console.error("Error initializing editor:", err);
+                    showToast("Error initializing cape editor", "error");
+                    document.body.style.opacity = '1';
+                }
+            };
+            
+            initialImg.onerror = (err) => {
+                console.error("Failed to load initial cape:", err);
+                showToast("Could not load initial cape. Creating blank cape...", "error");
+                
+                // Create a blank cape as fallback
+                masterCtx.fillStyle = '#CC0000'; // Red color for default cape
+                masterCtx.fillRect(0, 0, 64, 32);
+                
+                updateCapeViewers(true).then(() => {
+                    renderRecentColors();
+                    saveState();
+                    editorRenderLoop();
+                    document.body.style.opacity = '1';
+                }).catch(viewerErr => {
+                    console.error("Failed to initialize viewers:", viewerErr);
+                    document.body.style.opacity = '1';
+                });
+            }
+            
+            initialImg.src = initialCapeUrl;
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeEditor);
+
+    </script>
+
+    <script type="module" src="/theme.js"></script>
+    <script type="module" src="/auth.js"></script>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        
+        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        window.supabase = supabase; // Make globally accessible
+        
+        function escapeHtml(str) {
+            return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]));
+        }
+
+        // Wait for components to load before initializing search
+        document.addEventListener('components-loaded', () => {
+            // Search modal functionality
+            const desktopSearchInput = document.querySelector('.desktop-search-container input');
+            const mobileSearchToggle = document.getElementById('mobile-search-toggle');
+            const searchModal = document.getElementById('desktop-search-modal');
+            const closeModalBtn = document.getElementById('close-search-modal-btn');
+            let modalSearchType = 'packs';
+
+        function openSearchModal() {
+            if (searchModal) {
+                searchModal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+                const modalSearchInput = document.getElementById('modal-universal-search');
+                if (modalSearchInput) {
+                    setTimeout(() => modalSearchInput.focus(), 100);
+                }
+                // Load latest packs
+                loadLatestPacksSuggestions();
+            }
+        }
+
+        function closeSearchModal() {
+            if (searchModal) {
+                searchModal.classList.remove('show');
+                document.body.style.overflow = '';
+                const resultsContainer = document.getElementById('modal-search-results');
+                if (resultsContainer) {
+                    resultsContainer.style.display = 'none';
+                    resultsContainer.innerHTML = '';
+                }
+                const modalSearchInput = document.getElementById('modal-universal-search');
+                if (modalSearchInput) modalSearchInput.value = '';
+            }
+        }
+
+        if (desktopSearchInput) desktopSearchInput.addEventListener('click', (e) => { e.preventDefault(); openSearchModal(); });
+        if (mobileSearchToggle) mobileSearchToggle.addEventListener('click', openSearchModal);
+        if (closeModalBtn) closeModalBtn.addEventListener('click', closeSearchModal);
+        if (searchModal) searchModal.addEventListener('click', (e) => { if (e.target === searchModal) closeSearchModal(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && searchModal.classList.contains('show')) closeSearchModal(); });
+
+        // Search type dropdown
+        const modalDropdown = document.getElementById('modal-search-type-dropdown');
+        const modalSearchTypeBtn = document.getElementById('modal-search-type-btn');
+        const modalSearchInput = document.getElementById('modal-universal-search');
+
+        if (modalDropdown) {
+            modalSearchTypeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                modalDropdown.classList.toggle('open');
+            });
+
+            modalDropdown.querySelectorAll('.search-type-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    modalSearchType = option.dataset.type;
+                    const btnSpan = modalSearchTypeBtn.querySelector('span');
+                    const btnIcon = modalSearchTypeBtn.querySelector('i:first-child');
+                    const optionIcon = option.querySelector('i');
+                    
+                    if (btnSpan) btnSpan.textContent = option.textContent.trim();
+                    if (btnIcon && optionIcon) btnIcon.className = optionIcon.className;
+                    modalSearchInput.placeholder = `Search for ${modalSearchType}...`;
+                    modalDropdown.classList.remove('open');
+                    
+                    if (modalSearchInput.value.trim().length >= 2) {
+                        performModalSearch();
+                    }
+                });
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#modal-search-type-dropdown')) {
+                    modalDropdown.classList.remove('open');
+                }
+            });
+        }
+
+        // Search functionality
+        async function performModalSearch() {
+            const query = modalSearchInput.value.trim();
+            const resultsContainer = document.getElementById('modal-search-results');
+            const suggestionsContainer = document.querySelector('.modal-suggestions');
+            
+            if (query.length < 2) {
+                resultsContainer.style.display = 'none';
+                if (suggestionsContainer) suggestionsContainer.style.display = '';
+                return;
+            }
+
+            resultsContainer.style.display = 'block';
+            if (suggestionsContainer) suggestionsContainer.style.display = 'none';
+            resultsContainer.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--muted);">Searching...</div>';
+
+            try {
+                let results = [];
+
+                if (modalSearchType === 'packs') {
+                    const { data } = await supabase.from('packs').select('id, name, icon_url').ilike('name', `%${query}%`).limit(8);
+                    results = (data || []).map(item => ({
+                        type: 'pack', name: item.name, icon: item.icon_url, link: `/packs.html?id=${item.id}`
+                    }));
+                } else if (modalSearchType === 'users') {
+                    const { data } = await supabase.from('profiles').select('username, avatar_url').ilike('username', `%${query}%`).limit(8);
+                    results = (data || []).map(item => ({
+                        type: 'user', name: item.username, icon: item.avatar_url, link: `/profile.html?user=${item.username}`
+                    }));
+                } else if (modalSearchType === 'gamertags') {
+                    const { data } = await supabase.from('profiles').select('username, bedrock_gamertag, xuid').ilike('bedrock_gamertag', `%${query}%`).limit(8);
+                    results = (data || []).map(item => ({
+                        type: 'gamertag', name: item.bedrock_gamertag, sub: item.username, xuid: item.xuid, link: `/profile.html?user=${item.username}`
+                    }));
+                }
+
+                renderModalSearchResults(results);
+            } catch (error) {
+                console.error('Search error:', error);
+                resultsContainer.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--danger);">Search failed. Please try again.</div>';
+            }
+        }
+
+        function renderModalSearchResults(results) {
+            const container = document.getElementById('modal-search-results');
+            if (results.length === 0) {
+                container.innerHTML = `<div class="search-result-item"><div class="search-result-info"><div class="search-result-name">No results found</div></div></div>`;
+            } else {
+                container.innerHTML = results.map(item => {
+                    let iconHtml = '';
+                    if (item.type === 'pack') {
+                        iconHtml = item.icon 
+                            ? `<img src="${item.icon}" class="search-result-icon">`
+                            : `<div class="search-result-icon" style="background:var(--bg-1); display:grid; place-items:center;"><i class="fa-solid fa-cube"></i></div>`;
+                    } else if (item.type === 'gamertag' && item.xuid) {
+                        iconHtml = `<img src="/api/bedrock-skin?xuid=${item.xuid}&render_type=head" class="search-result-avatar is-mc-skin">`;
+                    } else {
+                        const initial = (item.name || '?').charAt(0).toUpperCase();
+                        iconHtml = `<img src="${item.icon || `https://placehold.co/40x40/1c1c1c/de212a?text=${initial}`}" class="search-result-avatar">`;
+                    }
+                    return `<a href="${item.link}" class="search-result-item">${iconHtml}<div class="search-result-info"><div class="search-result-name">${escapeHtml(item.name)}</div>${item.sub ? `<div class="search-result-sub">MCHub User: ${escapeHtml(item.sub)}</div>` : ''}</div></a>`;
+                }).join('');
+            }
+            container.style.display = 'block';
+        }
+
+        // Load latest packs suggestions
+        async function loadLatestPacksSuggestions() {
+            try {
+                if (!supabase) {
+                    console.log('Supabase not initialized yet');
+                    return;
+                }
+                
+                const { data, error } = await supabase
+                    .from('packs')
+                    .select('id, name, icon_url')
+                    .order('created_at', { ascending: false })
+                    .limit(4);
+                
+                if (error) {
+                    console.error('Supabase error:', error);
+                    return;
+                }
+                
+                const suggestionsContainer = document.querySelector('.modal-suggestions');
+                
+                if (data && data.length > 0 && suggestionsContainer) {
+                    const grid = suggestionsContainer.querySelector('.modal-suggestions-grid');
+                    if (grid) {
+                        grid.innerHTML = data.map(pack => `
+                            <a href="/packs.html?id=${pack.id}" class="suggestion-card">
+                                <img src="${pack.icon_url || 'https://placehold.co/48x48/1c1c1c/de212a?text=P'}" class="pack-icon" alt="${escapeHtml(pack.name)}">
+                                <div class="suggestion-card-info">
+                                    <div class="suggestion-card-name">${escapeHtml(pack.name)}</div>
+                                </div>
+                            </a>
+                        `).join('');
+                    }
+                }
+            } catch (err) {
+                console.error('Error loading pack suggestions:', err);
+            }
+        }
+
+            // Debounced search
+            let searchDebounceTimer;
+            if (modalSearchInput) {
+                modalSearchInput.addEventListener('input', () => {
+                    clearTimeout(searchDebounceTimer);
+                    searchDebounceTimer = setTimeout(performModalSearch, 300);
+                });
+            }
+        }); // End components-loaded listener
+
+        // NOTIFICATION SCRIPT
+        let currentUserId = null;
+        let notificationSubscription = null;
+
+        function timeAgo(date) {
+            const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + "y ago";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + "mo ago";
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + "d ago";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + "h ago";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + "m ago";
+            return "just now";
+        }
+
+        async function fetchAndRenderNotifications() {
+            if (!currentUserId) return;
+            
+            const { data, error } = await supabase
+                .from('notifications')
+                .select('*')
+                .eq('user_id', currentUserId)
+                .order('created_at', { ascending: false })
+                .limit(20);
+
+            if (error) {
+                console.error("Error fetching notifications:", error);
+                return;
+            }
+
+            const list = document.getElementById('notification-list');
+            const badgeDesktop = document.getElementById('notification-badge');
+            const badgeMobile = document.getElementById('notification-badge-mobile');
+            let unreadCount = 0;
+
+            if (data.length === 0) {
+                list.innerHTML = '<div class="notification-list-empty"><div class="empty-icon"><i class="fa-solid fa-bell-slash"></i></div><p>All caught up!</p></div>';
+            } else {
+                list.innerHTML = data.map(n => {
+                    if (!n.is_read) unreadCount++;
+                    const iconMap = {
+                        'new_news': 'fa-solid fa-newspaper',
+                        'new_pack': 'fa-solid fa-box',
+                        'comment_reply': 'fa-solid fa-comment-dots'
+                    };
+                    
+                    let iconHtml = '';
+                    if (n.type === 'new_pack' && n.content.pack_icon) {
+                        iconHtml = `<img src="${n.content.pack_icon}" class="notification-icon" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;" alt="Pack icon">`;
+                    } else {
+                        iconHtml = `<i class="${iconMap[n.type] || 'fa-solid fa-bell'} notification-icon"></i>`;
+                    }
+                    
+                    return `
+                        <div class="notification-item ${n.is_read ? 'read' : ''}" id="notification-${n.id}">
+                            ${iconHtml}
+                            <a href="${n.content.link}" class="notification-content">
+                                <p>${escapeHtml(n.content.text)}</p>
+                                <span class="time">${timeAgo(n.created_at)}</span>
+                            </a>
+                            <button class="dismiss-notification-btn" data-id="${n.id}">&times;</button>
+                        </div>`;
+                }).join('');
+            }
+            
+            const badges = [badgeDesktop, badgeMobile];
+            badges.forEach(badge => {
+                if (badge) {
+                    badge.style.display = unreadCount > 0 ? 'block' : 'none';
+                }
+            });
+        }
+
+        async function markOneAsRead(notificationId) {
+            const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', notificationId);
+            if (!error) {
+                const item = document.getElementById(`notification-${notificationId}`);
+                if (item && !item.classList.contains('read')) {
+                    item.classList.add('read');
+                    const badges = document.querySelectorAll('.notification-badge');
+                    let currentCount = parseInt(badges[0].textContent) || 0;
+                    if (currentCount > 0) {
+                        badges.forEach(b => {
+                            if (currentCount - 1 <= 0) b.style.display = 'none';
+                        });
+                    }
+                }
+            }
+        }
+
+        function setupNotificationListeners() {
+            const backdrop = document.getElementById('notification-backdrop');
+            
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.notification-toggle-btn')) {
+                    backdrop.classList.add('show');
+                } 
+                else if (e.target.id === 'close-notifications-btn' || e.target.id === 'notification-backdrop') {
+                    backdrop.classList.remove('show');
+                }
+                else if (e.target.id === 'mark-all-read-btn') {
+                    supabase.from('notifications').update({ is_read: true }).eq('user_id', currentUserId).then(fetchAndRenderNotifications);
+                }
+                else if (e.target.id === 'clear-all-btn') {
+                    supabase.from('notifications').delete().eq('user_id', currentUserId).then(fetchAndRenderNotifications);
+                }
+                else if (e.target.classList.contains('dismiss-notification-btn')) {
+                    markOneAsRead(e.target.dataset.id);
+                }
+                else if (e.target.closest('.notification-content a')) {
+                    const notificationItem = e.target.closest('.notification-item');
+                    const notificationId = notificationItem.id.split('-')[1];
+                    if (!notificationItem.classList.contains('read')) {
+                        markOneAsRead(notificationId);
+                    }
+                    backdrop.classList.remove('show');
+                }
+            });
+        }
+
+        function createNotificationSubscription() {
+            if (notificationSubscription) supabase.removeChannel(notificationSubscription);
+
+            notificationSubscription = supabase.channel(`public:notifications:user_id=eq.${currentUserId}`)
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, payload => {
+                    fetchAndRenderNotifications();
+                }).subscribe();
+        }
+
+        document.addEventListener('auth-ready', (event) => {
+            const { user } = event.detail;
+            if (user) {
+                currentUserId = user.id;
+                fetchAndRenderNotifications();
+                createNotificationSubscription();
+                setupNotificationListeners();
+            } else {
+                currentUserId = null;
+                if (notificationSubscription) supabase.removeChannel(notificationSubscription);
+            }
+        });
+    </script>
+
+    <div id="footer-component"></div>
+
+    <script src="/components.js"></script>
+</body>
+</html>

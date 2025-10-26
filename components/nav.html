@@ -1,0 +1,131 @@
+<header>
+    <div class="nav">
+        <div class="nav-left-desktop">
+            <!-- BRAND -->
+            <a class="brand" href="/">
+                <div class="brand-badge">
+                    <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
+                </div>
+                <div>
+                    <div class="brand-title">MCHUB</div>
+                    <div class="tiny">Minecraft • Community Hub</div>
+                </div>
+            </a>
+
+            <!-- DESKTOP - MIDDLE -->
+            <div class="desktop-nav-links" id="desktop-nav-links"></div>
+        </div>
+
+        <!-- DESKTOP - RIGHT -->
+        <div class="desktop-nav-right">
+            <div class="desktop-search-container">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search..." id="desktop-search-input" readonly>
+            </div>
+            <div id="desktop-auth-actions"></div>
+        </div>
+        
+        <!-- This is populated by auth.js but will be hidden on desktop -->
+        <div class="nav-actions" id="nav-actions"></div>
+        
+        <!-- MOBILE CONTROLS -->
+        <div class="mobile-nav-controls">
+            <div class="mobile-nav-left-controls">
+                <button class="mobile-nav-btn mobile-nav-toggle"><i class="fa-solid fa-bars"></i></button>
+                <a class="brand mobile-brand" href="/">
+                    <div class="brand-badge">
+                        <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
+                    </div>
+                    <div class="mobile-brand-text">
+                        <div class="brand-title">MCHUB</div>
+                        <div class="brand-subtitle">Minecraft Community Hub</div>
+                    </div>
+                </a>
+            </div>
+            <div class="mobile-nav-right-controls">
+                <button id="mobile-search-toggle" class="mobile-nav-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+                <button id="mobile-notification-btn" class="mobile-nav-btn notification-toggle-btn" style="display: none; position: relative;">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="notification-badge" style="display: none;">0</span>
+                </button>
+                <div id="mobile-user-dropdown" class="mobile-user-dropdown">
+                    <button id="mobile-user-btn" class="mobile-nav-btn">
+                        <i class="fa-solid fa-user"></i>
+                    </button>
+                    <div id="mobile-user-menu" class="mobile-user-menu">
+                        <div class="mobile-user-menu-auth">
+                            <a href="/login.html" class="login-link">Login</a>
+                            <a href="/register.html" class="signup-link">Sign Up</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Mobile nav sidebar and backdrop are created dynamically by auth.js -->
+
+<!-- NOTIFICATION MODAL -->
+<div id="notification-backdrop" class="notification-backdrop">
+    <div id="notification-panel" class="notification-panel">
+        <div class="notification-header">
+            <h3>Notifications</h3>
+            <button id="close-notifications-btn">&times;</button>
+        </div>
+        <div id="notification-list" class="notification-list">
+            <!-- Notifications will be rendered here by JS -->
+        </div>
+        <div class="notification-footer">
+            <button id="mark-all-read-btn" class="notification-footer-btn">Mark all as read</button>
+            <button id="clear-all-btn" class="notification-footer-btn">Clear All</button>
+        </div>
+    </div>
+</div>
+
+<!-- DESKTOP SEARCH MODAL -->
+<div id="desktop-search-modal" class="desktop-search-modal-backdrop">
+    <div class="desktop-search-modal-content">
+        <button id="close-search-modal-btn" class="close-search-modal-btn">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        
+        <div class="search-input-container">
+            <i class="fa-solid fa-magnifying-glass search-icon-left"></i>
+            <div class="search-type-dropdown" id="modal-search-type-dropdown">
+                <button id="modal-search-type-btn" type="button">
+                    <i class="fa-solid fa-palette"></i>
+                    <span>Packs</span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+                <div id="modal-search-type-menu">
+                    <div class="search-type-option" data-type="packs"><i class="fa-solid fa-palette"></i> Packs</div>
+                    <div class="search-type-option" data-type="users"><i class="fa-solid fa-user"></i> Users</div>
+                    <div class="search-type-option" data-type="gamertags"><i class="fa-brands fa-xbox"></i> Gamertags</div>
+                </div>
+            </div>
+            <input type="text" id="modal-universal-search" placeholder="Search for packs..." autocomplete="off">
+        </div>
+
+        <div id="modal-search-results" class="modal-search-results"></div>
+
+        <div class="search-empty-state" id="search-empty-state">
+            <h2 class="search-empty-title">Search anything</h2>
+            <p class="search-empty-desc">Find texture packs, users, or explore our community</p>
+            
+            <div class="search-suggestions-chips" id="search-suggestions-chips">
+                <!-- Latest packs will be loaded here -->
+                <span style="color: var(--muted); font-size: 0.85rem;">Loading latest packs...</span>
+            </div>
+        </div>
+
+        <div class="search-footer">
+            <span class="search-footer-text">Ready to search</span>
+            <div class="search-footer-shortcuts">
+                <span><kbd>↑↓</kbd> navigate</span>
+                <span><kbd>↵</kbd> select</span>
+                <span><kbd>ESC</kbd> close</span>
+            </div>
+        </div>
+    </div>
+</div>

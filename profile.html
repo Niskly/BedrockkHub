@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MCHub - Profile</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-16x16.png">
+    <link rel="shortcut icon" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/skinview3d@3.0.1/bundles/skinview3d.bundle.js"></script>
+    <style>
+        :root {
+            --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
+            --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
+            --brand-1-rgb: 222, 33, 42; --brand-2: #b21a22; 
+            --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
+            --border-strong: rgba(255, 255, 255, .2);
+            --success: #22c55e; --danger: #ef4444;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            margin: 0; background-color: var(--bg-0); color: var(--text); 
+            font: 500 15px/1.6 Inter, sans-serif; padding-top: 100px;
+        }
+        body::before { 
+            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+            background-image: var(--bg-image, url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg')); 
+            background-size: cover; filter: blur(8px); opacity: 0.2; z-index: -1;
+            transition: background-image 0.5s ease-in-out;
+        }
+
+        a { color: inherit; text-decoration: none; }
+        
+        /* Header & Navigation */
+        header { position: fixed; top: 1rem; left: 1rem; right: 1rem; z-index: 50; background: none; border: none; }
+        .nav { 
+            max-width: 1200px; margin: 0 auto; padding: 12px 18px; display: flex; 
+            align-items: center; justify-content: space-between; background: rgba(28, 28, 28, 0.7);
+            backdrop-filter: blur(20px) saturate(1.2); border: 1px solid var(--border); 
+            border-radius: 1.25rem; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .brand { display: flex; align-items: center; gap: .8rem; }
+        .brand-badge { 
+            height: 40px; width: 40px; border-radius: 10px; display: grid; place-items: center; 
+            background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); 
+            box-shadow: var(--shadow-brand); 
+        }
+        .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-11px); }
+        .brand-title { font-weight: 800; letter-spacing: .6px; font-size: 15px; }
+        .tiny { font-size: 12px; color: var(--muted); }
+        
+        .user-dropdown { position: relative; display: inline-block; }
+        .user-menu-btn { 
+            background: var(--bg-2); border: 1px solid var(--border); color: var(--text); 
+            padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; 
+            gap: 10px; cursor: pointer; font-weight: 600; 
+        }
+        .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+        .user-menu-btn:hover { border-color: var(--border-strong); }
+        .dropdown-content { 
+            display: none; position: absolute; right: 0; top: calc(100% + .5rem); 
+            background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; 
+            min-width: 220px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; 
+        }
+        .dropdown-content.show { display: block; }
+        .dropdown-header { padding: 1rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
+        .dropdown-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .dropdown-username { font-weight: 700; }
+        .dropdown-email { font-size: 0.8rem; color: var(--muted); }
+        .dropdown-content a { 
+            color: var(--muted); padding: 12px 16px; text-decoration: none; 
+            display: flex; align-items: center; gap: 10px; font-weight: 600; 
+        }
+        .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
+        .logout-link { color: var(--brand-1) !important; }
+        .logout-link:hover { background: rgba(222, 33, 42, .15) !important; color: #ff525a !important; }
+        
+        .nav-actions { display: none; }
+        .mobile-nav-controls { display: flex; align-items: center; gap: 0.5rem; }
+        .mobile-nav-btn { 
+            background: none; border: none; color: var(--text); font-size: 1rem; 
+            cursor: pointer; z-index: 1001; padding: 0.5rem; display: flex; 
+            align-items: center; justify-content: center; 
+        }
+        .mobile-nav-backdrop { 
+            display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); 
+            z-index: 998; opacity: 0; transition: opacity 0.3s ease; 
+        }
+        .mobile-nav-backdrop.show { display: block; opacity: 1; }
+        .mobile-nav-sidebar { 
+            position: fixed; top: 0; left: 0; bottom: 0; width: 280px; background: var(--bg-1); 
+            z-index: 999; transform: translateX(-100%); transition: transform 0.3s ease; 
+            display: flex; flex-direction: column; border-right: 1px solid var(--border); 
+        }
+        .mobile-nav-sidebar.show { transform: translateX(0); }
+        .mobile-nav-close { 
+            position: absolute; top: 1rem; right: 1rem; background: none; border: none; 
+            color: var(--muted); font-size: 1.5rem; cursor: pointer; 
+        }
+        .mobile-nav-header { padding: 1.5rem; border-bottom: 1px solid var(--border); }
+        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
+        .mobile-nav-main-links { flex-grow: 1; }
+        .mobile-nav-footer-links { gap: 0.5rem; }
+        .mobile-nav-main-links a, .mobile-nav-footer-links a { 
+            padding: 1rem; border-radius: 10px; display: flex; align-items: center; 
+            gap: 1rem; font-weight: 600; color: var(--muted); transition: all 0.2s ease; 
+        }
+        .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
+        .mobile-nav-main-links a.active-mobile-link { background: var(--bg-2); color: var(--brand-1); font-weight: 800; }
+        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
+        .mobile-nav-footer-links .login-mobile-link { background-color: var(--bg-2); color: var(--text); }
+        .primary-mobile-link { background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: white !important; box-shadow: var(--shadow-brand); }
+        
+        .desktop-nav-links, .desktop-nav-right { display: none; }
+        .nav-left-desktop { display: contents; }
+        
+        .notification-backdrop {
+            display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px); z-index: 100; align-items: center; justify-content: center; padding: 1rem;
+        }
+        .notification-backdrop.show { display: flex; }
+        .notification-panel {
+            width: 100%; max-width: 420px; background: var(--bg-1); border: 1px solid var(--border);
+            border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 101;
+            overflow: hidden; color: var(--text); animation: slideInFromTop 0.3s ease-out;
+        }
+        @keyframes slideInFromTop { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .notification-btn-desktop {
+            background: var(--bg-2); border: 1px solid var(--border); color: var(--muted);
+            padding: 8px 12px; border-radius: 12px; font-size: 1.2rem; line-height: 1; position: relative; cursor: pointer;
+        }
+        .notification-btn-desktop:hover { border-color: var(--border-strong); color: var(--text); }
+        .notification-toggle-btn { position: relative; }
+        .notification-badge {
+            position: absolute; top: 2px; right: 2px; width: 10px; height: 10px;
+            background-color: var(--brand-1); border-radius: 50%; border: 2px solid var(--bg-1);
+        }
+        .mobile-nav-btn .notification-badge { top: 6px; right: 6px; border-color: var(--bg-2); }
+        .notification-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); background: var(--bg-2);
+        }
+        .notification-header h3 { margin: 0; font-size: 1rem; }
+        .notification-header button { background: none; border: none; color: var(--muted); cursor: pointer; }
+        #mark-all-read-btn { font-size: 0.8rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 6px; }
+        #mark-all-read-btn:hover { background-color: var(--bg-1); }
+        #close-notifications-btn { font-size: 1.5rem; line-height: 1; }
+        .notification-list { max-height: 400px; overflow-y: auto; }
+        .notification-item {
+            padding: 1rem; display: flex; gap: 1rem; align-items: flex-start;
+            border-bottom: 1px solid var(--border); font-size: 0.9rem;
+            position: relative; transition: background-color 0.2s;
+        }
+        .notification-item a { text-decoration: none; color: inherit; }
+        .notification-item:hover { background-color: var(--bg-2); }
+        .notification-item.read { opacity: 0.6; }
+        .notification-icon { font-size: 1.2rem; color: var(--muted); padding-top: 2px; }
+        .notification-content p { margin: 0 0 0.25rem 0; color: var(--text); }
+        .notification-content .time { font-size: 0.75rem; color: var(--muted); }
+        .dismiss-notification-btn {
+            position: absolute; top: 0.5rem; right: 0.5rem; background: none;
+            border: none; color: var(--muted); cursor: pointer; font-size: 1rem; display: none;
+        }
+        .notification-item:hover .dismiss-notification-btn { display: block; }
+        .notification-list-empty { padding: 2rem; text-align: center; color: var(--muted); }
+        .notification-list-empty .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+        .notification-footer { 
+            padding: 0.75rem 1rem; border-top: 1px solid var(--border); background: var(--bg-2); 
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .notification-footer-btn { 
+            font-size: 0.8rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 6px; 
+            background: none; border: none; cursor: pointer; color: var(--brand-1); transition: background-color 0.2s; 
+        }
+        .notification-footer-btn:hover { background-color: var(--bg-1); }
+
+        .tools-dropdown-container { position: relative; }
+        #tools-menu {
+            display: none; position: absolute; left: 0; top: calc(100% + 0.5rem);
+            background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px;
+            min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden;
+        }
+        .tools-dropdown-container.open #tools-menu { display: block; }
+        #tools-menu a {
+            color: var(--muted); padding: 12px 16px; text-decoration: none;
+            display: flex; align-items: center; gap: 10px; font-weight: 600;
+        }
+        #tools-menu a:hover { background: var(--bg-2); color: var(--text); }
+        #tools-btn .fa-chevron-down { font-size: 0.7em; transition: transform 0.2s; }
+        .tools-dropdown-container.open #tools-btn .fa-chevron-down { transform: rotate(180deg); }
+
+        .mobile-nav-user-header {
+            padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+        .mobile-nav-user-info { display: flex; flex-direction: column; }
+        .mobile-nav-username { font-weight: 700; color: var(--text); }
+        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
+
+        .mobile-nav-collapsible .collapsible-trigger {
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .mobile-nav-collapsible .arrow { font-size: 0.8em; transition: transform 0.3s ease; }
+        .mobile-nav-collapsible.open .arrow { transform: rotate(180deg); }
+        .collapsible-content {
+            max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out; padding-left: 1rem;
+        }
+        .collapsible-content .sub-link { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+
+        @media (min-width: 1024px) {
+            .mobile-nav-controls { display: none !important; }
+            header { padding: 0 1.5rem; }
+            .nav-left-desktop { display: flex; align-items: center; gap: 1.5rem; }
+            .desktop-nav-links, .desktop-nav-right { display: flex; align-items: center; }
+            .desktop-nav-links { gap: 0.5rem; }
+            .nav-link {
+                padding: 0.6rem 1rem; border-radius: 10px; font-weight: 700; color: var(--muted);
+                transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem;
+                background: transparent; border: none; border-bottom: 3px solid transparent;
+                font-family: inherit; font-size: inherit; cursor: pointer;
+            }
+            .nav-link:hover { background-color: rgba(255, 255, 255, 0.05); color: var(--text); }
+            .nav-link.active { background-color: transparent; color: white; box-shadow: none; border-bottom-color: var(--brand-1); }
+
+            .desktop-nav-right { gap: 1rem; }
+            .desktop-search-container { position: relative; }
+            .desktop-search-container input {
+                background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px;
+                padding: 0.6rem 1rem 0.6rem 2.5rem; width: 180px; color: var(--text);
+                transition: all 0.2s ease; cursor: pointer;
+            }
+            .desktop-search-container input:focus { outline: none; border-color: var(--brand-1); }
+            .desktop-search-container i {
+                position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--muted);
+            }
+            #desktop-auth-actions { display: flex; align-items: center; gap: 0.5rem; }
+            .login-btn, .signup-btn { font-weight: 700; padding: 0.6rem 1rem; transition: all 0.2s ease; border-radius: 10px; }
+            .login-btn { color: var(--muted); }
+            .login-btn:hover { color: var(--text); background-color: rgba(255, 255, 255, 0.05); }
+            .signup-btn { background: var(--brand-1); box-shadow: var(--shadow-brand); color: white; }
+            .signup-btn:hover { filter: brightness(1.1); }
+        }
+
+        /* Search Modal */
+        .desktop-search-modal-backdrop {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px); z-index: 1000; display: none;
+            align-items: flex-start; justify-content: center; padding-top: 10vh;
+            animation: fadeIn 0.3s ease;
+        }
+        .desktop-search-modal-backdrop.show { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .close-search-modal-btn:hover { background: var(--bg-1) !important; color: var(--text) !important; }
+        .search-type-option:hover { background: var(--bg-1) !important; }
+        #modal-search-type-dropdown.open #modal-search-type-btn .fa-chevron-down { transform: rotate(180deg); }
+        #modal-search-type-dropdown.open #modal-search-type-menu { display: block !important; }
+        .search-result-item {
+            display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem;
+            transition: background-color 0.2s; text-decoration: none; color: inherit;
+        }
+        .search-result-item:not(:last-child) { border-bottom: 1px solid var(--border); }
+        .search-result-item:hover { background: var(--bg-1); }
+        .search-result-icon, .search-result-avatar {
+            width: 40px; height: 40px; border-radius: 8px; object-fit: cover; flex-shrink: 0;
+        }
+        .search-result-avatar.is-mc-skin {
+            border-radius: 4px; image-rendering: pixelated; border: 1px solid var(--border); background: var(--bg-2);
+        }
+        .search-result-info { text-align: left; flex: 1; }
+        .search-result-name { font-weight: 600; color: var(--text); }
+        .search-result-sub { font-size: 0.8rem; color: var(--muted); }
+        .suggestion-card {
+            display: flex; align-items: center; gap: 0.75rem;
+            background: linear-gradient(135deg, rgba(28, 28, 28, 0.9), rgba(44, 44, 44, 0.6));
+            padding: 0.75rem; border-radius: 12px; transition: all 0.3s ease;
+            border: 1px solid var(--border); cursor: pointer; text-decoration: none; color: inherit;
+        }
+        .suggestion-card:hover {
+            background: linear-gradient(135deg, rgba(44, 44, 44, 0.9), rgba(28, 28, 28, 0.6));
+            border-color: var(--brand-1); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(222, 33, 42, 0.2);
+        }
+        .suggestion-card .pack-icon {
+            width: 48px; height: 48px; border-radius: 8px; object-fit: cover;
+            border: 1px solid var(--border); flex-shrink: 0;
+        }
+        .suggestion-card-info { flex-grow: 1; min-width: 0; }
+        .suggestion-card-name {
+            font-weight: 600; color: var(--text); font-size: 0.9rem;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .suggestion-card-downloads { font-size: 0.75rem; color: var(--muted); display: flex; align-items: center; gap: 0.25rem; }
+        
+        /* Button & Spinner Styles */
+        .btn { padding: .5rem 1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn.primary { background: linear-gradient(90deg, var(--brand-1), var(--brand-2)); box-shadow: 0 10px 30px rgba(222, 33, 42, .22); color: white; }
+        .btn.ghost { border-color: var(--border); background: transparent; color: var(--text); }
+        .btn.sm { padding: .25rem .5rem; border-radius: 8px; font-weight: 700; }
+        .spinner { width: 1em; height: 1em; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+        .loading-container, .error-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; min-height: 60vh; color: var(--muted); text-align: center;}
+        .error-container h2 { color: var(--text); }
+        
+        .profile-header { border-radius: 16px; margin-bottom: 2rem; position: relative; background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); border: 1px solid var(--border); }
+        .profile-banner { height: 220px; background-size: cover; background-position: center; border-radius: 16px 16px 0 0; }
+        .profile-details { position: relative; padding: 1rem 1.5rem; display: flex; flex-direction: column; margin-top: -70px; z-index: 2; }
+        .profile-meta { display: flex; align-items: flex-end; gap: 1.5rem; }
+        .profile-avatar { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #161616; box-shadow: 0 10px 30px rgba(0,0,0,0.5); flex-shrink: 0; }
+        .pfp-placeholder { width: 140px; height: 140px; border-radius: 50%; border: 4px solid #161616; box-shadow: 0 10px 30px rgba(0,0,0,0.5); flex-shrink: 0; background-color: var(--bg-2); display: flex; align-items: center; justify-content: center; }
+        .pfp-placeholder span { font-size: 4rem; font-weight: 900; color: var(--brand-1); }
+        .profile-main-info { padding-top: 70px; width: 100%; }
+        .info-top { display: flex; align-items: baseline; gap: 1.5rem; flex-wrap: wrap; }
+        .info-top h1 { font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, var(--brand-1), #ff525a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .profile-bio { color: var(--muted); margin-top: 0.5rem; max-width: 500px; line-height: 1.5; font-size: 13px; }
+        .header-stats { display: flex; gap: 1.5rem; align-items: baseline; }
+        .stat-item { display: flex; align-items: baseline; gap: 0.4rem; }
+        .stat-item .count { font-weight: 700; color: var(--text); }
+        .stat-item .label { font-size: .8rem; color: var(--muted); }
+        .profile-actions { position: absolute; top: 1.5rem; right: 1.5rem; z-index: 3; }
+        .profile-actions .btn.ghost { background-color: rgba(28,28,28,0.7); backdrop-filter: blur(5px); }
+        .profile-social-icons { position: absolute; bottom: 1.5rem; right: 1.5rem; display: flex; gap: 0.8rem; }
+        .social-link { font-size: 1.2rem; color: var(--muted); transition: all .2s ease-in-out; background: none; border: none; padding: 0; cursor: pointer; }
+        .social-link:hover { color: var(--text); transform: translateY(-2px); }
+
+        .profile-content-grid { display: grid; grid-template-columns: 300px 1fr; gap: 1.5rem; align-items: flex-start; }
+        .card { border-radius: 16px; background: rgba(18, 18, 18, 0.8); backdrop-filter: saturate(1.2) blur(15px); border: 1px solid var(--border); }
+        .card-body { padding: 1.2rem; }
+        
+        .minecraft-profile-card { display: flex; flex-direction: column; }
+        .bedrock-display { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+        .bedrock-skin-viewer { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); position: relative; width: 100%; max-width: 280px; height: 350px; background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/skinbg2.jpg'); background-size: cover; background-position: center; }
+        .bedrock-skin-viewer canvas { display: block; cursor: grab; width: 100% !important; height: 100% !important; }
+        .bedrock-gamertag { font-size: 1.2rem; font-weight: 700; text-align: center; color: var(--text); }
+        .skin-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; color: var(--muted); width: 100%; height: 100%; text-align: center; backdrop-filter: blur(4px); background: rgba(0,0,0,0.3); }
+        
+        .packs-header { display: flex; justify-content: space-between; align-items: center; }
+        .upload-btn { height: 36px; width: 36px; border-radius: 10px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); box-shadow: var(--shadow-brand); color: white; font-size: 1rem; cursor: pointer; }
+        .packs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin-top: 1.2rem; }
+        .pack-card { background: var(--bg-1); border-radius: 16px; overflow: hidden; position: relative; border: 1px solid var(--border); }
+        .pack-card-link { display: block; color: inherit; text-decoration: none; cursor: pointer; }
+        .thumb { height: 120px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+        .thumb .pack-icon { position: relative; width: 80px; height: 80px; border-radius: 8px; object-fit: cover; z-index: 1; }
+        .content { padding: 10px; }
+        .pack-stats { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 8px; }
+        .pack-options-btn { position: absolute; top: 8px; right: 8px; z-index: 2; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); color: var(--muted); border: 1px solid var(--border); border-radius: 8px; width: 30px; height: 30px; cursor: pointer; display: grid; place-items: center; }
+        .pack-options-menu { display: none; position: absolute; top: 42px; right: 8px; z-index: 3; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.4); min-width: 120px; }
+        .pack-options-menu a, .pack-options-menu button { display: flex; align-items: center; gap: 10px; padding: 8px 14px; font-size: 14px; background: none; border: none; color: var(--muted); font-family: inherit; width: 100%; text-align: left; cursor: pointer; }
+        .pack-options-menu a:hover, .pack-options-menu button:hover { background: var(--bg-1); color: var(--text); }
+        .pack-options-menu .delete-option:hover { background: var(--danger); color: white; }
+        .pack-options-menu i { width: 16px; text-align: center; }
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 1.5rem; }
+        .pagination-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; }
+        .pagination-btn:hover { border-color: white; }
+
+        .backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, .8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 60; }
+        .modal { width: 100%; max-width: 450px; background: var(--bg-1); border-radius: 18px; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
+        .modal .panel { padding: 2rem; }
+        .modal-header { text-align: center; margin-bottom: 1.5rem; }
+        .modal-header strong { font-size: 1.3rem; font-weight: 700; }
+        .modal-header .tiny { margin-top: 0.25rem; }
+        .file-upload-area { margin-top: 1rem; padding: 2rem; border: 2px dashed var(--border); border-radius: 12px; text-align: center; cursor: pointer; background: var(--bg-0); }
+        .file-upload-area:hover { border-color: var(--brand-1); background: rgba(222, 33, 42, .05); }
+        .file-upload-area i { font-size: 2rem; color: var(--brand-1); margin-bottom: 0.5rem; }
+        .file-hint { color: var(--muted); font-weight: 600; }
+        .modal input[type="text"] { width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-2);color:var(--text); font-family: inherit; font-size: inherit; }
+        .modal-footer { display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
+        #toast-container { position: fixed; top: 80px; right: 20px; z-index: 1000; }
+        .toast { padding: 12px 18px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; background: var(--bg-1); border: 1px solid var(--border); }
+        @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
+
+        /* Footer */
+        footer {
+            margin-top: 4rem; padding: 3rem 2rem 2rem; background: var(--bg-1); border-top: 1px solid var(--border);
+        }
+        .footer-container {
+            max-width: 1200px; margin: 0 auto; display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 3rem; padding-bottom: 2rem;
+        }
+        .footer-brand { display: flex; flex-direction: column; gap: 1rem; }
+        .footer-brand .brand { display: flex; margin-bottom: 0.5rem; }
+        .footer-brand p { color: var(--muted); line-height: 1.6; font-size: 0.9rem; }
+        .footer-socials { display: flex; gap: 0.75rem; margin-top: 1rem; }
+        .footer-socials a {
+            width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; background: var(--bg-2); border: 1px solid var(--border);
+            color: var(--muted); font-size: 1rem; transition: all 0.2s;
+        }
+        .footer-socials a:hover { color: var(--text); border-color: var(--brand-1); background: rgba(222, 33, 42, 0.1); }
+        .footer-column h4 {
+            font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.5px; margin-bottom: 1.25rem; color: var(--text);
+        }
+        .footer-links { display: flex; flex-direction: column; gap: 0.75rem; }
+        .footer-links a { color: var(--muted); font-size: 0.9rem; transition: color 0.2s; }
+        .footer-links a:hover { color: var(--text); }
+        .footer-discord {
+            display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.65rem 1.25rem;
+            background: var(--brand-1); color: white; border-radius: 8px; font-weight: 700;
+            font-size: 0.9rem; margin-top: 1rem; transition: all 0.2s;
+            box-shadow: var(--shadow-brand); width: fit-content;
+        }
+        .footer-discord:hover { background: var(--brand-2); transform: translateY(-2px); }
+        .footer-discord i { font-size: 1.1rem; }
+        .footer-bottom {
+            max-width: 1200px; margin: 0 auto; padding-top: 2rem; border-top: 1px solid var(--border);
+            display: flex; flex-direction: column; align-items: center; gap: 1rem;
+            font-size: 0.85rem; color: var(--muted);
+        }
+        .footer-bottom-links { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+        .footer-bottom-links a { color: var(--muted); transition: color 0.2s; font-size: 0.85rem; }
+        .footer-bottom-links a:hover { color: var(--text); }
+        @media(max-width: 1024px) {
+            .footer-container { grid-template-columns: 1fr 1fr; gap: 2rem; }
+        }
+        @media(max-width: 768px) {
+            .footer-container { grid-template-columns: 1fr; gap: 2rem; }
+            .footer-bottom { flex-direction: column; }
+        }
+
+        /* ====== MOBILE RESPONSIVENESS ====== */
+        @media (max-width: 768px) {
+            .profile-content-grid { grid-template-columns: 1fr; }
+            .profile-banner { height: 150px; }
+            .profile-meta { flex-direction: column; align-items: center; text-align: center; }
+            .profile-details { margin-top: -60px; }
+            .profile-avatar, .pfp-placeholder { width: 120px; height: 120px; }
+            .profile-main-info { padding-top: 1rem; }
+            .info-top { flex-direction: column; align-items: center; gap: .25rem; }
+            .info-top h1 { font-size: 1.8rem; }
+            .header-stats { justify-content: center; margin-top: .5rem; }
+            .profile-actions { top: 1rem; right: 1rem; }
+            .profile-social-icons { position: static; justify-content: center; margin-top: 1rem; }
+        }
+         @media (max-width: 480px) {
+            .container { margin-top: 1rem; margin-bottom: 1rem; }
+            .profile-banner { height: 120px; }
+             .profile-avatar, .pfp-placeholder { width: 100px; height: 100px; }
+             .profile-details { margin-top: -50px; }
+             .header-stats { gap: 1rem; }
+             .info-top h1 { font-size: 1.6rem; }
+         }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav">
+            <div class="nav-left-desktop">
+                <a class="brand" href="/">
+                    <div class="brand-badge">
+                        <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
+                    </div>
+                    <div>
+                        <div class="brand-title">MCHUB</div>
+                        <div class="tiny">Minecraft • Community Hub</div>
+                    </div>
+                </a>
+                <div class="desktop-nav-links" id="desktop-nav-links"></div>
+            </div>
+            <div class="desktop-nav-right">
+                <div class="desktop-search-container">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Search..." readonly>
+                </div>
+                <div id="desktop-auth-actions"></div>
+            </div>
+            <div class="nav-actions" id="nav-actions"></div>
+            <div class="mobile-nav-controls">
+                <button id="mobile-search-toggle" class="mobile-nav-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+                <div id="mobile-auth-actions"></div>
+                <button class="mobile-nav-btn mobile-nav-toggle"><i class="fa-solid fa-bars"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <div class="mobile-nav-backdrop"></div>
+    <div class="mobile-nav-sidebar">
+        <button class="mobile-nav-close" aria-label="Close navigation">&times;</button>
+        <div class="mobile-nav-header">
+            <a class="brand" href="/">
+                <div class="brand-badge">
+                    <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
+                </div>
+                <div>
+                    <div class="brand-title">MCHUB</div>
+                    <div class="tiny">Minecraft • Community Hub</div>
+                </div>
+            </a>
+        </div>
+        <div class="mobile-nav-main-links" id="mobile-nav-main-links"></div>
+        <div class="mobile-nav-footer-links" id="mobile-nav-footer-links"></div>
+    </div>
+
+    <div id="notification-backdrop" class="notification-backdrop">
+        <div id="notification-panel" class="notification-panel">
+            <div class="notification-header">
+                <h3>Notifications</h3>
+                <button id="close-notifications-btn">&times;</button>
+            </div>
+            <div id="notification-list" class="notification-list"></div>
+            <div class="notification-footer">
+                <button id="mark-all-read-btn" class="notification-footer-btn">Mark all as read</button>
+                <button id="clear-all-btn" class="notification-footer-btn">Clear All</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DESKTOP SEARCH MODAL -->
+    <div id="desktop-search-modal" class="desktop-search-modal-backdrop">
+        <div class="desktop-search-modal-content" style="background: var(--bg-1); border-radius: 1rem; border: 1px solid var(--border); width: 100%; max-width: 700px; padding: 1rem; padding-top: 3rem; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: slideDown 0.4s ease;">
+            <button id="close-search-modal-btn" class="close-search-modal-btn" style="position: absolute; top: 0.75rem; right: 0.75rem; background: var(--bg-2); border: 1px solid var(--border); color: var(--muted); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: grid; place-items: center; transition: all 0.2s;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="search-hub-container" style="margin: 0; max-width: 100%;">
+                <div class="search-input-wrapper" style="display: flex; position: relative; background: var(--bg-2); border: 1px solid var(--border); border-radius: 16px; transition: border-color 0.2s;">
+                    <div class="search-type-dropdown" id="modal-search-type-dropdown" style="position: relative;">
+                        <button id="modal-search-type-btn" style="display: flex; align-items: center; gap: 0.5rem; height: 100%; padding: 0 1.2rem; background: var(--bg-1); border: none; color: var(--text); font-weight: 600; border-radius: 15px 0 0 15px; cursor: pointer; border-right: 1px solid var(--border); font-family: inherit;">
+                            <i class="fa-solid fa-palette"></i>
+                            <span>Packs</span>
+                            <i class="fa-solid fa-chevron-down" style="font-size: 0.7em; transition: transform 0.2s;"></i>
+                        </button>
+                        <div id="modal-search-type-menu" style="display: none; position: absolute; top: 110%; left: 0; z-index: 12; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 100%; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.3);">
+                            <div class="search-type-option" data-type="packs" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; transition: background 0.2s;"><i class="fa-solid fa-palette" style="width: 16px; color: var(--muted);"></i> Packs</div>
+                            <div class="search-type-option" data-type="users" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; transition: background 0.2s;"><i class="fa-solid fa-user" style="width: 16px; color: var(--muted);"></i> Users</div>
+                            <div class="search-type-option" data-type="gamertags" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; transition: background 0.2s;"><i class="fa-brands fa-xbox" style="width: 16px; color: var(--muted);"></i> Gamertags</div>
+                        </div>
+                    </div>
+                    <input type="text" id="modal-universal-search" placeholder="Search for packs..." style="width: 100%; padding: 1rem 1.5rem; font-size: 1rem; background: transparent; border: none; color: var(--text); outline: none; font-family: inherit;">
+                </div>
+                <div id="modal-search-results" style="display: none; margin-top: 0.5rem; background: var(--bg-2); border: 1px solid var(--border); border-radius: 16px; max-height: 350px; overflow-y: auto;"></div>
+                
+                <!-- Latest Packs Suggestions -->
+                <div class="modal-suggestions" style="margin-top: 1.5rem; padding: 0 0.5rem;">
+                    <div class="suggestions-title" style="font-size: 0.85rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-fire" style="color: var(--brand-1);"></i>
+                        Latest Packs
+                    </div>
+                    <div class="modal-suggestions-grid" id="modal-pack-suggestions" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main class="container" id="profile-container">
+        <div class="loading-container"><div class="spinner"></div><p>Loading Profile...</p></div>
+    </main>
+    
+    <div id="backdrop" class="backdrop">
+        <div class="modal">
+            <div class="panel">
+                <div class="modal-header">
+                    <strong>Upload New Pack</strong>
+                    <p class="tiny">Share your creation with the community</p>
+                </div>
+                <form id="uploadForm" onsubmit="handleUpload(event)">
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div>
+                            <label class="tiny" style="text-align: left; padding-left: 0.5rem;">Pack Name (auto-detected)</label>
+                            <input id="packName" required placeholder="My Awesome Pack" type="text">
+                        </div>
+                        <div class="file-upload-area" id="pack-file-area" onclick="document.getElementById('fileInput').click()">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <div class="file-hint" id="fileHint">Click to select a .mcpack or .zip</div>
+                            <input id="fileInput" type="file" accept=".mcpack,.zip" style="display:none" onchange="hintFile()" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn ghost" onclick="closeModal()">Cancel</button>
+                        <button id="submitBtn" class="btn primary" type="submit"><i class="fa-solid fa-upload"></i> Upload</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div id="confirmation-modal" class="backdrop">
+        <div class="modal" style="max-width: 400px;">
+            <div class="panel" style="text-align: center;">
+                <p id="confirmation-message" style="font-size: 1.1rem; margin: 1rem 0;">Are you sure?</p>
+                <div style="display:flex;justify-content:center;gap:10px;">
+                    <button id="cancel-confirmation-btn" class="btn ghost">Cancel</button>
+                    <button id="confirm-action-btn" class="btn" style="background: var(--danger);">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-container">
+            <div class="footer-brand">
+                <a class="brand" href="/">
+                    <div class="brand-badge">
+                        <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon" class="brand-icon-custom">
+                    </div>
+                    <div>
+                        <div class="brand-title">MCHUB</div>
+                        <div class="tiny">Minecraft • Community Hub</div>
+                    </div>
+                </a>
+                <p>Your ultimate destination for exploring the world of Minecraft. Discover new stories, follow your favorites, and never miss an update.</p>
+                <div class="footer-socials">
+                    <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
+                    <a href="https://discord.gg/KtafawJZxM" target="_blank" aria-label="Discord"><i class="fa-brands fa-discord"></i></a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h4>Explore</h4>
+                <div class="footer-links">
+                    <a href="/">Home</a>
+                    <a href="/texturepacks.html">Browse Packs</a>
+                    <a href="/news.html">News</a>
+                  
+                </div>
+            </div>
+            <div class="footer-column">
+                <h4>Support</h4>
+                <div class="footer-links">
+                    <a href="/contact.html">Contact Us</a>
+                    <a href="/report.html">Report Issue</a>
+                    <a href="/faq.html">FAQ</a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h4>Stay Updated</h4>
+                <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem;">Join our Discord server for the latest updates and news.</p>
+                <a href="https://discord.gg/KtafawJZxM" target="_blank" class="footer-discord">
+                    <i class="fa-brands fa-discord"></i>
+                    <span>Join Server</span>
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 MCHub. All rights reserved.</p>
+            <div class="footer-bottom-links">
+                <a href="#">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">DMCA</a>
+            </div>
+        </div>
+    </footer>
+
+    <div id="toast-container"></div>
+    
+    <script type="module" src="/theme.js"></script>
+    <script type="module" src="/auth.js"></script>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const profileContainer = document.getElementById('profile-container');
+
+        // Search modal functionality
+        const desktopSearchInput = document.querySelector('.desktop-search-container input');
+        const mobileSearchToggle = document.getElementById('mobile-search-toggle');
+        const searchModal = document.getElementById('desktop-search-modal');
+        const closeModalBtn = document.getElementById('close-search-modal-btn');
+        let modalSearchType = 'packs';
+
+        function openSearchModal() {
+            if (searchModal) {
+                searchModal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+                const modalSearchInput = document.getElementById('modal-universal-search');
+                if (modalSearchInput) setTimeout(() => modalSearchInput.focus(), 100);
+                loadLatestPacksSuggestions();
+            }
+        }
+
+        function closeSearchModal() {
+            if (searchModal) {
+                searchModal.classList.remove('show');
+                document.body.style.overflow = '';
+                const resultsContainer = document.getElementById('modal-search-results');
+                if (resultsContainer) {
+                    resultsContainer.style.display = 'none';
+                    resultsContainer.innerHTML = '';
+                }
+                const modalSearchInput = document.getElementById('modal-universal-search');
+                if (modalSearchInput) modalSearchInput.value = '';
+            }
+        }
+
+        if (desktopSearchInput) desktopSearchInput.addEventListener('click', (e) => { e.preventDefault(); openSearchModal(); });
+        if (mobileSearchToggle) mobileSearchToggle.addEventListener('click', openSearchModal);
+        if (closeModalBtn) closeModalBtn.addEventListener('click', closeSearchModal);
+        if (searchModal) searchModal.addEventListener('click', (e) => { if (e.target === searchModal) closeSearchModal(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && searchModal.classList.contains('show')) closeSearchModal(); });
+
+        // Search type dropdown
+        const modalDropdown = document.getElementById('modal-search-type-dropdown');
+        const modalSearchTypeBtn = document.getElementById('modal-search-type-btn');
+        const modalSearchInput = document.getElementById('modal-universal-search');
+
+        if (modalDropdown) {
+            modalSearchTypeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                modalDropdown.classList.toggle('open');
+            });
+
+            modalDropdown.querySelectorAll('.search-type-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    modalSearchType = option.dataset.type;
+                    const btnSpan = modalSearchTypeBtn.querySelector('span');
+                    const btnIcon = modalSearchTypeBtn.querySelector('i:first-child');
+                    const optionIcon = option.querySelector('i');
+                    
+                    if (btnSpan) btnSpan.textContent = option.textContent.trim();
+                    if (btnIcon && optionIcon) btnIcon.className = optionIcon.className;
+                    modalSearchInput.placeholder = `Search for ${modalSearchType}...`;
+                    modalDropdown.classList.remove('open');
+                    
+                    if (modalSearchInput.value.trim().length >= 2) performModalSearch();
+                });
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#modal-search-type-dropdown')) modalDropdown.classList.remove('open');
+            });
+        }
+
+        // Search functionality
+        async function performModalSearch() {
+            const query = modalSearchInput.value.trim();
+            const resultsContainer = document.getElementById('modal-search-results');
+            const suggestionsContainer = document.querySelector('.modal-suggestions');
+            
+            if (query.length < 2) {
+                resultsContainer.style.display = 'none';
+                if (suggestionsContainer) suggestionsContainer.style.display = '';
+                return;
+            }
+
+            resultsContainer.style.display = 'block';
+            if (suggestionsContainer) suggestionsContainer.style.display = 'none';
+            resultsContainer.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--muted);">Searching...</div>';
+
+            try {
+                let results = [];
+
+                if (modalSearchType === 'packs') {
+                    const { data } = await supabase.from('packs').select('id, name, icon_url').ilike('name', `%${query}%`).limit(8);
+                    results = (data || []).map(item => ({
+                        type: 'pack', name: item.name, icon: item.icon_url, link: `/packs.html?id=${item.id}`
+                    }));
+                } else if (modalSearchType === 'users') {
+                    const { data } = await supabase.from('profiles').select('username, avatar_url').ilike('username', `%${query}%`).limit(8);
+                    results = (data || []).map(item => ({
+                        type: 'user', name: item.username, icon: item.avatar_url, link: `/profile.html?user=${item.username}`
+                    }));
+                } else if (modalSearchType === 'gamertags') {
+                    const { data } = await supabase.from('profiles').select('username, bedrock_gamertag, xuid').ilike('bedrock_gamertag', `%${query}%`).limit(8);
+                    results = (data || []).map(item => ({
+                        type: 'gamertag', name: item.bedrock_gamertag, sub: item.username, xuid: item.xuid, link: `/profile.html?user=${item.username}`
+                    }));
+                }
+
+                renderModalSearchResults(results);
+            } catch (error) {
+                console.error('Search error:', error);
+                resultsContainer.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--danger);">Search failed. Please try again.</div>';
+            }
+        }
+
+        function renderModalSearchResults(results) {
+            const container = document.getElementById('modal-search-results');
+            if (results.length === 0) {
+                container.innerHTML = `<div class="search-result-item"><div class="search-result-info"><div class="search-result-name">No results found</div></div></div>`;
+            } else {
+                container.innerHTML = results.map(item => {
+                    let iconHtml = '';
+                    if (item.type === 'pack') {
+                        iconHtml = item.icon 
+                            ? `<img src="${item.icon}" class="search-result-icon">`
+                            : `<div class="search-result-icon" style="background:var(--bg-1); display:grid; place-items:center;"><i class="fa-solid fa-cube"></i></div>`;
+                    } else if (item.type === 'gamertag' && item.xuid) {
+                        iconHtml = `<img src="/api/bedrock-skin?xuid=${item.xuid}&render_type=head" class="search-result-avatar is-mc-skin">`;
+                    } else {
+                        const initial = (item.name || '?').charAt(0).toUpperCase();
+                        iconHtml = `<img src="${item.icon || `https://placehold.co/40x40/1c1c1c/de212a?text=${initial}`}" class="search-result-avatar">`;
+                    }
+                    return `<a href="${item.link}" class="search-result-item">${iconHtml}<div class="search-result-info"><div class="search-result-name">${item.name || 'Unknown'}</div>${item.sub ? `<div class="search-result-sub">${item.sub}</div>` : ''}</div></a>`;
+                }).join('');
+            }
+        }
+
+        if (modalSearchInput) {
+            modalSearchInput.addEventListener('input', () => {
+                if (modalSearchInput.value.trim().length >= 2) {
+                    performModalSearch();
+                } else {
+                    const resultsContainer = document.getElementById('modal-search-results');
+                    const suggestionsContainer = document.querySelector('.modal-suggestions');
+                    if (resultsContainer) resultsContainer.style.display = 'none';
+                    if (suggestionsContainer) suggestionsContainer.style.display = '';
+                }
+            });
+        }
+
+        async function loadLatestPacksSuggestions() {
+            const container = document.getElementById('modal-pack-suggestions');
+            if (!container) return;
+            try {
+                const { data } = await supabase.from('packs').select('id, name, icon_url, download_count').order('created_at', { ascending: false }).limit(4);
+                if (data) {
+                    container.innerHTML = data.map(pack => {
+                        const iconHtml = pack.icon_url 
+                            ? `<img src="${pack.icon_url}" class="pack-icon">`
+                            : `<div class="pack-icon" style="background:var(--bg-2); display:grid; place-items:center;"><i class="fa-solid fa-cube"></i></div>`;
+                        return `<a href="/packs.html?id=${pack.id}" class="suggestion-card">${iconHtml}<div class="suggestion-card-info"><div class="suggestion-card-name">${pack.name}</div><div class="suggestion-card-downloads"><i class="fa-solid fa-download fa-xs"></i> ${(pack.download_count || 0).toLocaleString()}</div></div></a>`;
+                    }).join('');
+                }
+            } catch (error) {
+                console.error('Failed to load pack suggestions:', error);
+            }
+        }
+
+        let loggedInUser = null;
+        let skinViewer = null;
+        let currentProfileData = null;
+        let confirmCallback = null;
+        let localPacksCache = [];
+        let currentPage = 1;
+        const packsPerPage = 6;
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast`;
+            toast.style.borderColor = type === 'success' ? 'var(--success)' : 'var(--danger)';
+            toast.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}" style="color: ${type === 'success' ? 'var(--success)' : 'var(--danger)'};"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.transform = 'translateX(120%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function copyToClipboard(text, type) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(`Copied ${type} to clipboard!`, 'success');
+            }).catch(err => {
+                showToast(`Failed to copy: ${err}`, 'error');
+            });
+        }
+        window.copyToClipboard = copyToClipboard;
+
+        function renderSocialLinks(socialLinks) {
+            if (!socialLinks || typeof socialLinks !== 'object') return '';
+            const platforms = [
+                { key: 'discord', icon: 'fa-brands fa-discord' }, { key: 'spotify', icon: 'fa-brands fa-spotify' },
+                { key: 'reddit', icon: 'fa-brands fa-reddit-alien' }, { key: 'youtube', icon: 'fa-brands fa-youtube' },
+                { key: 'twitter', icon: 'fa-brands fa-twitter' }, { key: 'github', icon: 'fa-brands fa-github' }
+            ];
+            
+            return platforms.filter(p => socialLinks[p.key]).map(p => {
+                const value = socialLinks[p.key];
+                const isLink = value.startsWith('http');
+                if (isLink) {
+                    return `<a href="${value}" target="_blank" class="social-link" title="${p.key}"><i class="${p.icon}"></i></a>`;
+                } else {
+                    return `<button class="social-link" onclick="copyToClipboard('${value}', '${p.key}')" title="Copy ${p.key} ID"><i class="${p.icon}"></i></button>`;
+                }
+            }).join('');
+        }
+        
+        function escapeHtml(str) { 
+            return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); 
+        }
+
+        function formatDate(isoString) {
+            if (!isoString) return '';
+            const date = new Date(isoString);
+            return `${date.getMonth() + 1}/${date.getDate()}/${String(date.getFullYear()).slice(-2)}`;
+        }
+
+        function renderPackCard(pack, isOwnProfile) {
+            const card = document.createElement('div');
+            card.className = 'pack-card';
+            card.id = `pack-card-${pack.id}`; // Add unique ID for removal
+            const thumbContent = pack.icon_url ? `<img class="pack-icon" src="${pack.icon_url}" alt="${pack.name} Icon">` : `<div style="width:100%; height:100%; display:grid; place-items:center; background:var(--bg-2)"><i class="fa-solid fa-cube fa-2x"></i></div>`;
+            
+            let optionsMenu = `<a href="#" onclick="handleDownload(event, ${pack.id}, '${pack.filename}', '${escapeHtml(pack.name)}')"><i class="fa-solid fa-download"></i> Download</a>`;
+            if (isOwnProfile) {
+                optionsMenu += `<button class="delete-option" onclick="promptDeletePack(${pack.id})"><i class="fa-solid fa-trash-can"></i> Delete</button>`;
+            }
+
+            card.innerHTML = `
+                <button class="pack-options-btn" onclick="toggleOptionsMenu(event, ${pack.id})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                <div class="pack-options-menu" id="options-menu-${pack.id}">${optionsMenu}</div>
+                <div class="pack-card-link" onclick="handleDownload(event, ${pack.id}, '${pack.filename}', '${escapeHtml(pack.name)}')">
+                    <div class="thumb">${thumbContent}</div>
+                    <div class="content">
+                        <h4 style="font-size:0.9rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow: ellipsis;">${escapeHtml(pack.name)}</h4>
+                        <div class="pack-stats">
+                            <span><i class="fa-solid fa-download fa-xs"></i> <span id="downloads-${pack.id}">${(pack.download_count || 0).toLocaleString()}</span></span>
+                            <span>${formatDate(pack.created_at)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return card;
+        }
+
+        function renderPacksForPage() {
+            const packsGridEl = document.getElementById('packs-grid-placeholder');
+            const paginationControlsEl = document.getElementById('pagination-controls');
+            const isOwnProfile = loggedInUser && loggedInUser.id === currentProfileData.id;
+
+            packsGridEl.innerHTML = '';
+            paginationControlsEl.innerHTML = '';
+
+            const totalPacks = localPacksCache.length;
+            if (totalPacks === 0) {
+                packsGridEl.innerHTML = `<p class="tiny" style="padding-top: 1rem; grid-column: 1 / -1;">This user hasn't uploaded any packs yet.</p>`;
+                return;
+            }
+
+            const startIndex = (currentPage - 1) * packsPerPage;
+            const packsForPage = localPacksCache.slice(startIndex, startIndex + packsPerPage);
+            packsForPage.forEach(pack => packsGridEl.appendChild(renderPackCard(pack, isOwnProfile)));
+
+            const totalPages = Math.ceil(totalPacks / packsPerPage);
+            if (totalPages > 1) {
+                if (currentPage > 1) {
+                    paginationControlsEl.innerHTML += `<button class="pagination-btn" onclick="changePage(${currentPage - 1})"><i class="fa-solid fa-arrow-left"></i></button>`;
+                }
+                paginationControlsEl.innerHTML += `<span class="tiny">Page ${currentPage} of ${totalPages}</span>`;
+                if (currentPage < totalPages) {
+                    paginationControlsEl.innerHTML += `<button class="pagination-btn" onclick="changePage(${currentPage + 1})"><i class="fa-solid fa-arrow-right"></i></button>`;
+                }
+            }
+        }
+
+        window.changePage = (page) => {
+            currentPage = page;
+            renderPacksForPage();
+        }
+
+        function renderDashboard(profile, packs, currentUser) {
+            currentProfileData = profile;
+            localPacksCache = packs;
+            currentPage = 1;
+            const pfpHtml = profile.avatar_url ? `<img src="${profile.avatar_url}" alt="${profile.username}'s avatar" class="profile-avatar">` : `<div class="pfp-placeholder"><span>${(profile.username || '?').charAt(0).toUpperCase()}</span></div>`;
+            const bedrockHtml = (profile.bedrock_gamertag && profile.xuid) 
+                ? `<div class="minecraft-profile-card">
+                        <div class="bedrock-gamertag">${profile.bedrock_gamertag}</div>
+                        <div class="tiny" style="text-align:center; margin-bottom: 0.5rem;">XUID: ${profile.xuid}</div>
+                        <div class="bedrock-display">
+                            <div class="bedrock-skin-viewer" id="bedrock-skin-viewer">
+                                <div class="skin-loading"><div class="spinner"></div><span>Loading 3D skin...</span></div>
+                            </div>
+                        </div>
+                    </div>` 
+                : `<div style="text-align: center; padding: 2rem; color: var(--muted);"><i class="fa-brands fa-xbox fa-3x" style="opacity: 0.3; margin-bottom: 1rem;"></i><p>No Bedrock account linked</p></div>`;
+            
+            const socialLinksHtml = renderSocialLinks(profile.social_links);
+            const isOwnProfile = currentUser && currentUser.id === profile.id;
+            
+            let profileActionsHtml = '';
+            if (isOwnProfile) {
+                profileActionsHtml = `<div class="profile-actions"><a href="/settings.html" class="btn ghost"><i class="fa-solid fa-pencil"></i> Edit Profile</a></div>`;
+            } else if (currentUser) {
+                profileActionsHtml = `<div class="profile-actions"><button class="btn primary follow-btn"><i class="fa-solid fa-user-plus"></i> Follow</button></div>`;
+            }
+
+            profileContainer.innerHTML = `
+                <div class="profile-header">
+                    ${profileActionsHtml}
+                    <div class="profile-banner" style="background-image: url('${profile.banner_url || 'https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/default-banner.png'}')"></div>
+                    <div class="profile-details">
+                        <div class="profile-meta">
+                            <div>${pfpHtml}</div>
+                            <div class="profile-main-info">
+                                <div class="info-top">
+                                    <h1>${profile.username || 'Unnamed'}</h1>
+                                    <div class="header-stats">
+                                        <div class="stat-item"><div class="count">${(profile.view_count || 0).toLocaleString()}</div><div class="label">Views</div></div>
+                                        <div class="stat-item"><div class="count" id="follower-count">${(profile.followers_count || 0).toLocaleString()}</div><div class="label">Followers</div></div>
+                                        <div class="stat-item"><div class="count" id="following-count">${(profile.following_count || 0).toLocaleString()}</div><div class="label">Following</div></div>
+                                    </div>
+                                </div>
+                                <p class="profile-bio">${profile.bio || "This user hasn't written a bio yet."}</p>
+                            </div>
+                        </div>
+                        <div class="profile-social-icons">${socialLinksHtml}</div>
+                    </div>
+                </div>
+                <div class="profile-content-grid">
+                    <div id="minecraft-container">
+                        <div class="card"> <div class="card-body"> ${bedrockHtml} </div> </div>
+                    </div>
+                    <div id="packs-container">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="packs-header">
+                                    <h3>Texture Packs</h3>
+                                    ${isOwnProfile ? '<div class="upload-btn" title="Upload new pack"><i class="fa-solid fa-plus"></i></div>' : ''}
+                                </div>
+                                <div class="packs-grid" id="packs-grid-placeholder"></div>
+                                <div class="pagination" id="pagination-controls"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            
+            renderPacksForPage();
+            if (profile.bedrock_gamertag && profile.xuid) { initBedrockSkinViewer(profile); }
+            
+            const uploadBtn = document.querySelector('.upload-btn');
+            if (uploadBtn) {
+                uploadBtn.addEventListener('click', () => document.getElementById('backdrop').style.display = 'flex');
+            }
+        }
+
+        async function initBedrockSkinViewer(profile) {
+            const viewerContainer = document.getElementById('bedrock-skin-viewer');
+            if (!viewerContainer) return;
+            try {
+                viewerContainer.innerHTML = '<canvas id="skin-canvas"></canvas>';
+                const canvas = document.getElementById('skin-canvas');
+                skinViewer = new skinview3d.SkinViewer({ canvas: canvas, width: 280, height: 350 });
+                skinViewer.controls.enableRotate = true; skinViewer.controls.enableZoom = true;
+                const skinUrl = `/api/bedrock-skin?xuid=${profile.xuid}&gamertag=${encodeURIComponent(profile.bedrock_gamertag)}`;
+                await skinViewer.loadSkin(skinUrl);
+                skinViewer.autoRotateAnimation.speed = 0.5;
+                canvas.addEventListener('mousedown', () => skinViewer.autoRotateAnimation.paused = true, { once: true });
+            } catch (error) { console.error('Failed to init skin viewer:', error); }
+        }
+        
+        async function setupFollowSystem(profile, currentUser) {
+            const followButton = document.querySelector('.follow-btn');
+            if (!followButton) return;
+            
+            const { count } = await supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', currentUser.id).eq('following_id', profile.id);
+            let isFollowing = count > 0;
+            
+            const updateButtonState = (newCount) => {
+                document.getElementById('follower-count').textContent = newCount.toLocaleString();
+                if (isFollowing) {
+                    followButton.innerHTML = `<i class="fa-solid fa-user-check"></i> Following`;
+                    followButton.classList.remove('primary');
+                    followButton.classList.add('ghost');
+                } else {
+                    followButton.innerHTML = `<i class="fa-solid fa-user-plus"></i> Follow`;
+                    followButton.classList.remove('ghost');
+                    followButton.classList.add('primary');
+                }
+            };
+            
+            updateButtonState(profile.followers_count || 0);
+            
+            followButton.addEventListener('click', async () => {
+                followButton.disabled = true;
+                const action = isFollowing
+                    ? supabase.from('followers').delete().match({ follower_id: currentUser.id, following_id: profile.id })
+                    : supabase.from('followers').insert({ follower_id: currentUser.id, following_id: profile.id });
+                
+                await action;
+                
+                const currentFollowerCount = parseInt(document.getElementById('follower-count').textContent.replace(/,/g, ''));
+                const newFollowerCount = isFollowing ? currentFollowerCount - 1 : currentFollowerCount + 1;
+                
+                isFollowing = !isFollowing;
+                updateButtonState(newFollowerCount);
+                followButton.disabled = false;
+            });
+        }
+        
+        function showError(title, message) {
+            profileContainer.innerHTML = `<div class="error-container"><h2>${title}</h2><p>${message}</p></div>`;
+        }
+
+        async function loadProfilePage(currentUser) {
+            try {
+                profileContainer.innerHTML = `<div class="loading-container"><div class="spinner"></div><p>Loading Profile...</p></div>`;
+                const username = new URLSearchParams(window.location.search).get('user');
+                if (!username) { return showError("No User Specified", "Please provide a username in the URL."); }
+
+                const { data: profile, error } = await supabase.from('profiles_with_counts').select('*').ilike('username', username).single();
+                
+                if (error || !profile) { return showError("User Not Found", `The user "${escapeHtml(username)}" could not be found.`); }
+
+                if (currentUser && currentUser.id !== profile.id) {
+                    supabase.rpc('increment_view_count', { profile_id_to_update: profile.id }).then(({ error }) => {
+                        if(error) console.error("View count error:", error);
+                    });
+                }
+                
+                const { data: packs } = await supabase.from('packs')
+                  .select('*')
+                  .eq('user_id', profile.id)
+                  .ilike('tags', '%user-upload%') 
+                  .order('created_at', { ascending: false });
+                
+                renderDashboard(profile, packs || [], currentUser);
+                
+                if (currentUser && currentUser.id !== profile.id) {
+                    await setupFollowSystem(profile, currentUser);
+                }
+
+            } catch (error) { 
+                console.error(error);
+                showError("Loading Error", "An unexpected error occurred while loading the profile.");
+            }
+        }
+        
+        window.closeModal = () => { 
+            document.getElementById('backdrop').style.display = 'none'; 
+            document.getElementById('uploadForm').reset(); 
+            document.getElementById('fileHint').textContent = 'Click to select a .mcpack or .zip';
+        };
+        window.hintFile = () => { 
+            const fileInput = document.getElementById('fileInput');
+            const packNameInput = document.getElementById('packName');
+            const file = fileInput.files[0]; 
+            if(file) {
+                document.getElementById('fileHint').textContent = escapeHtml(file.name);
+                packNameInput.value = file.name.replace(/\.(mcpack|zip)$/i, '');
+            }
+        };
+        
+        window.handleUpload = async (event) => {
+            event.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            const packFile = document.getElementById('fileInput').files[0];
+            const packName = document.getElementById('packName').value.trim();
+
+            if (!packFile || !packName) return showToast('Pack name and file are required.', 'error');
+            if (!packFile.name.match(/\.(mcpack|zip)$/i)) return showToast('Invalid file type (.mcpack or .zip only).', 'error');
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="spinner"></div> Uploading...';
+            
+            try {
+                let iconUrl = null;
+                const zip = new JSZip();
+                const contents = await zip.loadAsync(packFile);
+                
+                const iconPath = Object.keys(contents.files).find(path => path.toLowerCase().endsWith('pack_icon.png')) 
+                              || Object.keys(contents.files).find(path => path.toLowerCase().endsWith('pack.png'));
+                
+                if (iconPath) {
+                    const iconFile = contents.file(iconPath);
+                    const iconBlob = await iconFile.async('blob');
+                    const iconStoragePath = `pack_icons/${loggedInUser.id}-${Date.now()}.png`;
+                    let { error: iconError } = await supabase.storage.from('packs').upload(iconStoragePath, iconBlob);
+                    if (iconError) throw new Error(`Icon upload failed: ${iconError.message}`);
+                    const { data } = supabase.storage.from('packs').getPublicUrl(iconStoragePath);
+                    iconUrl = data.publicUrl;
+                }
+                
+                const packStoragePath = `pack_files/${loggedInUser.id}-${Date.now()}-${packFile.name}`;
+                let { error: packError } = await supabase.storage.from('packs').upload(packStoragePath, packFile);
+                if (packError) throw new Error(`Pack file upload failed: ${packError.message}`);
+                
+                const { data: newPack, error: dbError } = await supabase.from('packs').insert({ 
+                    user_id: loggedInUser.id, name: packName, filename: packStoragePath, 
+                    icon_url: iconUrl, version: packFile.name.endsWith('.mcpack') ? 'bedrock' : 'java',
+                    tags: 'user-upload'
+                }).select().single();
+
+                if (dbError) throw new Error(`Database insert failed: ${dbError.message}`);
+                
+                localPacksCache.unshift(newPack);
+                renderPacksForPage();
+
+                showToast('Pack uploaded successfully!', 'success');
+                closeModal();
+
+            } catch (error) { 
+                showToast(error.message, 'error');
+            } finally { 
+                submitBtn.disabled = false; 
+                submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload'; 
+            }
+        };
+        
+        window.handleDownload = async (event, packId, filename, packName) => {
+            event.preventDefault();
+            event.stopPropagation();
+            showToast('Starting download...', 'success');
+            try {
+                fetch("/api/increment-download", {
+                    method: "POST", headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({ id: packId })
+                }).then(() => {
+                    const el = document.getElementById(`downloads-${packId}`);
+                    if(el) el.textContent = (parseInt(el.textContent.replace(/,/g, ''), 10) + 1).toLocaleString();
+                });
+
+                const { data: urlData } = supabase.storage.from('packs').getPublicUrl(filename);
+                if (!urlData) throw new Error('Could not get download URL.');
+
+                const response = await fetch(urlData.publicUrl);
+                if (!response.ok) throw new Error('Download link failed.');
+                const blob = await response.blob();
+
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                const extension = filename.split('.').pop();
+                link.download = `${packName}.${extension}`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+
+            } catch (error) {
+                console.error("Download Error:", error);
+                showToast('Failed to start download.', 'error');
+            }
+        };
+
+        window.toggleOptionsMenu = (event, packId) => {
+            event.stopPropagation();
+            const menu = document.getElementById(`options-menu-${packId}`);
+            const isVisible = menu.style.display === 'block';
+            document.querySelectorAll('.pack-options-menu').forEach(m => m.style.display = 'none');
+            if (!isVisible) menu.style.display = 'block';
+        };
+
+        window.promptDeletePack = (packId) => {
+            const modal = document.getElementById('confirmation-modal');
+            document.getElementById('confirmation-message').textContent = "Are you sure you want to permanently delete this pack?";
+            modal.style.display = 'flex';
+            confirmCallback = () => deletePack(packId);
+        };
+        
+        async function deletePack(packId) {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                const response = await fetch('/api/delete-pack', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+                    body: JSON.stringify({ packId: packId })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.details);
+                
+                localPacksCache = localPacksCache.filter(p => p.id !== packId);
+                renderPacksForPage();
+                
+                showToast('Pack deleted successfully!', 'success');
+
+            } catch(error) {
+                showToast(error.message, 'error');
+            }
+        }
+        
+        document.getElementById('cancel-confirmation-btn').addEventListener('click', () => {
+            document.getElementById('confirmation-modal').style.display = 'none';
+            confirmCallback = null;
+        });
+
+        document.getElementById('confirm-action-btn').addEventListener('click', () => {
+            if (confirmCallback) confirmCallback();
+            document.getElementById('confirmation-modal').style.display = 'none';
+            confirmCallback = null;
+        });
+
+        document.addEventListener('auth-ready', (event) => {
+            loggedInUser = event.detail.user; 
+            loadProfilePage(loggedInUser);
+        });
+
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.pack-options-menu').forEach(m => m.style.display = 'none');
+        });
+        
+        // Desktop navbar population
+        document.addEventListener('auth-ready', () => {
+            const isDesktop = window.innerWidth >= 1024;
+            if (!isDesktop) return;
+
+            const navActions = document.getElementById('nav-actions');
+            const desktopNavLinks = document.getElementById('desktop-nav-links');
+            const desktopAuth = document.getElementById('desktop-auth-actions');
+
+            navActions.querySelectorAll('.nav-link-item').forEach(linkOrContainer => {
+                if (linkOrContainer.classList.contains('tools-dropdown-container')) {
+                    desktopNavLinks.appendChild(linkOrContainer);
+                } else if (linkOrContainer.tagName.toLowerCase() === 'a') {
+                    desktopNavLinks.appendChild(linkOrContainer);
+                }
+            });
+
+            desktopNavLinks.querySelectorAll('a, button.nav-link').forEach(link => {
+                if (link.tagName.toLowerCase() === 'a') {
+                    link.className = 'nav-link';
+                    const linkPath = link.getAttribute('href');
+                    const currentPath = window.location.pathname;
+                    if (linkPath === currentPath) {
+                        link.classList.add('active');
+                    }
+                }
+            });
+
+            const loginBtn = navActions.querySelector('.login-btn-item');
+            const signupBtn = navActions.querySelector('.signup-btn-item');
+            const userDropdown = navActions.querySelector('.user-dropdown');
+            const notificationBtn = navActions.querySelector('.notification-toggle-btn');
+            
+            if (notificationBtn) desktopAuth.appendChild(notificationBtn);
+
+            if (userDropdown) {
+                desktopAuth.appendChild(userDropdown);
+            } else {
+                if (loginBtn) {
+                    loginBtn.className = 'login-btn';
+                    desktopAuth.appendChild(loginBtn);
+                }
+                if (signupBtn) {
+                    signupBtn.className = 'signup-btn';
+                    desktopAuth.appendChild(signupBtn);
+                }
+            }
+        });
+
+        // NOTIFICATION SCRIPT
+        let currentUserId = null;
+        let notificationSubscription = null;
+
+        function timeAgo(date) {
+            const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + "y ago";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + "mo ago";
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + "d ago";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + "h ago";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + "m ago";
+            return "just now";
+        }
+
+        async function fetchAndRenderNotifications() {
+            if (!currentUserId) return;
+            
+            const { data, error } = await supabase.from('notifications').select('*').eq('user_id', currentUserId).order('created_at', { ascending: false }).limit(20);
+
+            if (error) {
+                console.error("Error fetching notifications:", error);
+                return;
+            }
+
+            const list = document.getElementById('notification-list');
+            const badgeDesktop = document.getElementById('notification-badge');
+            const badgeMobile = document.getElementById('notification-badge-mobile');
+            let unreadCount = 0;
+
+            if (data.length === 0) {
+                list.innerHTML = '<div class="notification-list-empty"><div class="empty-icon"><i class="fa-solid fa-bell-slash"></i></div><p>All caught up!</p></div>';
+            } else {
+                list.innerHTML = data.map(n => {
+                    if (!n.is_read) unreadCount++;
+                    const iconMap = {
+                        'new_news': 'fa-solid fa-newspaper',
+                        'new_pack': 'fa-solid fa-box',
+                        'comment_reply': 'fa-solid fa-comment-dots'
+                    };
+                    
+                    let iconHtml = '';
+                    if (n.type === 'new_pack' && n.content.pack_icon) {
+                        iconHtml = `<img src="${n.content.pack_icon}" class="notification-icon" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;" alt="Pack icon">`;
+                    } else {
+                        iconHtml = `<i class="${iconMap[n.type] || 'fa-solid fa-bell'} notification-icon"></i>`;
+                    }
+                    
+                    return `
+                        <div class="notification-item ${n.is_read ? 'read' : ''}" id="notification-${n.id}">
+                            ${iconHtml}
+                            <a href="${n.content.link}" class="notification-content">
+                                <p>${escapeHtml(n.content.text)}</p>
+                                <span class="time">${timeAgo(n.created_at)}</span>
+                            </a>
+                            <button class="dismiss-notification-btn" data-id="${n.id}">&times;</button>
+                        </div>`;
+                }).join('');
+            }
+            
+            const badges = [badgeDesktop, badgeMobile];
+            badges.forEach(badge => {
+                if (badge) badge.style.display = unreadCount > 0 ? 'block' : 'none';
+            });
+        }
+
+        async function markOneAsRead(notificationId) {
+            const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', notificationId);
+            if (!error) {
+                const item = document.getElementById(`notification-${notificationId}`);
+                if (item && !item.classList.contains('read')) {
+                    item.classList.add('read');
+                    const badges = document.querySelectorAll('.notification-badge');
+                    let currentCount = parseInt(badges[0]?.textContent) || 0;
+                    if (currentCount > 0) {
+                        badges.forEach(b => {
+                            if (currentCount - 1 <= 0) b.style.display = 'none';
+                        });
+                    }
+                }
+            }
+        }
+
+        function setupNotificationListeners() {
+            const backdrop = document.getElementById('notification-backdrop');
+            
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.notification-toggle-btn')) {
+                    backdrop.classList.add('show');
+                } 
+                else if (e.target.id === 'close-notifications-btn' || e.target.id === 'notification-backdrop') {
+                    backdrop.classList.remove('show');
+                }
+                else if (e.target.id === 'mark-all-read-btn') {
+                    supabase.from('notifications').update({ is_read: true }).eq('user_id', currentUserId).then(fetchAndRenderNotifications);
+                }
+                else if (e.target.id === 'clear-all-btn') {
+                    supabase.from('notifications').delete().eq('user_id', currentUserId).then(fetchAndRenderNotifications);
+                }
+                else if (e.target.classList.contains('dismiss-notification-btn')) {
+                    markOneAsRead(e.target.dataset.id);
+                }
+                else if (e.target.closest('.notification-content a')) {
+                    const notificationItem = e.target.closest('.notification-item');
+                    const notificationId = notificationItem.id.split('-')[1];
+                    if (!notificationItem.classList.contains('read')) {
+                        markOneAsRead(notificationId);
+                    }
+                    backdrop.classList.remove('show');
+                }
+            });
+        }
+
+        function createNotificationSubscription() {
+            if (notificationSubscription) supabase.removeChannel(notificationSubscription);
+
+            notificationSubscription = supabase.channel(`public:notifications:user_id=eq.${currentUserId}`)
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, payload => {
+                    fetchAndRenderNotifications();
+                }).subscribe();
+        }
+
+        document.addEventListener('auth-ready', (event) => {
+            const { user } = event.detail;
+            if (user) {
+                currentUserId = user.id;
+                fetchAndRenderNotifications();
+                createNotificationSubscription();
+                setupNotificationListeners();
+            } else {
+                currentUserId = null;
+                if (notificationSubscription) supabase.removeChannel(notificationSubscription);
+            }
+        });
+
+        // Handle logout requests from navigation
+        document.addEventListener('logout-request', async () => {
+            await supabase.auth.signOut();
+            window.location.href = '/';
+        });
+
+    </script>
+</body>
+</html>

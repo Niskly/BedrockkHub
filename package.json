@@ -1,0 +1,11 @@
+{
+  "name": "bedrockk-hub",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.43.5",
+    "@napi-rs/canvas": "^0.1.52"
+  }
+}
+

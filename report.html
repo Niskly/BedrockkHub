@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MCHub - Report</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-16x16.png">
+    <link rel="shortcut icon" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/components/nav.css">
+    <link rel="stylesheet" href="/components/footer.css">
+    <style>
+        :root {
+            --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
+            --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
+            --brand-1-rgb: 222, 33, 42; --brand-2: #b21a22; 
+            --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
+            --border-strong: rgba(255, 255, 255, .2);
+            --success: #22c55e; --danger: #ef4444;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            opacity: 0; transition: opacity 0.5s ease-in-out;
+            margin: 0; background-color: var(--bg-0); color: var(--text); 
+            font: 500 15px/1.6 Inter, sans-serif; padding-top: 100px;
+        }
+        body::before { 
+            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+            background-image: var(--bg-image, url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg')); 
+            background-size: cover; filter: blur(8px); opacity: 0.2; z-index: -1;
+            transition: background-image 0.5s ease-in-out;
+        }
+        a { color: inherit; text-decoration: none; }
+        
+        /* FAQ Specific */
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
+        .page-header { text-align: center; margin-bottom: 3rem; padding: 2rem 1rem; }
+        .page-header h1 {
+            font-size: 3rem; font-weight: 900; margin: 0 0 1rem 0;
+            background: linear-gradient(135deg, var(--brand-1), #ff525a);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .page-header p { font-size: 1.1rem; color: var(--muted); max-width: 600px; margin: 0 auto; }
+        .faq-search-container { max-width: 700px; margin: 0 auto 3rem auto; position: relative; }
+        .faq-search-input {
+            width: 100%; padding: 1rem 1rem 1rem 3rem; background: var(--bg-1);
+            border: 1px solid var(--border); border-radius: 16px; color: var(--text);
+            font-size: 1rem; font-family: inherit; transition: all 0.3s ease;
+        }
+        .faq-search-input:focus {
+            outline: none; border-color: var(--brand-1); box-shadow: 0 0 0 3px rgba(222, 33, 42, 0.1);
+        }
+        .faq-search-container i {
+            position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+            color: var(--muted); font-size: 1.2rem;
+        }
+        .faq-categories {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem; margin-bottom: 3rem;
+        }
+        .category-btn {
+            padding: 1rem 1.5rem; background: var(--bg-1); border: 1px solid var(--border);
+            border-radius: 12px; color: var(--text); font-weight: 600; cursor: pointer;
+            transition: all 0.3s ease; display: flex; align-items: center; gap: 0.75rem;
+            font-family: inherit; font-size: 1rem;
+        }
+        .category-btn i { font-size: 1.2rem; color: var(--brand-1); }
+        .category-btn:hover { border-color: var(--brand-1); background: var(--bg-2); transform: translateY(-2px); }
+        .category-btn.active {
+            background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+            border-color: var(--brand-1); color: white;
+        }
+        .category-btn.active i { color: white; }
+        
+        .mobile-category-selector {
+            display: none;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        .custom-select {
+            position: relative;
+            width: 100%;
+        }
+        .custom-select-trigger {
+            width: 100%; padding: 1rem 1.5rem; background: var(--bg-1);
+            border: 1px solid var(--border); border-radius: 12px; color: var(--text);
+            font-size: 1rem; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; gap: 0.75rem;
+            transition: all 0.2s ease;
+        }
+        .custom-select-trigger:hover {
+            border-color: var(--border-strong);
+        }
+        .custom-select-trigger i:first-child {
+            color: var(--brand-1);
+            font-size: 1.1rem;
+        }
+        .custom-select-trigger i:last-child {
+            font-size: 0.8rem;
+            transition: transform 0.2s ease;
+        }
+        .custom-select.open .custom-select-trigger i:last-child {
+            transform: rotate(180deg);
+        }
+        .custom-select-options {
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            left: 0;
+            right: 0;
+            background: var(--bg-1);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            z-index: 100;
+            display: none;
+        }
+        .custom-select.open .custom-select-options {
+            display: block;
+        }
+        .custom-select-option {
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text);
+            font-weight: 600;
+        }
+        .custom-select-option i {
+            color: var(--brand-1);
+            font-size: 1.1rem;
+        }
+        .custom-select-option:hover {
+            background: var(--bg-2);
+        }
+        .custom-select-option.active {
+            background: var(--bg-2);
+            color: var(--brand-1);
+        }
+        .faq-list { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); 
+            gap: 1rem; 
+        }
+        .faq-item {
+            background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px;
+            overflow: hidden; transition: all 0.3s ease; display: flex; flex-direction: column;
+        }
+        .faq-item.hidden { display: none; }
+        .faq-item:hover { border-color: var(--border-strong); }
+        .faq-question {
+            padding: 1.5rem; cursor: pointer; display: flex;
+            align-items: flex-start; gap: 1rem; user-select: none;
+        }
+        .faq-question-icon {
+            width: 48px; height: 48px; min-width: 48px; border-radius: 12px;
+            background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; color: white; box-shadow: var(--shadow-brand);
+        }
+        .faq-question-content { flex: 1; }
+        .faq-question h3 { margin: 0 0 0.25rem 0; font-size: 1.05rem; font-weight: 700; color: var(--text); }
+        .faq-icon {
+            width: 32px; height: 32px; border-radius: 50%; background: var(--bg-2);
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s ease; flex-shrink: 0;
+        }
+        .faq-icon i { color: var(--brand-1); transition: transform 0.3s ease; }
+        .faq-item.open .faq-icon i { transform: rotate(180deg); }
+        .faq-item.open .faq-icon { background: var(--brand-1); }
+        .faq-item.open .faq-icon i { color: white; }
+        .faq-answer {
+            max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s ease;
+            padding: 0 1.5rem;
+        }
+        .faq-item.open .faq-answer { max-height: 1000px; padding: 0 1.5rem 1.5rem 1.5rem; }
+        .faq-answer p { margin: 0 0 1rem 0; line-height: 1.7; color: var(--muted); }
+        .faq-answer p:last-child { margin-bottom: 0; }
+        .faq-answer a { color: var(--brand-1); text-decoration: underline; }
+        .faq-answer a:hover { color: #ff525a; }
+        .no-results {
+            text-align: center; padding: 3rem 1rem; color: var(--muted);
+        }
+        .no-results i { font-size: 4rem; margin-bottom: 1rem; opacity: 0.3; }
+        .no-results h3 { margin: 0 0 0.5rem 0; font-size: 1.5rem; color: var(--text); }
+        @media (max-width: 768px) {
+            .page-header h1 { font-size: 2rem; }
+            .faq-categories { display: none !important; }
+            .mobile-category-selector { display: block; }
+            .faq-list { grid-template-columns: 1fr; }
+            .faq-question-icon { width: 40px; height: 40px; min-width: 40px; font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="nav-component"></div>
+
+    <!-- Login Required Modal -->
+    <div id="login-required-modal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); z-index: 200; align-items: center; justify-content: center; padding: 1rem;">
+        <div style="background: var(--bg-1); border: 2px solid var(--brand-1); border-radius: 16px; padding: 2rem; max-width: 400px; width: 100%; box-shadow: 0 0 30px rgba(var(--brand-1-rgb), 0.5); animation: slideDown 0.3s ease;">
+            <div style="text-align: center;">
+                <i class="fa-solid fa-lock" style="font-size: 3rem; color: var(--brand-1); margin-bottom: 1rem;"></i>
+                <h3 style="margin: 0 0 0.75rem 0; font-size: 1.3rem; font-weight: 800; color: var(--text);">Login Required</h3>
+                <p style="margin: 0 0 1.5rem 0; color: var(--muted); line-height: 1.6;">You need to be logged in to submit a report. Please log in or create an account to continue.</p>
+                <div style="display: flex; gap: 0.75rem;">
+                    <button onclick="window.location.href='/login.html'" style="flex: 1; padding: 0.875rem; background: var(--brand-1); border: none; border-radius: 10px; color: white; font-weight: 700; font-size: 1rem; cursor: pointer; box-shadow: var(--shadow-brand); transition: all 0.2s; font-family: inherit;">
+                        <i class="fa-solid fa-sign-in-alt" style="margin-right: 0.5rem;"></i>
+                        Login
+                    </button>
+                    <button onclick="document.getElementById('login-required-modal').style.display = 'none'" style="flex: 1; padding: 0.875rem; background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.2s; font-family: inherit;">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main class="container">
+        <div class="page-header">
+            <h1 style="display: flex; align-items: center; justify-content: center; gap: 0.75rem;"><i class="fa-solid fa-triangle-exclamation" style="color: #ff9800; font-size: 2.5rem;"></i> Report an Issue</h1>
+            <p>Help us maintain a safe and appropriate community by reporting any issues, bugs,<br>inappropriate content, or concerns you encounter.</p>
+        </div>
+
+        <div class="contact-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
+            <!-- Report Form -->
+            <div style="background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; padding: 2rem;">
+                <h2 style="font-size: 1.3rem; font-weight: 700; margin: 0 0 1.5rem 0;">Submit a General Report</h2>
+                
+                <form id="report-form">
+                    <!-- Issue Category Selector - Custom Dropdown -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text); font-size: 0.9rem;">
+                            <i class="fa-solid fa-flag" style="color: var(--brand-1); margin-right: 0.5rem;"></i>
+                            Issue Category
+                        </label>
+                        <div class="custom-dropdown" id="issue-category-dropdown" style="position: relative;">
+                            <div class="custom-dropdown-trigger" style="width: 100%; padding: 0.875rem 1rem; background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; color: var(--muted); font-size: 1rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between;">
+                                <span id="selected-category">Select an issue type...</span>
+                                <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; transition: transform 0.2s;"></i>
+                            </div>
+                            <div class="custom-dropdown-menu" style="display: none; position: absolute; top: calc(100% + 0.5rem); left: 0; right: 0; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 100; max-height: 350px; overflow-y: auto;">
+                                <div class="dropdown-option" data-value="bug" style="padding: 0.875rem 1rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: all 0.2s;">
+                                    <i class="fa-solid fa-bug" style="color: var(--brand-1); font-size: 1.1rem; width: 20px; text-align: center;"></i>
+                                    <span style="font-weight: 600; color: var(--text);">Bug / Technical Issue</span>
+                                </div>
+                                <div class="dropdown-option" data-value="content" style="padding: 0.875rem 1rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: all 0.2s;">
+                                    <i class="fa-solid fa-ban" style="color: var(--brand-1); font-size: 1.1rem; width: 20px; text-align: center;"></i>
+                                    <span style="font-weight: 600; color: var(--text);">Inappropriate Content</span>
+                                </div>
+                                <div class="dropdown-option" data-value="broken" style="padding: 0.875rem 1rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: all 0.2s;">
+                                    <i class="fa-solid fa-link-slash" style="color: var(--brand-1); font-size: 1.1rem; width: 20px; text-align: center;"></i>
+                                    <span style="font-weight: 600; color: var(--text);">Broken Feature / Link</span>
+                                </div>
+                                <div class="dropdown-option" data-value="spam" style="padding: 0.875rem 1rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: all 0.2s;">
+                                    <i class="fa-solid fa-envelope-open-text" style="color: var(--brand-1); font-size: 1.1rem; width: 20px; text-align: center;"></i>
+                                    <span style="font-weight: 600; color: var(--text);">Spam / Abuse</span>
+                                </div>
+                                <div class="dropdown-option" data-value="performance" style="padding: 0.875rem 1rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: all 0.2s;">
+                                    <i class="fa-solid fa-gauge-high" style="color: var(--brand-1); font-size: 1.1rem; width: 20px; text-align: center;"></i>
+                                    <span style="font-weight: 600; color: var(--text);">Performance Issue</span>
+                                </div>
+                                <div class="dropdown-option" data-value="feature" style="padding: 0.875rem 1rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: all 0.2s;">
+                                    <i class="fa-solid fa-lightbulb" style="color: var(--brand-1); font-size: 1.1rem; width: 20px; text-align: center;"></i>
+                                    <span style="font-weight: 600; color: var(--text);">Feature Request</span>
+                                </div>
+                                <div class="dropdown-option" data-value="other" style="padding: 0.875rem 1rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: all 0.2s;">
+                                    <i class="fa-solid fa-ellipsis" style="color: var(--brand-1); font-size: 1.1rem; width: 20px; text-align: center;"></i>
+                                    <span style="font-weight: 600; color: var(--text);">Other</span>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="issue-category" name="issue-category" required>
+                    </div>
+
+                    <!-- Describe the Issue -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text); font-size: 0.9rem;">Describe the Issue</label>
+                        <textarea required placeholder="Please describe the issue you're reporting in detail..." rows="6" style="width: 100%; padding: 0.875rem 1rem; background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: inherit; font-size: 1rem; transition: all 0.2s; resize: vertical;"></textarea>
+                    </div>
+
+                    <!-- Before you submit box -->
+                    <div style="background: rgba(30, 136, 229, 0.1); border: 2px solid #1e88e5; border-radius: 10px; padding: 1.25rem; margin-bottom: 1.5rem;">
+                        <h3 style="margin: 0 0 0.75rem 0; font-size: 1rem; font-weight: 700; color: #64b5f6;">Before you submit:</h3>
+                        <ul style="margin: 0; padding-left: 1.25rem; color: var(--muted); font-size: 0.9rem; line-height: 1.8;">
+                            <li>Ensure your report is factual and objective</li>
+                            <li>Include relevant details (URLs, screenshots, etc.)</li>
+                            <li>Keep descriptions clear and concise</li>
+                            <li>Our team will review reports within 24-48 hours</li>
+                        </ul>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="submit" style="flex: 1; padding: 1rem; background: var(--brand-1); border: none; border-radius: 10px; color: white; font-weight: 700; font-size: 1rem; cursor: pointer; box-shadow: var(--shadow-brand); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-family: inherit;">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            Submit Report
+                        </button>
+                        <button type="button" onclick="document.getElementById('report-form').reset()" style="padding: 1rem 1.5rem; background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; color: var(--muted); font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.2s; font-family: inherit;">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Need Help Section - Compact -->
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div style="background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem;">
+                    <h2 style="font-size: 1.2rem; font-weight: 700; margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-circle-question" style="color: var(--brand-1);"></i>
+                        Need Help?
+                    </h2>
+                    
+                    <p style="margin: 0 0 1rem 0; color: var(--muted); font-size: 0.9rem; line-height: 1.6;">Having trouble? Here's what you can do:</p>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                            <i class="fa-solid fa-chevron-right" style="color: var(--brand-1); font-size: 0.75rem; margin-top: 0.35rem;"></i>
+                            <span style="color: var(--muted); font-size: 0.9rem;"><strong style="color: var(--text);">Specific reports:</strong> Use report buttons on content pages</span>
+                        </div>
+                        <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                            <i class="fa-solid fa-chevron-right" style="color: var(--brand-1); font-size: 0.75rem; margin-top: 0.35rem;"></i>
+                            <span style="color: var(--muted); font-size: 0.9rem;"><strong style="color: var(--text);">General issues:</strong> Use the form on the left</span>
+                        </div>
+                        <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                            <i class="fa-solid fa-chevron-right" style="color: var(--brand-1); font-size: 0.75rem; margin-top: 0.35rem;"></i>
+                            <span style="color: var(--muted); font-size: 0.9rem;"><strong style="color: var(--text);">Urgent matters:</strong> <a href="/contact.html" style="color: var(--brand-1);">Contact support</a></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 152, 0, 0.05)); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 12px; padding: 1.25rem;">
+                    <h3 style="margin: 0 0 0.5rem 0; font-size: 0.95rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-lightbulb" style="color: #ffc107; font-size: 1.1rem;"></i>
+                        Quick Tip
+                    </h3>
+                    <p style="margin: 0; color: var(--muted); font-size: 0.85rem; line-height: 1.5;">
+                        Check our <a href="/faq.html" style="color: #ffc107; font-weight: 600;">FAQ</a> before reporting common issues.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            @keyframes pulse {
+                0%, 100% { opacity: 0.5; transform: scale(1); }
+                50% { opacity: 0.8; transform: scale(1.05); }
+            }
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                20%, 40%, 60%, 80% { transform: translateX(5px); }
+            }
+            .glow-box:hover {
+                box-shadow: 0 0 30px rgba(var(--brand-1-rgb), 0.5), 
+                            0 0 50px rgba(var(--brand-1-rgb), 0.3), 
+                            inset 0 0 30px rgba(var(--brand-1-rgb), 0.1) !important;
+                transform: translateY(-3px);
+                border-color: var(--brand-1);
+            }
+            input:focus, textarea:focus, select:focus { outline: none; border-color: var(--brand-1); box-shadow: 0 0 0 3px rgba(var(--brand-1-rgb), 0.1); }
+            select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23a8b3cf' d='M8 11L3 6h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; padding-right: 3rem; }
+            .custom-dropdown-trigger:hover { border-color: var(--border-strong); }
+            .custom-dropdown.open .custom-dropdown-trigger { border-color: var(--brand-1); }
+            .custom-dropdown.open .custom-dropdown-trigger i { transform: rotate(180deg); }
+            .dropdown-option:hover { background: var(--bg-2); }
+            .dropdown-option.selected { background: rgba(var(--brand-1-rgb), 0.15); }
+            button:hover { filter: brightness(1.1); transform: translateY(-2px); }
+            a:hover { filter: brightness(1.2); transform: translateY(-2px); }
+            @media (max-width: 992px) {
+                .contact-grid { grid-template-columns: 1fr !important; }
+            }
+        </style>
+    </main>
+
+    <div id="footer-component"></div>
+
+    <script src="/components.js"></script>
+    <script type="module" src="/theme.js"></script>
+    <script type="module" src="/auth.js"></script>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        
+        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        window.supabase = supabase; // Make globally accessible
+        
+        function escapeHtml(str) {
+            return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]));
+        }
+
+        // Wait for components to load before initializing search
+        document.addEventListener('components-loaded', () => {
+            // Search modal functionality
+            const desktopSearchInput = document.querySelector('.desktop-search-container input');
+            const mobileSearchToggle = document.getElementById('mobile-search-toggle');
+            const searchModal = document.getElementById('desktop-search-modal');
+            const closeModalBtn = document.getElementById('close-search-modal-btn');
+            let modalSearchType = 'packs';
+
+            function openSearchModal() {
+                if (searchModal) {
+                    searchModal.classList.add('show');
+                    document.body.style.overflow = 'hidden';
+                    const modalSearchInput = document.getElementById('modal-universal-search');
+                    if (modalSearchInput) setTimeout(() => modalSearchInput.focus(), 100);
+                    loadLatestPacksSuggestions();
+                }
+            }
+
+            function closeSearchModal() {
+                if (searchModal) {
+                    searchModal.classList.remove('show');
+                    document.body.style.overflow = '';
+                    const resultsContainer = document.getElementById('modal-search-results');
+                    if (resultsContainer) {
+                        resultsContainer.style.display = 'none';
+                        resultsContainer.innerHTML = '';
+                    }
+                    const modalSearchInput = document.getElementById('modal-universal-search');
+                    if (modalSearchInput) modalSearchInput.value = '';
+                }
+            }
+
+            if (desktopSearchInput) desktopSearchInput.addEventListener('click', (e) => { e.preventDefault(); openSearchModal(); });
+            if (mobileSearchToggle) mobileSearchToggle.addEventListener('click', openSearchModal);
+            if (closeModalBtn) closeModalBtn.addEventListener('click', closeSearchModal);
+            if (searchModal) searchModal.addEventListener('click', (e) => { if (e.target === searchModal) closeSearchModal(); });
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && searchModal && searchModal.classList.contains('show')) closeSearchModal(); });
+
+            // Search type dropdown
+            const modalDropdown = document.getElementById('modal-search-type-dropdown');
+            const modalSearchTypeBtn = document.getElementById('modal-search-type-btn');
+            const modalSearchInput = document.getElementById('modal-universal-search');
+
+            if (modalDropdown) {
+                modalSearchTypeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    modalDropdown.classList.toggle('open');
+                });
+
+                modalDropdown.querySelectorAll('.search-type-option').forEach(option => {
+                    option.addEventListener('click', () => {
+                        modalSearchType = option.dataset.type;
+                        const btnSpan = modalSearchTypeBtn.querySelector('span');
+                        const btnIcon = modalSearchTypeBtn.querySelector('i:first-child');
+                        const optionIcon = option.querySelector('i');
+                        
+                        if (btnSpan) btnSpan.textContent = option.textContent.trim();
+                        if (btnIcon && optionIcon) btnIcon.className = optionIcon.className;
+                        modalSearchInput.placeholder = `Search for ${modalSearchType}...`;
+                        modalDropdown.classList.remove('open');
+                        
+                        if (modalSearchInput.value.trim().length >= 2) performModalSearch();
+                    });
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('#modal-search-type-dropdown')) modalDropdown.classList.remove('open');
+                });
+            }
+
+        // Search functionality
+        async function performModalSearch() {
+            const query = modalSearchInput.value.trim();
+            const resultsContainer = document.getElementById('modal-search-results');
+            const suggestionsContainer = document.querySelector('.modal-suggestions');
+            
+            if (query.length < 2) {
+                resultsContainer.style.display = 'none';
+                if (suggestionsContainer) suggestionsContainer.style.display = '';
+                return;
+            }
+
+            resultsContainer.style.display = 'block';
+            if (suggestionsContainer) suggestionsContainer.style.display = 'none';
+            resultsContainer.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--muted);">Searching...</div>';
+
+            try {
+                let results = [];
+
+                if (modalSearchType === 'packs') {
+                    const { data } = await supabase.from('packs').select('id, name, icon_url').ilike('name', `%${query}%`).limit(8);
+                    results = (data || []).map(item => ({
+                        type: 'pack', name: item.name, icon: item.icon_url, link: `/packs.html?id=${item.id}`
+                    }));
+                } else if (modalSearchType === 'users') {
+                    const { data } = await supabase.from('profiles').select('username, avatar_url').ilike('username', `%${query}%`).limit(8);
+                    results = (data || []).map(item => ({
+                        type: 'user', name: item.username, icon: item.avatar_url, link: `/profile.html?user=${item.username}`
+                    }));
+                } else if (modalSearchType === 'gamertags') {
+                    const { data } = await supabase.from('profiles').select('username, bedrock_gamertag, xuid').ilike('bedrock_gamertag', `%${query}%`).limit(8);
+                    results = (data || []).map(item => ({
+                        type: 'gamertag', name: item.bedrock_gamertag, sub: item.username, xuid: item.xuid, link: `/profile.html?user=${item.username}`
+                    }));
+                }
+
+                renderModalSearchResults(results);
+            } catch (error) {
+                console.error('Search error:', error);
+                resultsContainer.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--danger);">Search failed. Please try again.</div>';
+            }
+        }
+
+        function renderModalSearchResults(results) {
+            const container = document.getElementById('modal-search-results');
+            if (results.length === 0) {
+                container.innerHTML = `<div class="search-result-item"><div class="search-result-info"><div class="search-result-name">No results found</div></div></div>`;
+            } else {
+                container.innerHTML = results.map(item => {
+                    let iconHtml = '';
+                    if (item.type === 'pack') {
+                        iconHtml = item.icon 
+                            ? `<img src="${item.icon}" class="search-result-icon">`
+                            : `<div class="search-result-icon" style="background:var(--bg-1); display:grid; place-items:center;"><i class="fa-solid fa-cube"></i></div>`;
+                    } else if (item.type === 'gamertag' && item.xuid) {
+                        iconHtml = `<img src="/api/bedrock-skin?xuid=${item.xuid}&render_type=head" class="search-result-avatar is-mc-skin">`;
+                    } else {
+                        const initial = (item.name || '?').charAt(0).toUpperCase();
+                        iconHtml = `<img src="${item.icon || `https://placehold.co/40x40/1c1c1c/de212a?text=${initial}`}" class="search-result-avatar">`;
+                    }
+                    return `<a href="${item.link}" class="search-result-item">${iconHtml}<div class="search-result-info"><div class="search-result-name">${escapeHtml(item.name)}</div>${item.sub ? `<div class="search-result-sub">MCHub User: ${escapeHtml(item.sub)}</div>` : ''}</div></a>`;
+                }).join('');
+            }
+            container.style.display = 'block';
+        }
+
+        // Load latest packs suggestions
+        async function loadLatestPacksSuggestions() {
+            try {
+                const { data } = await supabase.from('packs').select('id, name, icon_url').order('created_at', { ascending: false }).limit(4);
+                
+                const suggestionsContainer = document.querySelector('.modal-suggestions');
+                if (data && data.length > 0 && suggestionsContainer) {
+                    const grid = suggestionsContainer.querySelector('.modal-suggestions-grid');
+                    if (grid) {
+                        grid.innerHTML = data.map(pack => `
+                            <a href="/packs.html?id=${pack.id}" class="suggestion-card">
+                                <img src="${pack.icon_url || 'https://placehold.co/48x48/1c1c1c/de212a?text=P'}" class="pack-icon" alt="${escapeHtml(pack.name)}">
+                                <div class="suggestion-card-info">
+                                    <div class="suggestion-card-name">${escapeHtml(pack.name)}</div>
+                                </div>
+                            </a>
+                        `).join('');
+                    }
+                }
+            } catch (err) {
+                console.error('Error loading pack suggestions:', err);
+            }
+        }
+
+            // Debounced search
+            let searchDebounceTimer;
+            if (modalSearchInput) {
+                modalSearchInput.addEventListener('input', () => {
+                    clearTimeout(searchDebounceTimer);
+                    searchDebounceTimer = setTimeout(performModalSearch, 300);
+                });
+            }
+        }); // End components-loaded listener
+
+        // NOTIFICATION SCRIPT
+        let currentUserId = null;
+        let notificationSubscription = null;
+
+        function timeAgo(date) {
+            const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + "y ago";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + "mo ago";
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + "d ago";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + "h ago";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + "m ago";
+            return "just now";
+        }
+
+        async function fetchAndRenderNotifications() {
+            if (!currentUserId) return;
+            
+            const { data, error } = await supabase.from('notifications').select('*').eq('user_id', currentUserId).order('created_at', { ascending: false }).limit(20);
+
+            if (error) {
+                console.error("Error fetching notifications:", error);
+                return;
+            }
+
+            const list = document.getElementById('notification-list');
+            const badgeDesktop = document.getElementById('notification-badge');
+            const badgeMobile = document.getElementById('notification-badge-mobile');
+            let unreadCount = 0;
+
+            if (data.length === 0) {
+                list.innerHTML = '<div class="notification-list-empty"><div class="empty-icon"><i class="fa-solid fa-bell-slash"></i></div><p>All caught up!</p></div>';
+            } else {
+                list.innerHTML = data.map(n => {
+                    if (!n.is_read) unreadCount++;
+                    const iconMap = {
+                        'new_news': 'fa-solid fa-newspaper',
+                        'new_pack': 'fa-solid fa-box',
+                        'comment_reply': 'fa-solid fa-comment-dots'
+                    };
+                    
+                    let iconHtml = '';
+                    if (n.type === 'new_pack' && n.content.pack_icon) {
+                        iconHtml = `<img src="${n.content.pack_icon}" class="notification-icon" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;" alt="Pack icon">`;
+                    } else {
+                        iconHtml = `<i class="${iconMap[n.type] || 'fa-solid fa-bell'} notification-icon"></i>`;
+                    }
+                    
+                    return `
+                        <div class="notification-item ${n.is_read ? 'read' : ''}" id="notification-${n.id}">
+                            ${iconHtml}
+                            <a href="${n.content.link}" class="notification-content">
+                                <p>${escapeHtml(n.content.text)}</p>
+                                <span class="time">${timeAgo(n.created_at)}</span>
+                            </a>
+                            <button class="dismiss-notification-btn" data-id="${n.id}">&times;</button>
+                        </div>`;
+                }).join('');
+            }
+            
+            const badges = [badgeDesktop, badgeMobile];
+            badges.forEach(badge => {
+                if (badge) badge.style.display = unreadCount > 0 ? 'block' : 'none';
+            });
+        }
+
+        async function markOneAsRead(notificationId) {
+            const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', notificationId);
+            if (!error) {
+                const item = document.getElementById(`notification-${notificationId}`);
+                if (item && !item.classList.contains('read')) {
+                    item.classList.add('read');
+                    const badges = document.querySelectorAll('.notification-badge');
+                    let currentCount = parseInt(badges[0].textContent) || 0;
+                    if (currentCount > 0) {
+                        badges.forEach(b => {
+                            if (currentCount - 1 <= 0) b.style.display = 'none';
+                        });
+                    }
+                }
+            }
+        }
+
+        function setupNotificationListeners() {
+            const backdrop = document.getElementById('notification-backdrop');
+            
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.notification-toggle-btn')) {
+                    backdrop.classList.add('show');
+                } 
+                else if (e.target.id === 'close-notifications-btn' || e.target.id === 'notification-backdrop') {
+                    backdrop.classList.remove('show');
+                }
+                else if (e.target.id === 'mark-all-read-btn') {
+                    supabase.from('notifications').update({ is_read: true }).eq('user_id', currentUserId).then(fetchAndRenderNotifications);
+                }
+                else if (e.target.id === 'clear-all-btn') {
+                    supabase.from('notifications').delete().eq('user_id', currentUserId).then(fetchAndRenderNotifications);
+                }
+                else if (e.target.classList.contains('dismiss-notification-btn')) {
+                    markOneAsRead(e.target.dataset.id);
+                }
+                else if (e.target.closest('.notification-content a')) {
+                    const notificationItem = e.target.closest('.notification-item');
+                    const notificationId = notificationItem.id.split('-')[1];
+                    if (!notificationItem.classList.contains('read')) {
+                        markOneAsRead(notificationId);
+                    }
+                    backdrop.classList.remove('show');
+                }
+            });
+        }
+
+        function createNotificationSubscription() {
+            if (notificationSubscription) supabase.removeChannel(notificationSubscription);
+
+            notificationSubscription = supabase.channel(`public:notifications:user_id=eq.${currentUserId}`)
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, payload => {
+                    fetchAndRenderNotifications();
+                }).subscribe();
+        }
+
+        document.addEventListener('auth-ready', (event) => {
+            const { user } = event.detail;
+            if (user) {
+                currentUserId = user.id;
+                fetchAndRenderNotifications();
+                createNotificationSubscription();
+                setupNotificationListeners();
+            } else {
+                currentUserId = null;
+                if (notificationSubscription) supabase.removeChannel(notificationSubscription);
+            }
+        });
+    </script>
+    <script>
+        // Custom Dropdown Handler
+        const customDropdown = document.getElementById('issue-category-dropdown');
+        const dropdownTrigger = customDropdown?.querySelector('.custom-dropdown-trigger');
+        const dropdownMenu = customDropdown?.querySelector('.custom-dropdown-menu');
+        const selectedCategorySpan = document.getElementById('selected-category');
+        const hiddenInput = document.getElementById('issue-category');
+        
+        if (dropdownTrigger && dropdownMenu) {
+            // Toggle dropdown
+            dropdownTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                customDropdown.classList.toggle('open');
+                dropdownMenu.style.display = dropdownMenu.style.display === 'none' ? 'block' : 'none';
+            });
+            
+            // Select option
+            const options = dropdownMenu.querySelectorAll('.dropdown-option');
+            options.forEach(option => {
+                option.addEventListener('click', () => {
+                    const value = option.dataset.value;
+                    const text = option.querySelector('span').textContent;
+                    const icon = option.querySelector('i').cloneNode(true);
+                    
+                    // Update selected text and hidden input
+                    selectedCategorySpan.innerHTML = '';
+                    selectedCategorySpan.appendChild(icon);
+                    selectedCategorySpan.appendChild(document.createTextNode(' ' + text));
+                    selectedCategorySpan.style.color = 'var(--text)';
+                    hiddenInput.value = value;
+                    
+                    // Update selected state
+                    options.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    
+                    // Close dropdown
+                    customDropdown.classList.remove('open');
+                    dropdownMenu.style.display = 'none';
+                });
+            });
+            
+            // Close when clicking outside
+            document.addEventListener('click', () => {
+                customDropdown.classList.remove('open');
+                dropdownMenu.style.display = 'none';
+            });
+        }
+        
+        // Report Form Handler with Auth Check
+        let isUserLoggedIn = false;
+        
+        // Listen for auth state
+        document.addEventListener('auth-ready', (event) => {
+            const { user } = event.detail;
+            isUserLoggedIn = !!user;
+        });
+        
+        const reportForm = document.getElementById('report-form');
+        if (reportForm) {
+            reportForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                // Check if user is logged in
+                if (!isUserLoggedIn) {
+                    const modal = document.getElementById('login-required-modal');
+                    modal.style.display = 'flex';
+                    return;
+                }
+                
+                // Check if category is selected
+                const categoryValue = hiddenInput?.value;
+                if (!categoryValue) {
+                    // Highlight the dropdown with error state
+                    const trigger = customDropdown?.querySelector('.custom-dropdown-trigger');
+                    if (trigger) {
+                        trigger.style.borderColor = 'var(--danger)';
+                        trigger.style.animation = 'shake 0.5s';
+                        setTimeout(() => {
+                            trigger.style.borderColor = '';
+                            trigger.style.animation = '';
+                        }, 500);
+                    }
+                    
+                    // Show error message
+                    alert('Please select an issue category before submitting.');
+                    return;
+                }
+                
+                const button = reportForm.querySelector('button[type="submit"]');
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+                button.disabled = true;
+                
+                // Simulate form submission (you can replace this with actual API call)
+                setTimeout(() => {
+                    button.innerHTML = '<i class="fa-solid fa-check"></i> Report Submitted!';
+                    button.style.background = 'var(--success)';
+                    
+                    setTimeout(() => {
+                        reportForm.reset();
+                        button.innerHTML = originalText;
+                        button.style.background = '';
+                        button.disabled = false;
+                    }, 2000);
+                }, 1500);
+            });
+        }
+        
+        // Close modal when clicking outside
+        document.getElementById('login-required-modal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'login-required-modal') {
+                e.target.style.display = 'none';
+            }
+        });
+        
+        // Fade in
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.style.opacity = '1';
+        });
+        
+    </script>
+</body>
+</html>

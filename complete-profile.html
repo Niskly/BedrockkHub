@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Complete Your Profile - MCHub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js" defer></script>
+    <style>
+        :root {
+            --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
+            --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
+            --brand-2: #b21a22; --shadow-brand: 0 12px 30px rgba(222, 33, 42, .22);
+            --success: #22c55e;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            margin: 0; background-color: var(--bg-0); color: var(--text);
+            font: 500 15px/1.6 Inter, sans-serif; min-height: 100vh;
+        }
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: url('https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bg2.jpeg');
+            background-size: cover; filter: blur(8px); opacity: 0.25; z-index: -1;
+        }
+        .main-content {
+            display: none; align-items: center; justify-content: center; 
+            padding: 2rem; min-height: 100vh;
+        }
+        .card {
+            background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px;
+            padding: 2rem;
+            width: 100%; max-width: 420px;
+            text-align: center;
+        }
+        .brand-icon {
+            width: 50px; height: 50px; border-radius: 14px; margin: 0 auto 1rem;
+            display: grid; place-items: center; background: linear-gradient(135deg, var(--brand-2), var(--brand-1));
+            box-shadow: var(--shadow-brand);
+        }
+        .brand-icon img { width: 100%; height: 100%; object-fit: contain; padding: 6px; transform: translateY(-13px); }
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        .form-group {
+            margin-bottom: 1.2rem;
+            text-align: left;
+        }
+        label { display: flex; align-items: center; gap: 8px; margin-bottom: .5rem; font-weight: 600; color: var(--muted); }
+        label i { font-size: 0.9em; }
+        
+        .username-input-container {
+            display: flex; align-items: center; gap: 10px;
+            width: 100%; padding-right: 1rem; border-radius: 10px; border: 1px solid var(--border);
+            background: var(--bg-2);
+        }
+        #username {
+            flex-grow: 1; background: transparent; border: none; color: var(--text);
+            font-size: 1rem; padding: .75rem 1rem; outline: none;
+        }
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px var(--bg-2) inset !important;
+            -webkit-text-fill-color: var(--text) !important;
+            caret-color: var(--text) !important;
+            border-radius: 10px !important;
+        }
+
+        #availability-status { font-size: 0.9rem; font-weight: 600; flex-shrink: 0; }
+        .available { color: var(--success); }
+        .taken { color: #ef4444; }
+        .validation-error { color: #f9a8d4; font-size: 0.85rem; font-weight: 600; margin-top: 8px; }
+        
+        .dob-selectors { display: flex; gap: 10px; }
+        .dob-selectors select {
+            width: 100%; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border);
+            background: var(--bg-2); color: var(--text); font-size: 1rem; appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a8b3cf' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .dob-selectors select:focus {
+            outline: none;
+            border-color: var(--brand-1);
+            box-shadow: 0 0 0 3px rgba(222, 33, 42, .4);
+        }
+
+        .avatar-upload { display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%; background: var(--bg-2);
+            border: 2px dashed var(--border); display: flex; align-items: center; justify-content: center;
+            font-size: 3rem;
+            color: var(--muted); overflow: hidden;
+        }
+        .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+        #avatar-input { display: none; }
+        .btn {
+            padding: .75rem 1.5rem; border-radius: 12px; font-weight: 700; cursor: pointer;
+            border: 1px solid transparent; width: 100%; display: inline-flex; justify-content: center; align-items: center; gap: 8px;
+        }
+        .primary {
+            background: linear-gradient(135deg, var(--brand-1), var(--brand-2)); color: white; box-shadow: var(--shadow-brand);
+        }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .success-overlay {
+            position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px); display: none; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 100;
+            color: white; animation: fadeIn 0.3s ease-out;
+        }
+        .success-overlay i { font-size: 4rem; color: var(--success); margin-bottom: 1rem; }
+        .success-overlay p { font-size: 1.5rem; font-weight: 700; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .cancel-link { text-align: center; margin-top: 1.5rem; }
+        .cancel-link a { color: var(--muted); text-decoration: underline; font-size: 0.9rem; cursor: pointer; }
+        .cancel-link a:hover { color: var(--text); }
+
+        .crop-modal-backdrop {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center; z-index: 200;
+        }
+        .crop-modal-content {
+            background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px;
+            width: 90%; max-width: 400px; padding: 1.5rem;
+        }
+        .cropper-container { max-height: 40vh; margin-top: 1rem; }
+        .cropper-container img { max-width: 100%; }
+        .crop-controls { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1rem; }
+        .zoom-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; }
+        .crop-actions { display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
+        .cropper-view-box {
+            border-radius: 50% !important;
+            box-shadow: 0 0 0 3px var(--brand-1);
+            outline: none;
+        }
+        .cropper-face { border-radius: 50% !important; }
+        .cropper-bg { background-image: none !important; }
+        
+        .progress-bar-container {
+            width: 100%; background: var(--bg-2); border-radius: 99px; height: 10px;
+            margin-bottom: 1rem;
+        }
+        .progress-bar-fill {
+            width: 100%; height: 100%; background: var(--brand-1);
+            border-radius: 99px;
+        }
+        .progress-label { font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 2rem; }
+        
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .spinner {
+            width: 1em; height: 1em; border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite;
+        }
+        #toast-container { position: fixed; top: 80px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { padding: 12px 18px; border-radius: 8px; color: white; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: slideIn 0.3s ease-out forwards; }
+        .toast.error { background: var(--danger); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+
+    <div id="success-overlay" class="success-overlay">
+        <i class="fa-solid fa-face-smile-beam"></i>
+        <p>You have successfully created a profile!</p>
+    </div>
+
+    <div id="crop-modal" class="crop-modal-backdrop">
+        <div class="crop-modal-content">
+            <h2 style="text-align: center; margin-bottom: 0.5rem;">Crop Your Avatar</h2>
+            <div class="cropper-container"><img id="cropper-image" src=""></div>
+            <div class="crop-controls">
+                <button id="zoom-out-btn" class="zoom-btn"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                <button id="rotate-btn" class="zoom-btn"><i class="fa-solid fa-rotate-right"></i></button>
+                <button id="zoom-in-btn" class="zoom-btn"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+            </div>
+            <div class="crop-actions">
+                <button id="cancel-crop-btn" class="btn" style="background: var(--bg-2); border-color: var(--border); color: var(--text); width: auto;">Cancel</button>
+                <button id="save-crop-btn" class="btn primary" style="width: auto;">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="card">
+            <!-- REORDERED HEADER -->
+            <div class="brand-icon">
+                <img src="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/assets/bh2.png" alt="MCHub Icon">
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill"></div>
+            </div>
+            <h1>Welcome to MCHub!</h1>
+            <div class="progress-label">Step 3 of 3: Create Profile</div>
+            
+            <form id="profile-form">
+                <div class="avatar-upload">
+                    <div class="avatar-preview" id="avatar-preview"><i class="fa-solid fa-user"></i></div>
+                    <label for="avatar-input" class="btn" style="width: auto; background: var(--bg-2); border-color: var(--border);">Upload Picture</label>
+                    <input type="file" id="avatar-input" accept="image/png, image/jpeg, image/gif">
+                </div>
+                <div class="form-group">
+                    <label for="username"><i class="fa-solid fa-at"></i> Username</label>
+                    <div class="username-input-container">
+                        <input type="text" id="username" required minlength="3" maxlength="16" placeholder="Length 3-16">
+                        <span id="availability-status"></span>
+                    </div>
+                    <div id="username-error" class="validation-error"></div>
+                </div>
+                <div class="form-group">
+                    <label for="dob-month"><i class="fa-solid fa-cake-candles"></i> Date of Birth</label>
+                    <div class="dob-selectors">
+                        <select id="dob-month" required><option value="" disabled selected>Month</option></select>
+                        <select id="dob-day" required><option value="" disabled selected>Day</option></select>
+                        <select id="dob-year" required><option value="" disabled selected>Year</option></select>
+                    </div>
+                </div>
+                <button type="submit" id="submit-btn" class="btn primary">Complete Profile</button>
+            </form>
+            <p class="cancel-link">
+                <a id="cancel-setup">Go back to sign up page</a>
+            </p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentUser = null;
+        let debounceTimer;
+        let cropper = null;
+        let croppedAvatarBlob = null;
+        const usernameRegex = /^[a-zA-Z0-9]+$/;
+
+        const usernameInput = document.getElementById('username');
+        const statusEl = document.getElementById('availability-status');
+        const errorEl = document.getElementById('username-error');
+        const submitBtn = document.getElementById('submit-btn');
+        const mainContent = document.querySelector('.main-content');
+        const avatarInput = document.getElementById('avatar-input');
+        const avatarPreview = document.getElementById('avatar-preview');
+        const cropModal = document.getElementById('crop-modal');
+        const cropperImage = document.getElementById('cropper-image');
+        const cancelCropBtn = document.getElementById('cancel-crop-btn');
+        const saveCropBtn = document.getElementById('save-crop-btn');
+        const zoomInBtn = document.getElementById('zoom-in-btn');
+        const zoomOutBtn = document.getElementById('zoom-out-btn');
+        const rotateBtn = document.getElementById('rotate-btn');
+        const dobMonth = document.getElementById('dob-month');
+        const dobDay = document.getElementById('dob-day');
+        const dobYear = document.getElementById('dob-year');
+
+        function populateDateSelectors() {
+            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            months.forEach((month, i) => {
+                const option = new Option(month, i + 1);
+                dobMonth.add(option);
+            });
+            for (let i = 1; i <= 31; i++) {
+                dobDay.add(new Option(i, i));
+            }
+            const currentYear = new Date().getFullYear();
+            for (let i = currentYear; i >= currentYear - 100; i--) {
+                dobYear.add(new Option(i, i));
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            populateDateSelectors();
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                currentUser = user;
+                const { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).single();
+                if (profile && profile.username) {
+                    window.location.replace('/');
+                } else {
+                    mainContent.style.display = 'flex';
+                }
+            } else {
+                window.location.replace('/login.html');
+            }
+        });
+        
+        document.getElementById('cancel-setup').addEventListener('click', async (event) => {
+            event.preventDefault();
+            await supabase.auth.signOut();
+            window.location.href = '/signup.html';
+        });
+
+        usernameInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            const username = usernameInput.value;
+            let isValid = true;
+            errorEl.textContent = '';
+            statusEl.textContent = '';
+            submitBtn.disabled = false;
+            if (username.length > 0 && !usernameRegex.test(username)) {
+                errorEl.textContent = 'Only letters and numbers are allowed.';
+                isValid = false;
+            }
+            if (username.length > 0 && (username.length < 3 || username.length > 16)) {
+                 errorEl.textContent = 'Username must be between 3 and 16 characters.';
+                 isValid = false;
+            }
+            if (!isValid) {
+                submitBtn.disabled = true;
+                return;
+            }
+            debounceTimer = setTimeout(async () => {
+                if (username.length < 3) return;
+                const { data } = await supabase.from('profiles').select('username').ilike('username', username).single();
+                if (data) {
+                    statusEl.textContent = 'Taken';
+                    statusEl.className = 'taken';
+                    submitBtn.disabled = true;
+                } else {
+                    statusEl.textContent = 'Available';
+                    statusEl.className = 'available';
+                    submitBtn.disabled = false;
+                }
+            }, 500);
+        });
+        
+        avatarInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                cropperImage.src = e.target.result;
+                cropModal.style.display = 'flex';
+                if (cropper) cropper.destroy();
+                cropper = new Cropper(cropperImage, {
+                    aspectRatio: 1, viewMode: 1, dragMode: 'move', background: false,
+                    autoCropArea: 0.8, cropBoxMovable: false, cropBoxResizable: false,
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+
+        cancelCropBtn.addEventListener('click', () => {
+            cropModal.style.display = 'none';
+            if (cropper) cropper.destroy();
+            avatarInput.value = '';
+        });
+        
+        zoomInBtn.addEventListener('click', () => cropper && cropper.zoom(0.1));
+        zoomOutBtn.addEventListener('click', () => cropper && cropper.zoom(-0.1));
+        rotateBtn.addEventListener('click', () => cropper && cropper.rotate(90));
+
+        saveCropBtn.addEventListener('click', () => {
+            if (!cropper) return;
+            const canvas = cropper.getCroppedCanvas({ width: 256, height: 256 });
+            canvas.toBlob((blob) => {
+                croppedAvatarBlob = blob;
+                const url = URL.createObjectURL(blob);
+                avatarPreview.innerHTML = `<img src="${url}" alt="Avatar Preview">`;
+            }, 'image/png');
+            cropModal.style.display = 'none';
+            if (cropper) cropper.destroy();
+        });
+        
+        function showToast(message, type = 'error') {
+            const container = document.getElementById('toast-container') || document.body;
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 4000);
+        }
+
+        document.getElementById('profile-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const username = usernameInput.value;
+            let avatarUrl = null;
+
+            const month = dobMonth.value;
+            const day = dobDay.value;
+            const year = dobYear.value;
+            if (!month || !day || !year) {
+                return showToast('Please select your full date of birth.');
+            }
+            
+            const minAge = 13;
+            const dob = new Date(year, month - 1, day);
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const m = today.getMonth() - dob.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+                age--;
+            }
+            if (age < minAge) {
+                return showToast(`You must be 13+ to sign up.`);
+            }
+            const dobString = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            
+            if (statusEl.classList.contains('taken') || !usernameRegex.test(username) || username.length < 3 || username.length > 16) {
+                return showToast('Please fix the errors with your username before submitting.');
+            }
+            
+            const originalBtnContent = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="spinner"></div>';
+
+            if (croppedAvatarBlob) {
+                const filePath = `${currentUser.id}/${Date.now()}.png`;
+                const { data, error: uploadError } = await supabase.storage.from('avatars').upload(filePath, croppedAvatarBlob);
+                if (uploadError) {
+                    showToast('Error uploading avatar: ' + uploadError.message);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnContent;
+                    return;
+                }
+                const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(data.path);
+                avatarUrl = publicUrl;
+            }
+
+            const { error: updateError } = await supabase.from('profiles').update({
+                username: username,
+                date_of_birth: dobString,
+                avatar_url: avatarUrl
+            }).eq('id', currentUser.id);
+
+            if (updateError) {
+                showToast('Error updating profile: ' + updateError.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnContent;
+            } else {
+                document.getElementById('success-overlay').style.display = 'flex';
+                setTimeout(() => {
+                    window.location.replace('/');
+                }, 2500);
+            }
+        });
+    </script>
+</body>
+</html>
+
