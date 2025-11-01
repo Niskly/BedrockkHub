@@ -3,11 +3,42 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window.supabase = supabase; // Make it globally accessible for other scripts
 
 let header = null;
 let authInitialized = false;
 let currentUserId = null;
+
+// --- PROMISES to track loading state ---
+// We need to wait for the page's HTML to be ready AND the nav component to be injected.
+let domReady = false;
 let componentsReady = false;
+
+document.addEventListener('DOMContentLoaded', () => {
+    domReady = true;
+    console.log('[AUTH] DOMContentLoaded fired.');
+    tryInitAuth();
+});
+
+document.addEventListener('components-loaded', () => {
+    componentsReady = true;
+    header = document.querySelector('header');
+    console.log('[AUTH] components-loaded fired.');
+    tryInitAuth();
+});
+
+/**
+ * Tries to initialize the auth state.
+ * This will only run once both the DOM and Nav Components are ready.
+ */
+function tryInitAuth() {
+    // Only proceed if both are ready and auth hasn't run yet
+    if (domReady && componentsReady && !authInitialized) {
+        console.log('[AUTH] DOM and Components are ready. Initializing Auth.');
+        authInitialized = true;
+        handleAuthStateChange(); // Run the first auth check
+    }
+}
 
 /**
  * Creates and manages the mobile navigation menu sidebar.
@@ -15,7 +46,10 @@ let componentsReady = false;
  * @param {object|null} user - The user's auth data.
  */
 function setupMobileNav(profile, user) {
-    if (!header) return;
+    if (!header) {
+        console.error('[AUTH] Mobile Nav setup failed: header not found.');
+        return;
+    }
     
     document.querySelector('.mobile-nav-sidebar')?.remove();
     document.querySelector('.mobile-nav-backdrop')?.remove();
@@ -49,7 +83,12 @@ function setupMobileNav(profile, user) {
     const isNews = ['/news.html', '/news'].includes(currentPath);
     const isSkinEditor = ['/skineditor.html', '/skineditor'].includes(currentPath);
     const isCapeEditor = ['/capeeditor.html', '/capeeditor'].includes(currentPath);
-    const isProfile = profile && ['/profile.html', '/profile'].includes(currentPath) && new URLSearchParams(window.location.search).get('user') === profile.username;
+    
+    let isProfile = false;
+    if (profile) {
+        const urlParams = new URLSearchParams(window.location.search);
+        isProfile = ['/profile.html', '/profile'].includes(currentPath) && urlParams.get('user') === profile.username;
+    }
 
     const isAnyTool = isSkinEditor || isCapeEditor;
     const toolsDropdownHTML = `
@@ -82,7 +121,7 @@ function setupMobileNav(profile, user) {
     `;
 
     if (profile && user) {
-        const avatarSrc = profile.avatar_url ? profile.avatar_url : `https://placehold.co/50x50/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}`;
+        const avatarSrc = profile.avatar_url || `https://placehold.co/50x50/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}`;
         userHeader = `
         <div class="mobile-nav-user-header">
             <img src="${avatarSrc}" alt="Avatar" class="mobile-nav-avatar">
@@ -91,12 +130,17 @@ function setupMobileNav(profile, user) {
                 <span class="mobile-nav-email">${user.email}</span>
             </div>
         </div>`;
-
-        mainLinks = `${sharedLinks}`;
-        footerLinks = ``; // Removed My Profile, Settings, Logout - now in mobile user dropdown
+        mainLinks = `
+            ${sharedLinks}
+            <a href="/profile.html?user=${profile.username}" class="${isProfile ? 'active-mobile-link' : ''}"><i class="fa-solid fa-user" style="width: 24px; text-align: center; font-size: 1.1rem;"></i><span>My Profile</span></a>
+        `;
+        // Logout is now handled in mobile-user-menu.js, so footerLinks is empty
+        footerLinks = ``;
     } else {
+        userHeader = ''; // No user header when logged out
         mainLinks = sharedLinks;
-        footerLinks = ``; // Removed Login/Signup - now in mobile user dropdown
+        // Login/Signup are now handled in mobile-user-menu.js
+        footerLinks = ``;
     }
 
     sidebar.innerHTML = `
@@ -135,16 +179,21 @@ function setupMobileNav(profile, user) {
             content.style.maxHeight = toolsCollapsible.classList.contains('open') ? content.scrollHeight + 'px' : '0';
         });
     }
-
-    // Logout is now handled in mobile-user-menu.js dropdown
 }
 
+/**
+ * Renders the navigation bar for desktop state.
+ * @param {boolean} isLoggedIn - Whether the user is logged in.
+ * @param {object|null} profile - The user's profile data.
+ * @param {object|null} user - The user's auth data.
+ */
 function renderDesktopNav(isLoggedIn, profile = null, user = null) {
     console.log('[DESKTOP NAV] renderDesktopNav called:', { isLoggedIn, profile: !!profile, user: !!user });
     
+    // Find the elements injected by components.js
     const desktopNavLinks = document.getElementById('desktop-nav-links');
     const desktopAuth = document.getElementById('desktop-auth-actions');
-    const mobileAuth = document.getElementById('mobile-auth-actions'); // Optional - for mobile notification icon
+    const mobileAuth = document.getElementById('mobile-auth-actions'); // For mobile notification icon
 
     console.log('[DESKTOP NAV] Elements found:', {
         desktopNavLinks: !!desktopNavLinks,
@@ -153,10 +202,13 @@ function renderDesktopNav(isLoggedIn, profile = null, user = null) {
     });
 
     if (!desktopNavLinks || !desktopAuth) {
+        // This can happen if auth.js runs before components.js.
+        // The new load-guard (tryInitAuth) should prevent this.
         console.error('[DESKTOP NAV] Missing required elements! Cannot render.');
         return;
     }
 
+    // --- 1. Populate Main Navigation Links ---
     const currentPath = window.location.pathname.replace('/index.html', '/');
     const normalizedPath = currentPath.replace(/\/$/, ''); // Remove trailing slash
     const links = [
@@ -179,6 +231,7 @@ function renderDesktopNav(isLoggedIn, profile = null, user = null) {
         </div>`;
 
     const navLinksHTML = links.map(l => {
+        // Check against both normalized path and original path
         const isActive = l.paths.includes(currentPath) || l.paths.includes(normalizedPath);
         return `
             <a href="${l.href}" class="nav-link ${isActive ? 'active' : ''}">
@@ -189,7 +242,9 @@ function renderDesktopNav(isLoggedIn, profile = null, user = null) {
     desktopNavLinks.innerHTML = navLinksHTML;
     console.log('[DESKTOP NAV] Links rendered, HTML length:', navLinksHTML.length);
 
+    // --- 2. Populate Auth & User Section ---
     if (isLoggedIn && profile && user) {
+        // --- LOGGED IN STATE ---
         const avatarSrc = profile.avatar_url || `https://placehold.co/28x28/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}`;
         const dropdownAvatarSrc = profile.avatar_url || `https://placehold.co/40x40/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}`;
         desktopAuth.innerHTML = `
@@ -232,17 +287,18 @@ function renderDesktopNav(isLoggedIn, profile = null, user = null) {
                     <span id="notification-badge-mobile" class="notification-badge" style="display:none;"></span>
                 </button>`;
         }
-
+        
     } else {
+        // --- LOGGED OUT STATE ---
         desktopAuth.innerHTML = `
             <a href="/login.html" class="login-btn"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
             <a href="/signup.html" class="signup-btn"><i class="fa-solid fa-user-plus"></i> Sign Up</a>`;
         if (mobileAuth) {
-            mobileAuth.innerHTML = '';
+            mobileAuth.innerHTML = ''; // No notification button when logged out
         }
     }
     
-    // Add event listeners for dynamic elements
+    // --- 3. Add Event Listeners for new dynamic elements ---
     const userDropdown = desktopAuth.querySelector('.user-dropdown');
     if(userDropdown) {
         userDropdown.querySelector('.user-menu-btn').addEventListener('click', (e) => {
@@ -252,6 +308,8 @@ function renderDesktopNav(isLoggedIn, profile = null, user = null) {
         });
         userDropdown.querySelector('.logout-link').addEventListener('click', async (e) => {
             e.preventDefault();
+            // Dispatch an event that other scripts (like settings.html) can listen to
+            document.dispatchEvent(new CustomEvent('logout-request'));
             await supabase.auth.signOut();
         });
         
@@ -289,12 +347,16 @@ function renderDesktopNav(isLoggedIn, profile = null, user = null) {
     });
 }
 
+/**
+ * Main function to check auth state and update the UI.
+ * This is the single source of truth for auth changes.
+ */
 async function handleAuthStateChange() {
     let user = null;
     let profile = null;
     let authError = null;
     
-    console.log('[AUTH] handleAuthStateChange called, componentsReady:', componentsReady);
+    console.log('[AUTH] handleAuthStateChange checking session...');
 
     try {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -304,87 +366,123 @@ async function handleAuthStateChange() {
             user = session.user;
             currentUserId = user.id;
 
+            // Fetch profile
             const { data: profileData, error: profileError } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', user.id)
                 .single();
 
-            if (profileError && profileError.code !== 'PGRST116') throw profileError;
+            if (profileError && profileError.code !== 'PGRST116') { // PGRST116 = 0 rows
+                console.error('[AUTH] Profile fetch error:', profileError);
+                throw profileError;
+            }
             
             if (profileData?.username) {
+                // --- USER IS LOGGED IN AND HAS A PROFILE ---
                 profile = profileData;
+                
+                // Set theme *before* rendering nav to prevent FOUC
                 const dbTheme = profile.theme || 'red';
-                if (window.setMCHubTheme) window.setMCHubTheme(dbTheme, true);
-                // Redirect logged-in users away from auth pages
-                const authPagePaths = ['/login.html', '/signup.html', '/login', '/signup'];
+                if (window.setMCHubTheme) {
+                    window.setMCHubTheme(dbTheme, true);
+                }
+
+                // Redirect logged-in, profiled users away from auth pages
+                const authPagePaths = ['/login.html', '/signup.html', '/verify.html', '/complete-profile.html', '/login', '/signup', '/verify', '/complete-profile'];
                 if (authPagePaths.includes(window.location.pathname)) {
-                    // Show friendly message before redirect
                     const overlay = document.getElementById('auth-redirect-overlay');
                     if (overlay) {
                         overlay.style.display = 'flex';
-                        setTimeout(() => {
-                            window.location.replace('/');
-                        }, 1200);
+                        setTimeout(() => window.location.replace('/'), 1200);
                     } else {
                         window.location.replace('/');
                     }
-                    return;
+                    return; // Stop further execution
                 }
+                
+                // Render the "logged in" nav state
                 renderDesktopNav(true, profile, user);
+
             } else {
-                const allowedPaths = ['/complete-profile.html', '/verify.html'];
+                // --- USER IS LOGGED IN BUT HAS NO PROFILE ---
+                // This user is stuck in the signup process.
+                
+                // Set default theme
+                if (window.setMCHubTheme) window.setMCHubTheme('red', true);
+                
+                // Force them to the correct step
+                const allowedPaths = ['/complete-profile.html', '/verify.html', '/complete-profile', '/verify'];
                 if (!allowedPaths.includes(window.location.pathname)) {
-                    window.location.replace('/complete-profile.html');
-                    return;
+                    // Check if they just verified
+                    const urlParams = new URLSearchParams(window.location.hash.substring(1)); // Check for verification token
+                    if (urlParams.has('access_token') && urlParams.get('type') === 'recovery') {
+                         // This is a password reset, let them go to update-password
+                         if(window.location.pathname !== '/update-password.html' && window.location.pathname !== '/update-password') {
+                            window.location.replace('/update-password.html' + window.location.hash);
+                         }
+                         // else, they are on the right page, do nothing.
+                    } else if (user.email_confirmed_at) {
+                        // Email is confirmed, send to complete profile
+                        window.location.replace('/complete-profile.html');
+                    } else {
+                        // Email not confirmed, send to verify
+                        const email = user.email;
+                        window.location.replace(`/verify.html?email=${encodeURIComponent(email)}`);
+                    }
+                    return; // Stop further execution
                 }
-                 renderDesktopNav(false);
+                
+                // Render the "logged out" nav state (as they have no profile)
+                renderDesktopNav(false);
             }
         } else {
-            // User logged out - don't reset theme, keep current selection
+            // --- USER IS LOGGED OUT ---
             currentUserId = null;
+            
+            // **FIX:** Reset theme to default 'red' on logout
+            if (window.setMCHubTheme) {
+                window.setMCHubTheme('red', true);
+            }
+            
+            // Render the "logged out" nav state
             renderDesktopNav(false);
         }
     } catch (error) {
-        console.error("Authentication state error:", error);
+        console.error("[AUTH] Critical state change error:", error);
         authError = error.message;
         currentUserId = null;
-        renderDesktopNav(false);
+        if (window.setMCHubTheme) window.setMCHubTheme('red', true); // Reset theme on error
+        renderDesktopNav(false); // Render logged-out state as a fallback
     } finally {
-        setupMobileNav(profile, user); // Always setup mobile nav
+        // This runs regardless of login state or errors
         
-        // Show nav after everything is loaded
+        // Setup mobile nav (it can handle null profile/user)
+        setupMobileNav(profile, user);
+        
+        // Show the nav bar now that it's correctly styled
         if (header) {
             header.classList.add('auth-loaded');
         }
         
-        if (!authInitialized) {
-            document.dispatchEvent(new CustomEvent('auth-ready', {
-                detail: { user, profile, error: authError }
-            }));
-            authInitialized = true;
-        }
+        // **CRITICAL FIX:** Dispatch auth-ready *after* all logic is complete.
+        // All other page scripts (like settings.html) depend on this.
+        console.log('[AUTH] Dispatching auth-ready event.');
+        document.dispatchEvent(new CustomEvent('auth-ready', {
+            detail: { user, profile, error: authError }
+        }));
     }
 }
 
 // --- Event Listeners ---
-// Wait for components to load before initializing auth
-document.addEventListener('components-loaded', () => {
-    componentsReady = true;
-    header = document.querySelector('header');
-    handleAuthStateChange();
-});
 
-// Fallback: if components.js is not being used, initialize normally
-setTimeout(() => {
-    if (!componentsReady) {
-        header = document.querySelector('header');
-        handleAuthStateChange();
-    }
-}, 100);
-
+// This is the main Supabase listener. It triggers on login, logout, etc.
 supabase.auth.onAuthStateChange((event, session) => {
-    if (componentsReady) {
+    console.log('[AUTH] onAuthStateChange event fired:', event);
+    // Only run if auth has *already* been initialized once.
+    // This prevents it from running on the initial page load,
+    // which is now handled by tryInitAuth().
+    if (authInitialized) {
         handleAuthStateChange();
     }
 });
