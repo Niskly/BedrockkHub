@@ -349,11 +349,13 @@
 
     <!-- 
       CORE SCRIPT LOADERS
-      FIX: Load components.js, which now handles loading all other critical JS 
-      (supabase, theme, auth, search, mobile-menu) in the correct order.
-      Removed the old, duplicated script loads for auth.js and theme.js.
+      FIX: Load all required component scripts in the correct order.
     -->
     <script src="/js/components.js"></script>
+    <script type="module" src="/js/supabase-client.js"></script>
+    <script type="module" src="/js/auth.js"></script>
+    <script type="module" src="/js/search-handler.js"></script>
+    <script type="module" src="/js/mobile-user-menu.js"></script>
 
     <!-- 
       PAGE-SPECIFIC SCRIPT
@@ -1100,4 +1102,5 @@
     </script>
 </body>
 </html>
+
 
