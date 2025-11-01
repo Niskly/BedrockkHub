@@ -1,11 +1,9 @@
 /**
  * MCHub Component Loader
  * Loads navigation and footer components dynamically into pages
- * 
- * Usage in HTML:
- * 1. Add <div id="nav-component"></div> where you want the navigation
- * 2. Add <div id="footer-component"></div> where you want the footer
- * 3. Include this script: <script src="/components.js"></script>
+ *
+ * **NEW:** This is now the main entry point. It loads all other
+ * shared component scripts (auth, search, mobile) in the correct order.
  */
 
 (function() {
@@ -37,7 +35,10 @@
     async function injectComponent(targetId, componentPath) {
         const targetElement = document.getElementById(targetId);
         if (!targetElement) {
-            console.warn(`Target element #${targetId} not found`);
+            // Don't warn for footer, as it's not on all pages (e.g., auth)
+            if (targetId !== 'footer-component') {
+                console.warn(`Target element #${targetId} not found`);
+            }
             return;
         }
 
@@ -50,10 +51,15 @@
     /**
      * Load and execute a JavaScript file
      * @param {string} src - Path to the script file
+     * @param {boolean} isModule - Whether to load as a module
      */
-    function loadScript(src) {
+    function loadScript(src, isModule = false) {
         const script = document.createElement('script');
         script.src = src;
+        if (isModule) {
+            script.type = 'module';
+        }
+        // Use defer to ensure they execute in order after DOM parsing
         script.defer = true;
         document.head.appendChild(script);
     }
@@ -62,21 +68,39 @@
      * Initialize all components when DOM is ready
      */
     async function initComponents() {
-        // Load navigation first (critical for auth.js dependency)
-        await injectComponent('nav-component', '/components/nav.html');
+        console.log('[COMPONENTS] initComponents START');
         
+        // --- 1. Load HTML Components ---
+        // Load nav first (critical for auth.js dependency)
+        await injectComponent('nav-component', '/components/nav.html');
         // Load footer
         await injectComponent('footer-component', '/components/footer.html');
         
-        // Load mobile user menu handler
+        console.log('[COMPONENTS] HTML Injected.');
+
+        // --- 2. Load Core JS Logic in Order ---
+        // Load Supabase client first (makes window.supabase available)
+        loadScript('/js/supabase-client.js', true);
+        
+        // Load theme handler (controls body opacity)
+        loadScript('/js/theme.js', true);
+
+        // Load auth system (waits for components-loaded)
+        loadScript('/js/auth.js', true);
+        
+        // Load mobile user menu handler (waits for components-loaded and auth-ready)
         loadScript('/js/mobile-user-menu.js');
         
-        // Load search handler
+        // Load search handler (waits for components-loaded)
         loadScript('/js/search-handler.js');
         
-        // Dispatch custom event to signal components are loaded
-        // This is useful for scripts that depend on the nav being present
+        console.log('[COMPONENTS] All scripts queued for loading.');
+
+        // --- 3. Dispatch Event ---
+        // Dispatch custom event to signal components' HTML is loaded
+        // This un-blocks auth.js
         document.dispatchEvent(new CustomEvent('components-loaded'));
+        console.log('[COMPONENTS] components-loaded event dispatched.');
     }
 
     // Wait for DOM to be ready before loading components
