@@ -14,6 +14,8 @@
 
     <!-- External CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    
+    <!-- FIX: Load Component CSS -->
     <link rel="stylesheet" href="/components/nav.css">
     <link rel="stylesheet" href="/components/footer.css">
     
@@ -22,9 +24,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js" defer></script>
     
+    <!-- 
+      FIX: Load theme.js in the <head> as a blocking script.
+      This prevents the "black page flash" (FOUC).
+    -->
+    <script src="/js/theme.js"></script>
+
     <style>
         /* Base styles are now handled by theme.js */
         :root {
+            /* These are fallbacks, theme.js will override them */
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
             --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
             --brand-1-rgb: 222, 33, 42;
@@ -324,6 +333,7 @@
 
     <!-- 
       NAV, NOTIFICATION, and SEARCH MODAL HTML are all injected here by components.js
+      FIX: Removed all duplicated HTML
     -->
     <div id="nav-component"></div>
 
@@ -339,16 +349,20 @@
 
     <!-- 
       CORE SCRIPT LOADERS
-      components.js loads all other critical JS files (supabase, theme, auth, etc.)
+      FIX: Load components.js, which now handles loading all other critical JS 
+      (supabase, theme, auth, search, mobile-menu) in the correct order.
+      Removed the old, duplicated script loads for auth.js and theme.js.
     -->
     <script src="/js/components.js"></script>
 
     <!-- 
       PAGE-SPECIFIC SCRIPT
+      FIX: Removed all duplicated search, notification, and nav-population logic.
       This script now *only* contains logic for the settings page
       and it waits for the 'auth-ready' event from auth.js.
     -->
     <script type="module">
+        // FIX: Import the shared supabase client
         import { supabase } from '/js/supabase-client.js';
         
         const OPENXBL_PUBLIC_KEY = 'e2ed13c6-bea5-9f3a-a796-546b48c71960';
@@ -1086,3 +1100,4 @@
     </script>
 </body>
 </html>
+
