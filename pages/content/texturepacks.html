@@ -13,16 +13,17 @@
     <link rel="shortcut icon" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon.ico">
     <!-- End Favicon Configuration -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-    <style>
-    /* Prevents the "flash of the wrong theme" by keeping the body hidden until the theme is ready */
-    body {
-        opacity: 0;
-        transition: opacity 0.2s ease-in;
-    }
-    </style>
+    
+    <!-- FIX: Load Component CSS -->
+    <link rel="stylesheet" href="/components/nav.css">
+    <link rel="stylesheet" href="/components/footer.css">
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
+        /* FIX: All duplicated nav, footer, notification, and search modal CSS has been removed.
+          This is now ONLY page-specific CSS.
+        */
         :root {
             --bg-0: #000000;
             --bg-1: #1c1c1c;
@@ -46,6 +47,7 @@
             color: var(--text);
             font: 500 15px/1.6 Inter, sans-serif;
             padding-top: 80px;
+            /* FIX: Opacity is now handled by theme.js */
         }
         body::-webkit-scrollbar { display: none; }
         body { -ms-overflow-style: none; scrollbar-width: none; }
@@ -66,38 +68,6 @@
         }
         a { color: inherit; text-decoration: none; }
         
-        /* ====== Header Styles (Mobile First) ====== */
-        header { 
-            position: fixed;
-            top: 1rem;
-            left: 1rem;
-            right: 1rem;
-            z-index: 50; 
-            background: none;
-            border: none;
-        }
-        .nav { 
-            max-width: 1200px; 
-            margin: 0 auto; 
-            padding: 12px 18px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            background: rgba(28, 28, 28, 0.7);
-            backdrop-filter: blur(20px) saturate(1.2);
-            border: 1px solid var(--border);
-            border-radius: 1.25rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        .brand { display: flex; align-items: center; gap: .8rem; }
-        .brand-badge {
-            height: 40px; width: 40px; border-radius: 10px;
-            display: grid; place-items: center;
-            background: linear-gradient(135deg, var(--brand-2), var(--brand-1));
-            box-shadow: var(--shadow-brand);
-        }
-        .brand-title { font-weight: 800; letter-spacing: .6px; font-size: 15px; }
-        .nav-actions { display: none; }
         .btn { padding: 8px 16px; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; }
         .ghost { border-color: var(--border); background: transparent; color: var(--text); }
         .primary {
@@ -251,447 +221,7 @@
         }
         #admin-actions { display: none; }
         
-        .user-dropdown { position: relative; display: inline-block; }
-        .user-menu-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
-        .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
-        .user-menu-btn:hover { border-color: var(--border-strong); }
-        .dropdown-content { display: none; position: absolute; right: 0; top: calc(100% + .5rem); background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 220px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; }
-        .dropdown-content.show { display: block; }
-        .dropdown-header { padding: 1rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
-        .dropdown-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .dropdown-username { font-weight: 700; }
-        .dropdown-email { font-size: 0.8rem; color: var(--muted); }
-        .dropdown-content a { color: var(--muted); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 600; }
-        .dropdown-content a:hover { background: var(--bg-2); color: var(--text); }
-        .logout-link { color: var(--brand-1) !important; }
-        .logout-link:hover { background: rgba(222, 33, 42, .15) !important; color: #ff525a !important; }
-
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        
-        /* ====== MOBILE NAV ====== */
-        .mobile-nav-controls { display: flex; align-items: center; gap: 0.5rem; }
-        .mobile-nav-btn { background: none; border: none; color: var(--text); font-size: 1rem; cursor: pointer; z-index: 1001; padding: 0.5rem; }
-        .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1rem; cursor: pointer; z-index: 1001; }
-        .mobile-nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0; transition: opacity 0.3s ease; }
-        .mobile-nav-backdrop.show { display: block; opacity: 1; }
-        .mobile-nav-sidebar {
-            position: fixed; top: 0; left: 0; bottom: 0;
-            width: 280px; background: var(--bg-1);
-            z-index: 999; transform: translateX(-100%);
-            transition: transform 0.3s ease;
-            display: flex; flex-direction: column;
-            border-right: 1px solid var(--border);
-        }
-        .mobile-nav-sidebar.show { transform: translateX(0); }
-        .mobile-nav-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
-        .mobile-nav-header { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
-        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
-        .mobile-nav-user-info { display: flex; flex-direction: column; }
-        .mobile-nav-username { font-weight: 700; color: var(--text); }
-        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
-        .mobile-nav-main-links, .mobile-nav-footer-links { display: flex; flex-direction: column; padding: 1rem; }
-        .mobile-nav-main-links { flex-grow: 1; }
-        .mobile-nav-main-links a, .mobile-nav-footer-links a {
-            padding: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 1rem;
-            font-weight: 600; color: var(--muted); transition: all 0.2s ease;
-        }
-        .mobile-nav-main-links a:hover, .mobile-nav-footer-links a:hover { background: var(--bg-2); color: var(--text); }
-        .mobile-nav-main-links a i, .mobile-nav-footer-links a i { width: 24px; text-align: center; font-size: 1.1rem; }
-        .mobile-nav-main-links a.active-mobile-link { background: var(--bg-2); color: var(--brand-1); font-weight: 800; }
-        .mobile-nav-footer-links .login-mobile-link { background-color: var(--bg-2); color: var(--text); }
-        .primary-mobile-link { background: linear-gradient(90deg, var(--brand-1), var(--brand-2)); color: white !important; box-shadow: var(--shadow-brand); }
-        
-        /* ====== MOBILE USER HEADER ====== */
-        .mobile-nav-user-header {
-            padding: 1rem 1.5rem; display: flex; align-items: center;
-            gap: 1rem; border-bottom: 1px solid var(--border);
-        }
-        .mobile-nav-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
-        .mobile-nav-user-info { display: flex; flex-direction: column; }
-        .mobile-nav-username { font-weight: 700; color: var(--text); }
-        .mobile-nav-email { font-size: 0.8rem; color: var(--muted); }
-
-        /* ====== MOBILE TOOLS COLLAPSIBLE ====== */
-        .mobile-nav-collapsible .collapsible-trigger {
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .mobile-nav-collapsible .arrow {
-            font-size: 0.8em; transition: transform 0.3s ease;
-        }
-        .mobile-nav-collapsible.open .arrow { transform: rotate(180deg); }
-        .collapsible-content {
-            max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out;
-            padding-left: 1rem;
-        }
-        .collapsible-content .sub-link { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-
-        /* ====== DESKTOP NAVBAR & RESPONSIVENESS ====== */
-        .desktop-nav-links, .desktop-nav-right { display: none; }
-        .nav-left-desktop { display: contents; }
-
-        /* ====== NOTIFICATION STYLES (MODAL) ====== */
-        .notification-backdrop {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
-            z-index: 1200;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-        }
-        .notification-backdrop.show { display: flex; }
-        .notification-panel {
-            width: 100%;
-            max-width: 420px;
-            background: var(--bg-1);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            z-index: 101;
-            overflow: hidden;
-            color: var(--text);
-            animation: slideInFromTop 0.3s ease-out;
-        }
-        .notification-btn-desktop {
-            background: var(--bg-2);
-            border: 1px solid var(--border);
-            color: var(--muted);
-            padding: 8px 12px;
-            border-radius: 12px;
-            font-size: 1.2rem;
-            line-height: 1;
-            position: relative;
-            cursor: pointer;
-        }
-        .notification-btn-desktop:hover {
-            border-color: var(--border-strong);
-            color: var(--text);
-        }
-        .mobile-nav-btn.notification-toggle-btn { color: white; }
-        .notification-toggle-btn { position: relative; }
-        .notification-badge {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            width: 10px;
-            height: 10px;
-            font-size: 8px;
-            background-color: var(--brand-1);
-            border-radius: 50%;
-            border: 2px solid var(--bg-1);
-        }
-        .mobile-nav-btn .notification-badge { top: 6px; right: 6px; border-color: var(--bg-2); }
-        .notification-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--border);
-            background: var(--bg-2);
-        }
-        .notification-header h3 { margin: 0; font-size: 1rem; }
-        .notification-header button { background: none; border: none; color: var(--muted); cursor: pointer; }
-        #close-notifications-btn { font-size: 1.5rem; line-height: 1; }
-        .notification-list { max-height: 400px; overflow-y: auto; }
-        .notification-item {
-            padding: 1rem; display: flex; gap: 1rem; align-items: flex-start;
-            border-bottom: 1px solid var(--border); font-size: 0.9rem;
-            position: relative; transition: background-color 0.2s;
-        }
-        .notification-item a { text-decoration: none; color: inherit; }
-        .notification-item:hover { background-color: var(--bg-2); }
-        .notification-item.read { opacity: 0.6; }
-        .notification-icon { font-size: 1.2rem; color: var(--muted); padding-top: 2px; }
-        .notification-content p { margin: 0 0 0.25rem 0; color: var(--text); }
-        .notification-content .time { font-size: 0.75rem; color: var(--muted); }
-        .dismiss-notification-btn {
-            position: absolute; top: 0.5rem; right: 0.5rem; background: none;
-            border: none; color: var(--muted); cursor: pointer;
-            font-size: 1rem; display: none;
-        }
-        .notification-item:hover .dismiss-notification-btn { display: block; }
-        .notification-list-empty { padding: 2rem; text-align: center; color: var(--muted); }
-        .notification-list-empty .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
-        .notification-footer { padding: 0.75rem 1rem; border-top: 1px solid var(--border); background: var(--bg-2); display: flex; justify-content: space-between; align-items: center;}
-        .notification-footer-btn { font-size: 0.8rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 6px; background: none; border: none; cursor: pointer; color: var(--brand-1); transition: background-color 0.2s; }
-        .notification-footer-btn:hover { background-color: var(--bg-1); }
-
-        /* ====== TOOLS DROPDOWN ====== */
-        .tools-dropdown-container { position: relative; }
-        #tools-menu {
-            display: none; position: absolute; left: 0; top: calc(100% + 0.5rem);
-            background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px;
-            min-width: 180px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10;
-            overflow: hidden;
-        }
-        .tools-dropdown-container.open #tools-menu { display: block; }
-        #tools-menu a {
-            color: var(--muted); padding: 12px 16px; text-decoration: none;
-            display: flex; align-items: center; gap: 10px; font-weight: 600;
-        }
-        #tools-menu a:hover { background: var(--bg-2); color: var(--text); }
-        #tools-btn .fa-chevron-down { font-size: 0.7em; transition: transform 0.2s; }
-        .tools-dropdown-container.open #tools-btn .fa-chevron-down { transform: rotate(180deg); }
-
-        /* ====== DESKTOP SEARCH MODAL ====== */
-        .desktop-search-modal-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            display: none;
-            align-items: flex-start;
-            justify-content: center;
-            padding-top: 10vh;
-            animation: fadeIn 0.3s ease;
-        }
-        .desktop-search-modal-backdrop.show {
-            display: flex;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        .desktop-search-modal-content {
-            background: var(--bg-1);
-            border-radius: 1rem;
-            border: 1px solid var(--border);
-            width: 100%;
-            max-width: 700px;
-            padding: 1rem;
-            padding-top: 3rem;
-            position: relative;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            animation: slideDown 0.4s ease;
-        }
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .close-search-modal-btn {
-            position: absolute;
-            top: 0.75rem;
-            right: 0.75rem;
-            background: var(--bg-2);
-            border: 1px solid var(--border);
-            color: var(--muted);
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: grid;
-            place-items: center;
-            z-index: 15;
-        }
-        .close-search-modal-btn:hover {
-            background: var(--bg-1);
-            color: var(--text);
-        }
-        .search-hub-container { max-width: 700px; margin: 2.5rem auto 0; position: relative; }
-        .search-input-wrapper { display: flex; position: relative; background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); transition: border-color 0.2s, box-shadow 0.2s; }
-        .search-input-wrapper:focus-within { border-color: var(--brand-1); box-shadow: 0 15px 40px rgba(0,0,0,0.3), 0 0 0 3px rgba(222, 33, 42, .3); }
-        .search-type-dropdown { position: relative; }
-        #search-type-btn, #modal-search-type-btn { display: flex; align-items: center; gap: 0.5rem; height: 100%; padding: 0 1.2rem; background: var(--bg-2); border: none; color: var(--text); font-weight: 600; border-radius: 15px 0 0 15px; cursor: pointer; border-right: 1px solid var(--border); }
-        #search-type-btn .fa-chevron-down, #modal-search-type-btn .fa-chevron-down { font-size: 0.7em; transition: transform 0.2s; }
-        .search-type-dropdown.open #search-type-btn .fa-chevron-down, .search-type-dropdown.open #modal-search-type-btn .fa-chevron-down { transform: rotate(180deg); }
-        #search-type-menu, #modal-search-type-menu { display: none; position: absolute; top: 110%; left: 0; z-index: 12; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 100%; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
-        .search-type-dropdown.open #search-type-menu, .search-type-dropdown.open #modal-search-type-menu { display: block; }
-        .search-type-option { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; }
-        .search-type-option:hover { background: var(--bg-2); }
-        .search-type-option i { width: 16px; color: var(--muted); }
-        #universal-search, #modal-universal-search { width: 100%; padding: 1.25rem 1.5rem; font-size: 1.1rem; background: transparent; border: none; color: var(--text); outline: none; }
-        #search-results, #modal-search-results { display: none; position: absolute; top: calc(100% + 8px); left: 0; right: 0; background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; max-height: 350px; overflow-y: auto; z-index: 10; }
-        #modal-search-results {
-            position: static;
-            margin-top: 0.5rem;
-            background: transparent;
-            border: none;
-            max-height: 250px;
-        }
-        #modal-search-results .search-result-item {
-            background: var(--bg-2);
-            border-radius: 8px;
-            margin-bottom: 4px;
-            border: none;
-        }
-        #modal-search-results .search-result-item:hover {
-            background: var(--bg-1);
-        }
-        .search-result-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; transition: background-color 0.2s; }
-        .search-result-item:not(:last-child) { border-bottom: 1px solid var(--border); }
-        .search-result-item:hover { background: var(--bg-2); }
-        .search-result-icon, .search-result-avatar { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
-        .search-result-avatar.is-mc-skin { border-radius: 4px; image-rendering: pixelated; border: 1px solid var(--border); background: var(--bg-2); }
-        .search-result-info { text-align: left; }
-        .search-result-name { font-weight: 600; color: var(--text); }
-        .search-result-sub { font-size: 0.8rem; color: var(--muted); }
-        .modal-suggestions {
-            margin-top: 1.5rem;
-            padding: 0 0.5rem;
-        }
-        .suggestions-title {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .suggestions-title i {
-            color: var(--brand-1);
-        }
-        .modal-suggestions-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-        }
-        .suggestion-card {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            background: var(--bg-2);
-            padding: 0.75rem;
-            border-radius: 12px;
-            transition: background 0.2s;
-        }
-        .suggestion-card:hover {
-            background: var(--bg-1);
-        }
-        .suggestion-card .pack-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 8px;
-        }
-        
-        /* ====== FOOTER ====== */
-        footer {
-            margin-top: 4rem;
-            padding: 3rem 2rem 2rem;
-            background: var(--bg-1);
-            border-top: 1px solid var(--border);
-        }
-        .footer-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1.5fr 1fr 1fr 1fr;
-            gap: 3rem;
-            padding-bottom: 2rem;
-        }
-        .footer-brand {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .footer-brand .brand {
-            display: flex;
-            margin-bottom: 0.5rem;
-        }
-        .footer-brand p {
-            color: var(--muted);
-            line-height: 1.6;
-            font-size: 0.9rem;
-        }
-        .footer-socials { 
-            display: flex; 
-            gap: 0.75rem; 
-            margin-top: 1rem; 
-        }
-        .footer-socials a {
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: var(--bg-2);
-            border: 1px solid var(--border);
-            color: var(--muted);
-            font-size: 1rem;
-            transition: all 0.2s;
-        }
-        .footer-socials a:hover { 
-            color: var(--text); 
-            border-color: var(--brand-1);
-            background: rgba(222, 33, 42, 0.1);
-        }
-        .footer-column h4 {
-            font-size: 0.85rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 1.25rem;
-            color: var(--text);
-        }
-        .footer-links {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-        .footer-links a {
-            color: var(--muted);
-            font-size: 0.9rem;
-            transition: color 0.2s;
-        }
-        .footer-links a:hover {
-            color: var(--text);
-        }
-        .footer-discord {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.65rem 1.25rem;
-            background: var(--brand-1);
-            color: white;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            margin-top: 1rem;
-            transition: all 0.2s;
-            box-shadow: var(--shadow-brand);
-            width: fit-content;
-        }
-        .footer-discord:hover {
-            background: var(--brand-2);
-            transform: translateY(-2px);
-        }
-        .footer-discord i {
-            font-size: 1.1rem;
-        }
-        .footer-bottom {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding-top: 2rem;
-            border-top: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-            font-size: 0.85rem;
-            color: var(--muted);
-        }
-        .footer-bottom-links { 
-            display: flex; 
-            gap: 1.5rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .footer-bottom-links a {
-            color: var(--muted);
-            transition: color 0.2s;
-            font-size: 0.85rem;
-        }
-        .footer-bottom-links a:hover {
-            color: var(--text);
-        }
         
         .mobile-filter-controls { display: none; } 
         #mobile-filters-panel {
@@ -785,110 +315,10 @@
             text-align: center;
         }
 
-        @media (min-width: 1024px) {
-            .mobile-nav-controls { display: none !important; }
-            header { padding: 0 1.5rem; }
-            .nav-left-desktop {
-                display: flex;
-                align-items: center;
-                gap: 1.5rem;
-            }
-            .desktop-nav-links, .desktop-nav-right {
-                display: flex;
-                align-items: center;
-            }
-            .desktop-nav-links {
-                gap: 0.5rem;
-            }
-            .nav-link {
-                padding: 0.6rem 1rem;
-                border-radius: 10px;
-                font-weight: 700;
-                color: var(--muted);
-                transition: all 0.2s ease;
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-                background: transparent;
-                border: none;
-                border-bottom: 3px solid transparent;
-                font-family: inherit;
-                font-size: inherit;
-                cursor: pointer;
-            }
-            .nav-link:hover {
-                background-color: rgba(255, 255, 255, 0.05);
-                color: var(--text);
-            }
-            .nav-link.active {
-                background-color: transparent;
-                color: white;
-                box-shadow: none;
-                border-bottom-color: var(--brand-1);
-            }
-            .nav-link:active {
-                background-color: var(--brand-2);
-            }
-
-            .desktop-nav-right { gap: 1rem; }
-            .desktop-search-container { position: relative; }
-            .desktop-search-container input {
-                background: var(--bg-2);
-                border: 1px solid var(--border);
-                border-radius: 10px;
-                padding: 0.6rem 1rem 0.6rem 2.5rem;
-                width: 180px;
-                color: var(--text);
-                transition: all 0.2s ease;
-                cursor: pointer;
-            }
-            .desktop-search-container input:focus {
-                outline: none;
-                border-color: var(--brand-1);
-            }
-            .desktop-search-container i {
-                position: absolute;
-                left: 1rem;
-                top: 50%;
-                transform: translateY(-50%);
-                color: var(--muted);
-            }
-            #desktop-auth-actions {
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-            }
-            .login-btn, .signup-btn {
-                font-weight: 700;
-                padding: 0.6rem 1rem;
-                transition: all 0.2s ease;
-                border-radius: 10px;
-            }
-            .login-btn {
-                 color: var(--muted);
-            }
-            .login-btn:hover {
-                color: var(--text);
-                background-color: rgba(255, 255, 255, 0.05);
-            }
-            .signup-btn {
-                background: var(--brand-1);
-                box-shadow: var(--shadow-brand);
-                color: white;
-            }
-            .signup-btn:hover {
-                filter: brightness(1.1);
-            }
-        }
-
         @media (max-width: 1024px) { 
             .layout { grid-template-columns: 1fr; } 
             .sidebar, .filter-bar { display: none !important; } 
             .mobile-filter-controls { display: block; }
-            .footer-container {
-                grid-template-columns: 1fr 1fr;
-                gap: 2rem;
-            } 
             
             .mobile-actions {
                 display: grid;
@@ -916,17 +346,11 @@
             .packs { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); } 
         }
         @media (max-width: 768px) { 
-            .nav-actions { display: none; }
-            .mobile-nav-toggle { display: block; }
             .packs { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
             .modal { max-width: 95vw; max-height: 95vh; }
             #uploadForm > fieldset > div { grid-template-columns: 1fr; }
             .file-upload-area { grid-column: span 1; }
             #single-mode-fields { grid-template-columns: 1fr; }
-            .footer-container {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-            }
         }
         @media (max-width: 480px) {
             .packs { grid-template-columns: 1fr; }
@@ -935,57 +359,11 @@
 </head>
 
 <body>
+    <!-- 
+      FIX: Removed duplicated HTML for notification and search modals.
+      They are now loaded from nav-component.
+    -->
     <div id="nav-component"></div>
-
-    <!-- NOTIFICATION MODAL -->
-    <div id="notification-backdrop" class="notification-backdrop">
-        <div id="notification-panel" class="notification-panel">
-            <div class="notification-header">
-                <h3>Notifications</h3>
-                <button id="close-notifications-btn">&times;</button>
-            </div>
-            <div id="notification-list" class="notification-list">
-                <!-- Notifications will be rendered here by JS -->
-            </div>
-            <div class="notification-footer">
-                <button id="mark-all-read-btn" class="notification-footer-btn">Mark all as read</button>
-                <button id="clear-all-btn" class="notification-footer-btn">Clear All</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- DESKTOP SEARCH MODAL -->
-    <div id="desktop-search-modal" class="desktop-search-modal-backdrop">
-        <div class="desktop-search-modal-content">
-            <button id="close-search-modal-btn" class="close-search-modal-btn"><i class="fa-solid fa-xmark"></i></button>
-            
-            <div class="search-hub-container" style="margin: 0; max-width: 100%;">
-                <div class="search-input-wrapper">
-                    <div class="search-type-dropdown" id="modal-search-type-dropdown">
-                        <button id="modal-search-type-btn">
-                            <i class="fa-solid fa-palette"></i>
-                            <span>Packs</span>
-                            <i class="fa-solid fa-chevron-down" style="font-size: 0.8em; margin-left: 0.5rem;"></i>
-                        </button>
-                        <div id="modal-search-type-menu">
-                            <div class="search-type-option" data-type="packs"><i class="fa-solid fa-palette"></i> Packs</div>
-                            <div class="search-type-option" data-type="users"><i class="fa-solid fa-user"></i> Users</div>
-                            <div class="search-type-option" data-type="gamertags"><i class="fa-brands fa-xbox"></i> Gamertags</div>
-                        </div>
-                    </div>
-                    <input type="text" id="modal-universal-search" placeholder="Search for packs..." autocomplete="off">
-                </div>
-                <div id="modal-search-results"></div>
-            </div>
-
-            <div class="modal-suggestions">
-                <h3 class="suggestions-title"><i class="fa-solid fa-fire"></i> Latest Packs</h3>
-                <div id="modal-pack-suggestions" class="modal-suggestions-grid">
-                    <!-- Suggestions will be loaded here -->
-                </div>
-            </div>
-        </div>
-    </div>
 
     <section class="container" id="main-content">
         <div class="layout">
@@ -1204,8 +582,8 @@
                 <strong>Are you sure you want to delete it?</strong>
                 <p class="tiny" style="margin: 4px 0 12px;">This will permanently delete the texture pack.</p>
                 <div style="display:flex;justify-content:flex-end;gap:10px;">
-                    <button class="btn sm ghost" onclick="cancelDelete()">No</button>
-                    <button class="btn sm success" onclick="confirmDelete()">Yes</button>
+                    <button class_name="btn sm ghost" onclick="cancelDelete()">No</button>
+                    <button class_name="btn sm success" onclick="confirmDelete()">Yes</button>
                 </div>
             </div>
         </div>
@@ -1215,15 +593,22 @@
     
     <div id="footer-component"></div>
     
+    <!-- 
+      FIX: Load components.js, which now handles loading theme.js, auth.js, etc.
+      This fixes the "black page" bug.
+    -->
     <script src="/js/components.js"></script>
-    <script type="module" src="/js/auth.js"></script>
+    
+    <!-- 
+      FIX: Removed redundant auth.js script load.
+      FIX: Removed all duplicated JS for nav, search, and notifications.
+      This script is now ONLY for the texturepacks page logic.
+    -->
     <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        // FIX: Import the shared supabase client
+        import { supabase } from '/js/supabase-client.js';
 
         /* ====== CONSTANTS & STATE ====== */
-        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const COLORS = [{key: 'none', hex: '#4b5563', icon: 'fa-solid fa-ban'}, {key: 'red',hex: '#ef4444'}, {key: 'blue',hex: '#3b82f6'}, {key: 'green',hex: '#22c55e'}, {key: 'yellow',hex: '#eab308'}, {key: 'purple',hex: '#a855f7'}, {key: 'pink',hex: '#ec4899'}, {key: 'orange',hex: '#f97316'}, {key: 'teal',hex: '#14b8a6'}, {key: 'gray',hex: '#6b7280'}, {key: 'black',hex: '#1f2937'}];
         const TAGS = ['pvp', 'bedwars', 'skywars', 'anime', 'crystal pvp', 'survival', 'visual'];
         const RESOLUTIONS = ['16x', '32x', '64x', '128x', '256x'];
@@ -1242,6 +627,7 @@
         let tempModalTags = new Set();
         let isEditingTags = false;
         let currentUserRole = null;
+        let currentUserId = null; // Store the logged-in user's ID
 
         /* ====== API & DATA FUNCTIONS ====== */
         async function loadPacksOnStartup() {
@@ -1307,6 +693,10 @@
 
         window.handleUpload = async function(e) {
             e.preventDefault();
+            if (!currentUserId) {
+                return showToast("You must be logged in to upload.", "error");
+            }
+
             const submitBtn = document.getElementById("submitBtn");
             const formFieldset = document.getElementById("uploadFormFieldset");
             const fileInput = document.getElementById("fileInput");
@@ -1447,6 +837,8 @@
             if (!pack) return cancelDelete();
             try {
                 const { data: { session } } = await supabase.auth.getSession();
+                if (!session) throw new Error("You must be logged in.");
+
                 const response = await fetch('/api/delete-pack', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
@@ -1526,10 +918,9 @@
         }
         
         function scrollToContentTop() {
-            const header = document.querySelector("header");
             const mainContent = document.getElementById("main-content");
-            if (!header || !mainContent) return;
-            const headerHeight = header.offsetHeight;
+            if (!mainContent) return;
+            const headerHeight = document.querySelector('header')?.offsetHeight || 80;
             const contentTop = mainContent.offsetTop;
             window.scrollTo({ top: contentTop - headerHeight - 14, behavior: "smooth" });
         }
@@ -1827,24 +1218,34 @@
         function toggleSet(set, item) { set.has(item) ? set.delete(item) : set.add(item); }
 
         /* ====== INITIALIZATION ====== */
-        async function checkUserAndInitialize() {
-            const { data: { user } } = await supabase.auth.getUser();
+        
+        // FIX: Wait for auth-ready before initializing the page
+        document.addEventListener('auth-ready', (event) => {
+            const { user, profile } = event.detail;
+            console.log('[TEXTUREPACKS] auth-ready received.');
+
             if (user) {
-                const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-                if (profile) currentUserRole = profile.role;
+                currentUserId = user.id;
             }
-            if (currentUserRole === 'admin') { 
-                document.getElementById('admin-actions').style.display = 'block'; 
-                document.querySelector('#mobile-filters-panel #admin-actions').style.display = 'block';
+            if (profile) {
+                currentUserRole = profile.role;
             }
-            await loadPacksOnStartup();
-        }
+
+            // Now that we know the user's role, initialize the page
+            init();
+        });
 
         function init() {
             if (document.getElementById('grid')) {
                 const mobileFilterPanel = document.getElementById('mobile-filters-panel');
                 const desktopSidebar = document.querySelector('.sidebar');
                 mobileFilterPanel.innerHTML = desktopSidebar.innerHTML;
+                
+                // Show admin upload buttons if admin
+                if (currentUserRole === 'admin') { 
+                    document.getElementById('admin-actions').style.display = 'block'; 
+                    document.querySelector('#mobile-filters-panel #admin-actions').style.display = 'block';
+                }
                 
                 const filterAreas = [
                     { container: desktopSidebar, isMobile: false },
@@ -1880,394 +1281,10 @@
                     }
                 });
                 
-                checkUserAndInitialize();
+                // Load packs on initial load
+                loadPacksOnStartup();
             }
         }
-        init();
-
-        // ====== DESKTOP NAVBAR SCRIPT ======
-        document.addEventListener('auth-ready', () => {
-            const isDesktop = window.innerWidth >= 1024;
-            if (!isDesktop) return;
-
-            const navActions = document.getElementById('nav-actions');
-            const desktopNavLinks = document.getElementById('desktop-nav-links');
-            const desktopAuth = document.getElementById('desktop-auth-actions');
-
-            navActions.querySelectorAll('.nav-link-item').forEach(linkOrContainer => {
-                if (linkOrContainer.classList.contains('tools-dropdown-container')) {
-                     desktopNavLinks.appendChild(linkOrContainer);
-                } else if (linkOrContainer.tagName.toLowerCase() === 'a') {
-                    desktopNavLinks.appendChild(linkOrContainer);
-                }
-            });
-
-            desktopNavLinks.querySelectorAll('a, button.nav-link').forEach(link => {
-                if(link.tagName.toLowerCase() === 'a') {
-                    link.className = 'nav-link';
-                    const linkPath = link.getAttribute('href');
-                    const currentPath = window.location.pathname;
-                    if (linkPath === currentPath || (currentPath === '/texturepacks.html' && linkPath === '/texturepacks.html')) {
-                        link.classList.add('active');
-                    }
-                }
-            });
-
-            const loginBtn = navActions.querySelector('.login-btn-item');
-            const signupBtn = navActions.querySelector('.signup-btn-item');
-            const userDropdown = navActions.querySelector('.user-dropdown');
-            const notificationBtn = navActions.querySelector('.notification-toggle-btn');
-            
-            if(notificationBtn) desktopAuth.appendChild(notificationBtn);
-
-            if (userDropdown) {
-                desktopAuth.appendChild(userDropdown);
-            } else {
-                if (loginBtn) {
-                    loginBtn.className = 'login-btn';
-                    desktopAuth.appendChild(loginBtn);
-                }
-                if (signupBtn) {
-                    signupBtn.className = 'signup-btn';
-                    desktopAuth.appendChild(signupBtn);
-                }
-            }
-        });
-
-        // ====== SEARCH MODAL SCRIPT (DESKTOP & MOBILE) ======
-        let modalSearchType = 'packs';
-        
-        function initSearchModal() {
-            const desktopSearchInput = document.querySelector('.desktop-search-container input');
-            const mobileSearchToggle = document.getElementById('mobile-search-toggle');
-            const searchModal = document.getElementById('desktop-search-modal');
-            const closeModalBtn = document.getElementById('close-search-modal-btn');
-            
-            function escapeHtml(str) { return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s])); }
-
-        async function loadNewPackSuggestions() {
-            const container = document.getElementById('modal-pack-suggestions');
-            if (!container) return;
-            container.innerHTML = '<div class="loading" style="grid-column: 1 / -1; padding: 1rem 0;"></div>';
-            try {
-                const { data, error } = await supabase.from('packs').select('id, name, icon_url').order('created_at', { ascending: false }).limit(4);
-                if (error) throw error;
-                if (data && data.length > 0) {
-                    container.innerHTML = data.map(pack => {
-                        const iconContent = pack.icon_url 
-                            ? `<img class="pack-icon" src="${pack.icon_url}" alt="${escapeHtml(pack.name)} Icon">`
-                            : `<div class="pack-icon" style="background:var(--bg-2); display:grid; place-items:center;"><i class="fa-solid fa-cube"></i></div>`;
-                        return `<a href="/packs.html?id=${pack.id}" class="suggestion-card">${iconContent}<div><div class="search-result-name">${escapeHtml(pack.name)}</div></div></a>`;
-                    }).join('');
-                } else {
-                    container.innerHTML = '<p class="tiny">No new packs to suggest.</p>';
-                }
-            } catch (err) {
-                container.innerHTML = '<p class="tiny">Could not load suggestions.</p>';
-            }
-        }
-
-        function openSearchModal() {
-            if (searchModal) {
-                searchModal.classList.add('show');
-                document.body.style.overflow = 'hidden';
-                loadNewPackSuggestions();
-                document.getElementById('modal-universal-search').focus();
-            }
-        }
-
-        function closeSearchModal() {
-            if (searchModal) {
-                searchModal.classList.remove('show');
-                document.body.style.overflow = '';
-            }
-        }
-
-            if (desktopSearchInput) desktopSearchInput.addEventListener('click', (e) => { e.preventDefault(); openSearchModal(); });
-            if (mobileSearchToggle) mobileSearchToggle.addEventListener('click', openSearchModal);
-            if(closeModalBtn) closeModalBtn.addEventListener('click', closeSearchModal);
-            if(searchModal) searchModal.addEventListener('click', (e) => { if (e.target === searchModal) closeSearchModal(); });
-            document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && searchModal.classList.contains('show')) closeSearchModal(); });
-
-        async function performModalSearch() {
-            const query = document.getElementById('modal-universal-search').value.trim();
-            const resultsContainer = document.getElementById('modal-search-results');
-            if (query.length < 2) {
-                resultsContainer.style.display = 'none';
-                return;
-            }
-            let results = [];
-            if (modalSearchType === 'packs') {
-                const { data } = await supabase.from('packs').select('id, name, icon_url').ilike('name', `%${query}%`).limit(5);
-                results = (data || []).map(item => ({ type: 'pack', name: item.name, icon: item.icon_url, link: `/packs.html?id=${item.id}` }));
-            } else if (modalSearchType === 'users') {
-                const { data } = await supabase.from('profiles').select('username, avatar_url').ilike('username', `%${query}%`).limit(5);
-                results = (data || []).map(item => ({ type: 'user', name: item.username, icon: item.avatar_url, link: `/profile.html?user=${item.username}` }));
-            } else if (modalSearchType === 'gamertags') {
-                const { data } = await supabase.from('profiles').select('username, bedrock_gamertag, xuid').ilike('bedrock_gamertag', `%${query}%`).limit(5);
-                results = (data || []).map(item => ({ type: 'gamertag', name: item.bedrock_gamertag, sub: item.username, xuid: item.xuid, link: `/profile.html?user=${item.username}` }));
-            }
-            renderModalSearchResults(results);
-        }
-
-        function renderModalSearchResults(results) {
-            const container = document.getElementById('modal-search-results');
-            if (results.length === 0) {
-                container.innerHTML = `<div class="search-result-item"><div class="search-result-info"><div class="search-result-name">No results found</div></div></div>`;
-            } else {
-                container.innerHTML = results.map(item => {
-                    let iconHtml = '';
-                    if (item.type === 'pack') {
-                        iconHtml = item.icon 
-                            ? `<img src="${item.icon}" class="search-result-icon">`
-                            : `<div class="search-result-icon" style="background:var(--bg-2); display:grid; place-items:center;"><i class="fa-solid fa-cube"></i></div>`;
-                    } else if (item.type === 'gamertag' && item.xuid) {
-                        iconHtml = `<img src="/api/bedrock-skin?xuid=${item.xuid}&render_type=head" class="search-result-avatar is-mc-skin">`;
-                    } else {
-                        const initial = (item.name || '?').charAt(0).toUpperCase();
-                        iconHtml = `<img src="${item.icon || `https://placehold.co/40x40/1c1c1c/de212a?text=${initial}`}" class="search-result-avatar">`;
-                    }
-                    return `<a href="${item.link}" class="search-result-item">${iconHtml}<div class="search-result-info"><div class="search-result-name">${escapeHtml(item.name)}</div>${item.sub ? `<div class="search-result-sub">MCHub User: ${escapeHtml(item.sub)}</div>` : ''}</div></a>`;
-                }).join('');
-            }
-            container.style.display = 'block';
-        }
-
-        const modalDropdown = document.getElementById('modal-search-type-dropdown');
-        const modalSearchTypeBtn = document.getElementById('modal-search-type-btn');
-        const modalSearchTypeMenu = document.getElementById('modal-search-type-menu');
-        const modalSearchTypeLabel = document.getElementById('modal-search-type-label');
-        const modalSearchInput = document.getElementById('modal-universal-search');
-        let modalDebounceTimer;
-
-        if (modalDropdown) {
-            modalDropdown.addEventListener('click', (e) => { e.stopPropagation(); modalDropdown.classList.toggle('open'); });
-            modalDropdown.querySelectorAll('.search-type-option').forEach(option => {
-                option.addEventListener('click', () => {
-                    modalSearchType = option.dataset.type;
-                    document.getElementById('modal-search-type-btn').querySelector('span').textContent = option.textContent.trim();
-                    document.getElementById('modal-search-type-btn').querySelector('i').className = option.querySelector('i').className;
-                    modalSearchInput.placeholder = `Search for ${modalSearchType}...`;
-                    modalDropdown.classList.remove('open');
-                });
-            });
-        }
-        
-        // Close dropdown when clicking outside
-        if (searchModal) {
-            searchModal.addEventListener('click', () => {
-                if (modalDropdown) modalDropdown.classList.remove('open');
-            });
-        }
-
-        if (modalSearchInput) {
-            modalSearchInput.addEventListener('input', async (e) => {
-                const query = e.target.value.trim();
-                const resultsContainer = document.getElementById('modal-search-results');
-                const suggestionsContainer = document.querySelector('.modal-suggestions');
-                
-                if (!resultsContainer) return;
-
-                if (query.length === 0) {
-                    resultsContainer.style.display = 'none';
-                    resultsContainer.innerHTML = '';
-                    if (suggestionsContainer) suggestionsContainer.style.display = 'block';
-                    return;
-                }
-
-                if (query.length < 2) return;
-
-                if (suggestionsContainer) suggestionsContainer.style.display = 'none';
-                resultsContainer.style.display = 'block';
-                resultsContainer.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--muted);">Searching...</div>';
-
-                try {
-                    let results = [];
-                    
-                    if (modalSearchType === 'packs') {
-                        const { data } = await supabase.from('packs').select('id, name, icon_url').ilike('name', `%${query}%`).limit(8);
-                        results = (data || []).map(item => ({
-                            html: `<a href="/packs.html?id=${item.id}" class="search-result-item">
-                                <img src="${item.icon_url || 'https://placehold.co/48x48/1c1c1c/e8eefc?text=ICON'}" style="width: 48px; height: 48px; border-radius: 8px; object-fit: cover;">
-                                <div style="font-weight: 600; color: var(--text);">${escapeHtml(item.name)}</div>
-                            </a>`
-                        }));
-                    } else if (modalSearchType === 'users') {
-                        const { data } = await supabase.from('profiles').select('username, avatar_url').ilike('username', `%${query}%`).limit(8);
-                        results = (data || []).map(item => ({
-                            html: `<a href="/profile.html?user=${item.username}" class="search-result-item">
-                                <img src="${item.avatar_url || 'https://placehold.co/48x48/1c1c1c/e8eefc?text=' + item.username.charAt(0).toUpperCase()}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
-                                <div style="font-weight: 600; color: var(--text);">${escapeHtml(item.username)}</div>
-                            </a>`
-                        }));
-                    } else if (modalSearchType === 'gamertags') {
-                        const { data } = await supabase.from('profiles').select('username, bedrock_gamertag, xuid').ilike('bedrock_gamertag', `%${query}%`).limit(8);
-                        results = (data || []).map(item => ({
-                            html: `<a href="/profile.html?user=${item.username}" class="search-result-item">
-                                <i class="fa-brands fa-xbox" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--brand-1);"></i>
-                                <div><div style="font-weight: 600; color: var(--text);">${escapeHtml(item.bedrock_gamertag)}</div><div style="font-size: 0.8rem; color: var(--muted);">${escapeHtml(item.username)}</div></div>
-                            </a>`
-                        }));
-                    }
-
-                    if (results.length > 0) {
-                        resultsContainer.innerHTML = results.map(r => r.html).join('');
-                    } else {
-                        resultsContainer.innerHTML = `<p style="text-align: center; color: var(--muted); padding: 1rem;">No ${modalSearchType} found.</p>`;
-                    }
-                } catch (err) {
-                    resultsContainer.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 1rem;">Search error.</p>';
-                }
-            });
-        }
-        }
-        
-        // Initialize search modal when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initSearchModal);
-        } else {
-            initSearchModal();
-        }
-
-        // ====== NOTIFICATION SCRIPT ======
-        let currentUserId = null;
-        let notificationSubscription = null;
-
-        function timeAgo(date) {
-            const seconds = Math.floor((new Date() - new Date(date)) / 1000); let interval = seconds / 31536000;
-            if (interval > 1) return Math.floor(interval) + "y ago"; interval = seconds / 2592000;
-            if (interval > 1) return Math.floor(interval) + "mo ago"; interval = seconds / 86400;
-            if (interval > 1) return Math.floor(interval) + "d ago"; interval = seconds / 3600;
-            if (interval > 1) return Math.floor(interval) + "h ago"; interval = seconds / 60;
-            if (interval > 1) return Math.floor(interval) + "m ago"; return "just now";
-        }
-
-        async function fetchAndRenderNotifications() {
-            if (!currentUserId) return;
-            
-            const { data, error } = await supabase
-                .from('notifications')
-                .select('*')
-                .eq('user_id', currentUserId)
-                .order('created_at', { ascending: false })
-                .limit(20);
-
-            if (error) {
-                console.error("Error fetching notifications:", error);
-                return;
-            }
-
-            const list = document.getElementById('notification-list');
-            const badgeDesktop = document.getElementById('notification-badge');
-            const badgeMobile = document.getElementById('notification-badge-mobile');
-            let unreadCount = 0;
-
-            if (data.length === 0) {
-                list.innerHTML = '<div class="notification-list-empty"><div class="empty-icon"><i class="fa-solid fa-bell-slash"></i></div><p>All caught up!</p></div>';
-            } else {
-                list.innerHTML = data.map(n => {
-                    if (!n.is_read) unreadCount++;
-                    const iconMap = {
-                        'new_news': 'fa-solid fa-newspaper',
-                        'new_pack': 'fa-solid fa-box',
-                        'comment_reply': 'fa-solid fa-comment-dots'
-                    };
-                    
-                    let iconHtml = '';
-                    if (n.type === 'new_pack' && n.content.pack_icon) {
-                        iconHtml = `<img src="${n.content.pack_icon}" class="notification-icon" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;" alt="Pack icon">`;
-                    } else {
-                        iconHtml = `<i class="${iconMap[n.type] || 'fa-solid fa-bell'} notification-icon"></i>`;
-                    }
-                    
-                    return `
-                        <div class="notification-item ${n.is_read ? 'read' : ''}" id="notification-${n.id}">
-                            ${iconHtml}
-                            <a href="${n.content.link}" class="notification-content">
-                                <p>${escapeHtml(n.content.text)}</p>
-                                <span class="time">${timeAgo(n.created_at)}</span>
-                            </a>
-                            <button class="dismiss-notification-btn" data-id="${n.id}">&times;</button>
-                        </div>`;
-                }).join('');
-            }
-            
-            const badges = [badgeDesktop, badgeMobile];
-            badges.forEach(badge => {
-                if (badge) {
-                    badge.style.display = unreadCount > 0 ? 'block' : 'none';
-                }
-            });
-        }
-
-        async function markOneAsRead(notificationId) {
-            const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', notificationId);
-            if (!error) {
-                const item = document.getElementById(`notification-${notificationId}`);
-                if (item && !item.classList.contains('read')) {
-                    item.classList.add('read');
-                    const badges = document.querySelectorAll('.notification-badge');
-                    let currentCount = parseInt(badges[0]?.textContent) || 0;
-                    if (currentCount > 0) {
-                        badges.forEach(b => {
-                            if (currentCount - 1 <= 0) b.style.display = 'none';
-                        });
-                    }
-                }
-            }
-        }
-
-        function setupNotificationListeners() {
-            const backdrop = document.getElementById('notification-backdrop');
-            
-            document.addEventListener('click', (e) => {
-                if (e.target.closest('.notification-toggle-btn')) {
-                    backdrop.classList.add('show');
-                } 
-                else if (e.target.id === 'close-notifications-btn' || e.target.id === 'notification-backdrop') {
-                    backdrop.classList.remove('show');
-                }
-                else if (e.target.id === 'mark-all-read-btn') {
-                    supabase.from('notifications').update({ is_read: true }).eq('user_id', currentUserId).then(fetchAndRenderNotifications);
-                }
-                else if (e.target.id === 'clear-all-btn') {
-                    supabase.from('notifications').delete().eq('user_id', currentUserId).then(fetchAndRenderNotifications);
-                }
-                else if (e.target.classList.contains('dismiss-notification-btn')) {
-                    markOneAsRead(e.target.dataset.id);
-                }
-                else if (e.target.closest('.notification-content a')) {
-                    const notificationItem = e.target.closest('.notification-item');
-                    const notificationId = notificationItem.id.split('-')[1];
-                    if (!notificationItem.classList.contains('read')) {
-                        markOneAsRead(notificationId);
-                    }
-                    backdrop.classList.remove('show');
-                }
-            });
-        }
-
-        function createNotificationSubscription() {
-            if (notificationSubscription) supabase.removeChannel(notificationSubscription);
-
-            notificationSubscription = supabase.channel(`public:notifications:user_id=eq.${currentUserId}`)
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, payload => {
-                    fetchAndRenderNotifications();
-                }).subscribe();
-        }
-
-        document.addEventListener('auth-ready', (event) => {
-            const { user } = event.detail;
-            if (user) {
-                currentUserId = user.id;
-                fetchAndRenderNotifications();
-                createNotificationSubscription();
-                setupNotificationListeners();
-            } else {
-                currentUserId = null;
-                if (notificationSubscription) supabase.removeChannel(notificationSubscription);
-            }
-        });
     </script>
 </body>
 
