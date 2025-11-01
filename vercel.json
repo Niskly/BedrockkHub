@@ -17,16 +17,5 @@
     { "source": "/faq", "destination": "/pages/info/faq" },
     { "source": "/contact", "destination": "/pages/info/contact" },
     { "source": "/report", "destination": "/pages/info/report" }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)\\.(css|js|png|jpg|jpeg|gif|svg|webp|woff2)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    }
   ]
 }
