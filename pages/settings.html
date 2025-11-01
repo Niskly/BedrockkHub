@@ -349,13 +349,11 @@
 
     <!-- 
       CORE SCRIPT LOADERS
-      FIX: Load all required component scripts in the correct order.
+      FIX: Load components.js, which now handles loading all other critical JS 
+      (supabase, theme, auth, search, mobile-menu) in the correct order.
+      REMOVED duplicate script tags for auth, search, etc.
     -->
     <script src="/js/components.js"></script>
-    <script type="module" src="/js/supabase-client.js"></script>
-    <script type="module" src="/js/auth.js"></script>
-    <script type="module" src="/js/search-handler.js"></script>
-    <script type="module" src="/js/mobile-user-menu.js"></script>
 
     <!-- 
       PAGE-SPECIFIC SCRIPT
@@ -365,7 +363,8 @@
     -->
     <script type="module">
         // FIX: Import the shared supabase client
-        import { supabase } from '/js/supabase-client.js';
+        // This relies on components.js loading supabase-client.js first
+        const supabase = window.supabase;
         
         const OPENXBL_PUBLIC_KEY = 'e2ed13c6-bea5-9f3a-a796-546b48c71960';
         
@@ -1102,5 +1101,4 @@
     </script>
 </body>
 </html>
-
 
