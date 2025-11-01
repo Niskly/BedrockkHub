@@ -4,23 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MCHub - Settings</title>
+    <!-- Favicon Configuration -->
     <link rel="apple-touch-icon" sizes="180x180" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon-16x16.png">
     <link rel="manifest" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/site.webmanifest">
     <link rel="shortcut icon" href="https://whxmfpdmnsungcwlffdx.supabase.co/storage/v1/object/public/favicon/favicon.ico">
     <!-- End Favicon Configuration -->
+
+    <!-- External CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link rel="stylesheet" href="/components/nav.css">
     <link rel="stylesheet" href="/components/footer.css">
-    <style>
-        body { opacity: 0; transition: opacity 0.5s ease-in-out; }
-    </style>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
+    <!-- Page-Specific CSS & Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js" defer></script>
+    
     <style>
+        /* Base styles are now handled by theme.js */
         :root {
             --bg-0: #000000; --bg-1: #1c1c1c; --bg-2: #2c2c2c; --muted: #a8b3cf;
             --text: #e8eefc; --border: rgba(255, 255, 255, .12); --brand-1: #de212a;
@@ -33,6 +36,7 @@
         body { 
             margin: 0; background-color: var(--bg-0); color: var(--text); 
             font: 500 15px/1.6 Inter, sans-serif; min-height: 100vh; padding-top: 100px;
+            /* Opacity is controlled by theme.js */
         }
         body::before { 
             content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
@@ -42,42 +46,6 @@
         }
         a { color: inherit; text-decoration: none; }
         
-        /* Header & Navigation */
-        header { position: fixed; top: 1rem; left: 1rem; right: 1rem; z-index: 50; background: none; border: none; }
-        .nav { 
-            max-width: 1200px; margin: 0 auto; padding: 12px 18px; display: flex; 
-            align-items: center; justify-content: space-between; background: rgba(28, 28, 28, 0.7);
-            backdrop-filter: blur(20px) saturate(1.2); border: 1px solid var(--border); 
-            border-radius: 1.25rem; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        .brand { display: flex; align-items: center; gap: .8rem; }
-        .brand-badge { 
-            height: 40px; width: 40px; border-radius: 10px; display: grid; place-items: center; 
-            background: linear-gradient(135deg, var(--brand-2), var(--brand-1)); 
-            box-shadow: var(--shadow-brand); 
-        }
-        .brand-icon-custom { width: 100%; height: 100%; object-fit: contain; padding: 4px; transform: translateY(-11px); }
-        .brand-title { font-weight: 800; letter-spacing: .6px; font-size: 15px; }
-        .tiny { font-size: 12px; color: var(--muted); }
-        
-        .user-dropdown { position: relative; display: inline-block; }
-        .user-menu-btn { 
-            background: var(--bg-2); border: 1px solid var(--border); color: var(--text); 
-            padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; 
-            gap: 10px; cursor: pointer; font-weight: 600; 
-        }
-        .nav-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
-        .user-menu-btn:hover { border-color: var(--border-strong); }
-        .dropdown-content { 
-            display: none; position: absolute; right: 0; top: calc(100% + .5rem); 
-            background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; 
-            min-width: 220px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); z-index: 10; overflow: hidden; 
-        }
-        .dropdown-content.show { display: block; }
-        .dropdown-header { padding: 1rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
-        .dropdown-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .dropdown-username { font-weight: 700; }
-
         /* Settings-specific styles start here */
         .btn { padding: .5rem 1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -256,7 +224,8 @@
         .toast i { font-size: 18px; }
         .toast.success i { color: var(--success); }
         .toast.error i { color: var(--error); }
-
+        
+        /* Responsive Styles */
         @media (max-width: 992px) {
             .settings-grid { grid-template-columns: 1fr; }
             .content-container { max-width: 100%; }
@@ -289,8 +258,6 @@
             }
         }
         @media (max-width: 768px) {
-            .nav-actions { display: none; }
-            .mobile-nav-toggle { display: block; }
             .card-header, .card-body, .security-section { padding: 1.5rem; }
             .card-header h2 { font-size: 1.4rem; }
             .card-footer { flex-direction: column; gap: 0.5rem; align-items: stretch; }
@@ -355,432 +322,35 @@
         </div>
     </div>
 
+    <!-- 
+      NAV, NOTIFICATION, and SEARCH MODAL HTML are all injected here by components.js
+    -->
     <div id="nav-component"></div>
 
-    <div id="notification-backdrop" class="notification-backdrop">
-        <div id="notification-panel" class="notification-panel">
-            <div class="notification-header">
-                <h3>Notifications</h3>
-                <button id="close-notifications-btn">&times;</button>
-            </div>
-            <div id="notification-list" class="notification-list"></div>
-            <div class="notification-footer">
-                <button id="mark-all-read-btn" class="notification-footer-btn">Mark all as read</button>
-                <button id="clear-all-btn" class="notification-footer-btn">Clear All</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- DESKTOP SEARCH MODAL -->
-    <div id="desktop-search-modal" class="desktop-search-modal-backdrop">
-        <div class="desktop-search-modal-content" style="background: var(--bg-1); border-radius: 1rem; border: 1px solid var(--border); width: 100%; max-width: 700px; padding: 1rem; padding-top: 3rem; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: slideDown 0.4s ease;">
-            <button id="close-search-modal-btn" class="close-search-modal-btn" style="position: absolute; top: 0.75rem; right: 0.75rem; background: var(--bg-2); border: 1px solid var(--border); color: var(--muted); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: grid; place-items: center; transition: all 0.2s;">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            <div class="search-hub-container" style="margin: 0; max-width: 100%;">
-                <div class="search-input-wrapper" style="display: flex; position: relative; background: var(--bg-2); border: 1px solid var(--border); border-radius: 16px; transition: border-color 0.2s;">
-                    <div class="search-type-dropdown" id="modal-search-type-dropdown" style="position: relative;">
-                        <button id="modal-search-type-btn" style="display: flex; align-items: center; gap: 0.5rem; height: 100%; padding: 0 1.2rem; background: var(--bg-1); border: none; color: var(--text); font-weight: 600; border-radius: 15px 0 0 15px; cursor: pointer; border-right: 1px solid var(--border); font-family: inherit;">
-                            <i class="fa-solid fa-palette"></i>
-                            <span>Packs</span>
-                            <i class="fa-solid fa-chevron-down" style="font-size: 0.7em; transition: transform 0.2s;"></i>
-                        </button>
-                        <div id="modal-search-type-menu" style="display: none; position: absolute; top: 110%; left: 0; z-index: 12; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; min-width: 100%; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.3);">
-                            <div class="search-type-option" data-type="packs" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; transition: background 0.2s;"><i class="fa-solid fa-palette" style="width: 16px; color: var(--muted);"></i> Packs</div>
-                            <div class="search-type-option" data-type="users" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; transition: background 0.2s;"><i class="fa-solid fa-user" style="width: 16px; color: var(--muted);"></i> Users</div>
-                            <div class="search-type-option" data-type="gamertags" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; transition: background 0.2s;"><i class="fa-brands fa-xbox" style="width: 16px; color: var(--muted);"></i> Gamertags</div>
-                        </div>
-                    </div>
-                    <input type="text" id="modal-universal-search" placeholder="Search for packs..." style="width: 100%; padding: 1rem 1.5rem; font-size: 1rem; background: transparent; border: none; color: var(--text); outline: none; font-family: inherit;">
-                </div>
-                <div id="modal-search-results" style="display: none; margin-top: 0.5rem; background: var(--bg-2); border: 1px solid var(--border); border-radius: 16px; max-height: 350px; overflow-y: auto;"></div>
-                
-                <!-- Latest Packs Suggestions -->
-                <div class="modal-suggestions" style="margin-top: 1.5rem; padding: 0 0.5rem;">
-                    <div class="suggestions-title" style="font-size: 0.85rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fa-solid fa-fire" style="color: var(--brand-1);"></i>
-                        Latest Packs
-                    </div>
-                    <div class="modal-suggestions-grid" id="modal-pack-suggestions" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <main class="container" id="settings-container">
+        <!-- This content will be generated by JavaScript after auth-ready fires -->
         <div class="loading-container"><div class="spinner"></div><p>Loading Settings...</p></div>
     </main>
     
-    <script type="module" src="/js/theme.js"></script>
-    <script type="module" src="/js/auth.js"></script>
+    <!-- 
+      FOOTER HTML is injected here by components.js
+    -->
+    <div id="footer-component"></div>
+
+    <!-- 
+      CORE SCRIPT LOADERS
+      components.js loads all other critical JS files (supabase, theme, auth, etc.)
+    -->
+    <script src="/js/components.js"></script>
+
+    <!-- 
+      PAGE-SPECIFIC SCRIPT
+      This script now *only* contains logic for the settings page
+      and it waits for the 'auth-ready' event from auth.js.
+    -->
     <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        import { supabase } from '/js/supabase-client.js';
         
-        const SUPABASE_URL = 'https://whxmfpdmnsungcwlffdx.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoeG1mcGRtbnN1bmdjd2xmZmR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMDk3MzYsImV4cCI6MjA3MTg4NTczNn0.PED6DKwmfzUFLIvNbRGY2OQV5XXmc8WKS9E9Be6o8D8';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        function escapeHtml(str) {
-            return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]));
-        }
-
-        // Search modal functionality
-        const desktopSearchInput = document.querySelector('.desktop-search-container input');
-        const mobileSearchToggle = document.getElementById('mobile-search-toggle');
-        const searchModal = document.getElementById('desktop-search-modal');
-        const closeModalBtn = document.getElementById('close-search-modal-btn');
-        let modalSearchType = 'packs';
-
-        function openSearchModal() {
-            if (searchModal) {
-                searchModal.classList.add('show');
-                document.body.style.overflow = 'hidden';
-                const modalSearchInput = document.getElementById('modal-universal-search');
-                if (modalSearchInput) setTimeout(() => modalSearchInput.focus(), 100);
-                loadLatestPacksSuggestions();
-            }
-        }
-
-        function closeSearchModal() {
-            if (searchModal) {
-                searchModal.classList.remove('show');
-                document.body.style.overflow = '';
-                const resultsContainer = document.getElementById('modal-search-results');
-                if (resultsContainer) {
-                    resultsContainer.style.display = 'none';
-                    resultsContainer.innerHTML = '';
-                }
-                const modalSearchInput = document.getElementById('modal-universal-search');
-                if (modalSearchInput) modalSearchInput.value = '';
-            }
-        }
-
-        if (desktopSearchInput) desktopSearchInput.addEventListener('click', (e) => { e.preventDefault(); openSearchModal(); });
-        if (mobileSearchToggle) mobileSearchToggle.addEventListener('click', openSearchModal);
-        if (closeModalBtn) closeModalBtn.addEventListener('click', closeSearchModal);
-        if (searchModal) searchModal.addEventListener('click', (e) => { if (e.target === searchModal) closeSearchModal(); });
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && searchModal.classList.contains('show')) closeSearchModal(); });
-
-        // Search type dropdown
-        const modalDropdown = document.getElementById('modal-search-type-dropdown');
-        const modalSearchTypeBtn = document.getElementById('modal-search-type-btn');
-        const modalSearchInput = document.getElementById('modal-universal-search');
-
-        if (modalDropdown) {
-            modalSearchTypeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                modalDropdown.classList.toggle('open');
-            });
-
-            modalDropdown.querySelectorAll('.search-type-option').forEach(option => {
-                option.addEventListener('click', () => {
-                    modalSearchType = option.dataset.type;
-                    const btnSpan = modalSearchTypeBtn.querySelector('span');
-                    const btnIcon = modalSearchTypeBtn.querySelector('i:first-child');
-                    const optionIcon = option.querySelector('i');
-                    
-                    if (btnSpan) btnSpan.textContent = option.textContent.trim();
-                    if (btnIcon && optionIcon) btnIcon.className = optionIcon.className;
-                    modalSearchInput.placeholder = `Search for ${modalSearchType}...`;
-                    modalDropdown.classList.remove('open');
-                    
-                    if (modalSearchInput.value.trim().length >= 2) performModalSearch();
-                });
-            });
-
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('#modal-search-type-dropdown')) modalDropdown.classList.remove('open');
-            });
-        }
-
-        // Search functionality
-        async function performModalSearch() {
-            const query = modalSearchInput.value.trim();
-            const resultsContainer = document.getElementById('modal-search-results');
-            const suggestionsContainer = document.querySelector('.modal-suggestions');
-            
-            if (query.length < 2) {
-                resultsContainer.style.display = 'none';
-                if (suggestionsContainer) suggestionsContainer.style.display = '';
-                return;
-            }
-
-            resultsContainer.style.display = 'block';
-            if (suggestionsContainer) suggestionsContainer.style.display = 'none';
-            resultsContainer.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--muted);">Searching...</div>';
-
-            try {
-                let results = [];
-
-                if (modalSearchType === 'packs') {
-                    const { data } = await supabase.from('packs').select('id, name, icon_url').ilike('name', `%${query}%`).limit(8);
-                    results = (data || []).map(item => ({
-                        type: 'pack', name: item.name, icon: item.icon_url, link: `/packs.html?id=${item.id}`
-                    }));
-                } else if (modalSearchType === 'users') {
-                    const { data } = await supabase.from('profiles').select('username, avatar_url').ilike('username', `%${query}%`).limit(8);
-                    results = (data || []).map(item => ({
-                        type: 'user', name: item.username, icon: item.avatar_url, link: `/profile.html?user=${item.username}`
-                    }));
-                } else if (modalSearchType === 'gamertags') {
-                    const { data } = await supabase.from('profiles').select('username, bedrock_gamertag, xuid').ilike('bedrock_gamertag', `%${query}%`).limit(8);
-                    results = (data || []).map(item => ({
-                        type: 'gamertag', name: item.bedrock_gamertag, sub: item.username, xuid: item.xuid, link: `/profile.html?user=${item.username}`
-                    }));
-                }
-
-                renderModalSearchResults(results);
-            } catch (error) {
-                console.error('Search error:', error);
-                resultsContainer.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--danger);">Search failed. Please try again.</div>';
-            }
-        }
-
-        function renderModalSearchResults(results) {
-            const container = document.getElementById('modal-search-results');
-            if (results.length === 0) {
-                container.innerHTML = `<div class="search-result-item"><div class="search-result-info"><div class="search-result-name">No results found</div></div></div>`;
-            } else {
-                container.innerHTML = results.map(item => {
-                    let iconHtml = '';
-                    if (item.type === 'pack') {
-                        iconHtml = item.icon 
-                            ? `<img src="${item.icon}" class="search-result-icon">`
-                            : `<div class="search-result-icon" style="background:var(--bg-1); display:grid; place-items:center;"><i class="fa-solid fa-cube"></i></div>`;
-                    } else if (item.type === 'gamertag' && item.xuid) {
-                        iconHtml = `<img src="/api/bedrock-skin?xuid=${item.xuid}&render_type=head" class="search-result-avatar is-mc-skin">`;
-                    } else {
-                        const initial = (item.name || '?').charAt(0).toUpperCase();
-                        iconHtml = `<img src="${item.icon || `https://placehold.co/40x40/1c1c1c/de212a?text=${initial}`}" class="search-result-avatar">`;
-                    }
-                    return `<a href="${item.link}" class="search-result-item">${iconHtml}<div class="search-result-info"><div class="search-result-name">${escapeHtml(item.name)}</div>${item.sub ? `<div class="search-result-sub">MCHub User: ${escapeHtml(item.sub)}</div>` : ''}</div></a>`;
-                }).join('');
-            }
-            container.style.display = 'block';
-        }
-
-        // Load latest packs suggestions
-        async function loadLatestPacksSuggestions() {
-            try {
-                const { data } = await supabase.from('packs').select('id, name, icon_url').order('created_at', { ascending: false }).limit(4);
-                
-                const suggestionsContainer = document.querySelector('.modal-suggestions');
-                if (data && data.length > 0 && suggestionsContainer) {
-                    const grid = suggestionsContainer.querySelector('.modal-pack-suggestions-grid');
-                    if (grid) {
-                        grid.innerHTML = data.map(pack => `
-                            <a href="/packs.html?id=${pack.id}" class="suggestion-card">
-                                <img src="${pack.icon_url || 'https://placehold.co/48x48/1c1c1c/de212a?text=P'}" class="pack-icon" alt="${escapeHtml(pack.name)}">
-                                <div class="suggestion-card-info">
-                                    <div class="suggestion-card-name">${escapeHtml(pack.name)}</div>
-                                </div>
-                            </a>
-                        `).join('');
-                    }
-                }
-            } catch (err) {
-                console.error('Error loading pack suggestions:', err);
-            }
-        }
-
-        // Debounced search
-        let searchDebounceTimer;
-        if (modalSearchInput) {
-            modalSearchInput.addEventListener('input', () => {
-                clearTimeout(searchDebounceTimer);
-                searchDebounceTimer = setTimeout(performModalSearch, 300);
-            });
-        }
-
-        // Desktop navbar population
-        document.addEventListener('auth-ready', () => {
-            const isDesktop = window.innerWidth >= 1024;
-            if (!isDesktop) return;
-
-            const navActions = document.getElementById('nav-actions');
-            const desktopNavLinks = document.getElementById('desktop-nav-links');
-            const desktopAuth = document.getElementById('desktop-auth-actions');
-
-            navActions.querySelectorAll('.nav-link-item').forEach(linkOrContainer => {
-                if (linkOrContainer.classList.contains('tools-dropdown-container')) {
-                    desktopNavLinks.appendChild(linkOrContainer);
-                } else if (linkOrContainer.tagName.toLowerCase() === 'a') {
-                    desktopNavLinks.appendChild(linkOrContainer);
-                }
-            });
-
-            desktopNavLinks.querySelectorAll('a, button.nav-link').forEach(link => {
-                if (link.tagName.toLowerCase() === 'a') {
-                    link.className = 'nav-link';
-                    const linkPath = link.getAttribute('href');
-                    const currentPath = window.location.pathname;
-                    if (linkPath === currentPath || (currentPath === '/settings.html' && linkPath === '/settings.html')) {
-                        link.classList.add('active');
-                    }
-                }
-            });
-
-            const loginBtn = navActions.querySelector('.login-btn-item');
-            const signupBtn = navActions.querySelector('.signup-btn-item');
-            const userDropdown = navActions.querySelector('.user-dropdown');
-            const notificationBtn = navActions.querySelector('.notification-toggle-btn');
-            
-            if (notificationBtn) desktopAuth.appendChild(notificationBtn);
-
-            if (userDropdown) {
-                desktopAuth.appendChild(userDropdown);
-            } else {
-                if (loginBtn) {
-                    loginBtn.className = 'login-btn';
-                    desktopAuth.appendChild(loginBtn);
-                }
-                if (signupBtn) {
-                    signupBtn.className = 'signup-btn';
-                    desktopAuth.appendChild(signupBtn);
-                }
-            }
-        });
-
-        // NOTIFICATION SCRIPT
-        let currentUserId = null;
-        let notificationSubscription = null;
-
-        function timeAgo(date) {
-            const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-            let interval = seconds / 31536000;
-            if (interval > 1) return Math.floor(interval) + "y ago";
-            interval = seconds / 2592000;
-            if (interval > 1) return Math.floor(interval) + "mo ago";
-            interval = seconds / 86400;
-            if (interval > 1) return Math.floor(interval) + "d ago";
-            interval = seconds / 3600;
-            if (interval > 1) return Math.floor(interval) + "h ago";
-            interval = seconds / 60;
-            if (interval > 1) return Math.floor(interval) + "m ago";
-            return "just now";
-        }
-
-        async function fetchAndRenderNotifications() {
-            if (!currentUserId) return;
-            
-            const { data, error } = await supabase.from('notifications').select('*').eq('user_id', currentUserId).order('created_at', { ascending: false }).limit(20);
-
-            if (error) {
-                console.error("Error fetching notifications:", error);
-                return;
-            }
-
-            const list = document.getElementById('notification-list');
-            const badgeDesktop = document.getElementById('notification-badge');
-            const badgeMobile = document.getElementById('notification-badge-mobile');
-            let unreadCount = 0;
-
-            if (data.length === 0) {
-                list.innerHTML = '<div class="notification-list-empty"><div class="empty-icon"><i class="fa-solid fa-bell-slash"></i></div><p>All caught up!</p></div>';
-            } else {
-                list.innerHTML = data.map(n => {
-                    if (!n.is_read) unreadCount++;
-                    const iconMap = {
-                        'new_news': 'fa-solid fa-newspaper',
-                        'new_pack': 'fa-solid fa-box',
-                        'comment_reply': 'fa-solid fa-comment-dots'
-                    };
-                    
-                    let iconHtml = '';
-                    if (n.type === 'new_pack' && n.content.pack_icon) {
-                        iconHtml = `<img src="${n.content.pack_icon}" class="notification-icon" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;" alt="Pack icon">`;
-                    } else {
-                        iconHtml = `<i class="${iconMap[n.type] || 'fa-solid fa-bell'} notification-icon"></i>`;
-                    }
-                    
-                    return `
-                        <div class="notification-item ${n.is_read ? 'read' : ''}" id="notification-${n.id}">
-                            ${iconHtml}
-                            <a href="${n.content.link}" class="notification-content">
-                                <p>${escapeHtml(n.content.text)}</p>
-                                <span class="time">${timeAgo(n.created_at)}</span>
-                            </a>
-                            <button class="dismiss-notification-btn" data-id="${n.id}">&times;</button>
-                        </div>`;
-                }).join('');
-            }
-            
-            const badges = [badgeDesktop, badgeMobile];
-            badges.forEach(badge => {
-                if (badge) badge.style.display = unreadCount > 0 ? 'block' : 'none';
-            });
-        }
-
-        async function markOneAsRead(notificationId) {
-            const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', notificationId);
-            if (!error) {
-                const item = document.getElementById(`notification-${notificationId}`);
-                if (item && !item.classList.contains('read')) {
-                    item.classList.add('read');
-                    const badges = document.querySelectorAll('.notification-badge');
-                    let currentCount = parseInt(badges[0].textContent) || 0;
-                    if (currentCount > 0) {
-                        badges.forEach(b => {
-                            if (currentCount - 1 <= 0) b.style.display = 'none';
-                        });
-                    }
-                }
-            }
-        }
-
-        function setupNotificationListeners() {
-            const backdrop = document.getElementById('notification-backdrop');
-            
-            document.addEventListener('click', (e) => {
-                if (e.target.closest('.notification-toggle-btn')) {
-                    backdrop.classList.add('show');
-                } 
-                else if (e.target.id === 'close-notifications-btn' || e.target.id === 'notification-backdrop') {
-                    backdrop.classList.remove('show');
-                }
-                else if (e.target.id === 'mark-all-read-btn') {
-                    supabase.from('notifications').update({ is_read: true }).eq('user_id', currentUserId).then(fetchAndRenderNotifications);
-                }
-                else if (e.target.id === 'clear-all-btn') {
-                    supabase.from('notifications').delete().eq('user_id', currentUserId).then(fetchAndRenderNotifications);
-                }
-                else if (e.target.classList.contains('dismiss-notification-btn')) {
-                    markOneAsRead(e.target.dataset.id);
-                }
-                else if (e.target.closest('.notification-content a')) {
-                    const notificationItem = e.target.closest('.notification-item');
-                    const notificationId = notificationItem.id.split('-')[1];
-                    if (!notificationItem.classList.contains('read')) {
-                        markOneAsRead(notificationId);
-                    }
-                    backdrop.classList.remove('show');
-                }
-            });
-        }
-
-        function createNotificationSubscription() {
-            if (notificationSubscription) supabase.removeChannel(notificationSubscription);
-
-            notificationSubscription = supabase.channel(`public:notifications:user_id=eq.${currentUserId}`)
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, payload => {
-                    fetchAndRenderNotifications();
-                }).subscribe();
-        }
-
-        document.addEventListener('auth-ready', (event) => {
-            const { user } = event.detail;
-            if (user) {
-                currentUserId = user.id;
-                fetchAndRenderNotifications();
-                createNotificationSubscription();
-                setupNotificationListeners();
-            } else {
-                currentUserId = null;
-                if (notificationSubscription) supabase.removeChannel(notificationSubscription);
-            }
-        });
-    </script>
-    <script type="module">
         const OPENXBL_PUBLIC_KEY = 'e2ed13c6-bea5-9f3a-a796-546b48c71960';
         
         let currentUser, currentProfile, isProcessing = false;
@@ -832,7 +402,7 @@
             const confirmInput = document.getElementById('confirmation-input');
             const confirmBtn = document.getElementById('confirm-action-btn');
 
-            if (requiresInput) {
+            if (requiresInput && currentProfile) {
                 inputContainer.style.display = 'block';
                 document.getElementById('confirmation-username-prompt').textContent = currentProfile.username;
                 confirmInput.value = '';
@@ -959,7 +529,7 @@
                                              <h3>Username</h3>
                                          </div>
                                          <div class="form-group">
-                                             <input type="text" id="username" class="form-input" required minlength="3" maxlength="20" placeholder="Enter your username">
+                                             <input type="text" id="username" class="form-input" required minlength="3" maxlength="20" placeholder="Enter your username" autocomplete="username">
                                          </div>
                                          <div class="security-section-footer">
                                             <p class="input-hint" id="username-hint">Your username can be changed once every 7 days.</p>
@@ -975,13 +545,13 @@
                                          </div>
                                         <div class="form-group">
                                             <div class="form-input-wrapper">
-                                                <input type="password" id="new-password" class="form-input" required minlength="6" placeholder="Enter new password">
+                                                <input type="password" id="new-password" class="form-input" required minlength="6" placeholder="Enter new password" autocomplete="new-password">
                                                 <i class="fa-solid fa-eye password-toggle" data-target="new-password"></i>
                                             </div>
                                         </div>
                                         <div class="form-group" style="margin-bottom:0;">
                                              <div class="form-input-wrapper">
-                                                <input type="password" id="confirm-password" class="form-input" required minlength="6" placeholder="Confirm new password">
+                                                <input type="password" id="confirm-password" class="form-input" required minlength="6" placeholder="Confirm new password" autocomplete="new-password">
                                                 <i class="fa-solid fa-eye password-toggle" data-target="confirm-password"></i>
                                              </div>
                                         </div>
@@ -1141,12 +711,17 @@
             showLoading('Deleting account...');
             try {
                 const { data: { session } } = await supabase.auth.getSession();
+                if (!session) throw new Error("No active session found.");
+                
                 const response = await fetch('/api/delete-user', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${session.access_token}` }
                 });
-                const result = await response.json();
-                if (!response.ok) throw new Error(result.details);
+                
+                if (!response.ok) {
+                    const result = await response.json().catch(() => ({details: 'Unknown error'}));
+                    throw new Error(result.details);
+                }
                 
                 await supabase.auth.signOut();
                 showToast('Account deleted successfully. Redirecting...', 'success');
@@ -1390,12 +965,20 @@
             const popup = window.open(authUrl, 'xbox-auth', 'width=600,height=700');
             if (!popup) { return showToast('Popup blocked. Please allow popups.', 'error'); }
             const handleMessage = async ({ origin, data }) => {
-                if (origin !== window.location.origin) return;
+                // **FIX:** Use `window.location.origin` for a more secure check
+                if (origin !== window.location.origin) {
+                    console.warn('Ignored message from different origin:', origin);
+                    return;
+                }
+                
                 window.removeEventListener('message', handleMessage);
                 if (data.type !== 'BEDROCK_AUTH_SUCCESS') { return showToast(`Xbox connection failed: ${data.message || 'Unknown error'}`, 'error'); }
+                
                 showLoading('Linking Xbox account...');
                 try {
                     const { data: { session } } = await supabase.auth.getSession();
+                    if (!session) throw new Error("Authentication session expired. Please log in again.");
+
                     const response = await fetch('/api/link-bedrock', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ mchub_token: session.access_token, xbl_token: data.token })
@@ -1424,6 +1007,8 @@
 
         function checkUsernameCooldown() {
             const usernameForm = document.getElementById('username-form');
+            if (!usernameForm) return; // Exit if form doesn't exist yet
+            
             const usernameInput = document.getElementById('username');
             const usernameHint = document.getElementById('username-hint');
             const submitBtn = usernameForm.querySelector('button[type="submit"]');
@@ -1451,43 +1036,53 @@
         }
 
         async function loadProfileAndPopulate() {
+            // This function is now guaranteed to run *after* auth-ready
+            // and *after* buildPageStructure has run.
             try {
-                const { data: profileData, error } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
-                if (error) throw error;
-                currentProfile = profileData;
+                // We already have currentUser and currentProfile from the auth-ready event
                 document.getElementById('avatar-preview').src = currentProfile.avatar_url || `https://placehold.co/100x100/1c1c1c/de212a?text=${(currentProfile.username || 'U').charAt(0).toUpperCase()}`;
                 document.getElementById('banner-preview').src = currentProfile.banner_url || 'https://placehold.co/450x150/1c1c1c/de212a?text=BANNER';
                 document.getElementById('bio').value = currentProfile.bio || '';
                 document.getElementById('username').value = currentProfile.username || '';
+                
                 renderSocials(currentProfile);
                 buildThemeSelector(); // Build and set the active theme
                 checkUsernameCooldown();
             } catch (error) {
-                console.error('Failed to load profile data:', error);
-                showToast('Could not load your settings.', 'error');
+                console.error('Failed to populate profile data:', error);
+                showToast('Could not populate your settings.', 'error');
             }
         }
 
+        // --- Auth Event Listener ---
+        // This is the main entry point for the page's logic.
+        // It's guaranteed to run *after* components.js and auth.js are ready.
         document.addEventListener('auth-ready', async (event) => {
             const { user, profile, error } = event.detail;
-            document.body.style.opacity = '1'; // Make body visible
-            if (error || !user) {
+            
+            // **FIX:** This handles the crash.
+            // If auth.js determined the user isn't logged in, redirect them.
+            if (error || !user || !profile) {
+                console.error('[SETTINGS] Auth failed, redirecting to login.', error);
                 settingsContainer.innerHTML = `<div class="loading-container"><p>Please log in to view your settings.</p><a href="/login.html" class="btn primary" style="margin-top: 1rem;">Login</a></div>`;
                 return;
             }
+
+            // --- Auth is successful ---
+            console.log('[SETTINGS] auth-ready received. User is logged in.');
             currentUser = user;
-            currentProfile = profile; // The profile from auth-ready is a good starting point
+            currentProfile = profile;
+            
+            // 1. Build the HTML structure *first*
             buildPageStructure();
+            
+            // 2. *Then* populate it with data
             await loadProfileAndPopulate();
+            
+            // 3. *Finally* attach all event listeners
             setupAllEventListeners();
         });
-        
+
     </script>
-
-    <div id="footer-component"></div>
-
-    <script src="/js/components.js"></script>
-    <script type="module" src="/js/theme.js"></script>
-    <script type="module" src="/js/auth.js"></script>
 </body>
 </html>
