@@ -2,51 +2,63 @@
 (function() {
     'use strict';
     
-    // Setup click handlers immediately
-    document.addEventListener('click', function(e) {
-        const userBtn = e.target.closest('#mobile-user-btn');
-        const userDropdown = e.target.closest('#mobile-user-dropdown');
-        const supportToggle = e.target.closest('#mobile-support-toggle');
-        
-        // Toggle user menu when clicking the button
-        if (userBtn) {
-            e.stopPropagation();
-            e.preventDefault();
-            const menu = document.getElementById('mobile-user-menu');
-            if (menu) {
-                menu.classList.toggle('show');
+    // **FIX:** Wait for auth-ready before trying to populate the menu
+    document.addEventListener('auth-ready', function(e) {
+        console.log('[MOBILE MENU] auth-ready received. Populating menu.');
+        updateMobileUserMenu(e.detail.user, e.detail.profile);
+    });
+
+    // **FIX:** Setup click listeners inside a DOMContentLoaded listener
+    // to ensure elements exist.
+    document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('click', function(e) {
+            const userBtn = e.target.closest('#mobile-user-btn');
+            const userDropdown = e.target.closest('#mobile-user-dropdown');
+            const supportToggle = e.target.closest('#mobile-support-toggle');
+            
+            // Toggle user menu when clicking the button
+            if (userBtn) {
+                e.stopPropagation();
+                e.preventDefault();
+                const menu = document.getElementById('mobile-user-menu');
+                if (menu) {
+                    menu.classList.toggle('show');
+                }
+                return;
             }
-            return;
-        }
-        
-        // Handle support submenu toggle
-        if (supportToggle) {
-            e.preventDefault();
-            const submenu = document.getElementById('mobile-support-submenu');
-            if (submenu) {
-                submenu.classList.toggle('show');
-                const icon = supportToggle.querySelector('.fa-chevron-down');
-                if (icon) {
-                    icon.style.transform = submenu.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+            
+            // Handle support submenu toggle
+            if (supportToggle) {
+                e.preventDefault();
+                const submenu = document.getElementById('mobile-support-submenu');
+                if (submenu) {
+                    submenu.classList.toggle('show');
+                    const icon = supportToggle.querySelector('.fa-chevron-down');
+                    if (icon) {
+                        icon.style.transform = submenu.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+                    }
+                }
+                return;
+            }
+            
+            // Close menu when clicking outside
+            if (!userDropdown) {
+                const menu = document.getElementById('mobile-user-menu');
+                if (menu) {
+                    menu.classList.remove('show');
                 }
             }
-            return;
-        }
-        
-        // Close menu when clicking outside
-        if (!userDropdown) {
-            const menu = document.getElementById('mobile-user-menu');
-            if (menu) {
-                menu.classList.remove('show');
-            }
-        }
+        });
     });
     
     // Populate menu based on auth state
     function updateMobileUserMenu(user, profile) {
         const mobileUserBtn = document.getElementById('mobile-user-btn');
         const mobileUserMenu = document.getElementById('mobile-user-menu');
-        if (!mobileUserBtn || !mobileUserMenu) return;
+        if (!mobileUserBtn || !mobileUserMenu) {
+            console.warn('[MOBILE MENU] Could not find menu elements.');
+            return;
+        }
         const mobileNotificationBtn = document.getElementById('mobile-notification-btn');
         
         if (user && profile) {
@@ -56,19 +68,21 @@
             }
             
             // Logged in - show avatar
-            mobileUserBtn.innerHTML = `<img src="${profile.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(profile.username)}" alt="Avatar" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">`;
+            const avatarSrc = profile.avatar_url || `https://placehold.co/28x28/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}`;
+            mobileUserBtn.innerHTML = `<img src="${avatarSrc}" alt="Avatar" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">`;
             
             // Populate menu
+            const dropdownAvatarSrc = profile.avatar_url || `https://placehold.co/48x48/1c1c1c/de212a?text=${(profile.username || 'U').charAt(0).toUpperCase()}`;
             mobileUserMenu.innerHTML = `
                 <div class="mobile-user-menu-header">
-                    <img src="${profile.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(profile.username)}" alt="${profile.username}" class="mobile-user-menu-avatar">
+                    <img src="${dropdownAvatarSrc}" alt="${profile.username}" class="mobile-user-menu-avatar">
                     <div class="mobile-user-menu-info">
                         <div class="mobile-user-menu-name">${profile.username}</div>
                         <div class="mobile-user-menu-email">${user.email}</div>
                     </div>
                 </div>
                 <div class="mobile-user-menu-links">
-                    <a href="/profile.html?id=${user.id}">
+                    <a href="/profile.html?user=${profile.username}">
                         <i class="fa-solid fa-user"></i>
                         <span>My Profile</span>
                     </a>
@@ -106,18 +120,11 @@
             const logoutBtn = document.getElementById('mobile-logout-btn');
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', async () => {
-                    // Get supabase client - it should be available globally
-                    const supabaseClient = window.supabase || (await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm').then(m => m.createClient));
-                    
-                    if (supabaseClient && supabaseClient.auth) {
-                        const { error } = await supabaseClient.auth.signOut();
-                        if (!error) {
-                            window.location.reload();
-                        }
-                    } else {
-                        // Fallback: just reload
-                        window.location.reload();
+                    // supabase is global now
+                    if (window.supabase && window.supabase.auth) {
+                        await window.supabase.auth.signOut();
                     }
+                    // The onAuthStateChange listener in auth.js will handle the reload/UI update
                 });
             }
         } else {
@@ -138,9 +145,4 @@
             `;
         }
     }
-
-    // Listen for auth state changes
-    document.addEventListener('auth-ready', function(e) {
-        updateMobileUserMenu(e.detail.user, e.detail.profile);
-    });
 })();
